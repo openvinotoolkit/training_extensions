@@ -13,7 +13,7 @@ from typing import Any, Callable, ClassVar
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.utils.yolov7_v9_utils import auto_pad, set_info_into_module
+from otx.algo.detection.utils.yolov7_v9_utils import auto_pad, set_info_into_instance
 from otx.algo.modules import Conv2dModule, build_activation_layer
 
 logger = logging.getLogger(__name__)
@@ -472,7 +472,7 @@ class GELANModule(nn.Module):
         self.csp_args = csp_args or {}
 
         self.module = nn.ModuleList()
-        self.module.append(set_info_into_module({"module": Conv(3, first_dim, 3, stride=2), "source": 0}))
+        self.module.append(set_info_into_instance({"module": Conv(3, first_dim, 3, stride=2), "source": 0}))
         self.module.append(Conv(first_dim, first_dim * 2, 3, stride=2))
 
         block_entry_layer = ELAN if block_entry_cfg["type"] == "ELAN" else RepNCSPELAN
@@ -483,7 +483,7 @@ class GELANModule(nn.Module):
             prev_output_channel = csp_channels[idx - 1][1] if idx > 0 else block_entry_cfg["args"]["out_channels"]
             self.module.append(aconv_adown_layer(prev_output_channel, csp_channel[0]))
             self.module.append(
-                set_info_into_module(
+                set_info_into_instance(
                     {
                         "module": RepNCSPELAN(
                             csp_channel[0],

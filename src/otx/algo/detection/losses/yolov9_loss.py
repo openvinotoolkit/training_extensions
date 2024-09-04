@@ -6,11 +6,88 @@
 
 from __future__ import annotations
 
+import math
+
 import torch
 from torch import Tensor, nn
 from torch.nn import BCEWithLogitsLoss
 
-from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box, calculate_iou
+from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+
+
+def calculate_iou(bbox1: Tensor, bbox2: Tensor, metrics: str = "iou") -> Tensor:
+    """Calculate the Intersection over Union (IoU) between two sets of bounding boxes.
+
+    TODO (sungchul): check if it can be replaced with otx.algo.common.losses.iou_loss.IoULoss
+
+    Args:
+        bbox1 (Tensor): The first set of bounding boxes.
+        bbox2 (Tensor): The second set of bounding boxes.
+        metrics (str, optional): The metrics to calculate. Defaults to "iou".
+
+    Returns:
+        Tensor: The IoU between the two sets of bounding boxes.
+    """
+    metrics = metrics.lower()
+    eps = 1e-9
+    dtype = bbox1.dtype
+    bbox1 = bbox1.to(torch.float32)
+    bbox2 = bbox2.to(torch.float32)
+
+    # Expand dimensions if necessary
+    if bbox1.ndim == 2 and bbox2.ndim == 2:
+        bbox1 = bbox1.unsqueeze(1)  # (Ax4) -> (Ax1x4)
+        bbox2 = bbox2.unsqueeze(0)  # (Bx4) -> (1xBx4)
+    elif bbox1.ndim == 3 and bbox2.ndim == 3:
+        bbox1 = bbox1.unsqueeze(2)  # (BZxAx4) -> (BZxAx1x4)
+        bbox2 = bbox2.unsqueeze(1)  # (BZxBx4) -> (BZx1xBx4)
+
+    # Calculate intersection coordinates
+    xmin_inter = torch.max(bbox1[..., 0], bbox2[..., 0])
+    ymin_inter = torch.max(bbox1[..., 1], bbox2[..., 1])
+    xmax_inter = torch.min(bbox1[..., 2], bbox2[..., 2])
+    ymax_inter = torch.min(bbox1[..., 3], bbox2[..., 3])
+
+    # Calculate intersection area
+    intersection_area = torch.clamp(xmax_inter - xmin_inter, min=0) * torch.clamp(ymax_inter - ymin_inter, min=0)
+
+    # Calculate area of each bbox
+    area_bbox1 = (bbox1[..., 2] - bbox1[..., 0]) * (bbox1[..., 3] - bbox1[..., 1])
+    area_bbox2 = (bbox2[..., 2] - bbox2[..., 0]) * (bbox2[..., 3] - bbox2[..., 1])
+
+    # Calculate union area
+    union_area = area_bbox1 + area_bbox2 - intersection_area
+
+    # Calculate IoU
+    iou = intersection_area / (union_area + eps)
+    if metrics == "iou":
+        return iou.to(dtype)
+
+    # Calculate centroid distance
+    cx1 = (bbox1[..., 2] + bbox1[..., 0]) / 2
+    cy1 = (bbox1[..., 3] + bbox1[..., 1]) / 2
+    cx2 = (bbox2[..., 2] + bbox2[..., 0]) / 2
+    cy2 = (bbox2[..., 3] + bbox2[..., 1]) / 2
+    cent_dis = (cx1 - cx2) ** 2 + (cy1 - cy2) ** 2
+
+    # Calculate diagonal length of the smallest enclosing box
+    c_x = torch.max(bbox1[..., 2], bbox2[..., 2]) - torch.min(bbox1[..., 0], bbox2[..., 0])
+    c_y = torch.max(bbox1[..., 3], bbox2[..., 3]) - torch.min(bbox1[..., 1], bbox2[..., 1])
+    diag_dis = c_x**2 + c_y**2 + eps
+
+    diou = iou - (cent_dis / diag_dis)
+    if metrics == "diou":
+        return diou.to(dtype)
+
+    # Compute aspect ratio penalty term
+    arctan = torch.atan((bbox1[..., 2] - bbox1[..., 0]) / (bbox1[..., 3] - bbox1[..., 1] + eps)) - torch.atan(
+        (bbox2[..., 2] - bbox2[..., 0]) / (bbox2[..., 3] - bbox2[..., 1] + eps),
+    )
+    v = (4 / (math.pi**2)) * (arctan**2)
+    alpha = v / (v - iou + 1 + eps)
+    # Compute CIoU
+    ciou = diou - alpha * v
+    return ciou.to(dtype)
 
 
 class BCELoss(nn.Module):

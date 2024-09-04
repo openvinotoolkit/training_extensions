@@ -9,21 +9,27 @@ Reference : https://github.com/WongKinYiu/YOLO
 
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING, Any
 
 import torch
 from einops import rearrange
 from torch import Tensor, nn
-from torch.nn.common_types import _size_2_t
 from torchvision.ops import batched_nms
 
 if TYPE_CHECKING:
     from otx.algo.detection.detectors import SingleStageDetector
 
 
-def auto_pad(kernel_size: _size_2_t, dilation: _size_2_t = 1, **kwargs) -> tuple[int, int]:
-    """Auto Padding for the convolution blocks."""
+def auto_pad(kernel_size: tuple[int, int], dilation: tuple[int, int] = 1) -> tuple[int, int]:
+    """Auto Padding for the convolution blocks.
+
+    Args:
+        kernel_size (tuple[int, int]): The kernel size of the convolution block.
+        dilation (tuple[int, int]): The dilation rate of the convolution block. Defaults to 1.
+
+    Returns:
+        tuple[int, int]: The padding size for the convolution block.
+    """
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size, kernel_size)
     if isinstance(dilation, int):
@@ -31,97 +37,41 @@ def auto_pad(kernel_size: _size_2_t, dilation: _size_2_t = 1, **kwargs) -> tuple
 
     pad_h = ((kernel_size[0] - 1) * dilation[0]) // 2
     pad_w = ((kernel_size[1] - 1) * dilation[1]) // 2
-    return (pad_h, pad_w)
+    return pad_h, pad_w
 
 
 def round_up(x: int | Tensor, div: int = 1) -> int | Tensor:
-    """Rounds up `x` to the bigger-nearest multiple of `div`."""
+    """Rounds up `x` to the bigger-nearest multiple of `div`.
+
+    Args:
+        x (int | Tensor): The input value.
+        div (int): The divisor value. Defaults to 1.
+
+    Returns:
+        int | Tensor: The rounded up value.
+    """
     return x + (-x % div)
 
 
-def calculate_iou(bbox1, bbox2, metrics="iou") -> Tensor:
-    metrics = metrics.lower()
-    EPS = 1e-9
-    dtype = bbox1.dtype
-    bbox1 = bbox1.to(torch.float32)
-    bbox2 = bbox2.to(torch.float32)
-
-    # Expand dimensions if necessary
-    if bbox1.ndim == 2 and bbox2.ndim == 2:
-        bbox1 = bbox1.unsqueeze(1)  # (Ax4) -> (Ax1x4)
-        bbox2 = bbox2.unsqueeze(0)  # (Bx4) -> (1xBx4)
-    elif bbox1.ndim == 3 and bbox2.ndim == 3:
-        bbox1 = bbox1.unsqueeze(2)  # (BZxAx4) -> (BZxAx1x4)
-        bbox2 = bbox2.unsqueeze(1)  # (BZxBx4) -> (BZx1xBx4)
-
-    # Calculate intersection coordinates
-    xmin_inter = torch.max(bbox1[..., 0], bbox2[..., 0])
-    ymin_inter = torch.max(bbox1[..., 1], bbox2[..., 1])
-    xmax_inter = torch.min(bbox1[..., 2], bbox2[..., 2])
-    ymax_inter = torch.min(bbox1[..., 3], bbox2[..., 3])
-
-    # Calculate intersection area
-    intersection_area = torch.clamp(xmax_inter - xmin_inter, min=0) * torch.clamp(ymax_inter - ymin_inter, min=0)
-
-    # Calculate area of each bbox
-    area_bbox1 = (bbox1[..., 2] - bbox1[..., 0]) * (bbox1[..., 3] - bbox1[..., 1])
-    area_bbox2 = (bbox2[..., 2] - bbox2[..., 0]) * (bbox2[..., 3] - bbox2[..., 1])
-
-    # Calculate union area
-    union_area = area_bbox1 + area_bbox2 - intersection_area
-
-    # Calculate IoU
-    iou = intersection_area / (union_area + EPS)
-    if metrics == "iou":
-        return iou.to(dtype)
-
-    # Calculate centroid distance
-    cx1 = (bbox1[..., 2] + bbox1[..., 0]) / 2
-    cy1 = (bbox1[..., 3] + bbox1[..., 1]) / 2
-    cx2 = (bbox2[..., 2] + bbox2[..., 0]) / 2
-    cy2 = (bbox2[..., 3] + bbox2[..., 1]) / 2
-    cent_dis = (cx1 - cx2) ** 2 + (cy1 - cy2) ** 2
-
-    # Calculate diagonal length of the smallest enclosing box
-    c_x = torch.max(bbox1[..., 2], bbox2[..., 2]) - torch.min(bbox1[..., 0], bbox2[..., 0])
-    c_y = torch.max(bbox1[..., 3], bbox2[..., 3]) - torch.min(bbox1[..., 1], bbox2[..., 1])
-    diag_dis = c_x**2 + c_y**2 + EPS
-
-    diou = iou - (cent_dis / diag_dis)
-    if metrics == "diou":
-        return diou.to(dtype)
-
-    # Compute aspect ratio penalty term
-    arctan = torch.atan((bbox1[..., 2] - bbox1[..., 0]) / (bbox1[..., 3] - bbox1[..., 1] + EPS)) - torch.atan(
-        (bbox2[..., 2] - bbox2[..., 0]) / (bbox2[..., 3] - bbox2[..., 1] + EPS),
-    )
-    v = (4 / (math.pi**2)) * (arctan**2)
-    alpha = v / (v - iou + 1 + EPS)
-    # Compute CIoU
-    ciou = diou - alpha * v
-    return ciou.to(dtype)
-
-
-def generate_anchors(image_size: list[int], strides: list[int]):
-    """Find the anchor maps for each w, h.
+def generate_anchors(image_size: tuple[int, int], strides: list[int]) -> tuple[Tensor, Tensor]:
+    """Find the anchor maps for each height and width.
 
     Args:
-        image_size List: the image size of augmented image size
-        strides List[8, 16, 32, ...]: the stride size for each predicted layer
+        image_size (tuple[int, int]): the image size of augmented image size.
+        strides list[int]: the stride size for each predicted layer.
 
     Returns:
-        all_anchors [HW x 2]:
-        all_scalers [HW]: The index of the best targets for each anchors
+        tuple[Tensor, Tensor]: The anchor maps with (HW x 2) and the scaler maps with (HW,).
     """
-    W, H = image_size
+    h, w = image_size
     anchors = []
     scaler = []
     for stride in strides:
-        anchor_num = W // stride * H // stride
+        anchor_num = w // stride * h // stride
         scaler.append(torch.full((anchor_num,), stride))
         shift = stride // 2
-        h = torch.arange(0, H, stride) + shift
-        w = torch.arange(0, W, stride) + shift
+        h = torch.arange(0, h, stride) + shift
+        w = torch.arange(0, w, stride) + shift
         anchor_h, anchor_w = torch.meshgrid(h, w, indexing="ij")
         anchor = torch.stack([anchor_w.flatten(), anchor_h.flatten()], dim=-1)
         anchors.append(anchor)
@@ -130,12 +80,24 @@ def generate_anchors(image_size: list[int], strides: list[int]):
     return all_anchors, all_scalers
 
 
-def transform_bbox(bbox: Tensor, indicator="xywh -> xyxy"):
+def transform_bbox(bbox: Tensor, indicator: str = "xywh -> xyxy") -> Tensor:
+    """Transform the bounding box format.
+
+    TODO (sungchul): replace it with transform utils.
+
+    Args:
+        bbox (Tensor): The bounding box tensor with (N, 4) shape.
+        indicator (str): The indicator for input and output format. Defaults to "xywh -> xyxy".
+
+    Returns:
+        Tensor: The transformed bounding box tensor.
+    """
     data_type = bbox.dtype
     in_type, out_type = indicator.replace(" ", "").split("->")
 
     if in_type not in ["xyxy", "xywh", "xycwh"] or out_type not in ["xyxy", "xywh", "xycwh"]:
-        raise ValueError("Invalid input or output format")
+        msg = "Invalid input or output format"
+        raise ValueError(msg)
 
     if in_type == "xywh":
         x_min = bbox[..., 0]
@@ -164,6 +126,15 @@ def transform_bbox(bbox: Tensor, indicator="xywh -> xyxy"):
 
 
 class Vec2Box:
+    """Convert the vector to bounding box.
+
+    Args:
+        detector (SingleStageDetector): The single stage detector instance.
+        image_size (tuple[int, int]): The image size.
+        strides (list[int] | None): The strides for each predicted layer. Defaults to None.
+        device (str): The device to use. Defaults to "cpu".
+    """
+
     def __init__(
         self,
         detector: SingleStageDetector,
@@ -176,6 +147,15 @@ class Vec2Box:
         self.update(image_size, device)
 
     def create_auto_anchor(self, detector: SingleStageDetector, image_size: tuple[int, int]) -> list[int]:
+        """Create the auto anchor for the given detector.
+
+        Args:
+            detector (SingleStageDetector): The single stage detector instance.
+            image_size (tuple[int, int]): The image size.
+
+        Returns:
+            list[int]: The strides for each predicted layer.
+        """
         dummy_input = torch.zeros(1, 3, *image_size).to(self.device)
         dummy_main_preds, _ = detector(dummy_input)
         strides = []
@@ -185,10 +165,24 @@ class Vec2Box:
         return strides
 
     def update(self, image_size: tuple[int, int], device: str | torch.device) -> None:
+        """Update the anchor grid and scaler.
+
+        Args:
+            image_size (tuple[int, int]): The image size.
+            device (str | torch.device): The device to use.
+        """
         anchor_grid, scaler = generate_anchors(image_size, self.strides)
         self.anchor_grid, self.scaler = anchor_grid.to(device), scaler.to(device)
 
     def __call__(self, predicts: list[Any]) -> tuple[Tensor, Tensor, Tensor]:
+        """Convert the vector to bounding box.
+
+        Args:
+            predicts (list[Any]): The list of prediction results.
+
+        Returns:
+            tuple[Tensor, Tensor, Tensor]: The converted results.
+        """
         preds_cls, preds_anc, preds_box = [], [], []
         for layer_output in predicts:
             pred_cls, pred_anc, pred_box = layer_output
@@ -199,8 +193,8 @@ class Vec2Box:
         preds_anc = torch.concat(preds_anc, dim=1)
         preds_box = torch.concat(preds_box, dim=1)
 
-        pred_LTRB = preds_box * self.scaler.view(1, -1, 1)
-        lt, rb = pred_LTRB.chunk(2, dim=-1)
+        pred_lt_rb = preds_box * self.scaler.view(1, -1, 1)
+        lt, rb = pred_lt_rb.chunk(2, dim=-1)
         preds_box = torch.cat([self.anchor_grid - lt, self.anchor_grid + rb], dim=-1)
         return preds_cls, preds_anc, preds_box
 
@@ -211,7 +205,19 @@ def bbox_nms(
     min_confidence: float = 0.05,
     min_iou: float = 0.9,
     confidence: Tensor | None = None,
-):
+) -> list[Tensor]:
+    """Apply NMS to the bounding box.
+
+    Args:
+        cls_dist (Tensor): The class distribution tensor.
+        bbox (Tensor): The bounding box tensor.
+        min_confidence (float): The minimum confidence to filter. Defaults to 0.05.
+        min_iou (float): The minimum IoU to filter. Defaults to 0.9.
+        confidence (Tensor | None): The confidence tensor. Defaults to None.
+
+    Returns:
+        list[Tensor]: The list of predicted bounding boxes.
+    """
     cls_dist = cls_dist.sigmoid() * (1 if confidence is None else confidence)
 
     # filter class by confidence
@@ -236,7 +242,15 @@ def bbox_nms(
     return predicts_nms
 
 
-def set_info_into_module(layer_dict: dict[str, Any]) -> nn.Module:
+def set_info_into_instance(layer_dict: dict[str, Any]) -> nn.Module:
+    """Set the information into the instance.
+
+    Args:
+        layer_dict (dict[str, Any]): The dictionary of instance with given information.
+
+    Returns:
+        nn.Module: The instance with given information.
+    """
     layer = layer_dict.pop("module")
     for k, v in layer_dict.items():
         setattr(layer, k, v)

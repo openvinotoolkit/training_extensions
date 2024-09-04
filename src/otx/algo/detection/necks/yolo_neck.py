@@ -13,7 +13,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.backbones.gelan import Pool, RepNCSPELAN
-from otx.algo.detection.utils.yolov7_v9_utils import set_info_into_module
+from otx.algo.detection.utils.yolov7_v9_utils import set_info_into_instance
 from otx.algo.modules import Conv2dModule
 
 
@@ -96,7 +96,7 @@ class YOLONeckModule(nn.Module):
             layer = SPPELAN if elan_channel["type"] == "SPPELAN" else RepNCSPELAN
             _csp_args = {"csp_args": self.csp_args} if elan_channel["type"] == "RepNCSPELAN" else {}
             self.module.append(
-                set_info_into_module(
+                set_info_into_instance(
                     {
                         "module": layer(**elan_channel["args"], **_csp_args),
                         "tags": elan_channel["tags"],
@@ -105,7 +105,7 @@ class YOLONeckModule(nn.Module):
             )
             if len(concat_sources) > idx:
                 self.module.append(nn.Upsample(scale_factor=2, mode="nearest"))
-                self.module.append(set_info_into_module({"module": Concat(), "source": concat_sources[idx]}))
+                self.module.append(set_info_into_instance({"module": Concat(), "source": concat_sources[idx]}))
 
     def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> dict[str, Tensor]:
         """Forward function."""
