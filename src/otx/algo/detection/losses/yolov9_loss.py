@@ -5,27 +5,37 @@
 """YOLO v9 criterion."""
 
 from __future__ import annotations
-from typing import Any
-import torch
 
-from torch import nn, Tensor
+import torch
+from torch import Tensor, nn
 from torch.nn import BCEWithLogitsLoss
 
 from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box, calculate_iou
 
 
 class BCELoss(nn.Module):
+    """Binary Cross Entropy Loss.
+
+    TODO (author): Refactor the device, should be assign by config
+    TODO (author): origin v9 assign pos_weight == 1?
+    TODO (sungchul): check if it can be replaced with otx.algo.common.losses.cross_entropy_loss.CrossEntropyLoss
+    """
+
     def __init__(self) -> None:
         super().__init__()
-        # TODO: Refactor the device, should be assign by config
-        # TODO: origin v9 assing pos_weight == 1?
         self.bce = BCEWithLogitsLoss(reduction="none")
 
     def forward(self, predicts_cls: Tensor, targets_cls: Tensor, cls_norm: Tensor) -> Tensor:
+        """Calculate the BCE loss for the classification."""
         return self.bce(predicts_cls, targets_cls).sum() / cls_norm
 
 
 class BoxLoss(nn.Module):
+    """Box Loss.
+
+    TODO (sungchul): check if it can be replaced with otx.algo.common.losses.iou_loss.IoULoss
+    """
+
     def forward(
         self,
         predicts_bbox: Tensor,
@@ -34,6 +44,18 @@ class BoxLoss(nn.Module):
         box_norm: Tensor,
         cls_norm: Tensor,
     ) -> Tensor:
+        """Calculate the IoU loss for the bounding box.
+
+        Args:
+            predicts_bbox (Tensor): The predicted bounding box.
+            targets_bbox (Tensor): The target bounding box.
+            valid_masks (Tensor): The mask for valid bounding box.
+            box_norm (Tensor): The normalization factor for the bounding box.
+            cls_norm (Tensor): The normalization factor for the class.
+
+        Returns:
+            Tensor: The IoU loss for the bounding box.
+        """
         valid_bbox = valid_masks[..., None].expand(-1, -1, 4)
         picked_predict = predicts_bbox[valid_bbox].view(-1, 4)
         picked_targets = targets_bbox[valid_bbox].view(-1, 4)
@@ -44,18 +66,43 @@ class BoxLoss(nn.Module):
 
 
 class DFLoss(nn.Module):
+    """Distribution Focal Loss (DFL).
+
+    Args:
+        vec2box (Vec2Box): The Vec2Box object.
+        reg_max (int, optional): Maximum number of anchor regions. Defaults to 16.
+    """
+
     def __init__(self, vec2box: Vec2Box, reg_max: int = 16) -> None:
         super().__init__()
         self.anchors_norm = (vec2box.anchor_grid / vec2box.scaler[:, None])[None]
         self.reg_max = reg_max
 
     def forward(
-        self, predicts_anc: Tensor, targets_bbox: Tensor, valid_masks: Tensor, box_norm: Tensor, cls_norm: Tensor
+        self,
+        predicts_anc: Tensor,
+        targets_bbox: Tensor,
+        valid_masks: Tensor,
+        box_norm: Tensor,
+        cls_norm: Tensor,
     ) -> Tensor:
+        """Calculate the DFLoss for the bounding box.
+
+        Args:
+            predicts_anc (Tensor): The predicted anchor.
+            targets_bbox (Tensor): The target bounding box.
+            valid_masks (Tensor): The mask for valid bounding box.
+            box_norm (Tensor): The normalization factor for the bounding box.
+            cls_norm (Tensor): The normalization factor for the class.
+
+        Returns:
+            Tensor: The DFLoss for the bounding box.
+        """
         valid_bbox = valid_masks[..., None].expand(-1, -1, 4)
         bbox_lt, bbox_rb = targets_bbox.chunk(2, -1)
         targets_dist = torch.cat(((self.anchors_norm - bbox_lt), (bbox_rb - self.anchors_norm)), -1).clamp(
-            0, self.reg_max - 1.01
+            0,
+            self.reg_max - 1.01,
         )
         picked_targets = targets_dist[valid_bbox].view(-1)
         picked_predict = predicts_anc[valid_bbox].view(-1, self.reg_max)
@@ -71,68 +118,75 @@ class DFLoss(nn.Module):
 
 
 class BoxMatcher:
+    """Box Matcher.
+
+    Args:
+        class_num (int): The number of classes.
+        anchors (Tensor): The anchor tensor.
+        iou (str, optional): The IoU method. Defaults to "CIoU".
+        topk (int, optional): The number of top scores to retain per anchor. Defaults to 10.
+        factor (dict[str, float] | None, optional): The factor for IoU and class. Defaults to {"iou": 6.0, "cls": 0.5}.
+    """
+
     def __init__(
         self,
         class_num: int,
         anchors: Tensor,
         iou: str = "CIoU",
         topk: int = 10,
-        factor: dict[str, float] = {"iou": 6.0, "cls": 0.5},
+        factor: dict[str, float] | None = None,
     ) -> None:
         self.class_num = class_num
         self.anchors = anchors
         self.iou = iou
         self.topk = topk
-        self.factor = factor
+        self.factor = factor or {"iou": 6.0, "cls": 0.5}
 
-    def get_valid_matrix(self, target_bbox: Tensor):
-        """
-        Get a boolean mask that indicates whether each target bounding box overlaps with each anchor.
+    def get_valid_matrix(self, target_bbox: Tensor) -> Tensor:
+        """Get a boolean mask that indicates whether each target bounding box overlaps with each anchor.
 
         Args:
             target_bbox [batch x targets x 4]: The bounding box of each targets.
+
         Returns:
             [batch x targets x anchors]: A boolean tensor indicates if target bounding box overlaps with anchors.
         """
-        Xmin, Ymin, Xmax, Ymax = target_bbox[:, :, None].unbind(3)
+        xmin, ymin, xmax, ymax = target_bbox[:, :, None].unbind(3)
         anchors = self.anchors[None, None]  # add a axis at first, second dimension
         anchors_x, anchors_y = anchors.unbind(dim=3)
-        target_in_x = (Xmin < anchors_x) & (anchors_x < Xmax)
-        target_in_y = (Ymin < anchors_y) & (anchors_y < Ymax)
-        target_on_anchor = target_in_x & target_in_y
-        return target_on_anchor
+        target_in_x = (xmin < anchors_x) & (anchors_x < xmax)
+        target_in_y = (ymin < anchors_y) & (anchors_y < ymax)
+        return target_in_x & target_in_y
 
     def get_cls_matrix(self, predict_cls: Tensor, target_cls: Tensor) -> Tensor:
-        """
-        Get the (predicted class' probabilities) corresponding to the target classes across all anchors
+        """Get the (predicted class' probabilities) corresponding to the target classes across all anchors.
 
         Args:
             predict_cls [batch x anchors x class]: The predicted probabilities for each class across each anchor.
             target_cls [batch x targets]: The class index for each target.
 
         Returns:
-            [batch x targets x anchors]: The probabilities from `pred_cls` corresponding to the class indices specified in `target_cls`.
+            [batch x targets x anchors]: The probabilities from `pred_cls` corresponding to the class indices
+                specified in `target_cls`.
         """
         predict_cls = predict_cls.transpose(1, 2)
         target_cls = target_cls.expand(-1, -1, predict_cls.size(2))
-        cls_probabilities = torch.gather(predict_cls, 1, target_cls)
-        return cls_probabilities
+        return torch.gather(predict_cls, 1, target_cls)
 
-    def get_iou_matrix(self, predict_bbox, target_bbox) -> Tensor:
-        """
-        Get the IoU between each target bounding box and each predicted bounding box.
+    def get_iou_matrix(self, predict_bbox: Tensor, target_bbox: Tensor) -> Tensor:
+        """Get the IoU between each target bounding box and each predicted bounding box.
 
         Args:
             predict_bbox [batch x predicts x 4]: Bounding box with [x1, y1, x2, y2].
             target_bbox [batch x targets x 4]: Bounding box with [x1, y1, x2, y2].
+
         Returns:
             [batch x targets x predicts]: The IoU scores between each target and predicted.
         """
         return calculate_iou(target_bbox, predict_bbox, self.iou).clamp(0, 1)
 
     def filter_topk(self, target_matrix: Tensor, topk: int = 10) -> tuple[Tensor, Tensor]:
-        """
-        Filter the top-k suitability of targets for each anchor.
+        """Filter the top-k suitability of targets for each anchor.
 
         Args:
             target_matrix [batch x targets x anchors]: The suitability for each targets-anchors
@@ -148,9 +202,8 @@ class BoxMatcher:
         topk_masks = topk_targets > 0
         return topk_targets, topk_masks
 
-    def filter_duplicates(self, target_matrix: Tensor):
-        """
-        Filter the maximum suitability target index of each anchor.
+    def filter_duplicates(self, target_matrix: Tensor) -> Tensor:
+        """Filter the maximum suitability target index of each anchor.
 
         Args:
             target_matrix [batch x targets x anchors]: The suitability for each targets-anchors
@@ -158,15 +211,16 @@ class BoxMatcher:
         Returns:
             unique_indices [batch x anchors x 1]: The index of the best targets for each anchors
         """
-        # TODO: add a assert for no target on the image
+        # TODO (author): add a assert for no target on the image
         unique_indices = target_matrix.argmax(dim=1)
         return unique_indices[..., None]
 
     def __call__(self, target: Tensor, predict: tuple[Tensor]) -> tuple[Tensor, Tensor]:
-        """
+        """Assign the best suitable ground truth box for each predicted anchor.
+
         1. For each anchor prediction, find the highest suitability targets
         2. Select the targets
-        2. Noramlize the class probilities of targets
+        2. Normalize the class probabilities of targets.
         """
         predict_cls, predict_bbox = predict
         target_cls, target_bbox = target.split([1, 4], dim=-1)  # B x N x (C B) -> B x N x C, B x N x B
@@ -189,14 +243,14 @@ class BoxMatcher:
         # delete one anchor pred assign to mutliple gts
         unique_indices = self.filter_duplicates(topk_targets)
 
-        # TODO: do we need grid_mask? Filter the valid groud truth
+        # TODO (author): do we need grid_mask? Filter the valid ground truth
         valid_mask = (grid_mask.sum(dim=-2) * topk_mask.sum(dim=-2)).bool()
 
         align_bbox = torch.gather(target_bbox, 1, unique_indices.repeat(1, 1, 4))
         align_cls = torch.gather(target_cls, 1, unique_indices).squeeze(-1)
         align_cls = nn.functional.one_hot(align_cls, self.class_num)
 
-        # normalize class ditribution
+        # normalize class distribution
         max_target = target_matrix.amax(dim=-1, keepdim=True)
         max_iou = iou_mat.amax(dim=-1, keepdim=True)
         normalize_term = (target_matrix / (max_target + 1e-9)) * max_iou
@@ -207,6 +261,23 @@ class BoxMatcher:
 
 
 class YOLOv9Criterion(nn.Module):
+    """YOLOv9 criterion module.
+
+    This module calculates the loss for YOLOv9 object detection model.
+
+    Args:
+        num_classes (int): The number of classes.
+        vec2box (Vec2Box): The Vec2Box object.
+        loss_cls (nn.Module | None): The classification loss module. Defaults to None.
+        loss_dfl (nn.Module | None): The DFLoss loss module. Defaults to None.
+        loss_iou (nn.Module | None): The IoULoss loss module. Defaults to None.
+        reg_max (int, optional): Maximum number of anchor regions. Defaults to 16.
+        cls_rate (float, optional): The classification loss rate. Defaults to 1.5.
+        dfl_rate (float, optional): The DFLoss loss rate. Defaults to 7.5.
+        iou_rate (float, optional): The IoU loss rate. Defaults to 0.5.
+        aux_rate (float, optional): The auxiliary loss rate. Defaults to 0.25.
+    """
+
     def __init__(
         self,
         num_classes: int,
@@ -215,9 +286,9 @@ class YOLOv9Criterion(nn.Module):
         loss_dfl: nn.Module | None = None,
         loss_iou: nn.Module | None = None,
         reg_max: int = 16,
-        iou_rate: float = 0.5,
-        dfl_rate: float = 7.5,
         cls_rate: float = 1.5,
+        dfl_rate: float = 7.5,
+        iou_rate: float = 0.5,
         aux_rate: float = 0.25,
     ) -> None:
         super().__init__()
@@ -228,9 +299,9 @@ class YOLOv9Criterion(nn.Module):
         self.vec2box = vec2box
         self.matcher = BoxMatcher(num_classes, vec2box.anchor_grid)
 
-        self.iou_rate = iou_rate
-        self.dfl_rate = dfl_rate
         self.cls_rate = cls_rate
+        self.dfl_rate = dfl_rate
+        self.iou_rate = iou_rate
         self.aux_rate = aux_rate
 
     def forward(
@@ -239,10 +310,17 @@ class YOLOv9Criterion(nn.Module):
         targets: Tensor,
         aux_preds: list[Tensor] | None = None,
     ) -> tuple[Tensor, dict[str, Tensor]]:
+        """Forward pass of the YOLOv9 criterion module.
+
+        Args:
+            main_preds (list[Tensor]): The main predictions.
+            targets (Tensor): The learning target of the prediction.
+            aux_preds (list[Tensor], optional): The auxiliary predictions. Defaults to None.
+        """
         main_preds = self.vec2box(main_preds)
         main_iou, main_dfl, main_cls = self._forward(main_preds, targets)
 
-        aux_iou, aux_dfl, aux_cls = 0., 0., 0.
+        aux_iou, aux_dfl, aux_cls = 0.0, 0.0, 0.0
         if aux_preds:
             aux_preds = self.vec2box(aux_preds)
             aux_iou, aux_dfl, aux_cls = self._forward(aux_preds, targets)
@@ -275,9 +353,11 @@ class YOLOv9Criterion(nn.Module):
 
         return loss_iou, loss_dfl, loss_cls
 
-    def separate_anchor(self, anchors):
-        """
-        separate anchor and bbouding box
+    def separate_anchor(self, anchors: Tensor) -> tuple[Tensor, Tensor]:
+        """Separate anchor and bounding box.
+
+        Args:
+            anchors (Tensor): The anchor tensor.
         """
         anchors_cls, anchors_box = torch.split(anchors, (self.num_classes, 4), dim=-1)
         anchors_box = anchors_box / self.vec2box.scaler[None, :, None]
