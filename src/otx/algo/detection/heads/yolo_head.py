@@ -22,7 +22,8 @@ from otx.algo.detection.backbones.gelan import (
 )
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms, round_up, set_info_into_module, auto_pad
-from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat, UpSample
+from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat
+from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
@@ -165,13 +166,38 @@ class Detection(nn.Module):
         class_neck = max(first_neck, min(num_classes * 2, 128))
 
         self.anchor_conv = nn.Sequential(
-            Conv(in_channels, anchor_neck, 3),
-            Conv(anchor_neck, anchor_neck, 3, groups=groups),
+            Conv2dModule(
+                in_channels,
+                anchor_neck,
+                3,
+                normalization=nn.BatchNorm2d(anchor_neck, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            ),
+            Conv2dModule(
+                anchor_neck,
+                anchor_neck,
+                3,
+                groups=groups,
+                normalization=nn.BatchNorm2d(anchor_neck, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            ),
             nn.Conv2d(anchor_neck, anchor_channels, 1, groups=groups),
         )
         self.class_conv = nn.Sequential(
-            Conv(in_channels, class_neck, 3),
-            Conv(class_neck, class_neck, 3),
+            Conv2dModule(
+                in_channels,
+                class_neck,
+                3,
+                normalization=nn.BatchNorm2d(class_neck, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            ),
+            Conv2dModule(
+                class_neck,
+                class_neck,
+                3,
+                normalization=nn.BatchNorm2d(class_neck, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            ),
             nn.Conv2d(class_neck, num_classes, 1),
         )
 
@@ -298,7 +324,7 @@ class YOLOHeadModule(BaseDenseHead):
         self.module = nn.ModuleList()
         if pre_upsample_concat_cfg:
             # for yolov9-s
-            self.module.append(UpSample(scale_factor=2, mode="nearest"))
+            self.module.append(nn.Upsample(scale_factor=2, mode="nearest"))
             self.module.append(
                 set_info_into_module({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")}),
             )
@@ -364,7 +390,7 @@ class YOLOHeadModule(BaseDenseHead):
                 )
                 aux_output_channels.append(sppelan_channels[1])
                 for idx, csp_channel in enumerate(aux_cfg.get("csp_channels", [])):
-                    self.module.append(UpSample(scale_factor=2, mode="nearest"))
+                    self.module.append(nn.Upsample(scale_factor=2, mode="nearest"))
                     self.module.append(set_info_into_module({"module": Concat(), "source": [-1, f"B{4-idx}"]}))
                     self.module.append(
                         set_info_into_module(

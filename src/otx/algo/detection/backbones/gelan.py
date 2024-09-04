@@ -91,7 +91,7 @@ class ELAN(nn.Module):
             in_channels,
             part_channels,
             1,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(part_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
             **kwargs,
         )
@@ -100,7 +100,7 @@ class ELAN(nn.Module):
             process_channels,
             3,
             padding=1,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(process_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
             **kwargs,
         )
@@ -109,7 +109,7 @@ class ELAN(nn.Module):
             process_channels,
             3,
             padding=1,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(process_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
             **kwargs,
         )
@@ -294,7 +294,7 @@ class RepNCSP(nn.Module):
             in_channels,
             neck_channels,
             kernel_size,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(neck_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
             **kwargs,
         )
@@ -302,7 +302,7 @@ class RepNCSP(nn.Module):
             in_channels,
             neck_channels,
             kernel_size,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(neck_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
             **kwargs,
         )
@@ -360,7 +360,7 @@ class RepNCSPELAN(nn.Module):
             in_channels,
             part_channels,
             1,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(part_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
             **kwargs,
         )
@@ -371,7 +371,7 @@ class RepNCSPELAN(nn.Module):
                 process_channels,
                 3,
                 padding=1,
-                normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+                normalization=nn.BatchNorm2d(process_channels, eps=1e-3, momentum=3e-2),
                 activation=nn.SiLU(inplace=True),
                 **kwargs,
             ),
@@ -383,7 +383,7 @@ class RepNCSPELAN(nn.Module):
                 process_channels,
                 3,
                 padding=1,
-                normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+                normalization=nn.BatchNorm2d(process_channels, eps=1e-3, momentum=3e-2),
                 activation=nn.SiLU(inplace=True),
                 **kwargs,
             ),
@@ -423,7 +423,7 @@ class ADown(nn.Module):
             half_out_channels,
             3,
             stride=2,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(half_out_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
         )
         self.max_pool = Pool("max", kernel_size=3, stride=2)
@@ -431,7 +431,7 @@ class ADown(nn.Module):
             half_in_channels,
             half_out_channels,
             kernel_size=1,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
+            normalization=nn.BatchNorm2d(half_out_channels, eps=1e-3, momentum=3e-2),
             activation=nn.SiLU(inplace=True),
         )
 
