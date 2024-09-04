@@ -145,13 +145,13 @@ class RepConv(nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        kernel_size: tuple[int, int] = 3,
+        kernel_size: int | tuple[int, int] = 3,
         *,
         activation: Callable[..., nn.Module] = nn.SiLU,
         **kwargs,
     ) -> None:
         super().__init__()
-        self.act = build_activation_layer(activation)
+        self.act: nn.Module = build_activation_layer(activation)
         self.conv1 = Conv2dModule(
             in_channels,
             out_channels,
@@ -475,9 +475,9 @@ class GELANModule(nn.Module):
                 ),
             )
 
-    def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> dict[str, Tensor]:
+    def forward(self, x: Tensor, *args, **kwargs) -> dict[int | str, Tensor]:
         """Forward pass for GELAN."""
-        outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
+        outputs: dict[int | str, Tensor] = {0: x}
         for layer in self.module:
             if hasattr(layer, "source") and isinstance(layer.source, list):
                 model_input = [outputs[idx] for idx in layer.source]

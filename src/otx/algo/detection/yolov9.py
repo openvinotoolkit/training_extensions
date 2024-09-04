@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Literal, Self
+from typing import TYPE_CHECKING, Literal
 
 from otx.algo.detection.backbones import GELAN
 from otx.algo.detection.detectors import SingleStageDetector
@@ -23,6 +23,7 @@ from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from typing_extensions import Self
 
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
@@ -49,7 +50,7 @@ def _load_from_state_dict_for_yolov9(
     error_msgs: list[str] | str,
 ) -> None:
     backbone_len: int = len(self.backbone.module)
-    neck_len: int = len(self.neck.module)
+    neck_len: int = len(self.neck.module)  # type: ignore[union-attr]
     new_state_dict_keys: dict[str, str] = {}
     for key in state_dict:
         match = re.match(r"^(\d+)\.(.*)$", key)
@@ -126,7 +127,7 @@ class YOLOv9(ExplainableOTXDetModel):
         bbox_head = YOLOHead(model_name=self.model_name, num_classes=num_classes)
 
         # patch _load_from_state_dict
-        SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9  # noqa: SLF001
+        SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9  # type: ignore[method-assign] # noqa: SLF001
         detector = SingleStageDetector(
             backbone=backbone,
             neck=neck,

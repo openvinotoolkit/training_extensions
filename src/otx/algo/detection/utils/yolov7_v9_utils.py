@@ -20,12 +20,12 @@ if TYPE_CHECKING:
     from otx.algo.detection.detectors import SingleStageDetector
 
 
-def auto_pad(kernel_size: tuple[int, int], dilation: tuple[int, int] = 1) -> tuple[int, int]:
+def auto_pad(kernel_size: int | tuple[int, int], dilation: int | tuple[int, int] = 1) -> tuple[int, int]:
     """Auto Padding for the convolution blocks.
 
     Args:
-        kernel_size (tuple[int, int]): The kernel size of the convolution block.
-        dilation (tuple[int, int]): The dilation rate of the convolution block. Defaults to 1.
+        kernel_size (int | tuple[int, int]): The kernel size of the convolution block.
+        dilation (int | tuple[int, int]): The dilation rate of the convolution block. Defaults to 1.
 
     Returns:
         tuple[int, int]: The padding size for the convolution block.
@@ -174,11 +174,11 @@ class Vec2Box:
         anchor_grid, scaler = generate_anchors(image_size, self.strides)
         self.anchor_grid, self.scaler = anchor_grid.to(device), scaler.to(device)
 
-    def __call__(self, predicts: list[Any]) -> tuple[Tensor, Tensor, Tensor]:
+    def __call__(self, predicts: tuple[Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor, Tensor]:
         """Convert the vector to bounding box.
 
         Args:
-            predicts (list[Any]): The list of prediction results.
+            predicts (tuple[Tensor, Tensor, Tensor]): The list of prediction results.
 
         Returns:
             tuple[Tensor, Tensor, Tensor]: The converted results.

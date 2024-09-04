@@ -7,7 +7,7 @@ Reference : https://github.com/WongKinYiu/YOLO
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Mapping
 
 import torch
 from torch import Tensor, nn
@@ -82,7 +82,7 @@ class YOLONeckModule(nn.Module):
     def __init__(
         self,
         elan_channels: list[dict[str, int]],
-        concat_sources: list[list[str, int]],
+        concat_sources: list[list[str | int]],
         csp_args: dict[str, Any] | None = None,
     ) -> None:
         super().__init__()
@@ -94,11 +94,11 @@ class YOLONeckModule(nn.Module):
         self.module = nn.ModuleList()
         for idx, elan_channel in enumerate(elan_channels):
             layer = SPPELAN if elan_channel["type"] == "SPPELAN" else RepNCSPELAN
-            _csp_args = {"csp_args": self.csp_args} if elan_channel["type"] == "RepNCSPELAN" else {}
+            _csp_args: Mapping = {"csp_args": self.csp_args} if elan_channel["type"] == "RepNCSPELAN" else {}
             self.module.append(
                 set_info_into_instance(
                     {
-                        "module": layer(**elan_channel["args"], **_csp_args),
+                        "module": layer(**elan_channel["args"], **_csp_args),  # type: ignore[arg-type]
                         "tags": elan_channel["tags"],
                     },
                 ),
@@ -107,14 +107,13 @@ class YOLONeckModule(nn.Module):
                 self.module.append(nn.Upsample(scale_factor=2, mode="nearest"))
                 self.module.append(set_info_into_instance({"module": Concat(), "source": concat_sources[idx]}))
 
-    def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> dict[str, Tensor]:
+    def forward(self, outputs: dict[int | str, Tensor], *args, **kwargs) -> dict[int | str, Tensor]:
         """Forward function."""
-        outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
         for layer in self.module:
             if hasattr(layer, "source") and isinstance(layer.source, list):
                 model_input = [outputs[idx] for idx in layer.source]
             else:
-                model_input = outputs[getattr(layer, "source", -1)]
+                model_input = outputs[getattr(layer, "source", -1)]  # type: ignore[arg-type]
             x = layer(model_input)
             outputs[-1] = x
             if hasattr(layer, "tags"):

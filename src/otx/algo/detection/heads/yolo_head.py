@@ -24,6 +24,7 @@ from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms, round_up, set_inf
 from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat
 from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 
@@ -148,25 +149,32 @@ class Detection(nn.Module):
     """A single YOLO Detection head for YOLOv9 detection models.
 
     Args:
-        in_channels (tuple[int]): Number of input channels.
+        in_channels (tuple[int, int]): Number of input channels.
         num_classes (int): Number of classes.
         reg_max (int): Maximum number of anchor regions.
         use_group (bool): Whether to use group convolution.
     """
 
-    def __init__(self, in_channels: tuple[int], num_classes: int, *, reg_max: int = 16, use_group: bool = True) -> None:
+    def __init__(
+        self,
+        in_channels: tuple[int, int],
+        num_classes: int,
+        *,
+        reg_max: int = 16,
+        use_group: bool = True,
+    ) -> None:
         super().__init__()
 
         groups = 4 if use_group else 1
         anchor_channels = 4 * reg_max
 
-        first_neck, in_channels = in_channels
+        first_neck, first_channels = in_channels
         anchor_neck = max(round_up(first_neck // 4, groups), anchor_channels, reg_max)
         class_neck = max(first_neck, min(num_classes * 2, 128))
 
         self.anchor_conv = nn.Sequential(
             Conv2dModule(
-                in_channels,
+                first_channels,
                 anchor_neck,
                 3,
                 normalization=nn.BatchNorm2d(anchor_neck, eps=1e-3, momentum=3e-2),
@@ -184,7 +192,7 @@ class Detection(nn.Module):
         )
         self.class_conv = nn.Sequential(
             Conv2dModule(
-                in_channels,
+                first_channels,
                 class_neck,
                 3,
                 normalization=nn.BatchNorm2d(class_neck, eps=1e-3, momentum=3e-2),
@@ -205,7 +213,7 @@ class Detection(nn.Module):
         self.anchor_conv[-1].bias.data.fill_(1.0)
         self.class_conv[-1].bias.data.fill_(-10)  # TODO (author): math.log(5 * 4 ** idx / 80 ** 3)
 
-    def forward(self, x: Tensor) -> tuple[Tensor]:
+    def forward(self, x: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         """Forward function."""
         anchor_x = self.anchor_conv(x)
         class_x = self.class_conv(x)
@@ -217,12 +225,19 @@ class IDetection(nn.Module):
     """A single YOLO Detection head for YOLOv7 detection models.
 
     Args:
-        in_channels (tuple[int]): Number of input channels.
+        in_channels (int | tuple[int, int]): Number of input channels.
         num_classes (int): Number of classes.
         anchor_num (int): Number of anchors. Default is 3.
     """
 
-    def __init__(self, in_channels: tuple[int], num_classes: int, *args, anchor_num: int = 3, **kwargs) -> None:
+    def __init__(
+        self,
+        in_channels: int | tuple[int, int],
+        num_classes: int,
+        *args,
+        anchor_num: int = 3,
+        **kwargs,
+    ) -> None:
         super().__init__()
 
         if isinstance(in_channels, tuple):
@@ -272,7 +287,7 @@ class YOLOHeadModule(BaseDenseHead):
     Args:
         num_classes (int): Number of classes.
         csp_channels (list[list[int]]): List of channels for CSP blocks.
-        concat_sources (list[str, int]): List of sources to concatenate.
+        concat_sources (list[str | int]): List of sources to concatenate.
         aconv_channels (list[list[int]], optional): List of channels for AConv. Defaults to None.
         adown_channels (list[list[int]], optional): List of channels for ADown. Defaults to None.
         pre_upsample_concat_cfg (dict[str, Any], optional): Configuration for pre-upsampling. Defaults to None.
@@ -287,7 +302,7 @@ class YOLOHeadModule(BaseDenseHead):
         self,
         num_classes: int,
         csp_channels: list[list[int]],
-        concat_sources: list[str, int],
+        concat_sources: list[str | int],
         aconv_channels: list[list[int]] | None = None,
         adown_channels: list[list[int]] | None = None,
         pre_upsample_concat_cfg: dict[str, Any] | None = None,
@@ -302,10 +317,6 @@ class YOLOHeadModule(BaseDenseHead):
                 f"len(csp_channels) - 1 ({len(csp_channels) - 1}) "
                 f"and len(concat_sources) ({len(concat_sources)}) should be the same."
             )
-            raise ValueError(msg)
-
-        if not (bool(aconv_channels) ^ bool(adown_channels)):
-            msg = "Only one of aconv_channels or adown_channels should be provided."
             raise ValueError(msg)
 
         super().__init__()
@@ -345,6 +356,9 @@ class YOLOHeadModule(BaseDenseHead):
         output_channels.append(csp_channels[0][1])
 
         aconv_adown_channels = aconv_channels or adown_channels
+        if aconv_adown_channels is None:
+            msg = "Only one of aconv_channels or adown_channels should be provided."
+            raise ValueError(msg)
         aconv_adown_object = AConv if aconv_channels else ADown
         for idx, (csp_channel, aconv_adown_channel, concat_source) in enumerate(
             zip(csp_channels[1:], aconv_adown_channels, concat_sources),
@@ -378,9 +392,9 @@ class YOLOHeadModule(BaseDenseHead):
             ),
         )
 
-        if self.aux_cfg:
+        if aux_cfg:
             aux_output_channels: list[int] = []
-            if sppelan_channels := self.aux_cfg.get("sppelan_channels", None):
+            if sppelan_channels := aux_cfg.get("sppelan_channels", None):
                 # for yolov9-s
                 self.module.append(
                     set_info_into_instance(
@@ -407,7 +421,7 @@ class YOLOHeadModule(BaseDenseHead):
                     aux_output_channels.append(csp_channel[1])
                 aux_output_channels = aux_output_channels[::-1]  # reverse channels
 
-            elif cblinear_channels := self.aux_cfg.get("cblinear_channels", None):
+            elif cblinear_channels := aux_cfg.get("cblinear_channels", None):
                 # for yolov9-m, c
                 for idx, cblinear_channel in enumerate(cblinear_channels, start=3):
                     self.module.append(
@@ -435,7 +449,7 @@ class YOLOHeadModule(BaseDenseHead):
                     ),
                 ):
                     if idx == 0 and len(aux_aconv_adown_channel) == 0 and len(cbfuse_index) == 0:
-                        conv_channels = aux_cfg.get("conv_channels")
+                        conv_channels: list[list[int]] = aux_cfg.get("conv_channels")  # type: ignore[assignment]
                         self.module.append(
                             set_info_into_instance(
                                 {
@@ -495,14 +509,13 @@ class YOLOHeadModule(BaseDenseHead):
         """Check if the head has an auxiliary head."""
         return bool(self.aux_cfg)
 
-    def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> tuple[Tensor, None] | tuple[Tensor, Tensor]:
+    def forward(self, outputs: dict[int | str, Tensor], *args, **kwargs) -> tuple[Tensor, None] | tuple[Tensor, Tensor]:
         """Forward function."""
-        outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
         for layer in self.module:
             if hasattr(layer, "source") and isinstance(layer.source, list):
                 model_input = [outputs[idx] for idx in layer.source]
             else:
-                model_input = outputs[getattr(layer, "source", -1)]
+                model_input = outputs[getattr(layer, "source", -1)]  # type: ignore[arg-type]
             x = layer(model_input)
             outputs[-1] = x
             if hasattr(layer, "tags"):
@@ -540,7 +553,7 @@ class YOLOHeadModule(BaseDenseHead):
     def predict(
         self,
         x: tuple[Tensor],
-        entity: DetBatchDataEntity,
+        entity: OTXBatchDataEntity,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Perform forward propagation of the detection head and predict detection results.
@@ -548,7 +561,7 @@ class YOLOHeadModule(BaseDenseHead):
         Args:
             x (tuple[Tensor]): Multi-level features from the
                 upstream network, each is a 4D-tensor.
-            entity (DetBatchDataEntity): Entity from OTX dataset.
+            entity (OTXBatchDataEntity): Entity from OTX dataset.
             rescale (bool, optional): Whether to rescale the results.
                 Defaults to False.
 
@@ -570,7 +583,7 @@ class YOLOHeadModule(BaseDenseHead):
         pred_scores, pred_labels = pred_scores.max(dim=-1, keepdim=True)
         if rescale:
             # rescale
-            scale_factors = [img_info.scale_factor[::-1] for img_info in entity.imgs_info]
+            scale_factors = [img_info.scale_factor[::-1] for img_info in entity.imgs_info]  # type: ignore[index]
             pred_bboxes /= pred_bboxes.new_tensor(scale_factors).repeat((1, 2)).unsqueeze(1)
 
         if self.with_nms and pred_bboxes.numel():
@@ -612,7 +625,7 @@ class YOLOHeadModule(BaseDenseHead):
         entity: DetBatchDataEntity,
         *args,
         **kwargs,
-    ) -> dict[str, Tensor]:
+    ) -> tuple[Tensor, Tensor]:
         """Transform a batch of output features extracted from the head into bbox results.
 
         TODO (sungchul): change to export
@@ -622,7 +635,7 @@ class YOLOHeadModule(BaseDenseHead):
         pred_conf = prediction[3] if len(prediction) == 4 else None
 
         # rescale
-        scale_factors = [[1 / s for s in ett["scale_factor"]][::-1] for ett in entity]
+        scale_factors = [[1 / s for s in img_info.scale_factor][::-1] for img_info in entity.imgs_info]
         pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
 
         pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)

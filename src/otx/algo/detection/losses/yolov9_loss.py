@@ -292,12 +292,19 @@ class BoxMatcher:
         unique_indices = target_matrix.argmax(dim=1)
         return unique_indices[..., None]
 
-    def __call__(self, target: Tensor, predict: tuple[Tensor]) -> tuple[Tensor, Tensor]:
+    def __call__(self, target: Tensor, predict: tuple[Tensor, Tensor]) -> tuple[Tensor, Tensor]:
         """Assign the best suitable ground truth box for each predicted anchor.
 
         1. For each anchor prediction, find the highest suitability targets
         2. Select the targets
-        2. Normalize the class probabilities of targets.
+        3. Normalize the class probabilities of targets.
+
+        Args:
+            target (Tensor): The target tensor with class and bounding box with (batch, targets, (class + 4)).
+            predict (tuple[Tensor, Tensor]): The predicted class and bounding box.
+
+        Returns:
+            tuple[Tensor, Tensor]: The aligned target tensor with (batch, targets, (class + 4)).
         """
         predict_cls, predict_bbox = predict
         target_cls, target_bbox = target.split([1, 4], dim=-1)  # B x N x (C B) -> B x N x C, B x N x B
@@ -317,7 +324,7 @@ class BoxMatcher:
         # choose topk
         topk_targets, topk_mask = self.filter_topk(target_matrix, topk=self.topk)
 
-        # delete one anchor pred assign to mutliple gts
+        # delete one anchor pred assign to multiple gts
         unique_indices = self.filter_duplicates(topk_targets)
 
         # TODO (author): do we need grid_mask? Filter the valid ground truth
@@ -383,16 +390,19 @@ class YOLOv9Criterion(nn.Module):
 
     def forward(
         self,
-        main_preds: list[Tensor],
+        main_preds: tuple[Tensor, Tensor, Tensor],
         targets: Tensor,
-        aux_preds: list[Tensor] | None = None,
-    ) -> tuple[Tensor, dict[str, Tensor]]:
+        aux_preds: tuple[Tensor, Tensor, Tensor] | None = None,
+    ) -> dict[str, Tensor]:
         """Forward pass of the YOLOv9 criterion module.
 
         Args:
-            main_preds (list[Tensor]): The main predictions.
+            main_preds (tuple[Tensor, Tensor, Tensor]): The main predictions.
             targets (Tensor): The learning target of the prediction.
-            aux_preds (list[Tensor], optional): The auxiliary predictions. Defaults to None.
+            aux_preds (tuple[Tensor, Tensor, Tensor], optional): The auxiliary predictions. Defaults to None.
+
+        Returns:
+            dict[str, Tensor]: The loss dictionary.
         """
         main_preds = self.vec2box(main_preds)
         main_iou, main_dfl, main_cls = self._forward(main_preds, targets)
@@ -410,7 +420,7 @@ class YOLOv9Criterion(nn.Module):
         loss_dict.update(loss=sum(list(loss_dict.values())) / len(loss_dict))
         return loss_dict
 
-    def _forward(self, predicts: list[Tensor], targets: Tensor) -> tuple[Tensor, Tensor, Tensor]:
+    def _forward(self, predicts: tuple[Tensor, Tensor, Tensor], targets: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         predicts_cls, predicts_anc, predicts_box = predicts
         # For each predicted targets, assign a best suitable ground truth box.
         align_targets, valid_masks = self.matcher(targets, (predicts_cls.detach(), predicts_box.detach()))
