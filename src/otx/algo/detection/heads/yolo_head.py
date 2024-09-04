@@ -5,35 +5,35 @@
 Reference : https://github.com/WongKinYiu/YOLO
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
-from typing import Any, ClassVar
+from typing import Any, ClassVar, NoReturn
 
 import torch
 from einops import rearrange
 from torch import Tensor, nn
 from torchvision.ops import batched_nms
 
-from otx.algo.detection.gelan import (
+from otx.algo.detection.backbones.gelan import (
     AConv,
     ADown,
     Conv,
     RepNCSPELAN,
-    auto_pad,
 )
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms, set_info_into_module
-from otx.algo.detection.yolo_neck import SPPELAN, Concat, UpSample
+from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms, round_up, set_info_into_module, auto_pad
+from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat, UpSample
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 
-def round_up(x: int | Tensor, div: int = 1) -> int | Tensor:
-    """Rounds up `x` to the bigger-nearest multiple of `div`."""
-    return x + (-x % div)
-
-
 class Anchor2Vec(nn.Module):
+    """Convert anchor tensor to vector tensor.
+
+    Args:
+        reg_max (int): Maximum number of anchor regions.
+    """
+
     def __init__(self, reg_max: int = 16) -> None:
         super().__init__()
         reverse_reg = torch.arange(reg_max, dtype=torch.float32).view(1, reg_max, 1, 1, 1)
@@ -41,6 +41,7 @@ class Anchor2Vec(nn.Module):
         self.anc2vec.weight = nn.Parameter(reverse_reg, requires_grad=False)
 
     def forward(self, anchor_x: Tensor) -> Tensor:
+        """Forward function."""
         anchor_x = rearrange(anchor_x, "B (P R) h w -> B R P h w", P=4)
         vector_x = anchor_x.softmax(dim=1)
         vector_x = self.anc2vec(vector_x)[:, 0]
@@ -48,26 +49,41 @@ class Anchor2Vec(nn.Module):
 
 
 class CBLinear(nn.Module):
-    """Convolutional block that outputs multiple feature maps split along the channel dimension."""
+    """Convolutional block that outputs multiple feature maps split along the channel dimension.
 
-    def __init__(self, in_channels: int, out_channels: list[int], kernel_size: int = 1, **kwargs):
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (list[int]): Number of output channels.
+        kernel_size (int): Size of the convolving kernel.
+    """
+
+    def __init__(self, in_channels: int, out_channels: list[int], kernel_size: int = 1, **kwargs) -> None:
         super().__init__()
         kwargs.setdefault("padding", auto_pad(kernel_size, **kwargs))
         self.conv = nn.Conv2d(in_channels, sum(out_channels), kernel_size, **kwargs)
         self.out_channels = list(out_channels)
 
-    def forward(self, x: Tensor) -> tuple[Tensor]:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
         x = self.conv(x)
         return x.split(self.out_channels, dim=1)
 
 
 class CBFuse(nn.Module):
-    def __init__(self, index: list[int], mode: str = "nearest"):
+    """Fuse the feature maps from the previous layer with the feature maps from the current layer.
+
+    Args:
+        index (list[int]): Index of the feature maps from the previous layer.
+        mode (str): Mode of the interpolation operation.
+    """
+
+    def __init__(self, index: list[int], mode: str = "nearest") -> None:
         super().__init__()
         self.idx = index
         self.mode = mode
 
-    def forward(self, x_list: list[torch.Tensor]) -> list[Tensor]:
+    def forward(self, x_list: list[Tensor]) -> Tensor:
+        """Forward function."""
         target = x_list[-1]
         target_size = target.shape[2:]  # Batch, Channel, H, W
 
@@ -75,13 +91,21 @@ class CBFuse(nn.Module):
             nn.functional.interpolate(x[pick_id], size=target_size, mode=self.mode)
             for pick_id, x in zip(self.idx, x_list)
         ]
-        return torch.stack(res + [target]).sum(dim=0)
+        return torch.stack([*res, target]).sum(dim=0)
 
 
 class ImplicitA(nn.Module):
-    """Implement YOLOR - implicit knowledge(Add), paper: https://arxiv.org/abs/2105.04206"""
+    """Implement YOLOR - implicit knowledge(Add).
 
-    def __init__(self, channel: int, mean: float = 0.0, std: float = 0.02):
+    paper: https://arxiv.org/abs/2105.04206
+
+    Args:
+        channel (int): Number of input channels.
+        mean (float): Mean of the normal distribution.
+        std (float): Standard deviation of the normal distribution.
+    """
+
+    def __init__(self, channel: int, mean: float = 0.0, std: float = 0.02) -> None:
         super().__init__()
         self.channel = channel
         self.mean = mean
@@ -90,14 +114,23 @@ class ImplicitA(nn.Module):
         self.implicit = nn.Parameter(torch.empty(1, channel, 1, 1))
         nn.init.normal_(self.implicit, mean=mean, std=self.std)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
         return self.implicit + x
 
 
 class ImplicitM(nn.Module):
-    """Implement YOLOR - implicit knowledge(multiply), paper: https://arxiv.org/abs/2105.04206"""
+    """Implement YOLOR - implicit knowledge(multiply).
 
-    def __init__(self, channel: int, mean: float = 1.0, std: float = 0.02):
+    paper: https://arxiv.org/abs/2105.04206
+
+    Args:
+        channel (int): Number of input channels.
+        mean (float): Mean of the normal distribution.
+        std (float): Standard deviation of the normal distribution.
+    """
+
+    def __init__(self, channel: int, mean: float = 1.0, std: float = 0.02) -> None:
         super().__init__()
         self.channel = channel
         self.mean = mean
@@ -106,14 +139,22 @@ class ImplicitM(nn.Module):
         self.implicit = nn.Parameter(torch.empty(1, channel, 1, 1))
         nn.init.normal_(self.implicit, mean=self.mean, std=self.std)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
         return self.implicit * x
 
 
 class Detection(nn.Module):
-    """A single YOLO Detection head for detection models"""
+    """A single YOLO Detection head for YOLOv9 detection models.
 
-    def __init__(self, in_channels: tuple[int], num_classes: int, *, reg_max: int = 16, use_group: bool = True):
+    Args:
+        in_channels (tuple[int]): Number of input channels.
+        num_classes (int): Number of classes.
+        reg_max (int): Maximum number of anchor regions.
+        use_group (bool): Whether to use group convolution.
+    """
+
+    def __init__(self, in_channels: tuple[int], num_classes: int, *, reg_max: int = 16, use_group: bool = True) -> None:
         super().__init__()
 
         groups = 4 if use_group else 1
@@ -137,9 +178,10 @@ class Detection(nn.Module):
         self.anc2vec = Anchor2Vec(reg_max=reg_max)
 
         self.anchor_conv[-1].bias.data.fill_(1.0)
-        self.class_conv[-1].bias.data.fill_(-10)  # TODO: math.log(5 * 4 ** idx / 80 ** 3)
+        self.class_conv[-1].bias.data.fill_(-10)  # TODO (author): math.log(5 * 4 ** idx / 80 ** 3)
 
     def forward(self, x: Tensor) -> tuple[Tensor]:
+        """Forward function."""
         anchor_x = self.anchor_conv(x)
         class_x = self.class_conv(x)
         anchor_x, vector_x = self.anc2vec(anchor_x)
@@ -147,7 +189,15 @@ class Detection(nn.Module):
 
 
 class IDetection(nn.Module):
-    def __init__(self, in_channels: tuple[int], num_classes: int, *args, anchor_num: int = 3, **kwargs):
+    """A single YOLO Detection head for YOLOv7 detection models.
+
+    Args:
+        in_channels (tuple[int]): Number of input channels.
+        num_classes (int): Number of classes.
+        anchor_num (int): Number of anchors. Default is 3.
+    """
+
+    def __init__(self, in_channels: tuple[int], num_classes: int, *args, anchor_num: int = 3, **kwargs) -> None:
         super().__init__()
 
         if isinstance(in_channels, tuple):
@@ -160,49 +210,53 @@ class IDetection(nn.Module):
         self.implicit_a = ImplicitA(in_channels)
         self.implicit_m = ImplicitM(out_channels)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
         x = self.implicit_a(x)
         x = self.head_conv(x)
-        x = self.implicit_m(x)
-
-        return x
+        return self.implicit_m(x)
 
 
 class MultiheadDetection(nn.Module):
-    """Mutlihead Detection module for Dual detect or Triple detect"""
+    """Mutlihead Detection module for Dual detect or Triple detect.
 
-    def __init__(self, in_channels: list[int], num_classes: int, **head_kwargs):
+    Args:
+        in_channels (list[int]): Number of input channels.
+        num_classes (int): Number of classes.
+    """
+
+    def __init__(self, in_channels: list[int], num_classes: int, **head_kwargs) -> None:
         super().__init__()
-        DetectionHead = Detection
+        detection_head = Detection
 
         if head_kwargs.pop("version", None) == "v7":
-            DetectionHead = IDetection
+            detection_head = IDetection
 
         self.heads = nn.ModuleList(
-            [DetectionHead((in_channels[0], in_channel), num_classes, **head_kwargs) for in_channel in in_channels],
+            [detection_head((in_channels[0], in_channel), num_classes, **head_kwargs) for in_channel in in_channels],
         )
 
     def forward(self, x_list: list[Tensor]) -> list[Tensor]:
+        """Forward function."""
         return [head(x) for x, head in zip(x_list, self.heads)]
 
 
-def pad_bbox_labels(bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor, Tensor]:
-    max_len = max(b.shape[0] for b in bboxes)
-    padded_labels = torch.stack(
-        [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - len(label)), value=-1) for label in labels], dim=0
-    )
-    padded_bboxes = torch.stack(
-        [
-            nn.functional.pad(box, (0, 0, 0, max_len - len(box)), value=0) if max_len - len(box) > 0 else box
-            for box in bboxes
-        ],
-        dim=0,
-    )
-    return padded_bboxes, padded_labels
-
-
 class YOLOHeadModule(BaseDenseHead):
-    """Head for YOLOv7 and v9."""
+    """Head for YOLOv7 and v9.
+
+    Args:
+        num_classes (int): Number of classes.
+        csp_channels (list[list[int]]): List of channels for CSP blocks.
+        concat_sources (list[str, int]): List of sources to concatenate.
+        aconv_channels (list[list[int]], optional): List of channels for AConv. Defaults to None.
+        adown_channels (list[list[int]], optional): List of channels for ADown. Defaults to None.
+        pre_upsample_concat_cfg (dict[str, Any], optional): Configuration for pre-upsampling. Defaults to None.
+        csp_args (dict[str, Any], optional): Arguments for CSP blocks. Defaults to None.
+        aux_cfg (dict[str, Any], optional): Configuration for auxiliary head. Defaults to None.
+        with_nms (bool, optional): Whether to use NMS. Defaults to True.
+        min_confidence (float, optional): Minimum confidence for NMS. Defaults to 0.05.
+        min_iou (float, optional): Minimum IoU for NMS. Defaults to 0.9.
+    """
 
     def __init__(
         self,
@@ -246,7 +300,7 @@ class YOLOHeadModule(BaseDenseHead):
             # for yolov9-s
             self.module.append(UpSample(scale_factor=2, mode="nearest"))
             self.module.append(
-                set_info_into_module({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")})
+                set_info_into_module({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")}),
             )
 
         output_channels: list[int] = []
@@ -261,7 +315,7 @@ class YOLOHeadModule(BaseDenseHead):
                     ),
                     "tags": "P3",
                 },
-            )
+            ),
         )
         output_channels.append(csp_channels[0][1])
 
@@ -284,7 +338,7 @@ class YOLOHeadModule(BaseDenseHead):
                         ),
                         "tags": f"P{idx}",
                     },
-                )
+                ),
             )
             output_channels.append(csp_channel[1])
 
@@ -296,7 +350,7 @@ class YOLOHeadModule(BaseDenseHead):
                     "tags": "Main",
                     "output": True,
                 },
-            )
+            ),
         )
 
         if self.aux_cfg:
@@ -305,8 +359,8 @@ class YOLOHeadModule(BaseDenseHead):
                 # for yolov9-s
                 self.module.append(
                     set_info_into_module(
-                        {"module": SPPELAN(sppelan_channels[0], sppelan_channels[1]), "source": "B5", "tags": "A5"}
-                    )
+                        {"module": SPPELAN(sppelan_channels[0], sppelan_channels[1]), "source": "B5", "tags": "A5"},
+                    ),
                 )
                 aux_output_channels.append(sppelan_channels[1])
                 for idx, csp_channel in enumerate(aux_cfg.get("csp_channels", [])):
@@ -322,8 +376,8 @@ class YOLOHeadModule(BaseDenseHead):
                                     csp_args=self.csp_args,
                                 ),
                                 "tags": f"A{4-idx}",
-                            }
-                        )
+                            },
+                        ),
                     )
                     aux_output_channels.append(csp_channel[1])
                 aux_output_channels = aux_output_channels[::-1]  # reverse channels
@@ -337,8 +391,8 @@ class YOLOHeadModule(BaseDenseHead):
                                 "module": CBLinear(cblinear_channel[0], cblinear_channel[1]),
                                 "source": f"B{idx}",
                                 "tags": f"R{idx}",
-                            }
-                        )
+                            },
+                        ),
                     )
 
                 aux_aconv_adown_channels = aux_cfg.get("aconv_channels", None) or aux_cfg.get("adown_channels", None)
@@ -353,31 +407,31 @@ class YOLOHeadModule(BaseDenseHead):
                         aux_aconv_adown_channels,
                         aux_cfg.get("cbfuse_indices", []),
                         aux_cfg.get("cbfuse_sources", []),
-                    )
+                    ),
                 ):
                     if idx == 0 and len(aux_aconv_adown_channel) == 0 and len(cbfuse_index) == 0:
                         conv_channels = aux_cfg.get("conv_channels")
                         self.module.append(
                             set_info_into_module(
-                                {"module": Conv(conv_channels[0][0], conv_channels[0][1], 3, stride=2), "source": 0}
-                            )
+                                {"module": Conv(conv_channels[0][0], conv_channels[0][1], 3, stride=2), "source": 0},
+                            ),
                         )
                         self.module.append(Conv(conv_channels[1][0], conv_channels[1][1], 3, stride=2))
                         self.module.append(RepNCSPELAN(csp_channel[0], csp_channel[1], part_channels=csp_channel[2]))
                     else:
                         self.module.append(
-                            aux_aconv_adown_object(aux_aconv_adown_channel[0], aux_aconv_adown_channel[1])
+                            aux_aconv_adown_object(aux_aconv_adown_channel[0], aux_aconv_adown_channel[1]),
                         )
                         self.module.append(
-                            set_info_into_module({"module": CBFuse(cbfuse_index), "source": cbfuse_source})
+                            set_info_into_module({"module": CBFuse(cbfuse_index), "source": cbfuse_source}),
                         )
                         self.module.append(
                             set_info_into_module(
                                 {
                                     "module": RepNCSPELAN(csp_channel[0], csp_channel[1], part_channels=csp_channel[2]),
                                     "tags": f"A{idx+2}",
-                                }
-                            )
+                                },
+                            ),
                         )
                         aux_output_channels.append(csp_channel[1])
 
@@ -394,9 +448,11 @@ class YOLOHeadModule(BaseDenseHead):
 
     @property
     def is_aux(self) -> bool:
+        """Check if the head has an auxiliary head."""
         return bool(self.aux_cfg)
 
     def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> tuple[Tensor, None] | tuple[Tensor, Tensor]:
+        """Forward function."""
         outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
         for layer in self.module:
             if hasattr(layer, "source") and isinstance(layer.source, list):
@@ -425,7 +481,7 @@ class YOLOHeadModule(BaseDenseHead):
         """
         main_preds, aux_preds = self(x)
 
-        padded_bboxes, padded_labels = pad_bbox_labels(entity.bboxes, entity.labels)
+        padded_bboxes, padded_labels = self.pad_bbox_labels(entity.bboxes, entity.labels)
         merged_padded_labels_bboxes = torch.cat((padded_labels, padded_bboxes), dim=-1)
         return {
             "main_preds": main_preds,
@@ -433,11 +489,8 @@ class YOLOHeadModule(BaseDenseHead):
             "targets": merged_padded_labels_bboxes,
         }
 
-    def loss_by_feat(self, *args, **kwargs):
-        """Calculate the loss based on the features extracted by the detection head.
-
-        TODO (sungchul): For abstractmethod, will be removed.
-        """
+    def loss_by_feat(self, *args, **kwargs) -> NoReturn:
+        """Calculate the loss based on the features extracted by the detection head."""
         raise NotImplementedError
 
     def predict(
@@ -516,6 +569,10 @@ class YOLOHeadModule(BaseDenseHead):
         *args,
         **kwargs,
     ) -> dict[str, Tensor]:
+        """Transform a batch of output features extracted from the head into bbox results.
+
+        TODO (sungchul): change to export
+        """
         prediction = self.vec2box(outputs["Main"])
         pred_class, _, pred_bbox = prediction[:3]
         pred_conf = prediction[3] if len(prediction) == 4 else None
@@ -525,10 +582,31 @@ class YOLOHeadModule(BaseDenseHead):
         pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
 
         pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)
-        return pad_bbox_labels([box[:, 1:5] for box in pred_bbox], [box[:, 0].type(torch.int64) for box in pred_bbox])
+        return self.pad_bbox_labels(
+            [box[:, 1:5] for box in pred_bbox],
+            [box[:, 0].type(torch.int64) for box in pred_bbox],
+        )
+
+    def pad_bbox_labels(self, bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor, Tensor]:
+        """Pad bounding boxes and labels to the same length."""
+        max_len = max(b.shape[0] for b in bboxes)
+        padded_labels = torch.stack(
+            [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - len(label)), value=-1) for label in labels],
+            dim=0,
+        )
+        padded_bboxes = torch.stack(
+            [
+                nn.functional.pad(box, (0, 0, 0, max_len - len(box)), value=0) if max_len - len(box) > 0 else box
+                for box in bboxes
+            ],
+            dim=0,
+        )
+        return padded_bboxes, padded_labels
 
 
 class YOLOHead:
+    """YOLOHead factory for detection."""
+
     YOLOHEAD_CFG: ClassVar[dict[str, Any]] = {
         "yolov9-s": {
             "csp_channels": [[320, 128, 128], [288, 192, 192], [384, 256, 256]],

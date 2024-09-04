@@ -34,6 +34,11 @@ def auto_pad(kernel_size: _size_2_t, dilation: _size_2_t = 1, **kwargs) -> tuple
     return (pad_h, pad_w)
 
 
+def round_up(x: int | Tensor, div: int = 1) -> int | Tensor:
+    """Rounds up `x` to the bigger-nearest multiple of `div`."""
+    return x + (-x % div)
+
+
 def calculate_iou(bbox1, bbox2, metrics="iou") -> Tensor:
     metrics = metrics.lower()
     EPS = 1e-9
