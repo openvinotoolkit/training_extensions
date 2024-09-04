@@ -9,9 +9,11 @@ from otx.core.metrics.accuracy import (
     HlabelAccuracy,
     MixedHLabelAccuracy,
     MulticlassAccuracywithLabelGroup,
+    MultiClassClsMetricCallable,
     MultilabelAccuracywithLabelGroup,
 )
 from otx.core.types.label import HLabelInfo, LabelInfo
+from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy
 
 
 class TestAccuracy:
@@ -44,6 +46,16 @@ class TestAccuracy:
         result = metric.compute()
         acc = result["accuracy"]
         assert round(acc.item(), 3) == 0.792
+
+    def test_default_multi_class_cls_metric_callable(self, fxt_multiclass_labelinfo: LabelInfo) -> None:
+        assert fxt_multiclass_labelinfo.num_classes > 1
+        metric = MultiClassClsMetricCallable(fxt_multiclass_labelinfo)
+        assert isinstance(metric.accuracy, MulticlassAccuracy)
+
+        one_class_label_info = LabelInfo(label_names=["class1"], label_groups=[["class1"]])
+        assert one_class_label_info.num_classes == 1
+        binary_metric = MultiClassClsMetricCallable(one_class_label_info)
+        assert isinstance(binary_metric.accuracy, BinaryAccuracy)
 
     def test_multilabel_accuracy(self, fxt_multilabel_labelinfo: LabelInfo) -> None:
         """Check whether accuracy is same with OTX1.x version."""
