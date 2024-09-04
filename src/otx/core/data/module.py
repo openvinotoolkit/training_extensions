@@ -120,6 +120,7 @@ class OTXDataModule(LightningDataModule):
                 dataset,
                 self.data_format,
                 self.unannotated_items_ratio,
+                task=task,
                 ignore_index=self.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None,
             )
 

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Callable
 import cv2
 import numpy as np
 import torch
-from datumaro.components.annotation import Ellipse, Image, Mask, Polygon, Bbox
+from datumaro.components.annotation import Bbox, Ellipse, Image, Mask, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import Transforms
@@ -179,12 +179,15 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             to_tv_image,
         )
 
-        if self.has_polygons:
-            # Geti case, correct the label names and groups
-            # we assume that last label is empty label
+        labels_id = self.label_info.label_names
+        if self.has_polygons and self.label_info.label_groups[-1][0] == "Empty":
+            # arrow format case, correct the label names and groups
+            # We assume that last label is empty label -> make it as background, 0 label
             self.label_info.label_groups = self.label_info.label_groups[::-1]
             labels_id = [self.label_info.label_names[-1], *self.label_info.label_names[:-1]]
-            self.label_info.label_names = [label for label_group in self.label_info.label_groups for label in label_group]
+            self.label_info.label_names = [
+                label for label_group in self.label_info.label_groups for label in label_group
+            ]
 
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,

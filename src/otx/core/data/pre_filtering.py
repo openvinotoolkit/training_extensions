@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING
 from datumaro.components.annotation import Annotation, Bbox, Polygon
 from datumaro.components.dataset import Dataset as DmDataset
 
+from otx.core.types.task import OTXTaskType
+
 if TYPE_CHECKING:
     from datumaro.components.dataset_base import DatasetItem
 
@@ -20,6 +22,7 @@ def pre_filtering(
     dataset: DmDataset,
     data_format: str,
     unannotated_items_ratio: float,
+    task: OTXTaskType,
     ignore_index: int | None = None,
 ) -> DmDataset:
     """Pre-filtering function to filter the dataset based on certain criteria.
@@ -38,7 +41,7 @@ def pre_filtering(
     msg = f"There are empty annotation items in train set, Of these, only {unannotated_items_ratio*100}% are used."
     warnings.warn(msg, stacklevel=2)
     dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
-    dataset = remove_unused_labels(dataset, data_format, ignore_index)
+    dataset = remove_unused_labels(dataset, data_format, task, ignore_index)
     if unannotated_items_ratio > 0:
         empty_items = [item.id for item in dataset if item.subset == "train" and len(item.annotations) == 0]
         used_background_items = set(sample(empty_items, int(len(empty_items) * unannotated_items_ratio)))
@@ -72,7 +75,12 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: 
     return True
 
 
-def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int | None) -> DmDataset:
+def remove_unused_labels(
+    dataset: DmDataset,
+    data_format: str,
+    task: OTXTaskType,
+    ignore_index: int | None,
+) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
@@ -87,7 +95,7 @@ def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int
         )
         raise ValueError(msg)
 
-    if len(used_labels) == len(original_categories) or data_format == "arrow":
+    if len(used_labels) == len(original_categories) or (data_format == "arrow" and task == "SEMANTIC_SEGMENTATION"):
         return dataset
 
     msg = "There are unused labels in dataset, they will be filtered out before training."

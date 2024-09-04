@@ -117,7 +117,7 @@ class TaskLevelExportParameters:
                     all_label_ids += lbl.replace(" ", "_") + " "
 
         if has_labels_ids:
-            for lbl in self.label_info.labels_id:
+            for lbl in self.label_info.labels_id:  # type: ignore[attr-defined]
                 all_label_ids += lbl.replace(" ", "_") + " "
 
         metadata = {
