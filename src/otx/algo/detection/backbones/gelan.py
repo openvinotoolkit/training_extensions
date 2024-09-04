@@ -19,50 +19,6 @@ from otx.algo.modules import Conv2dModule, build_activation_layer
 logger = logging.getLogger(__name__)
 
 
-def create_activation_function(activation: str) -> nn.Module:
-    """Retrieves an activation function from the PyTorch nn module based on its name, case-insensitively.
-
-    TODO (sungchul): change to use `build_activation_layer` in src/otx/algo/modules/activation.py.
-    """
-    if not activation or activation.lower() in ["false", "none"]:
-        return nn.Identity()
-
-    activation_map = {
-        name.lower(): obj
-        for name, obj in nn.modules.activation.__dict__.items()
-        if isinstance(obj, type) and issubclass(obj, nn.Module)
-    }
-    if activation.lower() in activation_map:
-        return activation_map[activation.lower()](inplace=True)
-    msg = f"Activation function '{activation}' is not found in torch.nn"
-    raise ValueError(msg)
-
-
-class Conv(nn.Module):
-    """A basic convolutional block that includes convolution, batch normalization, and activation.
-
-    TODO (sungchul): replace it to `ConvModule` in src/otx/algo/modules/conv_module.py.
-    """
-
-    def __init__(
-        self,
-        in_channels: int,
-        out_channels: int,
-        kernel_size: tuple[int, int],
-        *,
-        activation: str = "SiLU",
-        **kwargs,
-    ):
-        super().__init__()
-        kwargs.setdefault("padding", auto_pad(kernel_size, **kwargs))
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, bias=False, **kwargs)
-        self.bn = nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2)
-        self.act = create_activation_function(activation)
-
-    def forward(self, x: Tensor) -> Tensor:
-        return self.act(self.bn(self.conv(x)))
-
-
 class ELAN(nn.Module):
     """ELAN  structure.
 
@@ -472,8 +428,31 @@ class GELANModule(nn.Module):
         self.csp_args = csp_args or {}
 
         self.module = nn.ModuleList()
-        self.module.append(set_info_into_instance({"module": Conv(3, first_dim, 3, stride=2), "source": 0}))
-        self.module.append(Conv(first_dim, first_dim * 2, 3, stride=2))
+        self.module.append(
+            set_info_into_instance(
+                {
+                    "module": Conv2dModule(
+                        3,
+                        first_dim,
+                        3,
+                        stride=2,
+                        normalization=nn.BatchNorm2d(first_dim, eps=1e-3, momentum=3e-2),
+                        activation=nn.SiLU(inplace=True),
+                    ),
+                    "source": 0,
+                },
+            ),
+        )
+        self.module.append(
+            Conv2dModule(
+                first_dim,
+                first_dim * 2,
+                3,
+                stride=2,
+                normalization=nn.BatchNorm2d(first_dim * 2, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            ),
+        )
 
         block_entry_layer = ELAN if block_entry_cfg["type"] == "ELAN" else RepNCSPELAN
         self.module.append(block_entry_layer(**block_entry_cfg["args"]))

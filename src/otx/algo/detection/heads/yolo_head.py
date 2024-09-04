@@ -17,7 +17,6 @@ from torchvision.ops import batched_nms
 from otx.algo.detection.backbones.gelan import (
     AConv,
     ADown,
-    Conv,
     RepNCSPELAN,
 )
 from otx.algo.detection.heads.base_head import BaseDenseHead
@@ -439,10 +438,29 @@ class YOLOHeadModule(BaseDenseHead):
                         conv_channels = aux_cfg.get("conv_channels")
                         self.module.append(
                             set_info_into_instance(
-                                {"module": Conv(conv_channels[0][0], conv_channels[0][1], 3, stride=2), "source": 0},
+                                {
+                                    "module": Conv2dModule(
+                                        conv_channels[0][0],
+                                        conv_channels[0][1],
+                                        3,
+                                        stride=2,
+                                        normalization=nn.BatchNorm2d(conv_channels[0][1], eps=1e-3, momentum=3e-2),
+                                        activation=nn.SiLU(inplace=True),
+                                    ),
+                                    "source": 0,
+                                },
                             ),
                         )
-                        self.module.append(Conv(conv_channels[1][0], conv_channels[1][1], 3, stride=2))
+                        self.module.append(
+                            Conv2dModule(
+                                conv_channels[1][0],
+                                conv_channels[1][1],
+                                3,
+                                stride=2,
+                                normalization=nn.BatchNorm2d(conv_channels[1][1], eps=1e-3, momentum=3e-2),
+                                activation=nn.SiLU(inplace=True),
+                            ),
+                        )
                         self.module.append(RepNCSPELAN(csp_channel[0], csp_channel[1], part_channels=csp_channel[2]))
                     else:
                         self.module.append(
