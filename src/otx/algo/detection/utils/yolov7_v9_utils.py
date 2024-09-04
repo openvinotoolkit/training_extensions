@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from otx.algo.detection.detectors import SingleStageDetector
 
 
-def auto_pad(kernel_size: int | tuple[int, int], dilation: int | tuple[int, int] = 1) -> tuple[int, int]:
+def auto_pad(kernel_size: int | tuple[int, int], dilation: int | tuple[int, int] = 1, **kwargs) -> tuple[int, int]:  # noqa: ARG001
     """Auto Padding for the convolution blocks.
 
     Args:
@@ -63,15 +63,15 @@ def generate_anchors(image_size: tuple[int, int], strides: list[int]) -> tuple[T
     Returns:
         tuple[Tensor, Tensor]: The anchor maps with (HW x 2) and the scaler maps with (HW,).
     """
-    h, w = image_size
+    height, width = image_size
     anchors = []
     scaler = []
     for stride in strides:
-        anchor_num = w // stride * h // stride
+        anchor_num = width // stride * height // stride
         scaler.append(torch.full((anchor_num,), stride))
         shift = stride // 2
-        h = torch.arange(0, h, stride) + shift
-        w = torch.arange(0, w, stride) + shift
+        h = torch.arange(0, height, stride) + shift
+        w = torch.arange(0, width, stride) + shift
         anchor_h, anchor_w = torch.meshgrid(h, w, indexing="ij")
         anchor = torch.stack([anchor_w.flatten(), anchor_h.flatten()], dim=-1)
         anchors.append(anchor)
