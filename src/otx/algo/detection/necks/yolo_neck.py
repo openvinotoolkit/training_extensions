@@ -9,65 +9,10 @@ from __future__ import annotations
 
 from typing import Any, ClassVar, Mapping
 
-import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.backbones.gelan import Pool, RepNCSPELAN
+from otx.algo.detection.layers import SPPELAN, Concat, RepNCSPELAN
 from otx.algo.detection.utils.yolov7_v9_utils import set_info_into_instance
-from otx.algo.modules import Conv2dModule
-
-
-class SPPELAN(nn.Module):
-    """SPPELAN module comprising multiple pooling and convolution layers.
-
-    Args:
-        in_channels (int): The number of input channels.
-        out_channels (int): The number of output channels.
-        neck_channels (int | None): The number of neck channels. Defaults to None.
-    """
-
-    def __init__(self, in_channels: int, out_channels: int, neck_channels: int | None = None) -> None:
-        super().__init__()
-        neck_channels = neck_channels or out_channels // 2
-
-        self.conv1 = Conv2dModule(
-            in_channels,
-            neck_channels,
-            kernel_size=1,
-            normalization=nn.BatchNorm2d(neck_channels, eps=1e-3, momentum=3e-2),
-            activation=nn.SiLU(inplace=True),
-        )
-        self.pools = nn.ModuleList([Pool("max", 5, stride=1) for _ in range(3)])
-        self.conv5 = Conv2dModule(
-            4 * neck_channels,
-            out_channels,
-            kernel_size=1,
-            normalization=nn.BatchNorm2d(out_channels, eps=1e-3, momentum=3e-2),
-            activation=nn.SiLU(inplace=True),
-        )
-
-    def forward(self, x: Tensor) -> Tensor:
-        """Forward function."""
-        features = [self.conv1(x)]
-        for pool in self.pools:
-            features.append(pool(features[-1]))
-        return self.conv5(torch.cat(features, dim=1))
-
-
-class Concat(nn.Module):
-    """Concat module.
-
-    Args:
-        dim (int): The dimension to concatenate. Defaults to 1.
-    """
-
-    def __init__(self, dim: int = 1) -> None:
-        super().__init__()
-        self.dim = dim
-
-    def forward(self, x: Tensor) -> Tensor:
-        """Forward function."""
-        return torch.cat(x, self.dim)
 
 
 class YOLONeckModule(nn.Module):

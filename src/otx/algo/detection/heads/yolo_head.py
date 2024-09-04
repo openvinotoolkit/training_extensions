@@ -15,14 +15,9 @@ from torch import Tensor, nn
 from torchvision.ops import batched_nms
 
 from otx.algo.common.utils.nms import multiclass_nms
-from otx.algo.detection.backbones.gelan import (
-    AConv,
-    ADown,
-    RepNCSPELAN,
-)
 from otx.algo.detection.heads.base_head import BaseDenseHead
+from otx.algo.detection.layers import AConv, ADown, Concat, SPPELAN, RepNCSPELAN
 from otx.algo.detection.utils.yolov7_v9_utils import round_up, set_info_into_instance, auto_pad
-from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat
 from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
@@ -146,7 +141,7 @@ class ImplicitM(nn.Module):
         return self.implicit * x
 
 
-class Detection(nn.Module):
+class SingleHeadDetection(nn.Module):
     """A single YOLO Detection head for YOLOv9 detection models.
 
     Args:
@@ -226,7 +221,7 @@ class Detection(nn.Module):
         return class_x, anchor_x, vector_x
 
 
-class IDetection(nn.Module):
+class ISingleHeadDetection(nn.Module):
     """A single YOLO Detection head for YOLOv7 detection models.
 
     Args:
@@ -272,13 +267,15 @@ class MultiheadDetection(nn.Module):
 
     def __init__(self, in_channels: list[int], num_classes: int, **head_kwargs) -> None:
         super().__init__()
-        detection_head = Detection
-
-        if head_kwargs.pop("version", None) == "v7":
-            detection_head = IDetection
+        single_head_detection: nn.Module = (
+            ISingleHeadDetection if head_kwargs.pop("version", None) == "v7" else SingleHeadDetection
+        )
 
         self.heads = nn.ModuleList(
-            [detection_head((in_channels[0], in_channel), num_classes, **head_kwargs) for in_channel in in_channels],
+            [
+                single_head_detection((in_channels[0], in_channel), num_classes, **head_kwargs)
+                for in_channel in in_channels
+            ],
         )
 
     def forward(self, x_list: list[Tensor]) -> list[Tensor]:
