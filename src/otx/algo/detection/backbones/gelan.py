@@ -114,13 +114,13 @@ class GELAN:
     """GELAN factory for detection."""
 
     GELAN_CFG: ClassVar[dict[str, Any]] = {
-        "yolov9-s": {
+        "yolov9_s": {
             "first_dim": 32,
             "block_entry_cfg": {"type": "ELAN", "args": {"in_channels": 64, "out_channels": 64, "part_channels": 64}},
             "csp_channels": [[128, 128, 128], [192, 192, 192], [256, 256, 256]],
             "csp_args": {"repeat_num": 3},
         },
-        "yolov9-m": {
+        "yolov9_m": {
             "first_dim": 32,
             "block_entry_cfg": {
                 "type": "RepNCSPELAN",
@@ -128,7 +128,7 @@ class GELAN:
             },
             "csp_channels": [[240, 240, 240], [360, 360, 360], [480, 480, 480]],
         },
-        "yolov9-c": {
+        "yolov9_c": {
             "first_dim": 64,
             "block_entry_cfg": {
                 "type": "RepNCSPELAN",

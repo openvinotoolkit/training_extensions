@@ -31,11 +31,11 @@ if TYPE_CHECKING:
 
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
-    # "yolov9-t": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-t.pt", # not supported yet
-    "yolov9-s": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-s.pt",
-    "yolov9-m": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-m.pt",
-    "yolov9-c": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-c.pt",
-    # "yolov9-e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # not supported yet
+    # "yolov9_t": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-t.pt", # not supported yet
+    "yolov9_s": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-s.pt",
+    "yolov9_m": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-m.pt",
+    "yolov9_c": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-c.pt",
+    # "yolov9_e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # not supported yet
 }
 
 
@@ -87,11 +87,11 @@ class YOLOv9(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOv9.
 
     Default input size per model:
-        - yolov9-t : (640, 640) # not supported yet
-        - yolov9-s : (640, 640)
-        - yolov9-m : (640, 640)
-        - yolov9-c : (640, 640)
-        - yolov9-e : (640, 640) # not supported yet
+        - yolov9_t : (640, 640) # not supported yet
+        - yolov9_s : (640, 640)
+        - yolov9_m : (640, 640)
+        - yolov9_c : (640, 640)
+        - yolov9_e : (640, 640) # not supported yet
     """
 
     input_size_multiplier = 32  # TODO (sungchul): need to check
@@ -100,7 +100,7 @@ class YOLOv9(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_name: Literal["yolov9-t", "yolov9-s", "yolov9-m", "yolov9-c", "yolov9-e"],
+        model_name: Literal["yolov9_t", "yolov9_s", "yolov9_m", "yolov9_c", "yolov9_e"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -136,7 +136,7 @@ class YOLOv9(ExplainableOTXDetModel):
         )
 
         # set criterion
-        strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9-c" else None
+        strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9_c" else None
         self.vec2box = Vec2Box(detector, self.input_size, strides)
         detector.bbox_head.vec2box = self.vec2box
         detector.criterion = YOLOv9Criterion(

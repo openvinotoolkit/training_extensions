@@ -335,7 +335,7 @@ class YOLOHeadModule(BaseDenseHead):
 
         self.module = nn.ModuleList()
         if pre_upsample_concat_cfg:
-            # for yolov9-s
+            # for yolov9_s
             self.module.append(nn.Upsample(scale_factor=2, mode="nearest"))
             self.module.append(
                 set_info_into_instance({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")}),
@@ -397,7 +397,7 @@ class YOLOHeadModule(BaseDenseHead):
         if aux_cfg:
             aux_output_channels: list[int] = []
             if sppelan_channels := aux_cfg.get("sppelan_channels", None):
-                # for yolov9-s
+                # for yolov9_s
                 self.module.append(
                     set_info_into_instance(
                         {"module": SPPELAN(sppelan_channels[0], sppelan_channels[1]), "source": "B5", "tags": "A5"},
@@ -424,7 +424,7 @@ class YOLOHeadModule(BaseDenseHead):
                 aux_output_channels = aux_output_channels[::-1]  # reverse channels
 
             elif cblinear_channels := aux_cfg.get("cblinear_channels", None):
-                # for yolov9-m, c
+                # for yolov9_m, c
                 for idx, cblinear_channel in enumerate(cblinear_channels, start=3):
                     self.module.append(
                         set_info_into_instance(
@@ -678,7 +678,7 @@ class YOLOHead:
     """YOLOHead factory for detection."""
 
     YOLOHEAD_CFG: ClassVar[dict[str, Any]] = {
-        "yolov9-s": {
+        "yolov9_s": {
             "csp_channels": [[320, 128, 128], [288, 192, 192], [384, 256, 256]],
             "aconv_channels": [[128, 96], [192, 128]],
             "concat_sources": [[-1, "N4"], [-1, "N3"]],
@@ -689,7 +689,7 @@ class YOLOHead:
                 "csp_channels": [[448, 192, 192], [320, 128, 128]],
             },
         },
-        "yolov9-m": {
+        "yolov9_m": {
             "csp_channels": [[600, 240, 240], [544, 360, 360], [720, 480, 480]],
             "aconv_channels": [[240, 184], [360, 240]],
             "concat_sources": [[-1, "N4"], [-1, "N3"]],
@@ -702,7 +702,7 @@ class YOLOHead:
                 "cbfuse_sources": [[], ["R3", "R4", "R5", -1], ["R4", "R5", -1], ["R5", -1]],
             },
         },
-        "yolov9-c": {
+        "yolov9_c": {
             "csp_channels": [[1024, 256, 256], [768, 512, 512], [1024, 512, 512]],
             "adown_channels": [[256, 256], [512, 512]],
             "concat_sources": [[-1, "N4"], [-1, "N3"]],

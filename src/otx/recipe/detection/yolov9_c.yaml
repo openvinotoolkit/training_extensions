@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.detection.yolov9.YOLOv9
   init_args:
-    model_name: yolov9-c
+    model_name: yolov9_c
     label_info: 80
 
     optimizer:

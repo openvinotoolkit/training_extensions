@@ -70,7 +70,7 @@ class YOLONeck:
     """YOLONeck factory for detection."""
 
     YOLONECK_CFG: ClassVar[dict[str, Any]] = {
-        "yolov9-s": {
+        "yolov9_s": {
             "elan_channels": [
                 {"type": "SPPELAN", "args": {"in_channels": 256, "out_channels": 256}, "tags": "N3"},
                 {
@@ -82,7 +82,7 @@ class YOLONeck:
             "concat_sources": [[-1, "B4"]],
             "csp_args": {"repeat_num": 3},
         },
-        "yolov9-m": {
+        "yolov9_m": {
             "elan_channels": [
                 {"type": "SPPELAN", "args": {"in_channels": 480, "out_channels": 480}, "tags": "N3"},
                 {
@@ -93,7 +93,7 @@ class YOLONeck:
             ],
             "concat_sources": [[-1, "B4"], [-1, "B3"]],
         },
-        "yolov9-c": {
+        "yolov9_c": {
             "elan_channels": [
                 {"type": "SPPELAN", "args": {"in_channels": 512, "out_channels": 512}, "tags": "N3"},
                 {
