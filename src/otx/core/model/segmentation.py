@@ -179,6 +179,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             return_soft_prediction=True,
             soft_threshold=0.5,
             blur_strength=-1,
+            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
 
     @property
