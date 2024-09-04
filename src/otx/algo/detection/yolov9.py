@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Literal, Self
 from otx.algo.detection.backbones import GELAN
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import YOLOHead
-from otx.algo.detection.losses import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
+from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
 from otx.algo.detection.necks import YOLONeck
 from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
 from otx.core.config.data import TileConfig
@@ -30,11 +30,11 @@ if TYPE_CHECKING:
 
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
-    # "yolov9-t": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-t.pt", # not supported
+    # "yolov9-t": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-t.pt", # not supported yet
     "yolov9-s": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-s.pt",
     "yolov9-m": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-m.pt",
     "yolov9-c": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-c.pt",
-    # "yolov9-e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # not supported
+    # "yolov9-e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # not supported yet
 }
 
 
@@ -86,11 +86,11 @@ class YOLOv9(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOv9.
 
     Default input size per model:
-        - yolov9-t : (640, 640) # not supported
+        - yolov9-t : (640, 640) # not supported yet
         - yolov9-s : (640, 640)
         - yolov9-m : (640, 640)
         - yolov9-c : (640, 640)
-        - yolov9-e : (640, 640) # not supported
+        - yolov9-e : (640, 640) # not supported yet
     """
 
     input_size_multiplier = 32  # TODO (sungchul): need to check
@@ -186,7 +186,7 @@ class YOLOv9(ExplainableOTXDetModel):
         )
 
     def to(self, *args, **kwargs) -> Self:
-        """Return a model with specified device."""
+        """Sync device of the model and its components."""
         ret = super().to(*args, **kwargs)
         ret.vec2box.update(self.input_size, *args, **kwargs)
         ret.model.criterion.vec2box.update(self.input_size, *args, **kwargs)
