@@ -13,7 +13,7 @@ from typing import Callable
 import torch.nn.functional
 from torch import Tensor, nn
 
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer

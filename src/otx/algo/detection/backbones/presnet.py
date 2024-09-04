@@ -12,7 +12,7 @@ from typing import Any, Callable, ClassVar
 import torch
 from torch import nn
 
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import FrozenBatchNorm2d, build_norm_layer

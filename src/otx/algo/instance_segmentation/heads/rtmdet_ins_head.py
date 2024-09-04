@@ -30,7 +30,7 @@ from otx.algo.detection.heads.rtmdet_head import RTMDetHead
 from otx.algo.instance_segmentation.utils.roi_extractors import OTXRoIAlign
 from otx.algo.instance_segmentation.utils.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer, is_norm
