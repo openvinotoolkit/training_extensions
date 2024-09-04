@@ -281,6 +281,7 @@ class SegLabelInfo(LabelInfo):
     """Meta information of Semantic Segmentation."""
 
     ignore_index: int = 255
+    labels_id: list[str] | None = None
 
     @classmethod
     def from_num_classes(cls, num_classes: int) -> LabelInfo:

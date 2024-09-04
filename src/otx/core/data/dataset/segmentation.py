@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Callable
 import cv2
 import numpy as np
 import torch
-from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
+from datumaro.components.annotation import Ellipse, Image, Mask, Polygon, Bbox
 from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import Transforms
@@ -99,11 +99,11 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         raise ValueError(msg, ignore_index)
 
     # fill mask with background label if we have Polygon/Ellipse annotations
-    fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon)) else ignore_index
+    fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon, Bbox)) else ignore_index
     class_mask = np.full(shape=img_shape[:2], fill_value=fill_value, dtype=np.uint8)
 
     for mask in sorted(
-        [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon))],
+        [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon, Bbox))],
         key=lambda ann: ann.z_order,
     ):
         index = mask.label
@@ -112,7 +112,7 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
             msg = "Mask's label index should not be None."
             raise ValueError(msg)
 
-        if isinstance(mask, (Ellipse, Polygon)):
+        if isinstance(mask, (Ellipse, Polygon, Bbox)):
             polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
             class_index = index + 1  # NOTE: disregard the background index. Objects start from index=1
             this_class_mask = cv2.drawContours(
@@ -179,13 +179,17 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             to_tv_image,
         )
 
-        if self.has_polygons and "background" not in [label_name.lower() for label_name in self.label_info.label_names]:
-            # insert background class at index 0 since polygons represent only objects
-            self.label_info.label_names.insert(0, "background")
+        if self.has_polygons:
+            # Geti case, correct the label names and groups
+            # we assume that last label is empty label
+            self.label_info.label_groups = self.label_info.label_groups[::-1]
+            labels_id = [self.label_info.label_names[-1], *self.label_info.label_names[:-1]]
+            self.label_info.label_names = [label for label_group in self.label_info.label_groups for label in label_group]
 
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,
+            labels_id=labels_id,
             ignore_index=ignore_index,
         )
         self.ignore_index = ignore_index

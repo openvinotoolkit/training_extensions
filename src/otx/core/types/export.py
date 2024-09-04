@@ -95,18 +95,26 @@ class TaskLevelExportParameters:
             dict[tuple[str, str], str]: It will be directly delivered to
             OpenVINO IR's `rt_info` or ONNX metadata slot.
         """
+        has_labels_ids = hasattr(self.label_info, "labels_id")
+
         if self.task_type == "instance_segmentation":
             # Instance segmentation needs to add empty label
             all_labels = "otx_empty_lbl "
             all_label_ids = "None "
             for lbl in self.label_info.label_names:
                 all_labels += lbl.replace(" ", "_") + " "
-                all_label_ids += lbl.replace(" ", "_") + " "
+                if not has_labels_ids:
+                    all_label_ids += lbl.replace(" ", "_") + " "
         else:
             all_labels = ""
             all_label_ids = ""
             for lbl in self.label_info.label_names:
                 all_labels += lbl.replace(" ", "_") + " "
+                if not has_labels_ids:
+                    all_label_ids += lbl.replace(" ", "_") + " "
+
+        if has_labels_ids:
+            for lbl in self.label_info.labels_id:
                 all_label_ids += lbl.replace(" ", "_") + " "
 
         metadata = {

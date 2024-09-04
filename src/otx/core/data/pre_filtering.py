@@ -86,8 +86,10 @@ def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int
             "Please, check `dataset_meta.json` file."
         )
         raise ValueError(msg)
-    if len(used_labels) == len(original_categories):
+
+    if len(used_labels) == len(original_categories) or data_format == "arrow":
         return dataset
+
     msg = "There are unused labels in dataset, they will be filtered out before training."
     warnings.warn(msg, stacklevel=2)
     mapping = {original_categories[idx]: original_categories[idx] for idx in used_labels}
