@@ -10,14 +10,28 @@ Reference : https://github.com/WongKinYiu/YOLO
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 from einops import rearrange
 from torch import Tensor, nn
+from torch.nn.common_types import _size_2_t
 from torchvision.ops import batched_nms
 
-from otx.algo.detection.detectors import SingleStageDetector
+if TYPE_CHECKING:
+    from otx.algo.detection.detectors import SingleStageDetector
+
+
+def auto_pad(kernel_size: _size_2_t, dilation: _size_2_t = 1, **kwargs) -> tuple[int, int]:
+    """Auto Padding for the convolution blocks."""
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+
+    pad_h = ((kernel_size[0] - 1) * dilation[0]) // 2
+    pad_w = ((kernel_size[1] - 1) * dilation[1]) // 2
+    return (pad_h, pad_w)
 
 
 def calculate_iou(bbox1, bbox2, metrics="iou") -> Tensor:
@@ -74,7 +88,7 @@ def calculate_iou(bbox1, bbox2, metrics="iou") -> Tensor:
 
     # Compute aspect ratio penalty term
     arctan = torch.atan((bbox1[..., 2] - bbox1[..., 0]) / (bbox1[..., 3] - bbox1[..., 1] + EPS)) - torch.atan(
-        (bbox2[..., 2] - bbox2[..., 0]) / (bbox2[..., 3] - bbox2[..., 1] + EPS)
+        (bbox2[..., 2] - bbox2[..., 0]) / (bbox2[..., 3] - bbox2[..., 1] + EPS),
     )
     v = (4 / (math.pi**2)) * (arctan**2)
     alpha = v / (v - iou + 1 + EPS)
@@ -84,8 +98,7 @@ def calculate_iou(bbox1, bbox2, metrics="iou") -> Tensor:
 
 
 def generate_anchors(image_size: list[int], strides: list[int]):
-    """
-    Find the anchor maps for each w, h.
+    """Find the anchor maps for each w, h.
 
     Args:
         image_size List: the image size of augmented image size
@@ -210,7 +223,8 @@ def bbox_nms(
         instance_idx = nms_idx[idx == batch_idx[nms_idx]]
 
         predict_nms = torch.cat(
-            [valid_cls[instance_idx][:, None], valid_box[instance_idx], valid_con[instance_idx][:, None]], dim=-1
+            [valid_cls[instance_idx][:, None], valid_box[instance_idx], valid_con[instance_idx][:, None]],
+            dim=-1,
         )
 
         predicts_nms.append(predict_nms)
