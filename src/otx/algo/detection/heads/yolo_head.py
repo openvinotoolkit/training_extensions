@@ -14,13 +14,14 @@ from einops import rearrange
 from torch import Tensor, nn
 from torchvision.ops import batched_nms
 
+from otx.algo.common.utils.nms import multiclass_nms
 from otx.algo.detection.backbones.gelan import (
     AConv,
     ADown,
     RepNCSPELAN,
 )
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms, round_up, set_info_into_instance, auto_pad
+from otx.algo.detection.utils.yolov7_v9_utils import round_up, set_info_into_instance, auto_pad
 from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat
 from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
@@ -625,43 +626,52 @@ class YOLOHeadModule(BaseDenseHead):
             for idx in range(pred_classes.size(0))
         ]
 
-    def export_by_feat(
+    def export(
         self,
-        outputs: dict[str, Tensor],
-        entity: DetBatchDataEntity,
-        *args,
-        **kwargs,
-    ) -> tuple[Tensor, Tensor]:
-        """Transform a batch of output features extracted from the head into bbox results.
+        x: tuple[Tensor],
+        batch_img_metas: list[dict],
+        rescale: bool = False,
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
+        """Perform forward propagation of the detection head and predict detection results.
 
-        TODO (sungchul): change to export
+        Args:
+            x (tuple[Tensor]): Multi-level features from the upstream network, each is a 4D-tensor.
+            batch_data_samples (list[dict]): The Data Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool, optional): Whether to rescale the results.
+                Defaults to False.
+
+        Returns:
+            tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
+                Detection results of each image after the post process.
         """
-        prediction = self.vec2box(outputs["Main"])
+        main_preds, _ = self(x)
+
+        prediction = self.vec2box(main_preds)
         pred_class, _, pred_bbox = prediction[:3]
         pred_conf = prediction[3] if len(prediction) == 4 else None
 
-        # rescale
-        scale_factors = [[1 / s for s in img_info.scale_factor][::-1] for img_info in entity.imgs_info]
-        pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
+        scores = pred_class.sigmoid() * (1 if pred_conf is None else pred_conf)
 
-        pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)
-        return self.pad_bbox_labels(
-            [box[:, 1:5] for box in pred_bbox],
-            [box[:, 0].type(torch.int64) for box in pred_bbox],
+        return multiclass_nms(
+            pred_bbox,
+            scores,
+            max_output_boxes_per_class=200,
+            iou_threshold=self.min_iou,
+            score_threshold=self.min_confidence,
+            pre_top_k=5000,
+            keep_top_k=100,
         )
 
     def pad_bbox_labels(self, bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor, Tensor]:
         """Pad bounding boxes and labels to the same length."""
         max_len = max(b.shape[0] for b in bboxes)
         padded_labels = torch.stack(
-            [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - len(label)), value=-1) for label in labels],
+            [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - label.shape[0]), value=-1) for label in labels],
             dim=0,
         )
         padded_bboxes = torch.stack(
-            [
-                nn.functional.pad(box, (0, 0, 0, max_len - len(box)), value=0) if max_len - len(box) > 0 else box
-                for box in bboxes
-            ],
+            [nn.functional.pad(box, (0, 0, 0, max_len - box.shape[0]), value=0) for box in bboxes],
             dim=0,
         )
         return padded_bboxes, padded_labels
