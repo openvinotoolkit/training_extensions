@@ -121,6 +121,8 @@ def fxt_dm_item_bbox_only(request, tmpdir) -> DatasetItem:
         media=media,
         annotations=[
             Bbox(x=0, y=0, w=1, h=1, label=0),
+            Bbox(x=1, y=0, w=1, h=1, label=0),
+            Bbox(x=1, y=1, w=1, h=1, label=0),
         ],
     )
 

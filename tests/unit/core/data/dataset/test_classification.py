@@ -5,8 +5,13 @@
 
 from unittest.mock import MagicMock
 
-from otx.core.data.dataset.classification import OTXHlabelClsDataset, OTXMulticlassClsDataset, OTXMultilabelClsDataset
-from otx.core.data.entity.classification import MulticlassClsDataEntity, MultilabelClsDataEntity
+from otx.core.data.dataset.classification import (
+    HLabelInfo,
+    OTXHlabelClsDataset,
+    OTXMulticlassClsDataset,
+    OTXMultilabelClsDataset,
+)
+from otx.core.data.entity.classification import HlabelClsDataEntity, MulticlassClsDataEntity, MultilabelClsDataEntity
 
 
 class TestOTXMulticlassClsDataset:
@@ -73,3 +78,33 @@ class TestOTXHlabelClsDataset:
         # Added the ancestor
         adjusted_anns = hlabel_dataset.dm_subset.get(id=0, subset="train").annotations
         assert len(adjusted_anns) == 2
+
+    def test_get_item(
+        self,
+        mocker,
+        fxt_mock_dm_subset,
+        fxt_mock_hlabelinfo,
+    ) -> None:
+        mocker.patch.object(HLabelInfo, "from_dm_label_groups", return_value=fxt_mock_hlabelinfo)
+        dataset = OTXHlabelClsDataset(
+            dm_subset=fxt_mock_dm_subset,
+            transforms=[lambda x: x],
+            mem_cache_img_max_size=None,
+            max_refetch=3,
+        )
+        assert isinstance(dataset[0], HlabelClsDataEntity)
+
+    def test_get_item_from_bbox_dataset(
+        self,
+        mocker,
+        fxt_mock_det_dm_subset,
+        fxt_mock_hlabelinfo,
+    ) -> None:
+        mocker.patch.object(HLabelInfo, "from_dm_label_groups", return_value=fxt_mock_hlabelinfo)
+        dataset = OTXHlabelClsDataset(
+            dm_subset=fxt_mock_det_dm_subset,
+            transforms=[lambda x: x],
+            mem_cache_img_max_size=None,
+            max_refetch=3,
+        )
+        assert isinstance(dataset[0], HlabelClsDataEntity)
