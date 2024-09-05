@@ -518,27 +518,26 @@ class SegmentationTileMerge(TileMerge):
             SegPredEntity: Merged prediction entity.
         """
         img_size = img_info.ori_shape
+        num_classes = len(entities[0].masks)
 
-        unique_classes = torch.stack([tile_entity.masks for tile_entity in entities]).unique()
-        # Create a vote map for each class
-        vote_maps = torch.zeros((len(unique_classes), *img_size), dtype=torch.int, device=img_info.device)
-        # Create an class index map
-        index_map = torch.zeros(*img_size, dtype=torch.int, device=img_info.device)
+        # Create a vote map for overlapping tiles
+        vote_mask = torch.zeros(img_size, dtype=torch.int, device=img_info.device)
+        full_logits_mask = torch.zeros((num_classes, *img_size), device=img_info.device)
+
         for tile_entity in entities:
             offset_x, offset_y, tile_w, tile_h = tile_entity.img_info.padding
-            for i, class_idx in enumerate(unique_classes):
-                keep = tile_entity.masks == class_idx
-                vote_maps[i, offset_y : offset_y + tile_h, offset_x : offset_x + tile_w] += keep[:tile_h, :tile_w]
-
-        # Get the class index with the highest vote
-        vote_maps = vote_maps.argmax(0)
-        for i, class_idx in enumerate(unique_classes):
-            index_map.masked_fill_(vote_maps == i, class_idx)
+            vote_mask[offset_y : offset_y + tile_h, offset_x : offset_x + tile_w] += 1
+            full_logits_mask[:, offset_y : offset_y + tile_h, offset_x : offset_x + tile_w] += tile_entity.masks[
+                :,
+                :tile_h,
+                :tile_w,
+            ]
+        full_logits_mask = full_logits_mask / vote_mask.unsqueeze(0)
 
         seg_pred_entity = SegPredEntity(
             image=torch.empty(img_size),
             img_info=img_info,
-            masks=index_map.unsqueeze(0),
+            masks=full_logits_mask.argmax(0).unsqueeze(0),
             score=[],
         )
 
