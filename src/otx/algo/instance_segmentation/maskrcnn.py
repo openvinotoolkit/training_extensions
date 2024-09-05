@@ -675,4 +675,25 @@ class MaskRCNNSwinT(MaskRCNN):
     @property
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for MaskRCNN-SwinT."""
-        return {"model_type": "transformer"}
+        return {
+            "model_type": "transformer",
+            "ignored_scope": {
+                "patterns": [".*head.*"],
+                "validate": False,
+            },
+            "advanced_parameters": {
+                "smooth_quant_alpha": -1,
+                "activations_range_estimator_params": {
+                    "min": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MIN",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                    "max": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MAX",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                },
+            },
+        }

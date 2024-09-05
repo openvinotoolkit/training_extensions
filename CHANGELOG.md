@@ -189,6 +189,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3684>)
 - Fix MaskRCNN SwinT NNCF Accuracy Drop
   (<https://github.com/openvinotoolkit/training_extensions/pull/3685>)
+- Fix MaskRCNN SwinT NNCF Accuracy Drop By Adding More PTQ Configs
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3929>)
 
 ### Known issues
 
