@@ -96,10 +96,50 @@ def fxt_dm_item(request, tmpdir) -> DatasetItem:
     )
 
 
+@pytest.fixture(params=["bytes", "file"])
+def fxt_dm_item_bbox_only(request, tmpdir) -> DatasetItem:
+    np_img = np.zeros(shape=(10, 10, 3), dtype=np.uint8)
+    np_img[:, :, 0] = 0  # Set 0 for B channel
+    np_img[:, :, 1] = 1  # Set 1 for G channel
+    np_img[:, :, 2] = 2  # Set 2 for R channel
+
+    if request.param == "bytes":
+        _, np_bytes = cv2.imencode(".png", np_img)
+        media = Image.from_bytes(np_bytes.tobytes())
+        media.path = ""
+    elif request.param == "file":
+        fname = str(uuid.uuid4())
+        fpath = str(Path(tmpdir) / f"{fname}.png")
+        cv2.imwrite(fpath, np_img)
+        media = Image.from_file(fpath)
+    else:
+        raise ValueError(request.param)
+
+    return DatasetItem(
+        id="item",
+        subset="train",
+        media=media,
+        annotations=[
+            Bbox(x=0, y=0, w=1, h=1, label=0),
+            Bbox(x=1, y=0, w=1, h=1, label=0),
+            Bbox(x=1, y=1, w=1, h=1, label=0),
+        ],
+    )
+
+
 @pytest.fixture()
 def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> MagicMock:
     mock_dm_subset = mocker.MagicMock(spec=DmDataset)
     mock_dm_subset.__getitem__.return_value = fxt_dm_item
+    mock_dm_subset.__len__.return_value = 1
+    mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
+    return mock_dm_subset
+
+
+@pytest.fixture()
+def fxt_mock_det_dm_subset(mocker: MockerFixture, fxt_dm_item_bbox_only: DatasetItem) -> MagicMock:
+    mock_dm_subset = mocker.MagicMock(spec=DmDataset)
+    mock_dm_subset.__getitem__.return_value = fxt_dm_item_bbox_only
     mock_dm_subset.__len__.return_value = 1
     mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
     return mock_dm_subset
