@@ -122,14 +122,14 @@ class YOLOv9(ExplainableOTXDetModel):
         neck = YOLONeck(model_name=self.model_name)
         bbox_head = YOLOHead(model_name=self.model_name, num_classes=num_classes)
 
-        # patch _load_from_state_dict
-        SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9  # type: ignore[method-assign] # noqa: SLF001
         detector = SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
             criterion=None,
         )
+        # patch _load_from_state_dict
+        detector._load_from_state_dict = _load_from_state_dict_for_yolov9.__get__(detector, SingleStageDetector)  # type: ignore[method-assign] # noqa: SLF001
 
         # set criterion
         strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9_c" else None
