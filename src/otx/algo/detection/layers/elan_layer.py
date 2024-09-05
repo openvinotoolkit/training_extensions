@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class ELAN(nn.Module):
-    """ELAN  structure.
+    """ELAN structure.
 
     Args:
         in_channels (int): The number of input channels.

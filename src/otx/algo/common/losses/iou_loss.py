@@ -8,6 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/l
 
 from __future__ import annotations
 
+from typing import Literal
 import warnings
 
 import torch
@@ -87,9 +88,9 @@ class IoULoss(nn.Module):
         linear (bool): If True, use linear scale of loss else determined
             by mode. Default: False.
         eps (float): Epsilon to avoid log(0).
-        reduction (str): Options are "none", "mean" and "sum".
+        reduction (Literal["none", "mean", "sum"]): Options are "none", "mean" and "sum".
         loss_weight (float): Weight of loss.
-        mode (str): Loss scaling mode, including "linear", "square", and "log".
+        mode (Literal["linear", "square", "log"]): Loss scaling mode, including "linear", "square", and "log".
             Default: 'log'
     """
 
@@ -97,12 +98,11 @@ class IoULoss(nn.Module):
         self,
         linear: bool = False,
         eps: float = 1e-6,
-        reduction: str = "mean",
+        reduction: Literal["none", "mean", "sum"] = "mean",
         loss_weight: float = 1.0,
-        mode: str = "log",
+        mode: Literal["linear", "square", "log"] = "log",
     ) -> None:
         super().__init__()
-        assert mode in ["linear", "square", "log"]  # noqa: S101
         if linear:
             mode = "linear"
             warnings.warn(
@@ -142,7 +142,10 @@ class IoULoss(nn.Module):
         Returns:
             Tensor: Loss tensor.
         """
-        assert reduction_override in (None, "none", "mean", "sum")  # noqa: S101
+        if reduction_override not in (None, "none", "mean", "sum"):
+            msg = f"Invalid reduction mode: {reduction_override}."
+            raise ValueError(msg)
+
         reduction = reduction_override if reduction_override else self.reduction
         if (weight is not None) and (not torch.any(weight > 0)) and (reduction != "none"):
             if pred.dim() == weight.dim() + 1:
@@ -197,7 +200,13 @@ def giou_loss(pred: Tensor, target: Tensor, eps: float = 1e-7) -> Tensor:
 
 
 @weighted_loss
-def iou_loss(pred: Tensor, target: Tensor, linear: bool = False, mode: str = "log", eps: float = 1e-6) -> Tensor:
+def iou_loss(
+    pred: Tensor,
+    target: Tensor,
+    linear: bool = False,
+    mode: Literal["linear", "square", "log"] = "log",
+    eps: float = 1e-6,
+) -> Tensor:
     """IoU loss.
 
     Computing the IoU loss between a set of predicted bboxes and target bboxes.
@@ -209,14 +218,13 @@ def iou_loss(pred: Tensor, target: Tensor, linear: bool = False, mode: str = "lo
         target (Tensor): Corresponding gt bboxes, shape (n, 4).
         linear (bool, optional): If True, use linear scale of loss instead of
             log scale. Default: False.
-        mode (str): Loss scaling mode, including "linear", "square", and "log".
+        mode (Literal["linear", "square", "log"]): Loss scaling mode, including "linear", "square", and "log".
             Default: 'log'
         eps (float): Epsilon to avoid log(0).
 
     Returns:
         Tensor: Loss tensor.
     """
-    assert mode in ["linear", "square", "log"]  # noqa: S101
     if linear:
         mode = "linear"
         warnings.warn(

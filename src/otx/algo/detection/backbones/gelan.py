@@ -26,7 +26,7 @@ class GELANModule(nn.Module):
         first_dim (int): The number of input channels.
         block_entry_cfg (dict[str, Any]): The configuration for the entry block.
         csp_channels (list[list[int]]): The configuration for the CSP blocks.
-        csp_args (dict[str, Any], optional): The configuration for the CSP blocks. Defaults to None.
+        csp_args (dict[str, Any] | None, optional): The configuration for the CSP blocks. Defaults to None.
         is_aconv_adown (str, optional): The type of downsampling module. Defaults to "AConv".
     """
 

@@ -20,7 +20,7 @@ class YOLONeckModule(nn.Module):
 
     Args:
         elan_channels (list[dict[str, int]]): The ELAN channels.
-        concat_sources (list[list[str, int]]): The sources to concatenate.
+        concat_sources (list[list[str | int]]): The sources to concatenate.
         csp_args (dict[str, Any] | None): The arguments for CSP. Defaults to None.
     """
 
