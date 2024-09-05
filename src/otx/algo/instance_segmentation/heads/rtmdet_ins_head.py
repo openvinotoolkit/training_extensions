@@ -575,8 +575,14 @@ class RTMDetInsHead(RTMDetHead):
         pos_gt_masks = torch.cat(pos_gt_masks, 0)
         batch_pos_mask_logits = torch.cat(batch_pos_mask_logits, 0)
 
+        if (num_pos := batch_pos_mask_logits.shape[0]) == 0:
+            # return zero loss when there is no positive sample
+            return {
+                "num_pos": num_pos,
+                "zero_loss": mask_feats.sum() * 0,
+            }
+
         # avg_factor
-        num_pos = batch_pos_mask_logits.shape[0]
         num_pos = (
             reduce_mean(
                 mask_feats.new_tensor(
@@ -588,9 +594,6 @@ class RTMDetInsHead(RTMDetHead):
             .clamp_(min=1)
             .item()
         )
-
-        if batch_pos_mask_logits.shape[0] == 0:
-            return mask_feats.sum() * 0
 
         scale = self.prior_generator.strides[0][0] // self.mask_loss_stride
         # upsample pred masks
