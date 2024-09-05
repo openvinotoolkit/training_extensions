@@ -342,7 +342,7 @@ class SPPELAN(nn.Module):
             activation=nn.SiLU(inplace=True),
         )
         self.pools = nn.ModuleList(
-            [nn.MaxPool2d(kernel_size=5, stride=1, padding=auto_pad(kernel_size=5)) for _ in range(3)]
+            [nn.MaxPool2d(kernel_size=5, stride=1, padding=auto_pad(kernel_size=5)) for _ in range(3)],
         )
         self.conv5 = Conv2dModule(
             4 * neck_channels,
