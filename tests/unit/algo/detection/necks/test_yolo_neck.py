@@ -4,12 +4,11 @@
 
 import pytest
 import torch
-
 from otx.algo.detection.necks.yolo_neck import YOLONeckModule
 
 
 class TestYOLONeckModule:
-    @pytest.fixture
+    @pytest.fixture()
     def yolo_neck(self) -> YOLONeckModule:
         cfg = {
             "elan_channels": [

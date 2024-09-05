@@ -4,15 +4,9 @@
 
 import pytest
 import torch
-from torch import Tensor
-
-from otx.algo.detection.losses.yolov9_loss import BCELoss, calculate_iou
-import torch
-from otx.algo.detection.losses.yolov9_loss import BoxLoss
-import torch
-import pytest
-from otx.algo.detection.losses.yolov9_loss import DFLoss
+from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, calculate_iou
 from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+from torch import Tensor
 
 
 @pytest.mark.parametrize(
@@ -46,7 +40,7 @@ class TestBCELoss:
 
 
 class TestBoxLoss:
-    @pytest.fixture
+    @pytest.fixture()
     def box_loss(self) -> BoxLoss:
         return BoxLoss()
 
@@ -69,7 +63,7 @@ class TestBoxLoss:
 
 
 class TestDFLoss:
-    @pytest.fixture
+    @pytest.fixture()
     def df_loss(self) -> DFLoss:
         return DFLoss(vec2box=Vec2Box(None, (640, 640), [8, 16, 32]))
 

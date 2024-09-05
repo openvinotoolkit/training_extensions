@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any
+
 import pytest
 import torch
-
 from otx.algo.detection.heads.yolo_head import (
     Anchor2Vec,
     CBFuse,
@@ -18,13 +18,10 @@ from otx.algo.detection.heads.yolo_head import (
     ISingleHeadDetection,
     MultiheadDetection,
     SingleHeadDetection,
-    YOLOHead,
     YOLOHeadModule,
 )
 from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
 from otx.algo.utils.mmengine_utils import InstanceData
-import torch
-from otx.algo.detection.heads.yolo_head import YOLOHeadModule
 
 
 class TestAnchor2Vec:
@@ -145,7 +142,7 @@ class TestMultiheadDetection:
 
 
 class TestYOLOHeadModule:
-    @pytest.fixture
+    @pytest.fixture()
     def yolo_head(self) -> YOLOHeadModule:
         num_classes = 10
         cfg = {
@@ -161,7 +158,7 @@ class TestYOLOHeadModule:
         }
         return YOLOHeadModule(num_classes=num_classes, **cfg)
 
-    @pytest.fixture
+    @pytest.fixture()
     def head_inputs(self) -> dict[int | str, Any]:
         return {
             0: torch.randn(1, 3, 640, 640),
@@ -226,13 +223,13 @@ class TestYOLOHeadModule:
             [
                 [[1, 2, 3, 4], [5, 6, 7, 8]],
                 [[9, 10, 11, 12], [0, 0, 0, 0]],
-            ]
+            ],
         )
         expected_padded_labels = torch.tensor(
             [
                 [[0], [1]],
                 [[2], [-1]],
-            ]
+            ],
         )
 
         assert torch.all(torch.eq(padded_bboxes, expected_padded_bboxes))

@@ -6,7 +6,6 @@ import re
 from unittest.mock import Mock, patch
 
 import torch
-
 from otx.algo.detection.backbones.gelan import GELANModule
 from otx.algo.detection.heads.yolo_head import YOLOHeadModule
 from otx.algo.detection.necks.yolo_neck import YOLONeckModule
@@ -46,7 +45,14 @@ def test_load_from_state_dict_for_yolov9() -> None:
     error_msgs = []
 
     _load_from_state_dict_for_yolov9(
-        model.model, updated_state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs
+        model.model,
+        updated_state_dict,
+        prefix,
+        local_metadata,
+        strict,
+        missing_keys,
+        unexpected_keys,
+        error_msgs,
     )
 
     backbone_len: int = len(model.model.backbone.module)

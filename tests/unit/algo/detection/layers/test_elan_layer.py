@@ -3,7 +3,6 @@
 """Test of ELAN related layers for detection task."""
 
 import torch
-
 from otx.algo.detection.layers.elan_layer import ELAN, SPPELAN, RepConv, RepNCSPBottleneck, RepNCSPELAN
 
 
@@ -53,7 +52,11 @@ class TestRepNCSPBottleneck:
         expand = 1.0
 
         bottleneck = RepNCSPBottleneck(
-            in_channels, out_channels, kernel_size=kernel_size, residual=residual, expand=expand
+            in_channels,
+            out_channels,
+            kernel_size=kernel_size,
+            residual=residual,
+            expand=expand,
         )
 
         # Create a random input tensor
