@@ -19,7 +19,7 @@ from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import RandomSampler
 from otx.algo.detection.necks import FPN
 from otx.algo.instance_segmentation.backbones.swin import SwinTransformer
-from otx.algo.instance_segmentation.heads import BBoxHead, FCNMaskHead, RoIHead, RPNHead
+from otx.algo.instance_segmentation.heads import ConvFCBBoxHead, FCNMaskHead, RoIHead, RPNHead
 from otx.algo.instance_segmentation.losses import ROICriterion, RPNCriterion
 from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
@@ -184,7 +184,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             target_stds=(0.1, 0.1, 0.2, 0.2),
         )
 
-        bbox_head = BBoxHead(
+        bbox_head = ConvFCBBoxHead(
             model_name=self.model_name,
             num_classes=num_classes,
             bbox_coder=roi_bbox_coder,

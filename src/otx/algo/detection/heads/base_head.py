@@ -73,7 +73,7 @@ class BaseDenseHead(BaseModule):
             entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict: A dictionary of loss components.
+            dict: A dictionary of components for loss calculation.
         """
         batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 

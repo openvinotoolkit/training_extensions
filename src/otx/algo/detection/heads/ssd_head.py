@@ -123,7 +123,7 @@ class SSDHeadModule(AnchorHead):
             entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict: A dictionary of loss components.
+            dict: A dictionary of components for loss calculation.
         """
         cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(x, entity)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]

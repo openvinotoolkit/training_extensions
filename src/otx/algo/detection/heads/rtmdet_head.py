@@ -171,7 +171,7 @@ class RTMDetHead(ATSSHeadModule):
             entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict: A dictionary of loss components.
+            dict: A dictionary of components for loss calculation.
         """
         cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super(ATSSHeadModule, self).prepare_loss_inputs(
             x,

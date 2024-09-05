@@ -200,7 +200,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict: A dictionary of loss components.
+            dict: A dictionary of components for loss calculation.
         """
         outs = super().prepare_loss_inputs(x, entity)
 

@@ -538,7 +538,7 @@ class RTMDetInstHead(RTMDetHead):
         sampling_results_list: list,
         batch_gt_instances: list[InstanceData],
     ) -> dict[str, Tensor]:
-        """Get targets for instance segmentation loss.
+        """Get mask targets for instance segmentation loss.
 
         Args:
             mask_feats (list[Tensor]): Mask prototype features extracted from
@@ -625,6 +625,8 @@ class RTMDetInstHead(RTMDetHead):
                 a 4D-tensor.
             entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
 
+        Returns:
+            dict: A dictionary of components for loss calculation.
         """
         cls_scores, bbox_preds, kernel_preds, mask_feat = self(x)
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)

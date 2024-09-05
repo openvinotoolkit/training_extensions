@@ -638,7 +638,7 @@ class ConvFCBBoxHeadModule(BBoxHeadModule, ClassIncrementalMixin):
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
 
 
-class BBoxHead:
+class ConvFCBBoxHead:
     """ConvFCBBoxHead factory for instance segmentation task."""
 
     BBOXHEAD_CFG: ClassVar[dict[str, Any]] = {

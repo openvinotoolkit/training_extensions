@@ -515,6 +515,8 @@ class RoIHead(nn.Module):
             rpn_results_list (list[InstanceData]): List of region proposals.
             entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
 
+        Returns:
+            dict: A dictionary of components for loss calculation.
         """
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 
