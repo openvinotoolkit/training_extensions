@@ -53,6 +53,10 @@ if TYPE_CHECKING:
 # NOTE: Disable private-member-access (SLF001).
 # This is a workaround so we could apply the same transforms to tiles as the original dataset.
 
+# NOTE: Datumaro subset name should be standardized.
+TRAIN_SUBSET_NAMES = ("train", "TRAINING")
+VAL_SUBSET_NAMES = ("val", "VALIDATION")
+
 
 class OTXTileTransform(Tile):
     """OTX tile transform.
@@ -188,7 +192,7 @@ class OTXTileDatasetFactory:
         Returns:
             OTXTileDataset: Tile dataset.
         """
-        if dataset.dm_subset[0].subset == "train":
+        if dataset.dm_subset[0].subset in TRAIN_SUBSET_NAMES:
             return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
@@ -261,7 +265,7 @@ class OTXTileDataset(OTXDataset):
             with_full_img=self.tile_config.with_full_img,
         )
 
-        if item.subset == "val":
+        if item.subset in VAL_SUBSET_NAMES:
             # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
             tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
 
