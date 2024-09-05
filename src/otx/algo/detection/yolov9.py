@@ -19,7 +19,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.model.detection import OTXDetectionModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -81,7 +81,7 @@ def _load_from_state_dict_for_yolov9(
     )
 
 
-class YOLOv9(ExplainableOTXDetModel):
+class YOLOv9(OTXDetectionModel):
     """OTX Detection model class for YOLOv9.
 
     Default input size per model:
