@@ -45,12 +45,12 @@ class TestHuggingFaceModelForDiffusion:
 
     def test_customize_inputs(self, fxt_diffusion_model, fxt_diffusion_batch_data_entity):
         outputs = fxt_diffusion_model._customize_inputs(fxt_diffusion_batch_data_entity)
-        assert "x" in outputs
-        assert "tms" in outputs
-        assert "ctx" in outputs
+        assert "sample" in outputs
+        assert "timestep" in outputs
+        assert "encoder_hidden_states" in outputs
 
     def test_customize_outputs(self, fxt_diffusion_model, fxt_diffusion_batch_data_entity):
-        fxt_diffusion_model.latents, outputs = torch.zeros(1, 4, 512, 512), torch.zeros(1, 4, 512, 512)
+        fxt_diffusion_model.target, outputs = torch.zeros(1, 4, 64, 64), torch.zeros(1, 4, 64, 64)
         fxt_diffusion_model.training = True
         result = fxt_diffusion_model._customize_outputs(
             outputs,

@@ -153,4 +153,5 @@ def fxt_cli_override_command_per_task() -> dict:
         "anomaly_classification": [],
         "anomaly_detection": [],
         "anomaly_segmentation": [],
+        "diffusion": [],
     }

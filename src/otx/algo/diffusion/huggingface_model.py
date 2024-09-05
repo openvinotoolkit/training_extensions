@@ -10,8 +10,11 @@ from typing import TYPE_CHECKING, Any
 import torch
 import torch.nn.functional as F  # noqa: N812
 from diffusers import StableDiffusionPipeline
+from lightning.fabric.loggers.tensorboard import TensorBoardLogger
 from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.diffusion import DiffusionBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
+from otx.core.exporter.diffusion import DiffusionOTXModelExporter
 from otx.core.model.diffusion import OTXDiffusionModel
 from torch import nn
 
@@ -19,8 +22,8 @@ if TYPE_CHECKING:
     from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
     from otx.core.data.entity.diffusion import (
         DiffusionBatchDataEntity,
-        DiffusionBatchPredEntity,
     )
+    from otx.core.exporter.base import OTXModelExporter
 
 
 class UNetWrapper(nn.Module):
@@ -102,6 +105,10 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
     def _create_model(self) -> nn.Module:
         return UNetWrapper(self.pipe.unet)
 
+    def forward_for_tracing(self, *args, **kwargs) -> torch.Tensor | dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(*args, **kwargs)
+
     def _customize_inputs(
         self,
         entity: DiffusionBatchDataEntity,
@@ -179,7 +186,17 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         self.pipe.to(self.device)
         return super().on_fit_start()
 
-    def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
+    def on_test_start(self) -> None:
+        """Called at the beginning of testing."""
+        self.pipe.to(self.device)
+        return super().on_test_start()
+
+    def on_predict_start(self) -> None:
+        """Called at the beginning of prediction."""
+        self.pipe.to(self.device)
+        return super().on_predict_start()
+
+    def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> torch.Tensor:
         """Perform a single validation step on a batch of data from the validation set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
@@ -200,5 +217,57 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         self.metric.update(images, real=False)
 
         # Save images
-        for image, caption in zip(images, batch.captions):
-            self.logger.experiment.add_image(f"val/images/{caption}", image.detach().cpu())
+        for logger in self.loggers:
+            if isinstance(logger, TensorBoardLogger):
+                for image, caption in zip(images, batch.captions):
+                    logger.experiment.add_image(f"val/images/{caption}", image.detach().cpu())
+        return images
+
+    def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        :param batch: A batch of data (a tuple) containing the input tensor of images and target
+            labels.
+        :param batch_idx: The index of the current batch.
+        """
+        return self.validation_step(batch, batch_idx)
+
+    def predict_step(
+        self,
+        batch: DiffusionBatchDataEntity,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> DiffusionBatchPredEntity:
+        """Step function called during PyTorch Lightning Trainer's predict."""
+        return DiffusionBatchPredEntity(
+            images=self.validation_step(batch, batch_idx),
+            imgs_info=batch.imgs_info,
+            batch_size=batch.batch_size,
+            scores=[],
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        return DiffusionOTXModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 4, 64, 64),
+            resize_mode="fit_to_window_letterbox",
+            swap_rgb=True,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["sample", "timestep", "encoder_hidden_states"],
+                "output_names": ["latents"],
+                "dynamic_axes": {
+                    "sample": {0: "batch", 2: "height", 3: "width"},
+                    "timestep": {0: "batch"},
+                    "encoder_hidden_states": {0: "batch"},
+                },
+                "autograd_inlining": False,
+                "args": {
+                    "sample": torch.randn(1, 4, 64, 64),
+                    "timestep": torch.tensor([0]),
+                    "encoder_hidden_states": torch.randn(1, 77, 768),
+                },
+            },
+            output_names=None,
+        )

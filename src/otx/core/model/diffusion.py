@@ -10,6 +10,7 @@ from otx.core.data.entity.diffusion import DiffusionBatchDataEntity, DiffusionBa
 from otx.core.metrics.diffusion import DiffusionMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:
     import torch
@@ -76,3 +77,8 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
 
         Don't configure the metric here. Do it in constructor.
         """
+
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        return super()._export_parameters.wrap(model_type="unet", task_type="diffusion")

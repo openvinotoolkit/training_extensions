@@ -47,7 +47,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.KEYPOINT_DETECTION: RECIPE_PATH / "keypoint_detection" / "rtmpose_tiny.yaml",
-    OTXTaskType.DIFFUSION: RECIPE_PATH / "diffusion" / "sd.yaml",
+    OTXTaskType.DIFFUSION: RECIPE_PATH / "diffusion" / "sd_huggingface.yaml",
 }
 
 TASK_PER_DATA_FORMAT = {

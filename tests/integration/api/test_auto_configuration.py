@@ -42,6 +42,9 @@ def test_auto_configuration(
         task=task,
         work_dir=tmp_path_train,
         device=fxt_accelerator,
+        num_sanity_val_steps=0
+        if task == OTXTaskType.DIFFUSION
+        else None,  # Validation metric requires training to be performed first to calculate the distance between 2 distributions
     )
     if task.lower() == "zero_shot_visual_prompting":
         engine.model.infer_reference_info_root = Path(tmp_path_train)
