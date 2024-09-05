@@ -5,7 +5,34 @@
 
 from unittest.mock import MagicMock
 
-from otx.core.data.dataset.classification import OTXHlabelClsDataset
+from otx.core.data.dataset.classification import OTXHlabelClsDataset, OTXMulticlassClsDataset
+from otx.core.data.entity.classification import MulticlassClsDataEntity
+
+
+class TestOTXMulticlassClsDataset:
+    def test_get_item(
+        self,
+        fxt_mock_dm_subset,
+    ) -> None:
+        dataset = OTXMulticlassClsDataset(
+            dm_subset=fxt_mock_dm_subset,
+            transforms=[lambda x: x],
+            mem_cache_img_max_size=None,
+            max_refetch=3,
+        )
+        assert isinstance(dataset[0], MulticlassClsDataEntity)
+
+    def test_get_item_from_bbox_dataset(
+        self,
+        fxt_mock_det_dm_subset,
+    ) -> None:
+        dataset = OTXMulticlassClsDataset(
+            dm_subset=fxt_mock_det_dm_subset,
+            transforms=[lambda x: x],
+            mem_cache_img_max_size=None,
+            max_refetch=3,
+        )
+        assert isinstance(dataset[0], MulticlassClsDataEntity)
 
 
 class TestOTXHlabelClsDataset:

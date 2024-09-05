@@ -34,7 +34,16 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
-        label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
+        label_anns = []
+        for ann in item.annotations:
+            if isinstance(ann, Label):
+                label_anns.append(ann)
+            else:
+                # If the annotation is not Label, it should be converted to Label.
+                # For Task Chain: Detection (Bbox) -> Classification (Label)
+                label = Label(label=ann.label)
+                if label not in label_anns:
+                    label_anns.append(label)
         if len(label_anns) > 1:
             msg = f"Multi-class Classification can't use the multi-label, currently len(labels) = {len(label_anns)}"
             raise ValueError(msg)
