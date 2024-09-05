@@ -105,9 +105,14 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
     def _create_model(self) -> nn.Module:
         return UNetWrapper(self.pipe.unet)
 
-    def forward_for_tracing(self, *args, **kwargs) -> torch.Tensor | dict[str, torch.Tensor]:
+    def forward_for_tracing(
+        self,
+        sample: torch.Tensor,
+        timestep: torch.Tensor,
+        encoder_hidden_states: torch.Tensor,
+    ) -> torch.Tensor | dict[str, torch.Tensor]:
         """Model forward function used for the model tracing during model exportation."""
-        return self.model(*args, **kwargs)
+        return self.model(sample, timestep, encoder_hidden_states)
 
     def _customize_inputs(
         self,
