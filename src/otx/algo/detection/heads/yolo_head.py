@@ -79,9 +79,9 @@ class CBFuse(nn.Module):
         self.idx = index
         self.mode = mode
 
-    def forward(self, x_list: list[Tensor]) -> Tensor:
+    def forward(self, x_list: list[tuple[Tensor, ...] | Tensor]) -> Tensor:
         """Forward function."""
-        target = x_list[-1]
+        target: Tensor = x_list[-1]
         target_size = target.shape[2:]  # Batch, Channel, H, W
 
         res = [

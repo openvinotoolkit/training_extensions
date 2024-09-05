@@ -8,8 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/l
 
 from __future__ import annotations
 
-from typing import Literal
 import warnings
+from typing import Literal
 
 import torch
 from otx.algo.common.losses.utils import weighted_loss

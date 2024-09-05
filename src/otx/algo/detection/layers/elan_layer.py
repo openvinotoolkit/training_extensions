@@ -130,7 +130,7 @@ class RepConv(nn.Module):
         return self.act(self.conv1(x) + self.conv2(x))
 
 
-class Bottleneck(nn.Module):
+class RepNCSPBottleneck(nn.Module):
     """A bottleneck block with optional residual connections.
 
     Args:
@@ -232,7 +232,7 @@ class RepNCSP(nn.Module):
         )
 
         self.bottleneck = nn.Sequential(
-            *[Bottleneck(neck_channels, neck_channels, **neck_args) for _ in range(repeat_num)],
+            *[RepNCSPBottleneck(neck_channels, neck_channels, **neck_args) for _ in range(repeat_num)],
         )
 
     def forward(self, x: Tensor) -> Tensor:

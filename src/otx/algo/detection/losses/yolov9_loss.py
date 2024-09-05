@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import math
+from typing import Literal
 
 import torch
 from torch import Tensor, nn
@@ -15,20 +16,17 @@ from torch.nn import BCEWithLogitsLoss
 from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
 
 
-def calculate_iou(bbox1: Tensor, bbox2: Tensor, metrics: str = "iou") -> Tensor:
+def calculate_iou(bbox1: Tensor, bbox2: Tensor, metrics: Literal["iou", "diou", "ciou"] = "iou") -> Tensor:
     """Calculate the Intersection over Union (IoU) between two sets of bounding boxes.
-
-    TODO (sungchul): check if it can be replaced with otx.algo.common.losses.iou_loss.IoULoss
 
     Args:
         bbox1 (Tensor): The first set of bounding boxes.
         bbox2 (Tensor): The second set of bounding boxes.
-        metrics (str, optional): The metrics to calculate. Defaults to "iou".
+        metrics (Literal["iou", "diou", "ciou"], optional): The metrics to calculate. Defaults to "iou".
 
     Returns:
         Tensor: The IoU between the two sets of bounding boxes.
     """
-    metrics = metrics.lower()
     eps = 1e-9
     dtype = bbox1.dtype
     bbox1 = bbox1.to(torch.float32)
@@ -209,7 +207,7 @@ class BoxMatcher:
         self,
         class_num: int,
         anchors: Tensor,
-        iou: str = "CIoU",
+        iou: Literal["iou", "diou", "ciou"] = "ciou",
         topk: int = 10,
         factor: dict[str, float] | None = None,
     ) -> None:
