@@ -236,7 +236,8 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             DetBatchPredEntity: Merged detection prediction.
         """
         if self.explain_mode:
-            raise NotImplementedError("Explain mode is not supported for tiling")
+            msg = "Explain mode is not supported for tiling"
+            raise NotImplementedError(msg)
 
         tile_preds: list[SegBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []

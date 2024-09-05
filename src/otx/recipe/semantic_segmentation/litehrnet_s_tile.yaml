@@ -48,7 +48,7 @@ overrides:
       - 512
     tile_config:
       enable_tiler: true
-      enable_adaptive_tiling: false
+      enable_adaptive_tiling: true
 
     train_subset:
       transforms:

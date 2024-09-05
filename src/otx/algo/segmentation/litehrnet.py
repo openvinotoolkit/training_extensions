@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from torch.onnx import OperatorExportTypes
 
@@ -71,6 +71,7 @@ class LiteHRNet(OTXSegmentationModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
+        resize_type: Literal["standard", "fit_to_window"]
         resize_type = "fit_to_window" if self.tile_config.enable_tiler else "standard"
 
         return OTXNativeModelExporter(

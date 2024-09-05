@@ -275,6 +275,12 @@ class TileSegDataEntity(TileDataEntity):
 
 @dataclass
 class TileBatchSegDataEntity(OTXTileBatchDataEntity):
+    """Batch data entity for semantic segmentation tile task.
+
+    Attributes:
+        masks (list[tv_tensors.Mask]): The masks of the original image.
+    """
+
     masks: list[tv_tensors.Mask]
 
     def unbind(self) -> list[tuple[list[dict[str, int | str]], SegBatchDataEntity]]:

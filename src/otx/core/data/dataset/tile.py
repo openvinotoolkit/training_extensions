@@ -137,8 +137,8 @@ class OTXTileTransform(Tile):
     def _tile_masks(
         ann: ExtractedMask,
         roi_int: BboxIntCoords,
-        *args,
-        **kwargs,
+        *args,  # noqa: ARG004
+        **kwargs,  # noqa: ARG004
     ) -> ExtractedMask:
         """Extracts a tile mask from the given annotation.
 
@@ -541,6 +541,16 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
 
 
 class OTXTileSemanticSegTestDataset(OTXTileDataset):
+    """OTX tile semantic-seg test dataset.
+
+    OTXTileSemanticSegTestDataset wraps a list of tiles (SegDataEntity) into a single TileSegDataEntity
+    for testing/predicting.
+
+    Args:
+        dataset (OTXSegmentationDataset): OTX inst-seg dataset.
+        tile_config (TilerConfig): Tile configuration.
+    """
+
     def __init__(self, dataset: OTXSegmentationDataset, tile_config: TileConfig) -> None:
         super().__init__(dataset, tile_config)
         self.ignore_index = self._dataset.ignore_index
@@ -551,6 +561,17 @@ class OTXTileSemanticSegTestDataset(OTXTileDataset):
         return TileBatchSegDataEntity.collate_fn
 
     def _get_item_impl(self, index: int) -> TileSegDataEntity:  # type: ignore[override]
+        """Get item implementation.
+
+        Transform a single dataset item to multiple tiles using Datumaro tiling plugin, and
+        wrap tiles into a single TileSegDataEntity.
+
+        Args:
+            index (int): Index of the dataset item.
+
+        Returns:
+            TileSegDataEntity: tile inst-seg data entity that wraps a list of inst-seg data entities.
+        """
         item = self.dm_subset[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
@@ -572,7 +593,7 @@ class OTXTileSemanticSegTestDataset(OTXTileDataset):
         )
 
     def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> SegDataEntity:
-        """Convert a tile datumaro dataset item to DetDataEntity."""
+        """Convert a tile datumaro dataset item to SegDataEntity."""
         x1, y1, w, h = dataset_item.attributes["roi"]
         tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]

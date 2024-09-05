@@ -452,6 +452,8 @@ class InstanceSegTileMerge(TileMerge):
 
 
 class SegmentationTileMerge(TileMerge):
+    """Semantic segmentation tile merge."""
+
     def merge(
         self,
         batch_tile_preds: list[SegBatchPredEntity],
@@ -542,6 +544,7 @@ class SegmentationTileMerge(TileMerge):
         )
 
         if explain_mode:
-            raise NotImplementedError("Explain mode is not supported for segmentation task.")
+            msg = "Explain mode is not supported for segmentation task."
+            raise NotImplementedError(msg)
 
         return seg_pred_entity

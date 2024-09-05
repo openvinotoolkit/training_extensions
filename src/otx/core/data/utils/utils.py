@@ -8,8 +8,11 @@ import logging
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
+import cv2
 import numpy as np
-from datumaro.components.annotation import _Shape
+from datumaro.components.annotation import AnnotationType, Bbox, Polygon, _Shape
+
+from otx.core.types import OTXTaskType
 
 if TYPE_CHECKING:
     from datumaro import Dataset, DatasetSubset
@@ -75,7 +78,11 @@ def compute_robust_scale_statistics(values: np.array) -> dict[str, float]:
     return stat
 
 
-def compute_robust_dataset_statistics(dataset: DatasetSubset, task, max_samples: int = 1000) -> dict[str, Any]:
+def compute_robust_dataset_statistics(
+    dataset: DatasetSubset,
+    task: OTXTaskType,
+    max_samples: int = 1000,
+) -> dict[str, Any]:
     """Computes robust statistics of image & annotation sizes.
 
     Args:
@@ -114,6 +121,7 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, task, max_samples:
         width_arr.append(width)
     stat["image"]["height"] = compute_robust_scale_statistics(np.array(height_arr))
     stat["image"]["width"] = compute_robust_scale_statistics(np.array(width_arr))
+    label_names = [label_cat.name for label_cat in dataset.as_dataset().categories()[AnnotationType.label]]
 
     num_per_images: list[int] = []
     size_of_shapes: dict[str, list] = defaultdict(list)
@@ -121,7 +129,18 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, task, max_samples:
         data = dataset.get(id=idx, subset=dataset.name)
         annotations: dict[str, list] = defaultdict(list)
         for ann in data.annotations:
-            annotations[ann.__class__.__name__].append(ann)
+            if task is OTXTaskType.SEMANTIC_SEGMENTATION:
+                # Skip background class
+                if label_names[ann.label] == "background":
+                    continue
+
+                # convert Mask to Polygon
+                contours, _ = cv2.findContours(ann.image.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                annotations[Polygon].extend(
+                    [Polygon(contour.flatten()) for contour in contours if len(contour) > 2],
+                )
+            else:
+                annotations[ann.__class__].append(ann)
 
         num_per_images.append(max(len(val) for val in annotations.values()) if annotations else 0)
 
@@ -134,23 +153,15 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, task, max_samples:
             )
 
     stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
-    # The reason why polygon is used prior to others is based on assumtion that it is more accurate than other shapes.
-    # Especially, polygon can be used in the case both polygon and bbox exist like instance segmentation task.
-    # it's needed to refine this algorithm considering not only instance segmentation but also other tasks.
-    if "Polygon" in size_of_shapes:
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes["Polygon"]))
+    if task is OTXTaskType.INSTANCE_SEGMENTATION or task is OTXTaskType.SEMANTIC_SEGMENTATION:
+        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes[Polygon]))
+    elif task is OTXTaskType.DETECTION:
+        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(
+            np.array(size_of_shapes[Bbox]),
+        )
     else:
-        max_ann_type = None
-        max_num_ann = 0
-        for ann_type, anns in size_of_shapes.items():
-            if max_num_ann < len(anns):
-                max_ann_type = ann_type
-                max_num_ann = len(anns)
-        if max_ann_type is not None:
-            stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(
-                np.array(size_of_shapes[max_ann_type]),
-            )
-
+        msg = f"Task type {task} is not supported."
+        raise NotImplementedError(msg)
     return stat
 
 
@@ -161,7 +172,7 @@ _MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
 
 def adapt_input_size_to_dataset(
     dataset: Dataset,
-    task,
+    task: OTXTaskType,
     base_input_size: int | tuple[int, int] | None = None,
     downscale_only: bool = True,
     input_size_multiplier: int | None = None,
@@ -242,7 +253,7 @@ def adapt_input_size_to_dataset(
     return image_size  # type: ignore[return-value]
 
 
-def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task) -> None:
+def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task: OTXTaskType) -> None:
     """Config tile parameters.
 
     Adapt based on annotation statistics.
