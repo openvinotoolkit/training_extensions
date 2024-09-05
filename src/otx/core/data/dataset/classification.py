@@ -87,7 +87,9 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
             else:
                 # If the annotation is not Label, it should be converted to Label.
                 # For Chained Task: Detection (Bbox) -> Classification (Label)
-                label_anns.append(Label(label=ann.label))
+                label = Label(label=ann.label)
+                if label not in label_anns:
+                    label_anns.append(label)
         labels = torch.as_tensor([ann.label for ann in label_anns])
 
         entity = MultilabelClsDataEntity(
