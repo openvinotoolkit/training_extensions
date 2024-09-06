@@ -15,8 +15,8 @@ from otx.algo.detection.heads.yolo_head import (
     CBLinear,
     ImplicitA,
     ImplicitM,
-    SingleHeadDetectionforYOLOv7,
     MultiheadDetection,
+    SingleHeadDetectionforYOLOv7,
     SingleHeadDetectionforYOLOv9,
     YOLOHeadModule,
 )
