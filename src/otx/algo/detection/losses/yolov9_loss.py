@@ -221,10 +221,11 @@ class BoxMatcher:
         """Get a boolean mask that indicates whether each target bounding box overlaps with each anchor.
 
         Args:
-            target_bbox [batch x targets x 4]: The bounding box of each targets.
+            target_bbox (Tensor): The bounding box of each targets with (batch, targets, 4).
 
         Returns:
-            [batch x targets x anchors]: A boolean tensor indicates if target bounding box overlaps with anchors.
+            Tensor: A boolean tensor indicates if target bounding box overlaps with anchors
+                with (batch, targets, anchors).
         """
         xmin, ymin, xmax, ymax = target_bbox[:, :, None].unbind(3)
         anchors = self.anchors[None, None]  # add a axis at first, second dimension
@@ -237,12 +238,13 @@ class BoxMatcher:
         """Get the (predicted class' probabilities) corresponding to the target classes across all anchors.
 
         Args:
-            predict_cls [batch x anchors x class]: The predicted probabilities for each class across each anchor.
-            target_cls [batch x targets]: The class index for each target.
+            predict_cls (Tensor): The predicted probabilities for each class across each anchor
+                with (batch, anchors, class).
+            target_cls (Tensor): The class index for each target with (batch, targets, 1).
 
         Returns:
-            [batch x targets x anchors]: The probabilities from `pred_cls` corresponding to the class indices
-                specified in `target_cls`.
+            Tensor: The probabilities from `pred_cls` corresponding to the class indices
+                specified in `target_cls` with (batch, targets, anchors).
         """
         predict_cls = predict_cls.transpose(1, 2)
         target_cls = target_cls.expand(-1, -1, predict_cls.size(2))
@@ -252,11 +254,11 @@ class BoxMatcher:
         """Get the IoU between each target bounding box and each predicted bounding box.
 
         Args:
-            predict_bbox [batch x predicts x 4]: Bounding box with [x1, y1, x2, y2].
-            target_bbox [batch x targets x 4]: Bounding box with [x1, y1, x2, y2].
+            predict_bbox (Tensor): Bounding box with [x1, y1, x2, y2] with (batch, predicts, 4).
+            target_bbox (Tensor): Bounding box with [x1, y1, x2, y2] with (batch, targets, 4).
 
         Returns:
-            [batch x targets x predicts]: The IoU scores between each target and predicted.
+            Tensor: The IoU scores between each target and predicted with (batch, targets, predicts).
         """
         return calculate_iou(target_bbox, predict_bbox, self.iou).clamp(0, 1)
 
@@ -264,12 +266,12 @@ class BoxMatcher:
         """Filter the top-k suitability of targets for each anchor.
 
         Args:
-            target_matrix [batch x targets x anchors]: The suitability for each targets-anchors
+            target_matrix (Tensor): The suitability for each targets-anchors with (batch, targets, anchors).
             topk (int, optional): Number of top scores to retain per anchor.
 
         Returns:
-            topk_targets [batch x targets x anchors]: Only leave the topk targets for each anchor
-            topk_masks [batch x targets x anchors]: A boolean mask indicating the top-k scores' positions.
+            tuple[Tensor, Tensor]: The top-k suitability for each targets-anchors with (batch, targets, anchors)
+                and a boolean mask indicating the top-k scores' positions with (batch, targets, anchors).
         """
         values, indices = target_matrix.topk(topk, dim=-1)
         topk_targets = torch.zeros_like(target_matrix, device=target_matrix.device)
@@ -281,10 +283,10 @@ class BoxMatcher:
         """Filter the maximum suitability target index of each anchor.
 
         Args:
-            target_matrix [batch x targets x anchors]: The suitability for each targets-anchors
+            target_matrix (Tensor): The suitability for each targets-anchors with (batch, targets, anchors).
 
         Returns:
-            unique_indices [batch x anchors x 1]: The index of the best targets for each anchors
+            unique_indices (Tensor): The index of the best targets for each anchors with (batch, anchors, 1).
         """
         # TODO (author): add a assert for no target on the image
         unique_indices = target_matrix.argmax(dim=1)
