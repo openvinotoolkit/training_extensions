@@ -5,11 +5,10 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, Literal
 
 from otx.algo.detection.backbones import GELAN
-from otx.algo.detection.detectors import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector, YOLOSingleStageDetector
 from otx.algo.detection.heads import YOLOHead
 from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
 from otx.algo.detection.necks import YOLONeck
@@ -35,50 +34,6 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
     "yolov9_m": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-m.pt",
     "yolov9_c": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-c.pt",
 }
-
-
-def _load_from_state_dict_for_yolov9(
-    self: SingleStageDetector,
-    state_dict: dict,
-    prefix: str,
-    local_metadata: dict,
-    strict: bool,
-    missing_keys: list[str] | str,
-    unexpected_keys: list[str] | str,
-    error_msgs: list[str] | str,
-) -> None:
-    backbone_len: int = len(self.backbone.module)
-    neck_len: int = len(self.neck.module)  # type: ignore[union-attr]
-    new_state_dict_keys: dict[str, str] = {}
-    for key in state_dict:
-        match = re.match(r"^(\d+)\.(.*)$", key)
-        if match:
-            orig_idx = int(match.group(1))
-            rest_key = match.group(2)
-
-            if orig_idx < backbone_len:
-                new_key = f"backbone.module.{orig_idx}.{rest_key}"
-            elif orig_idx < backbone_len + neck_len:
-                new_idx = orig_idx - backbone_len
-                new_key = f"neck.module.{new_idx}.{rest_key}"
-            else:  # for bbox_head
-                new_idx = orig_idx - backbone_len - neck_len
-                new_key = f"bbox_head.module.{new_idx}.{rest_key}"
-            new_state_dict_keys[key] = new_key
-
-    for old_key, new_key in new_state_dict_keys.items():
-        value = state_dict.pop(old_key)
-        state_dict[new_key] = value
-
-    super(SingleStageDetector, self)._load_from_state_dict(
-        state_dict,
-        prefix,
-        local_metadata,
-        strict,
-        missing_keys,
-        unexpected_keys,
-        error_msgs,
-    )
 
 
 class YOLOv9(OTXDetectionModel):
@@ -122,14 +77,12 @@ class YOLOv9(OTXDetectionModel):
         neck = YOLONeck(model_name=self.model_name)
         bbox_head = YOLOHead(model_name=self.model_name, num_classes=num_classes)
 
-        detector = SingleStageDetector(
+        detector = YOLOSingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
             criterion=None,
         )
-        # patch _load_from_state_dict
-        detector._load_from_state_dict = _load_from_state_dict_for_yolov9.__get__(detector, SingleStageDetector)  # type: ignore[method-assign] # noqa: SLF001
 
         # set criterion
         strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9_c" else None
