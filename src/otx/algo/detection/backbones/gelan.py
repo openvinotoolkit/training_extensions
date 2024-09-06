@@ -140,7 +140,7 @@ class GELAN:
     }
 
     def __new__(cls, model_name: str) -> GELANModule:
-        """Constructor for GELAN for v7 and v9."""
+        """Constructor for GELAN for YOLOv9."""
         if model_name not in cls.GELAN_CFG:
             msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
