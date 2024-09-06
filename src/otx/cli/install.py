@@ -49,8 +49,8 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     parser = ArgumentParser()
     parser.add_argument(
         "--option",
-        help="Install the mmlab library or optional-dependencies.",
-        default="full",
+        help="Install optional-dependencies. The 'full' option will install all dependencies.",
+        default="base",
         type=str,
     )
     parser.add_argument(
