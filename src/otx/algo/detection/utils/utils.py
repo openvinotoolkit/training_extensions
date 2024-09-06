@@ -10,16 +10,18 @@ Reference :
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 from einops import rearrange
 from torch import Tensor, nn
 from torch.autograd import Function
 
-from otx.algo.detection.detectors.single_stage_detector import SingleStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
+
+if TYPE_CHECKING:
+    from otx.algo.detection.detectors.single_stage_detector import SingleStageDetector
 
 
 def images_to_levels(target: list[Tensor], num_levels: list[int]) -> list[Tensor]:
