@@ -1,8 +1,9 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) OpenMMLab. All rights reserved.
-#
-"""YOLO v9 criterion."""
+"""Criterion module for YOLOv7 and v9.
+
+Reference : https://github.com/WongKinYiu/YOLO
+"""
 
 from __future__ import annotations
 
