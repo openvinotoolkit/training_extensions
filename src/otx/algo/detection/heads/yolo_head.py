@@ -141,7 +141,7 @@ class ImplicitM(nn.Module):
         return self.implicit * x
 
 
-class SingleHeadDetection(nn.Module):
+class SingleHeadDetectionforYOLOv9(nn.Module):
     """A single YOLO Detection head for YOLOv9 detection models.
 
     Args:
@@ -221,7 +221,7 @@ class SingleHeadDetection(nn.Module):
         return class_x, anchor_x, vector_x
 
 
-class ISingleHeadDetection(nn.Module):
+class SingleHeadDetectionforYOLOv7(nn.Module):
     """A single YOLO Detection head for YOLOv7 detection models.
 
     Args:
@@ -268,7 +268,7 @@ class MultiheadDetection(nn.Module):
     def __init__(self, in_channels: list[int], num_classes: int, **head_kwargs) -> None:
         super().__init__()
         single_head_detection: nn.Module = (
-            ISingleHeadDetection if head_kwargs.pop("version", None) == "v7" else SingleHeadDetection
+            SingleHeadDetectionforYOLOv7 if head_kwargs.pop("version", None) == "v7" else SingleHeadDetectionforYOLOv9
         )
 
         self.heads = nn.ModuleList(

@@ -15,9 +15,9 @@ from otx.algo.detection.heads.yolo_head import (
     CBLinear,
     ImplicitA,
     ImplicitM,
-    ISingleHeadDetection,
+    SingleHeadDetectionforYOLOv7,
     MultiheadDetection,
-    SingleHeadDetection,
+    SingleHeadDetectionforYOLOv9,
     YOLOHeadModule,
 )
 from otx.algo.detection.utils.utils import Vec2Box
@@ -94,7 +94,7 @@ class TestSingleHeadDetection:
         reg_max = 16
         use_group = True
 
-        head = SingleHeadDetection(in_channels, num_classes, reg_max=reg_max, use_group=use_group)
+        head = SingleHeadDetectionforYOLOv9(in_channels, num_classes, reg_max=reg_max, use_group=use_group)
 
         x = torch.randn(2, in_channels[1], 10, 10)
         class_x, anchor_x, vector_x = head(x)
@@ -110,7 +110,7 @@ class TestISingleHeadDetection:
         num_classes = 10
         anchor_num = 3
 
-        head = ISingleHeadDetection(in_channels, num_classes, anchor_num=anchor_num)
+        head = SingleHeadDetectionforYOLOv7(in_channels, num_classes, anchor_num=anchor_num)
 
         x = torch.randn(2, in_channels, 10, 10)
         output = head(x)
