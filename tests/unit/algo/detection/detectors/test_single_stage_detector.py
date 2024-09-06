@@ -3,9 +3,12 @@
 #
 """Test of SingleStageDetector."""
 
+import re
+
 import pytest
 import torch
 from otx.algo.detection.detectors.single_stage_detector import SingleStageDetector
+from otx.algo.detection.yolov9 import YOLOv9
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.types import LabelInfo
 from torch import nn
@@ -111,3 +114,63 @@ class TestSingleStageDetector:
     def test_with_mask(self, detector):
         assert isinstance(detector.with_mask, bool)
         assert not detector.with_mask
+
+
+class TestYOLOSingleStageDetector:
+    @pytest.fixture()
+    def detector(self) -> YOLOv9:
+        return YOLOv9(model_name="yolov9_s", label_info=3)
+
+    def test_load_from_state_dict(self, detector: YOLOv9) -> None:
+        state_dict = {
+            "0.conv.weight": torch.randn(32, 3, 3, 3),
+            "0.bn.weight": torch.randn(32),
+            "0.bn.bias": torch.randn(32),
+            "0.bn.running_mean": torch.randn(32),
+            "0.bn.running_var": torch.randn(32),
+            "0.bn.num_batches_tracked": torch.randn([]),
+            "9.conv1.conv.weight": torch.randn(128, 256, 1, 1),
+            "9.conv1.bn.weight": torch.randn(128),
+            "9.conv1.bn.bias": torch.randn(128),
+            "9.conv1.bn.running_mean": torch.randn(128),
+            "9.conv1.bn.running_var": torch.randn(128),
+            "9.conv1.bn.num_batches_tracked": torch.randn([]),
+            "15.conv1.conv.weight": torch.randn(128, 320, 1, 1),
+            "15.conv1.bn.weight": torch.randn(128),
+            "15.conv1.bn.bias": torch.randn(128),
+            "15.conv1.bn.running_mean": torch.randn(128),
+            "15.conv1.bn.running_var": torch.randn(128),
+            "15.conv1.bn.num_batches_tracked": torch.randn([]),
+        }
+        updated_state_dict = state_dict.copy()
+        prefix = ""
+        local_metadata = {}
+        strict = True
+        missing_keys = []
+        unexpected_keys = []
+        error_msgs = []
+
+        detector.model._load_from_state_dict(
+            updated_state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+        )
+
+        backbone_len: int = len(detector.model.backbone.module)
+        neck_len: int = len(detector.model.neck.module)  # type: ignore[union-attr]
+        for (k, v), (updated_k, updated_v) in zip(state_dict.items(), updated_state_dict.items()):
+            match = re.match(r"^(\d+)\.(.*)$", k)
+            orig_idx = int(match.group(1))
+            if orig_idx < backbone_len:
+                assert re.match(r"backbone.module.", updated_k)
+            elif orig_idx < backbone_len + neck_len:
+                assert re.match(r"neck.module.", updated_k)
+            else:  # for bbox_head
+                assert re.match(r"bbox_head.module.", updated_k)
+
+            assert torch.allclose(v, updated_v)
+            assert v.shape == updated_v.shape
