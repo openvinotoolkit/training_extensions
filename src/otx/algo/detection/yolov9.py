@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Literal
 from otx.algo.detection.backbones import GELAN
 from otx.algo.detection.detectors import SingleStageDetector, YOLOSingleStageDetector
 from otx.algo.detection.heads import YOLOHead
-from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
+from otx.algo.detection.losses.yolo_loss import BCELoss, BoxLoss, DFLoss, YOLOCriterion
 from otx.algo.detection.necks import YOLONeck
 from otx.algo.detection.utils.utils import Vec2Box
 from otx.core.config.data import TileConfig
@@ -88,7 +88,7 @@ class YOLOv9(OTXDetectionModel):
         strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9_c" else None
         self.vec2box = Vec2Box(detector, self.input_size, strides)
         detector.bbox_head.vec2box = self.vec2box
-        detector.criterion = YOLOv9Criterion(
+        detector.criterion = YOLOCriterion(
             num_classes=num_classes,
             loss_cls=BCELoss(),
             loss_dfl=DFLoss(self.vec2box),

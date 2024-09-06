@@ -1,12 +1,12 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Test of YOLOv9 criterion architecture."""
+"""Test of criterion module for YOLOv7 and v9."""
 
 from unittest.mock import MagicMock, Mock
 
 import pytest
 import torch
-from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, BoxMatcher, DFLoss, YOLOv9Criterion, calculate_iou
+from otx.algo.detection.losses.yolo_loss import BCELoss, BoxLoss, BoxMatcher, DFLoss, YOLOCriterion, calculate_iou
 from otx.algo.detection.utils.utils import Vec2Box
 from torch import Tensor
 
@@ -164,12 +164,12 @@ class TestBoxMatcher:
         assert valid_masks.shape == torch.Size([1, 3])
 
 
-class TestYOLOv9Criterion:
+class TestYOLOCriterion:
     @pytest.fixture()
-    def criterion(self) -> YOLOv9Criterion:
+    def criterion(self) -> YOLOCriterion:
         num_classes = 10
         vec2box = Vec2Box(None, (640, 640), [8, 16, 32])
-        return YOLOv9Criterion(
+        return YOLOCriterion(
             num_classes,
             vec2box,
             loss_cls=Mock(return_value=torch.randn(1)),
@@ -177,7 +177,7 @@ class TestYOLOv9Criterion:
             loss_iou=Mock(return_value=torch.randn(1)),
         )
 
-    def test_forward(self, mocker, criterion: YOLOv9Criterion) -> None:
+    def test_forward(self, mocker, criterion: YOLOCriterion) -> None:
         mocker.patch.object(criterion, "vec2box", return_value=torch.tensor(0.0))
         mocker.patch.object(
             criterion,
@@ -195,7 +195,7 @@ class TestYOLOv9Criterion:
         assert "loss_iou" in loss_dict
         assert "loss" in loss_dict
 
-    def test_separate_anchor(self, criterion: YOLOv9Criterion) -> None:
+    def test_separate_anchor(self, criterion: YOLOCriterion) -> None:
         criterion.num_classes = 2
         anchors = torch.cat((torch.zeros(1, 8400, 2), torch.ones(1, 8400, 4)), dim=-1)
         expected_cls = torch.zeros(1, 8400, 2)

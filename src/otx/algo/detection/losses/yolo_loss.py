@@ -345,10 +345,10 @@ class BoxMatcher:
         return torch.cat([align_cls, align_bbox], dim=-1), valid_mask.bool()
 
 
-class YOLOv9Criterion(nn.Module):
-    """YOLOv9 criterion module.
+class YOLOCriterion(nn.Module):
+    """Criterion module for YOLOv7 and v9.
 
-    This module calculates the loss for YOLOv9 object detection model.
+    This module calculates the loss for YOLOv7 and v9 object detection model.
 
     Args:
         num_classes (int): The number of classes.
@@ -395,7 +395,7 @@ class YOLOv9Criterion(nn.Module):
         targets: Tensor,
         aux_preds: tuple[Tensor, Tensor, Tensor] | None = None,
     ) -> dict[str, Tensor]:
-        """Forward pass of the YOLOv9 criterion module.
+        """Forward pass of the YOLOv7 and v9 criterion module.
 
         Args:
             main_preds (tuple[Tensor, Tensor, Tensor]): The main predictions.

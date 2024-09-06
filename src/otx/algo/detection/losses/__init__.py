@@ -7,7 +7,7 @@ from .atss_loss import ATSSCriterion
 from .rtdetr_loss import DetrCriterion
 from .rtmdet_loss import RTMDetCriterion
 from .ssd_loss import SSDCriterion
-from .yolov9_loss import YOLOv9Criterion
+from .yolo_loss import YOLOCriterion
 from .yolox_loss import YOLOXCriterion
 
 __all__ = [
@@ -15,6 +15,6 @@ __all__ = [
     "DetrCriterion",
     "RTMDetCriterion",
     "SSDCriterion",
-    "YOLOv9Criterion",
+    "YOLOCriterion",
     "YOLOXCriterion",
 ]
