@@ -123,7 +123,6 @@ def otx_install(
     )
 
     # Parse mmX requirements if the task requires mmX packages.
-    mmcv_install_args = ["--user"] if user else []
     if mmcv_requirements:
         mmcv_install_args = get_mmcv_install_args(torch_requirement, mmcv_requirements)
         install_args += ["openmim"]
@@ -146,6 +145,8 @@ def otx_install(
 
         # Install mmX requirements if the task requires mmX packages using mim.
         if mmcv_install_args and status_code == 0:
+            if user:
+                mmcv_install_args.append("--user")
             console.log(f"Installation list: [yellow]{mmcv_install_args}[/yellow]")
             status_code = mim_installation(mmcv_install_args)
             if status_code == 0:
