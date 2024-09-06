@@ -44,7 +44,7 @@ ENV PYTHONPATH=${OTX_INSTALL_PATH}:${PYTHONPATH:+:${PYTHONPATH}}
 ENV PATH=${OTX_INSTALL_PATH}/bin:${PATH:+:${PATH}}
 
 RUN pip install --user --no-cache-dir --require-hashes --no-deps -r /tmp/requirements.txt && \
-    otx install --do-not-install-torch --user && \
+    pip install --user --no-cache-dir -e src_dir/[base] && \
     rm /tmp/requirements.txt
 
 
