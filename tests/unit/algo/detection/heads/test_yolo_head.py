@@ -20,7 +20,7 @@ from otx.algo.detection.heads.yolo_head import (
     SingleHeadDetection,
     YOLOHeadModule,
 )
-from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+from otx.algo.detection.utils.utils import Vec2Box
 from otx.algo.utils.mmengine_utils import InstanceData
 
 

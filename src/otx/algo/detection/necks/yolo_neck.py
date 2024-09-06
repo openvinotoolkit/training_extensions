@@ -12,7 +12,7 @@ from typing import Any, ClassVar, Mapping
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import SPPELAN, Concat, RepNCSPELAN
-from otx.algo.detection.utils.yolov7_v9_utils import set_info_into_instance
+from otx.algo.detection.utils.utils import set_info_into_instance
 
 
 class YOLONeckModule(nn.Module):

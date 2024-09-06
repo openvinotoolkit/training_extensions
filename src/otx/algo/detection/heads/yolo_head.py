@@ -17,7 +17,7 @@ from torchvision.ops import batched_nms
 from otx.algo.common.utils.nms import multiclass_nms
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.layers import AConv, ADown, Concat, SPPELAN, RepNCSPELAN
-from otx.algo.detection.utils.yolov7_v9_utils import round_up, set_info_into_instance, auto_pad
+from otx.algo.detection.utils.utils import round_up, set_info_into_instance, auto_pad
 from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity

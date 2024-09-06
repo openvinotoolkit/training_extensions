@@ -8,7 +8,7 @@ Reference : https://github.com/WongKinYiu/YOLO
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.utils.yolov7_v9_utils import auto_pad
+from otx.algo.detection.utils.utils import auto_pad
 from otx.algo.modules import Conv2dModule
 
 

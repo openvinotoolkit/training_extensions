@@ -13,7 +13,7 @@ import torch
 from torch import Tensor, nn
 from torch.nn import BCEWithLogitsLoss
 
-from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+from otx.algo.detection.utils.utils import Vec2Box
 
 
 def calculate_iou(bbox1: Tensor, bbox2: Tensor, metrics: Literal["iou", "diou", "ciou"] = "iou") -> Tensor:

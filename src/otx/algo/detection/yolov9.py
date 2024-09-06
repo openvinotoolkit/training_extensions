@@ -13,7 +13,7 @@ from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import YOLOHead
 from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
 from otx.algo.detection.necks import YOLONeck
-from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+from otx.algo.detection.utils.utils import Vec2Box
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter

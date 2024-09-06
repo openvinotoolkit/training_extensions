@@ -5,7 +5,7 @@
 import pytest
 import torch
 from otx.algo.detection.backbones.gelan import GELAN, GELANModule
-from otx.algo.detection.utils.yolov7_v9_utils import auto_pad
+from otx.algo.detection.utils.utils import auto_pad
 from otx.algo.modules import Conv2dModule
 from torch import nn
 

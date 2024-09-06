@@ -13,7 +13,7 @@ from typing import Any, ClassVar
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import ELAN, AConv, ADown, RepNCSPELAN
-from otx.algo.detection.utils.yolov7_v9_utils import auto_pad, set_info_into_instance
+from otx.algo.detection.utils.utils import auto_pad, set_info_into_instance
 from otx.algo.modules import Conv2dModule
 
 logger = logging.getLogger(__name__)

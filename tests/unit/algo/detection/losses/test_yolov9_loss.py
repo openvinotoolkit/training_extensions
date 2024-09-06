@@ -5,7 +5,7 @@
 import pytest
 import torch
 from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, calculate_iou
-from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+from otx.algo.detection.utils.utils import Vec2Box
 from torch import Tensor
 
 
