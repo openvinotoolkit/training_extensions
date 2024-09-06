@@ -35,14 +35,18 @@ class RTMPose(OTXKeypointDetectionModel):
             msg = f"Exporter should have a input_size but it is given by {self.input_size}"
             raise ValueError(msg)
 
+        if self.explain_mode:
+            msg = f"Export with explain is not supported for RTMPose model."
+            raise ValueError(msg)
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
-            resize_mode="fit_to_window_letterbox",
-            pad_value=114,
-            swap_rgb=True,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
             via_onnx=True,
             onnx_export_configuration={
                 "input_names": ["image"],
@@ -53,7 +57,7 @@ class RTMPose(OTXKeypointDetectionModel):
                 },
                 "autograd_inlining": False,
             },
-            output_names=["points", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["pred_x", "pred_y"],
         )
 
     @property
@@ -66,8 +70,6 @@ class RTMPoseTiny(RTMPose):
     """RTMPose Tiny Model."""
 
     load_from = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/cspnext-tiny_udp-aic-coco_210e-256x192-cbed682d_20230130.pth"
-    mean = (123.675, 116.28, 103.53)
-    std = (58.395, 57.12, 57.375)
 
     def __init__(
         self,
@@ -78,8 +80,6 @@ class RTMPoseTiny(RTMPose):
         metric: MetricCallable = PCKMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.mean = (0.0, 0.0, 0.0)
-        self.std = (255.0, 255.0, 255.0)
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -88,6 +88,9 @@ class RTMPoseTiny(RTMPose):
             metric=metric,
             torch_compile=torch_compile,
         )
+
+        self.mean = (123.675, 116.28, 103.53)
+        self.std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> RTMPose:
         simcc_split_ratio = 2.0
