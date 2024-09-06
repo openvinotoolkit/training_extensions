@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any
 import torch
 from einops import rearrange
 from torch import Tensor, nn
-from torchvision.ops import batched_nms
 
 if TYPE_CHECKING:
     from otx.algo.detection.detectors import SingleStageDetector
@@ -77,51 +76,6 @@ def generate_anchors(image_size: tuple[int, int], strides: list[int]) -> tuple[T
     all_anchors = torch.cat(anchors, dim=0)
     all_scalers = torch.cat(scaler, dim=0)
     return all_anchors, all_scalers
-
-
-def transform_bbox(bbox: Tensor, indicator: str = "xywh -> xyxy") -> Tensor:
-    """Transform the bounding box format.
-
-    TODO (sungchul): replace it with transform utils.
-
-    Args:
-        bbox (Tensor): The bounding box tensor with (N, 4) shape.
-        indicator (str): The indicator for input and output format. Defaults to "xywh -> xyxy".
-
-    Returns:
-        Tensor: The transformed bounding box tensor.
-    """
-    data_type = bbox.dtype
-    in_type, out_type = indicator.replace(" ", "").split("->")
-
-    if in_type not in ["xyxy", "xywh", "xycwh"] or out_type not in ["xyxy", "xywh", "xycwh"]:
-        msg = "Invalid input or output format"
-        raise ValueError(msg)
-
-    if in_type == "xywh":
-        x_min = bbox[..., 0]
-        y_min = bbox[..., 1]
-        x_max = bbox[..., 0] + bbox[..., 2]
-        y_max = bbox[..., 1] + bbox[..., 3]
-    elif in_type == "xyxy":
-        x_min = bbox[..., 0]
-        y_min = bbox[..., 1]
-        x_max = bbox[..., 2]
-        y_max = bbox[..., 3]
-    elif in_type == "xycwh":
-        x_min = bbox[..., 0] - bbox[..., 2] / 2
-        y_min = bbox[..., 1] - bbox[..., 3] / 2
-        x_max = bbox[..., 0] + bbox[..., 2] / 2
-        y_max = bbox[..., 1] + bbox[..., 3] / 2
-
-    if out_type == "xywh":
-        bbox = torch.stack([x_min, y_min, x_max - x_min, y_max - y_min], dim=-1)
-    elif out_type == "xyxy":
-        bbox = torch.stack([x_min, y_min, x_max, y_max], dim=-1)
-    elif out_type == "xycwh":
-        bbox = torch.stack([(x_min + x_max) / 2, (y_min + y_max) / 2, x_max - x_min, y_max - y_min], dim=-1)
-
-    return bbox.to(dtype=data_type)
 
 
 class Vec2Box:
@@ -196,49 +150,6 @@ class Vec2Box:
         lt, rb = pred_lt_rb.chunk(2, dim=-1)
         preds_box = torch.cat([self.anchor_grid - lt, self.anchor_grid + rb], dim=-1)
         return preds_cls, preds_anc, preds_box
-
-
-def bbox_nms(
-    cls_dist: Tensor,
-    bbox: Tensor,
-    min_confidence: float = 0.05,
-    min_iou: float = 0.9,
-    confidence: Tensor | None = None,
-) -> list[Tensor]:
-    """Apply NMS to the bounding box.
-
-    Args:
-        cls_dist (Tensor): The class distribution tensor.
-        bbox (Tensor): The bounding box tensor.
-        min_confidence (float): The minimum confidence to filter. Defaults to 0.05.
-        min_iou (float): The minimum IoU to filter. Defaults to 0.9.
-        confidence (Tensor | None): The confidence tensor. Defaults to None.
-
-    Returns:
-        list[Tensor]: The list of predicted bounding boxes.
-    """
-    cls_dist = cls_dist.sigmoid() * (1 if confidence is None else confidence)
-
-    # filter class by confidence
-    cls_val, cls_idx = cls_dist.max(dim=-1, keepdim=True)
-    valid_mask = cls_val > min_confidence
-    valid_cls = cls_idx[valid_mask].float()
-    valid_con = cls_val[valid_mask].float()
-    valid_box = bbox[valid_mask.repeat(1, 1, 4)].view(-1, 4)
-
-    batch_idx, *_ = torch.where(valid_mask)
-    nms_idx = batched_nms(valid_box, valid_cls, batch_idx, min_iou)
-    predicts_nms = []
-    for idx in range(cls_dist.size(0)):
-        instance_idx = nms_idx[idx == batch_idx[nms_idx]]
-
-        predict_nms = torch.cat(
-            [valid_cls[instance_idx][:, None], valid_box[instance_idx], valid_con[instance_idx][:, None]],
-            dim=-1,
-        )
-
-        predicts_nms.append(predict_nms)
-    return predicts_nms
 
 
 def set_info_into_instance(layer_dict: dict[str, Any]) -> nn.Module:
