@@ -9,7 +9,7 @@ from pathlib import Path
 
 import torch
 from pytorchcv.model_provider import _models
-from pytorchcv.models.model_store import download_model
+from pytorchcv.models.common.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 

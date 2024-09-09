@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
-from pytorchcv.models.model_store import download_model
+from pytorchcv.models.common.model_store import download_model
 from torch import nn
 from torch.nn import init
 
