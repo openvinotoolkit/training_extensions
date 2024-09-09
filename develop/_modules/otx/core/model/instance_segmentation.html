@@ -272,7 +272,7 @@
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">InstSegExplainAlgo</span><span class="p">,</span> <span class="n">feature_vector_fn</span>
-<span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.two_stage</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
+<span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.segmentors.two_stage</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
 <span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">InstanceData</span><span class="p">,</span> <span class="n">load_checkpoint</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span><span class="p">,</span> <span class="n">OTXBatchLossEntity</span>
@@ -301,18 +301,31 @@
 <div class="viewcode-block" id="OTXInstanceSegModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXInstanceSegModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the Instance Segmentation models used in OTX.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the Instance Segmentation models used in OTX.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label_info (LabelInfoTypes): label information</span>
+<span class="sd">        input_size (tuple[int, int]): model input size</span>
+<span class="sd">        model_name (str): model name/version</span>
+<span class="sd">        optimizer (OptimizerCallable, optional): optimizer</span>
+<span class="sd">        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): scheduler</span>
+<span class="sd">        metric (MetricCallable, optional): metric</span>
+<span class="sd">        torch_compile (bool, optional): torch compile</span>
+<span class="sd">        tile_config (TileConfig, optional): tile configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">,</span>
-        <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;inst_segm_model&quot;</span><span class="p">,</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">MaskRLEMeanAPFMeasureCallable</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
             <span class="n">input_size</span><span class="o">=</span><span class="n">input_size</span><span class="p">,</span>
@@ -329,11 +342,15 @@
 
     <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
         <span class="n">detector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_model</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
-        <span class="n">detector</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="s2">&quot;init_weights&quot;</span><span class="p">):</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_classification_layers</span><span class="p">(</span><span class="s2">&quot;model.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">],</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">detector</span>
 
     <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -655,12 +672,25 @@
 <div class="viewcode-block" id="ExplainableOTXInstanceSegModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel">[docs]</a>
 <span class="k">class</span> <span class="nc">ExplainableOTXInstanceSegModel</span><span class="p">(</span><span class="n">OTXInstanceSegModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label_info (LabelInfoTypes): label information</span>
+<span class="sd">        input_size (tuple[int, int]): model input size</span>
+<span class="sd">        model_name (str): model name/version</span>
+<span class="sd">        optimizer (OptimizerCallable, optional): optimizer</span>
+<span class="sd">        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): scheduler</span>
+<span class="sd">        metric (MetricCallable, optional): metric</span>
+<span class="sd">        torch_compile (bool, optional): torch compile</span>
+<span class="sd">        tile_config (TileConfig, optional): tile configuration</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">,</span>
-        <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">MaskRLEMeanAPFMeasureCallable</span><span class="p">,</span>
@@ -670,6 +700,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
             <span class="n">input_size</span><span class="o">=</span><span class="n">input_size</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
@@ -752,9 +783,9 @@
 <span class="sd">            tuple[Tensor] | list[InstanceData]: The predicted results from the head of the model.</span>
 <span class="sd">            Tuple for the Export case, list for the Predict case.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.rtmdet_inst</span> <span class="kn">import</span> <span class="n">RTMDetInstTiny</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.rtmdet_inst</span> <span class="kn">import</span> <span class="n">RTMDetInst</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RTMDetInstTiny</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RTMDetInst</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">rpn_results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rpn_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">roi_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rpn_results_list</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
