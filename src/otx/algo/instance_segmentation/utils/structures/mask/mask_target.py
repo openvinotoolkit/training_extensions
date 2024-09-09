@@ -21,7 +21,7 @@ def mask_target(
     pos_proposals_list: list[Tensor],
     pos_assigned_gt_inds_list: list[Tensor],
     gt_masks_list: list[list[Polygon]] | list[tv_tensors.Mask],
-    cfg: dict,
+    mask_size: int,
     meta_infos: list[dict],
 ) -> Tensor:
     """Compute mask target for positive proposals in multiple images.
@@ -33,19 +33,19 @@ def mask_target(
             positive proposals, each has shape (num_pos,).
         gt_masks_list (list[list[Polygon]] or list[tv_tensors.Mask]): Ground truth masks of
             each image.
-        cfg (dict): Dict that specifies the mask size.
+        mask_size (int): The mask size.
         meta_infos (list[dict]): Meta information of each image.
 
     Returns:
         Tensor: Mask target of each image, has shape (num_pos, w, h).
     """
-    cfg_list = [cfg for _ in range(len(pos_proposals_list))]
+    mask_size_list = [mask_size for _ in range(len(pos_proposals_list))]
     mask_targets = map(
-        mask_target_single,
+        mask_target_single,  # type: ignore[arg-type]
         pos_proposals_list,
         pos_assigned_gt_inds_list,
         gt_masks_list,
-        cfg_list,
+        mask_size_list,
         meta_infos,
     )
     _mask_targets = list(mask_targets)
@@ -58,7 +58,7 @@ def mask_target_single(
     pos_proposals: Tensor,
     pos_assigned_gt_inds: Tensor,
     gt_masks: list[Polygon] | tv_tensors.Mask,
-    cfg: dict,
+    mask_size: list[int],
     meta_info: dict,
 ) -> Tensor:
     """Compute mask target for each positive proposal in the image."""
@@ -71,7 +71,7 @@ def mask_target_single(
         raise NotImplementedError(msg)
 
     device = pos_proposals.device
-    mask_size = _pair(cfg["mask_size"])
+    mask_size = _pair(mask_size)
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
         proposals_np = pos_proposals.cpu().numpy()
@@ -83,7 +83,7 @@ def mask_target_single(
         mask_targets = crop_and_resize(
             gt_masks,
             proposals_np,
-            mask_size,
+            mask_size,  # type: ignore[arg-type]
             inds=pos_assigned_gt_inds,
             device=device,
         )
