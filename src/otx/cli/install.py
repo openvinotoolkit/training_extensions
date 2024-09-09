@@ -49,8 +49,8 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     parser = ArgumentParser()
     parser.add_argument(
         "--option",
-        help="Install the mmlab library or optional-dependencies.",
-        default="full",
+        help="Install optional-dependencies. The 'full' option will install all dependencies.",
+        default="base",
         type=str,
     )
     parser.add_argument(
@@ -123,7 +123,7 @@ def otx_install(
     )
 
     # Parse mmX requirements if the task requires mmX packages.
-    mmcv_install_args = ["--user"] if user else []
+    mmcv_install_args = []
     if mmcv_requirements:
         mmcv_install_args = get_mmcv_install_args(torch_requirement, mmcv_requirements)
         install_args += ["openmim"]
@@ -146,6 +146,8 @@ def otx_install(
 
         # Install mmX requirements if the task requires mmX packages using mim.
         if mmcv_install_args and status_code == 0:
+            if user:
+                mmcv_install_args.append("--user")
             console.log(f"Installation list: [yellow]{mmcv_install_args}[/yellow]")
             status_code = mim_installation(mmcv_install_args)
             if status_code == 0:
