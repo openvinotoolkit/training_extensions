@@ -375,31 +375,40 @@
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;segnext_b&quot;</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="c1"># ANOMALY_CLASSIFICATION</span>
+    <span class="c1"># ANOMALY</span>
+    <span class="s2">&quot;ote_anomaly_padim&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;padim&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;ote_anomaly_stfpm&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;stfpm&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="c1"># ANOMALY CLASSIFICATION</span>
     <span class="s2">&quot;ote_anomaly_classification_padim&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;padim&quot;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">&quot;ote_anomaly_classification_stfpm&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;stfpm&quot;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># ANOMALY_DETECTION</span>
     <span class="s2">&quot;ote_anomaly_detection_padim&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;padim&quot;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">&quot;ote_anomaly_detection_stfpm&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;stfpm&quot;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># ANOMALY_SEGMENTATION</span>
     <span class="s2">&quot;ote_anomaly_segmentation_padim&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;padim&quot;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">&quot;ote_anomaly_segmentation_stfpm&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;stfpm&quot;</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>

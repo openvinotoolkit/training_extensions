@@ -371,7 +371,7 @@
 
     <span class="nd">@task</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY</span><span class="p">,</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_task_type</span> <span class="o">=</span> <span class="n">AnomalibTaskType</span><span class="o">.</span><span class="n">CLASSIFICATION</span>
         <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_task_type</span> <span class="o">=</span> <span class="n">AnomalibTaskType</span><span class="o">.</span><span class="n">DETECTION</span>
