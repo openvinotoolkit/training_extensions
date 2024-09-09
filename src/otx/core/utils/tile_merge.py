@@ -27,9 +27,9 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
 
     Args:
         img_infos (list[ImageInfo]): Original image information before tiling.
-        iou_threshold (float, optional): IoU threshold for non-maximum suppression. Defaults to 0.45.
-        max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 500.
-
+        num_classes (int): Number of classes.
+        tile_config (TileConfig): Tile configuration.
+        explain_mode (bool): Whether or not tiles have explain features. Default: False.
     """
 
     def __init__(
@@ -37,6 +37,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         img_infos: list[ImageInfo],
         num_classes: int,
         tile_config: TileConfig,
+        explain_mode: bool = False,
     ) -> None:
         self.img_infos = img_infos
         self.num_classes = num_classes
@@ -44,6 +45,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         self.iou_threshold = tile_config.iou_threshold
         self.max_num_instances = tile_config.max_num_instances
         self.with_full_img = tile_config.with_full_img
+        self.explain_mode = explain_mode
 
     @abstractmethod
     def _merge_entities(
@@ -115,7 +117,7 @@ class DetectionTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
-        explain_mode = len(batch_tile_preds[0].feature_vector) > 0
+        explain_mode = self.explain_mode
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
             batch_size = tile_preds.batch_size
@@ -315,7 +317,7 @@ class InstanceSegTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
-        explain_mode = len(batch_tile_preds[0].feature_vector) > 0
+        explain_mode = self.explain_mode
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
             feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(tile_preds.batch_size)]
