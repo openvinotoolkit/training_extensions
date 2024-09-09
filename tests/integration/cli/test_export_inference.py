@@ -92,6 +92,9 @@ def test_otx_export_infer(
     elif "tile" in recipe:
         pytest.skip("Exporting models with tiling isn't supported yet.")
 
+    if "keypoint" in recipe:
+        pytest.skip("Exporting keypoint detection model isn't supported yet.")
+
     model_name = recipe.split("/")[-1].split(".")[0]
 
     # 1) otx train
