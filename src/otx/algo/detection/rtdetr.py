@@ -75,13 +75,15 @@ class RTDETR(ExplainableOTXDetModel):
         # prepare bboxes for the model
         for bb, ll in zip(entity.bboxes, entity.labels):
             # convert to cxcywh if needed
-            converted_bboxes = (
-                box_convert(bb, in_fmt="xyxy", out_fmt="cxcywh") if bb.format == BoundingBoxFormat.XYXY else bb
-            )
-            # normalize the bboxes
-            scaled_bboxes = converted_bboxes / torch.tensor(bb.canvas_size[::-1]).tile(2)[None].to(
-                converted_bboxes.device,
-            )
+            scaled_bboxes = bb
+            if len(bb):
+                converted_bboxes = (
+                    box_convert(bb, in_fmt="xyxy", out_fmt="cxcywh") if bb.format == BoundingBoxFormat.XYXY else bb
+                )
+                # normalize the bboxes
+                scaled_bboxes = converted_bboxes / torch.tensor(bb.canvas_size[::-1]).tile(2)[None].to(
+                    converted_bboxes.device,
+                )
             targets.append({"boxes": scaled_bboxes, "labels": ll})
 
         return {
