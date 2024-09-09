@@ -468,7 +468,12 @@ class SPPCSPConv(nn.Module):
             normalization=build_norm_layer(normalization, num_features=neck_channels),
             activation=build_activation_layer(activation),
         )
-        self.pools = nn.ModuleList([nn.MaxPool2d(kernel_size=kernel_size, stride=1) for kernel_size in kernel_sizes])
+        self.pools = nn.ModuleList(
+            [
+                nn.MaxPool2d(kernel_size=kernel_size, stride=1, padding=auto_pad(kernel_size))
+                for kernel_size in kernel_sizes
+            ]
+        )
         self.post_conv = nn.Sequential(
             Conv2dModule(
                 4 * neck_channels,

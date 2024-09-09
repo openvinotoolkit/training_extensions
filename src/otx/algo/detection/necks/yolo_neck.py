@@ -12,7 +12,7 @@ from typing import Any, ClassVar, Mapping
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import SPPELAN, Concat, RepNCSPELAN, SPPCSPConv
-from otx.algo.detection.utils.utils import set_info_into_instance
+from otx.algo.detection.utils.utils import auto_pad, set_info_into_instance
 from otx.algo.modules import Conv2dModule
 
 
@@ -28,27 +28,121 @@ class YOLOv7NeckModule(nn.Module):
         self.module = nn.ModuleList()
 
         self.module.append(set_info_into_instance({"module": SPPCSPConv(1024, 512), "tags": "N3"}))
-        self.module.append(Conv2dModule(512, 256, 1))
+        self.module.append(
+            Conv2dModule(
+                512,
+                256,
+                1,
+                normalization=nn.BatchNorm2d(256, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            )
+        )
         self.module.append(nn.Upsample(scale_factor=2))
-        self.module.append(set_info_into_instance({"module": Conv2dModule(256, 256, 1), "source": "B4"}))
+        self.module.append(
+            set_info_into_instance(
+                {
+                    "module": Conv2dModule(
+                        1024,
+                        256,
+                        1,
+                        normalization=nn.BatchNorm2d(256, eps=1e-3, momentum=3e-2),
+                        activation=nn.SiLU(inplace=True),
+                    ),
+                    "source": "B4",
+                }
+            )
+        )
         self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2]}))
-        self.module.append(Conv2dModule(256, 256, 1))
-        self.module.append(set_info_into_instance({"module": Conv2dModule(256, 256, 1), "source": -2}))
-        self.module.append(Conv2dModule(256, 128, 3))
-        self.module.append(Conv2dModule(256, 128, 3))
-        self.module.append(Conv2dModule(256, 128, 3))
-        self.module.append(Conv2dModule(256, 128, 3))
+
+        channel_after_concat = 256 * 2
+        self.module.append(
+            Conv2dModule(
+                channel_after_concat,
+                256,
+                1,
+                normalization=nn.BatchNorm2d(256, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            )
+        )
+        self.module.append(
+            set_info_into_instance(
+                {
+                    "module": Conv2dModule(
+                        channel_after_concat,
+                        256,
+                        1,
+                        normalization=nn.BatchNorm2d(256, eps=1e-3, momentum=3e-2),
+                        activation=nn.SiLU(inplace=True),
+                    ),
+                    "source": -2,
+                }
+            )
+        )
+        self.module.append(
+            Conv2dModule(
+                256,
+                128,
+                3,
+                padding=auto_pad(kernel_size=3),
+                normalization=nn.BatchNorm2d(128, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            )
+        )
+        self.module.append(
+            Conv2dModule(
+                128,
+                128,
+                3,
+                padding=auto_pad(kernel_size=3),
+                normalization=nn.BatchNorm2d(128, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            )
+        )
+        self.module.append(
+            Conv2dModule(
+                128,
+                128,
+                3,
+                padding=auto_pad(kernel_size=3),
+                normalization=nn.BatchNorm2d(128, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            )
+        )
+        self.module.append(
+            Conv2dModule(
+                128,
+                128,
+                3,
+                padding=auto_pad(kernel_size=3),
+                normalization=nn.BatchNorm2d(128, eps=1e-3, momentum=3e-2),
+                activation=nn.SiLU(inplace=True),
+            )
+        )
         self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2, -3, -4, -5, -6]}))
-        self.module.append(set_info_into_instance({"module": Conv2dModule(1024, 256, 1), "tags": "N2"}))
+        self.module.append(
+            set_info_into_instance(
+                {
+                    "module": Conv2dModule(
+                        1024,
+                        256,
+                        1,
+                        normalization=nn.BatchNorm2d(256, eps=1e-3, momentum=3e-2),
+                        activation=nn.SiLU(inplace=True),
+                    ),
+                    "tags": "N2",
+                }
+            )
+        )
 
     def forward(self, outputs: dict[int | str, Tensor], *args, **kwargs) -> dict[int | str, Tensor]:
         """Forward function."""
-        raw_outputs: list[Tensor] = []
+        raw_outputs: list[Tensor] = [outputs[-1]]
         for layer in self.module:
             if hasattr(layer, "source") and isinstance(layer.source, list):
                 model_input = [raw_outputs[idx] if isinstance(idx, int) else outputs[idx] for idx in layer.source]
             else:
-                model_input = outputs[getattr(layer, "source", -1)]  # type: ignore[arg-type]
+                source = getattr(layer, "source", -1)
+                model_input = outputs[source] if isinstance(source, str) else raw_outputs[source]
             x = layer(model_input)
             outputs[-1] = x
             raw_outputs.append(x)
