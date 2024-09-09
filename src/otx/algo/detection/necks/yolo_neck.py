@@ -11,12 +11,54 @@ from typing import Any, ClassVar, Mapping
 
 from torch import Tensor, nn
 
-from otx.algo.detection.layers import SPPELAN, Concat, RepNCSPELAN
+from otx.algo.detection.layers import SPPELAN, Concat, RepNCSPELAN, SPPCSPConv
 from otx.algo.detection.utils.utils import set_info_into_instance
+from otx.algo.modules import Conv2dModule
 
 
-class YOLONeckModule(nn.Module):
-    """Neck module for YOLOv7 and v9.
+class YOLOv7NeckModule(nn.Module):
+    """Neck module for YOLOv7.
+
+    TODO (sungchul): need to refactoring when new yolov7 model is added
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.module = nn.ModuleList()
+
+        self.module.append(set_info_into_instance({"module": SPPCSPConv(1024, 512), "tags": "N3"}))
+        self.module.append(Conv2dModule(512, 256, 1))
+        self.module.append(nn.Upsample(scale_factor=2))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(256, 256, 1), "source": "B4"}))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2]}))
+        self.module.append(Conv2dModule(256, 256, 1))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(256, 256, 1), "source": -2}))
+        self.module.append(Conv2dModule(256, 128, 3))
+        self.module.append(Conv2dModule(256, 128, 3))
+        self.module.append(Conv2dModule(256, 128, 3))
+        self.module.append(Conv2dModule(256, 128, 3))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2, -3, -4, -5, -6]}))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(1024, 256, 1), "tags": "N2"}))
+
+    def forward(self, outputs: dict[int | str, Tensor], *args, **kwargs) -> dict[int | str, Tensor]:
+        """Forward function."""
+        raw_outputs: list[Tensor] = []
+        for layer in self.module:
+            if hasattr(layer, "source") and isinstance(layer.source, list):
+                model_input = [raw_outputs[idx] if isinstance(idx, int) else outputs[idx] for idx in layer.source]
+            else:
+                model_input = outputs[getattr(layer, "source", -1)]  # type: ignore[arg-type]
+            x = layer(model_input)
+            outputs[-1] = x
+            raw_outputs.append(x)
+            if hasattr(layer, "tags"):
+                outputs[layer.tags] = x
+        return outputs
+
+
+class YOLOv9NeckModule(nn.Module):
+    """Neck module for YOLOv9.
 
     Args:
         elan_channels (list[dict[str, int]]): The ELAN channels.
@@ -70,6 +112,7 @@ class YOLONeck:
     """YOLONeck factory for detection."""
 
     YOLONECK_CFG: ClassVar[dict[str, Any]] = {
+        "yolov7": {},
         "yolov9_s": {
             "elan_channels": [
                 {"type": "SPPELAN", "args": {"in_channels": 256, "out_channels": 256}, "tags": "N3"},
@@ -106,10 +149,13 @@ class YOLONeck:
         },
     }
 
-    def __new__(cls, model_name: str) -> YOLONeckModule:
+    def __new__(cls, model_name: str) -> YOLOv7NeckModule | YOLOv9NeckModule:
         """Constructor for YOLONeck for v7 and v9."""
         if model_name not in cls.YOLONECK_CFG:
             msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return YOLONeckModule(**cls.YOLONECK_CFG[model_name])
+        if "yolov7" in model_name:
+            return YOLOv7NeckModule(**cls.YOLONECK_CFG[model_name])
+
+        return YOLOv9NeckModule(**cls.YOLONECK_CFG[model_name])

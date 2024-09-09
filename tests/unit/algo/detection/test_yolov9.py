@@ -5,8 +5,8 @@
 from unittest.mock import Mock, patch
 
 from otx.algo.detection.backbones.gelan import GELANModule
-from otx.algo.detection.heads.yolo_head import YOLOHeadModule
-from otx.algo.detection.necks.yolo_neck import YOLONeckModule
+from otx.algo.detection.heads.yolo_head import YOLOv9HeadModule
+from otx.algo.detection.necks.yolo_neck import YOLOv9NeckModule
 from otx.algo.detection.yolov9 import YOLOv9
 from otx.core.exporter.native import OTXNativeModelExporter
 
@@ -15,8 +15,8 @@ class TestYOLOv9:
     def test_init(self) -> None:
         otx_yolov9_s = YOLOv9(model_name="yolov9_s", label_info=3)
         assert isinstance(otx_yolov9_s.model.backbone, GELANModule)
-        assert isinstance(otx_yolov9_s.model.neck, YOLONeckModule)
-        assert isinstance(otx_yolov9_s.model.bbox_head, YOLOHeadModule)
+        assert isinstance(otx_yolov9_s.model.neck, YOLOv9NeckModule)
+        assert isinstance(otx_yolov9_s.model.bbox_head, YOLOv9HeadModule)
         assert otx_yolov9_s.input_size == (640, 640)
 
         otx_yolov9_m = YOLOv9(model_name="yolov9_m", label_info=3)

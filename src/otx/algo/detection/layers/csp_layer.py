@@ -12,6 +12,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import ChannelAttention
+from otx.algo.detection.utils.utils import auto_pad
 from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
@@ -403,3 +404,103 @@ class CSPRepLayer(nn.Module):
         x_1 = self.bottlenecks(x_1)
         x_2 = self.conv2(x)
         return self.conv3(x_1 + x_2)
+
+
+class SPPCSPConv(nn.Module):
+    """Spatial Pyramid Pooling Cross Stage Partial (SPPCSP) Convolution layer.
+
+    https://github.com/WongKinYiu/CrossStagePartialNetworks
+
+    Args:
+        in_channels (int): The number of input channels.
+        out_channels (int): The number of output channels.
+        expand (float): The expand ratio of the hidden layer. Defaults to 0.5.
+        kernel_sizes (tuple[int, ...]): The kernel sizes for pooling. Defaults to (5, 9, 13).
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, eps=1e-3, momentum=3e-2)``.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``nn.SiLU``.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        expand: float = 0.5,
+        kernel_sizes: tuple[int, ...] = (5, 9, 13),
+        normalization: Callable[..., nn.Module] = partial(
+            nn.BatchNorm2d,
+            eps=1e-3,
+            momentum=3e-2,
+        ),
+        activation: Callable[..., nn.Module] = nn.SiLU,
+    ) -> None:
+        super().__init__()
+        neck_channels = int(2 * out_channels * expand)
+        self.pre_conv = nn.Sequential(
+            Conv2dModule(
+                in_channels,
+                neck_channels,
+                1,
+                normalization=build_norm_layer(normalization, num_features=neck_channels),
+                activation=build_activation_layer(activation),
+            ),
+            Conv2dModule(
+                neck_channels,
+                neck_channels,
+                3,
+                padding=auto_pad(kernel_size=3),
+                normalization=build_norm_layer(normalization, num_features=neck_channels),
+                activation=build_activation_layer(activation),
+            ),
+            Conv2dModule(
+                neck_channels,
+                neck_channels,
+                1,
+                normalization=build_norm_layer(normalization, num_features=neck_channels),
+                activation=build_activation_layer(activation),
+            ),
+        )
+        self.short_conv = Conv2dModule(
+            in_channels,
+            neck_channels,
+            1,
+            normalization=build_norm_layer(normalization, num_features=neck_channels),
+            activation=build_activation_layer(activation),
+        )
+        self.pools = nn.ModuleList([nn.MaxPool2d(kernel_size=kernel_size, stride=1) for kernel_size in kernel_sizes])
+        self.post_conv = nn.Sequential(
+            Conv2dModule(
+                4 * neck_channels,
+                neck_channels,
+                1,
+                normalization=build_norm_layer(normalization, num_features=neck_channels),
+                activation=build_activation_layer(activation),
+            ),
+            Conv2dModule(
+                neck_channels,
+                neck_channels,
+                3,
+                padding=auto_pad(kernel_size=3),
+                normalization=build_norm_layer(normalization, num_features=neck_channels),
+                activation=build_activation_layer(activation),
+            ),
+        )
+        self.merge_conv = Conv2dModule(
+            2 * neck_channels,
+            out_channels,
+            1,
+            normalization=build_norm_layer(normalization, num_features=neck_channels),
+            activation=build_activation_layer(activation),
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
+        features = [self.pre_conv(x)]
+        for pool in self.pools:
+            features.append(pool(features[-1]))
+        features = torch.cat(features, dim=1)
+        y1 = self.post_conv(features)
+        y2 = self.short_conv(x)
+        y = torch.cat((y1, y2), dim=1)
+        return self.merge_conv(y)

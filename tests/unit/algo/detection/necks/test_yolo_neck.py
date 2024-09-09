@@ -4,12 +4,12 @@
 
 import pytest
 import torch
-from otx.algo.detection.necks.yolo_neck import YOLONeckModule
+from otx.algo.detection.necks.yolo_neck import YOLOv9NeckModule
 
 
 class TestYOLONeckModule:
     @pytest.fixture()
-    def yolo_neck(self) -> YOLONeckModule:
+    def yolo_neck(self) -> YOLOv9NeckModule:
         cfg = {
             "elan_channels": [
                 {"type": "SPPELAN", "args": {"in_channels": 256, "out_channels": 256}, "tags": "N3"},
@@ -22,7 +22,7 @@ class TestYOLONeckModule:
             "concat_sources": [[-1, "B4"]],
             "csp_args": {"repeat_num": 3},
         }
-        return YOLONeckModule(**cfg)
+        return YOLOv9NeckModule(**cfg)
 
     def test_forward(self, yolo_neck) -> None:
         inputs = {

@@ -4,7 +4,18 @@
 
 from .channel_attention_layer import ChannelAttention
 from .common_layer import AConv, ADown, Concat
-from .csp_layer import CSPLayer, CSPRepLayer
+from .csp_layer import CSPLayer, CSPRepLayer, SPPCSPConv
 from .elan_layer import ELAN, SPPELAN, RepNCSPELAN
 
-__all__ = ["CSPLayer", "ChannelAttention", "CSPRepLayer", "Concat", "ELAN", "RepNCSPELAN", "SPPELAN", "AConv", "ADown"]
+__all__ = [
+    "CSPLayer",
+    "ChannelAttention",
+    "CSPRepLayer",
+    "Concat",
+    "ELAN",
+    "RepNCSPELAN",
+    "SPPELAN",
+    "AConv",
+    "ADown",
+    "SPPCSPConv",
+]

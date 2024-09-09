@@ -18,10 +18,34 @@ from otx.algo.detection.heads.yolo_head import (
     MultiheadDetection,
     SingleHeadDetectionforYOLOv7,
     SingleHeadDetectionforYOLOv9,
-    YOLOHeadModule,
+    YOLOv9HeadModule,
+    pad_bbox_labels,
 )
 from otx.algo.detection.utils.utils import Vec2Box
 from otx.algo.utils.mmengine_utils import InstanceData
+
+
+def test_pad_bbox_labels() -> None:
+    bboxes = [torch.tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), torch.tensor([[9, 10, 11, 12]])]
+    labels = [torch.tensor([0, 1]), torch.tensor([2])]
+
+    padded_bboxes, padded_labels = pad_bbox_labels(bboxes, labels)
+
+    expected_padded_bboxes = torch.tensor(
+        [
+            [[1, 2, 3, 4], [5, 6, 7, 8]],
+            [[9, 10, 11, 12], [0, 0, 0, 0]],
+        ],
+    )
+    expected_padded_labels = torch.tensor(
+        [
+            [[0], [1]],
+            [[2], [-1]],
+        ],
+    )
+
+    assert torch.all(torch.eq(padded_bboxes, expected_padded_bboxes))
+    assert torch.all(torch.eq(padded_labels, expected_padded_labels))
 
 
 class TestAnchor2Vec:
@@ -143,7 +167,7 @@ class TestMultiheadDetection:
 
 class TestYOLOHeadModule:
     @pytest.fixture()
-    def yolo_head(self) -> YOLOHeadModule:
+    def yolo_head(self) -> YOLOv9HeadModule:
         num_classes = 10
         cfg = {
             "csp_channels": [[320, 128, 128], [288, 192, 192], [384, 256, 256]],
@@ -156,7 +180,7 @@ class TestYOLOHeadModule:
                 "csp_channels": [[448, 192, 192], [320, 128, 128]],
             },
         }
-        return YOLOHeadModule(num_classes=num_classes, **cfg)
+        return YOLOv9HeadModule(num_classes=num_classes, **cfg)
 
     @pytest.fixture()
     def head_inputs(self) -> dict[int | str, Any]:
@@ -170,7 +194,7 @@ class TestYOLOHeadModule:
             "N4": torch.randn(1, 192, 40, 40),
         }
 
-    def test_forward(self, yolo_head: YOLOHeadModule, head_inputs: dict[int | str, Any]) -> None:
+    def test_forward(self, yolo_head: YOLOv9HeadModule, head_inputs: dict[int | str, Any]) -> None:
         main_preds, aux_preds = yolo_head(head_inputs)
 
         for main_pred, shape in zip(main_preds, [(80, 80), (40, 40), (20, 20)]):
@@ -183,7 +207,7 @@ class TestYOLOHeadModule:
             assert aux_pred[1].shape == torch.Size([1, 16, 4, *shape])
             assert aux_pred[2].shape == torch.Size([1, 4, *shape])
 
-    def test_loss(self, yolo_head: YOLOHeadModule, head_inputs: dict[int | str, Any], fxt_det_data_entity) -> None:
+    def test_loss(self, yolo_head: YOLOv9HeadModule, head_inputs: dict[int | str, Any], fxt_det_data_entity) -> None:
         entity = deepcopy(fxt_det_data_entity[1])
 
         loss = yolo_head.loss(head_inputs, entity)
@@ -192,7 +216,7 @@ class TestYOLOHeadModule:
         assert "aux_preds" in loss
         assert "targets" in loss
 
-    def test_predict(self, yolo_head: YOLOHeadModule, head_inputs: dict[int | str, Any], fxt_det_data_entity) -> None:
+    def test_predict(self, yolo_head: YOLOv9HeadModule, head_inputs: dict[int | str, Any], fxt_det_data_entity) -> None:
         yolo_head.vec2box = Vec2Box(None, (640, 640), [8, 16, 32])
         entity = deepcopy(fxt_det_data_entity)[1]
 
@@ -204,7 +228,7 @@ class TestYOLOHeadModule:
         assert hasattr(predictions[0], "bboxes")
         assert hasattr(predictions[0], "labels")
 
-    def test_export(self, yolo_head: YOLOHeadModule, head_inputs: dict[int | str, Any]) -> None:
+    def test_export(self, yolo_head: YOLOv9HeadModule, head_inputs: dict[int | str, Any]) -> None:
         yolo_head.vec2box = Vec2Box(None, (640, 640), [8, 16, 32])
 
         detection_results = yolo_head.export(head_inputs, None)
@@ -212,25 +236,3 @@ class TestYOLOHeadModule:
         assert len(detection_results) == 2
         assert isinstance(detection_results[0], torch.Tensor)
         assert isinstance(detection_results[1], torch.Tensor)
-
-    def test_pad_bbox_labels(self, yolo_head: YOLOHeadModule) -> None:
-        bboxes = [torch.tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), torch.tensor([[9, 10, 11, 12]])]
-        labels = [torch.tensor([0, 1]), torch.tensor([2])]
-
-        padded_bboxes, padded_labels = yolo_head.pad_bbox_labels(bboxes, labels)
-
-        expected_padded_bboxes = torch.tensor(
-            [
-                [[1, 2, 3, 4], [5, 6, 7, 8]],
-                [[9, 10, 11, 12], [0, 0, 0, 0]],
-            ],
-        )
-        expected_padded_labels = torch.tensor(
-            [
-                [[0], [1]],
-                [[2], [-1]],
-            ],
-        )
-
-        assert torch.all(torch.eq(padded_bboxes, expected_padded_bboxes))
-        assert torch.all(torch.eq(padded_labels, expected_padded_labels))

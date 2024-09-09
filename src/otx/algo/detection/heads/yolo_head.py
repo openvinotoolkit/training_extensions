@@ -17,11 +17,26 @@ from torchvision.ops import batched_nms
 from otx.algo.common.utils.nms import multiclass_nms
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.layers import AConv, ADown, Concat, SPPELAN, RepNCSPELAN
+from otx.algo.detection.layers.elan_layer import RepConv
 from otx.algo.detection.utils.utils import round_up, set_info_into_instance, auto_pad
 from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.detection import DetBatchDataEntity
+
+
+def pad_bbox_labels(bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor, Tensor]:
+    """Pad bounding boxes and labels to the same length."""
+    max_len = max(b.shape[0] for b in bboxes)
+    padded_labels = torch.stack(
+        [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - label.shape[0]), value=-1) for label in labels],
+        dim=0,
+    )
+    padded_bboxes = torch.stack(
+        [nn.functional.pad(box, (0, 0, 0, max_len - box.shape[0]), value=0) for box in bboxes],
+        dim=0,
+    )
+    return padded_bboxes, padded_labels
 
 
 class Anchor2Vec(nn.Module):
@@ -283,8 +298,187 @@ class MultiheadDetection(nn.Module):
         return [head(x) for x, head in zip(x_list, self.heads)]
 
 
-class YOLOHeadModule(BaseDenseHead):
-    """Head for YOLOv7 and v9.
+class YOLOv7HeadModule(BaseDenseHead):
+    """Head for YOLOv7.
+
+    TODO (sungchul): need to refactoring when new yolov7 model is added
+
+    Args:
+        num_classes (int): Number of classes.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+    ) -> None:
+        super().__init__()
+
+        self.module = nn.ModuleList()
+
+        self.module.append(Conv2dModule(256, 128, 1))
+        self.module.append(nn.Upsample(scale_factor=2))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(128, 128, 1), "source": "B3"}))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2]}))
+        self.module.append(Conv2dModule(128, 128, 1))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(128, 128, 1), "source": -2}))
+        self.module.append(Conv2dModule(128, 64, 3))
+        self.module.append(Conv2dModule(64, 64, 3))
+        self.module.append(Conv2dModule(64, 64, 3))
+        self.module.append(Conv2dModule(64, 64, 3))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2, -3, -4, -5, -6]}))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(512, 128, 1), "tags": "P3"}))
+        self.module.append(nn.MaxPool2d(kernel_size=2, padding=0))
+        self.module.append(Conv2dModule(128, 128, 1))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(128, 128, 1), "source": -3}))
+        self.module.append(Conv2dModule(128, 128, 3, stride=2))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -3, "N2"]}))
+        self.module.append(Conv2dModule(512, 256, 1))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(512, 256, 1), "source": -2}))
+        self.module.append(Conv2dModule(256, 128, 3))
+        self.module.append(Conv2dModule(128, 128, 3))
+        self.module.append(Conv2dModule(128, 128, 3))
+        self.module.append(Conv2dModule(128, 128, 3))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2, -3, -4, -5, -6]}))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(1024, 256, 1), "tags": "P4"}))
+        self.module.append(nn.MaxPool2d(kernel_size=2, padding=0))
+        self.module.append(Conv2dModule(256, 256, 1))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(256, 256, 1), "source": -3}))
+        self.module.append(Conv2dModule(256, 256, 3, stride=2))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -3, "N3"]}))
+        self.module.append(Conv2dModule(1024, 512, 1))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(512, 512, 1), "source": -2}))
+        self.module.append(Conv2dModule(512, 256, 3))
+        self.module.append(Conv2dModule(256, 256, 3))
+        self.module.append(Conv2dModule(256, 256, 3))
+        self.module.append(Conv2dModule(256, 256, 3))
+        self.module.append(set_info_into_instance({"module": Concat(), "source": [-1, -2, -3, -4, -5, -6]}))
+        self.module.append(set_info_into_instance({"module": Conv2dModule(2048, 512, 1), "tags": "P5"}))
+        self.module.append(set_info_into_instance({"module": RepConv(512, 256), "source": "P3"}))
+        self.module.append(set_info_into_instance({"module": RepConv(256, 512), "source": "P4"}))
+        self.module.append(set_info_into_instance({"module": RepConv(512, 1024), "source": "P5"}))
+        self.module.append(
+            set_info_into_instance(
+                {
+                    "module": MultiheadDetection([256, 512, 1024], num_classes),
+                    "source": [-3, -2, -1],
+                    "tags": "Main",
+                    "output": True,
+                }
+            )
+        )
+
+    def forward(self, outputs: dict[int | str, Tensor], *args, **kwargs) -> Tensor:
+        """Forward function."""
+        raw_outputs: list[Tensor] = []
+        for layer in self.module:
+            if hasattr(layer, "source") and isinstance(layer.source, list):
+                model_input = [raw_outputs[idx] if isinstance(idx, int) else outputs[idx] for idx in layer.source]
+            else:
+                model_input = outputs[getattr(layer, "source", -1)]  # type: ignore[arg-type]
+            x = layer(model_input)
+            outputs[-1] = x
+            raw_outputs.append(x)
+            if hasattr(layer, "tags"):
+                outputs[layer.tags] = x
+
+        return outputs["Main"]
+
+    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
+        """Perform forward propagation and loss calculation of the detection head.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
+
+        Returns:
+            dict: A dictionary of loss components.
+        """
+        main_preds = self(x)
+
+        padded_bboxes, padded_labels = pad_bbox_labels(entity.bboxes, entity.labels)
+        merged_padded_labels_bboxes = torch.cat((padded_labels, padded_bboxes), dim=-1)
+        return {
+            "main_preds": main_preds,
+            "targets": merged_padded_labels_bboxes,
+        }
+
+    def loss_by_feat(self, *args, **kwargs) -> NoReturn:
+        """Calculate the loss based on the features extracted by the detection head."""
+        raise NotImplementedError
+
+    def predict(
+        self,
+        x: tuple[Tensor],
+        entity: OTXBatchDataEntity,
+        rescale: bool = False,
+    ) -> list[InstanceData]:
+        """Perform forward propagation of the detection head and predict detection results.
+
+        Args:
+            x (tuple[Tensor]): Multi-level features from the
+                upstream network, each is a 4D-tensor.
+            entity (OTXBatchDataEntity): Entity from OTX dataset.
+            rescale (bool, optional): Whether to rescale the results.
+                Defaults to False.
+
+        Returns:
+            list[InstanceData]: Detection results of each image
+            after the post process.
+        """
+        main_preds, _ = self(x)
+
+        pred_bboxes: Tensor | list[Tensor]
+        pred_scores: Tensor | list[Tensor]
+        pred_labels: Tensor | list[Tensor]
+
+        prediction = self.vec2box(main_preds)
+        pred_classes, _, pred_bboxes = prediction[:3]
+        pred_scores = pred_classes.sigmoid() * (prediction[3] if len(prediction) == 4 else 1)
+
+        # TODO (sungchul): use otx modules
+        pred_scores, pred_labels = pred_scores.max(dim=-1, keepdim=True)
+        if rescale:
+            # rescale
+            scale_factors = [img_info.scale_factor[::-1] for img_info in entity.imgs_info]  # type: ignore[index]
+            pred_bboxes /= pred_bboxes.new_tensor(scale_factors).repeat((1, 2)).unsqueeze(1)
+
+        if self.with_nms and pred_bboxes.numel():
+            # filter class by confidence
+            valid_mask = pred_scores > self.min_confidence
+            valid_labels = pred_labels[valid_mask].float()
+            valid_scores = pred_scores[valid_mask].float()
+            valid_bboxes = pred_bboxes[valid_mask.repeat(1, 1, 4)].view(-1, 4)
+
+            # nms
+            batch_idx, *_ = torch.where(valid_mask)
+            nms_idx = batched_nms(valid_bboxes, valid_scores, valid_labels, self.min_iou)
+
+            def filter_predictions() -> tuple[list[Tensor], list[Tensor], list[Tensor]]:
+                _pred_bboxes = []
+                _pred_scores = []
+                _pred_labels = []
+                for idx in range(pred_classes.size(0)):
+                    instance_idx = nms_idx[idx == batch_idx[nms_idx]]
+                    _pred_bboxes.append(valid_bboxes[instance_idx])
+                    _pred_scores.append(valid_scores[instance_idx])
+                    _pred_labels.append(valid_labels[instance_idx])
+                return _pred_bboxes, _pred_scores, _pred_labels
+
+            pred_bboxes, pred_scores, pred_labels = filter_predictions()
+
+        return [
+            InstanceData(
+                bboxes=pred_bboxes[idx],
+                scores=pred_scores[idx],
+                labels=pred_labels[idx].type(torch.long),
+            )
+            for idx in range(pred_classes.size(0))
+        ]
+
+
+class YOLOv9HeadModule(BaseDenseHead):
+    """Head for YOLOv9.
 
     Args:
         num_classes (int): Number of classes.
@@ -542,7 +736,7 @@ class YOLOHeadModule(BaseDenseHead):
         """
         main_preds, aux_preds = self(x)
 
-        padded_bboxes, padded_labels = self.pad_bbox_labels(entity.bboxes, entity.labels)
+        padded_bboxes, padded_labels = pad_bbox_labels(entity.bboxes, entity.labels)
         merged_padded_labels_bboxes = torch.cat((padded_labels, padded_bboxes), dim=-1)
         return {
             "main_preds": main_preds,
@@ -660,24 +854,12 @@ class YOLOHeadModule(BaseDenseHead):
             keep_top_k=100,
         )
 
-    def pad_bbox_labels(self, bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor, Tensor]:
-        """Pad bounding boxes and labels to the same length."""
-        max_len = max(b.shape[0] for b in bboxes)
-        padded_labels = torch.stack(
-            [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - label.shape[0]), value=-1) for label in labels],
-            dim=0,
-        )
-        padded_bboxes = torch.stack(
-            [nn.functional.pad(box, (0, 0, 0, max_len - box.shape[0]), value=0) for box in bboxes],
-            dim=0,
-        )
-        return padded_bboxes, padded_labels
-
 
 class YOLOHead:
     """YOLOHead factory for detection."""
 
     YOLOHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "yolov7": {},
         "yolov9_s": {
             "csp_channels": [[320, 128, 128], [288, 192, 192], [384, 256, 256]],
             "aconv_channels": [[128, 96], [192, 128]],
@@ -717,13 +899,19 @@ class YOLOHead:
         },
     }
 
-    def __new__(cls, model_name: str, num_classes: int) -> YOLOHeadModule:
+    def __new__(cls, model_name: str, num_classes: int) -> YOLOv7HeadModule | YOLOv9HeadModule:
         """Constructor for YOLOHead for v7 and v9."""
         if model_name not in cls.YOLOHEAD_CFG:
             msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return YOLOHeadModule(
+        if "yolov7" in model_name:
+            return YOLOv7HeadModule(
+                **cls.YOLOHEAD_CFG[model_name],
+                num_classes=num_classes,
+            )
+
+        return YOLOv9HeadModule(
             **cls.YOLOHEAD_CFG[model_name],
             num_classes=num_classes,
         )
