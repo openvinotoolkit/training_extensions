@@ -119,8 +119,8 @@ class DetectionTileMerge(TileMerge):
         img_ids = []
         explain_mode = self.explain_mode
 
-        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            batch_size = tile_preds.batch_size
+        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs, strict=True):
+            batch_size = len(tile_attrs)
             saliency_maps = tile_preds.saliency_map if explain_mode else [[] for _ in range(batch_size)]
             feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(batch_size)]
             for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_s_map, tile_f_vect in zip(
@@ -131,6 +131,7 @@ class DetectionTileMerge(TileMerge):
                 tile_preds.scores,
                 saliency_maps,
                 feature_vectors,
+                strict=True,
             ):
                 offset_x, offset_y, _, _ = tile_attr["roi"]
                 tile_bboxes[:, 0::2] += offset_x
@@ -156,7 +157,7 @@ class DetectionTileMerge(TileMerge):
 
         return [
             self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
-            for img_id, image_info in zip(img_ids, self.img_infos)
+            for img_id, image_info in zip(img_ids, self.img_infos, strict=True)
         ]
 
     def _merge_entities(
@@ -319,8 +320,8 @@ class InstanceSegTileMerge(TileMerge):
         img_ids = []
         explain_mode = self.explain_mode
 
-        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(tile_preds.batch_size)]
+        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs, strict=True):
+            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(len(tile_attrs))]
             for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks, tile_f_vect in zip(
                 tile_attrs,
                 tile_preds.imgs_info,
@@ -329,6 +330,7 @@ class InstanceSegTileMerge(TileMerge):
                 tile_preds.scores,
                 tile_preds.masks,
                 feature_vectors,
+                strict=True,
             ):
                 keep_indices = tile_masks.to_sparse().sum((1, 2)).to_dense() > 0
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
@@ -363,7 +365,7 @@ class InstanceSegTileMerge(TileMerge):
 
         return [
             self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
-            for img_id, image_info in zip(img_ids, self.img_infos)
+            for img_id, image_info in zip(img_ids, self.img_infos, strict=True)
         ]
 
     def _merge_entities(

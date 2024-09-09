@@ -125,7 +125,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
                     labels=[[] for _ in range(self.batch_size)],
                 ),
             )
-        return list(zip(batch_tile_attr_list, batch_data_entities))
+        return list(zip(batch_tile_attr_list, batch_data_entities, strict=True))
 
     @classmethod
     def collate_fn(cls, batch_entities: list[TileDetDataEntity]) -> TileBatchDetDataEntity:
@@ -218,7 +218,7 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
             )
             for i in range(0, len(tiles), self.batch_size)
         ]
-        return list(zip(batch_tile_attr_list, batch_data_entities))
+        return list(zip(batch_tile_attr_list, batch_data_entities, strict=True))
 
     @classmethod
     def collate_fn(cls, batch_entities: list[TileInstSegDataEntity]) -> TileBatchInstSegDataEntity:
