@@ -59,7 +59,14 @@ def get_task_list(task: str) -> list[OTXTaskType]:
     elif task == "zero_shot_visual_prompting":
         tasks = [OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING]
     elif task == "anomaly":
-        tasks = [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION]
+        tasks = [
+            OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ]
+    elif task == "anomaly":
+        tasks = [OTXTaskType.ANOMALY]
     elif task == "anomaly_classification":
         tasks = [OTXTaskType.ANOMALY_CLASSIFICATION]
     elif task == "anomaly_detection":
@@ -128,6 +135,7 @@ def fxt_target_dataset_per_task() -> dict:
         "action_classification": "tests/assets/action_classification_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
         "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",
+        "anomaly": "tests/assets/anomaly_hazelnut",
         "anomaly_classification": "tests/assets/anomaly_hazelnut",
         "anomaly_detection": "tests/assets/anomaly_hazelnut",
         "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
@@ -147,6 +155,7 @@ def fxt_cli_override_command_per_task() -> dict:
         "action_classification": [],
         "visual_prompting": [],
         "zero_shot_visual_prompting": [],
+        "anomaly": [],
         "anomaly_classification": [],
         "anomaly_detection": [],
         "anomaly_segmentation": [],
