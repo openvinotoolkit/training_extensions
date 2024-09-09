@@ -4,19 +4,18 @@
 # This class and its supporting functions are adapted from the mmdet.
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
-"""MMDet TwoStageDetector."""
+"""TwoStageDetector."""
 
 from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
 
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
-class TwoStageDetector(BaseModule):
+class TwoStageDetector(nn.Module):
     """Base class for two-stage detectors.
 
     Two-stage detectors typically consisting of a region proposal network and a
@@ -29,20 +28,17 @@ class TwoStageDetector(BaseModule):
         neck: nn.Module,
         rpn_head: nn.Module,
         roi_head: nn.Module,
-        train_cfg: dict,
-        test_cfg: dict,
-        init_cfg: dict | list[dict] | None = None,
-        **kwargs,
+        roi_criterion: nn.Module,
+        rpn_criterion: nn.Module,
     ) -> None:
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
 
         self.backbone = backbone
         self.neck = neck
         self.rpn_head = rpn_head
         self.roi_head = roi_head
-
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
+        self.roi_criterion = roi_criterion
+        self.rpn_criterion = rpn_criterion
 
     def _load_from_state_dict(
         self,
@@ -158,11 +154,6 @@ class TwoStageDetector(BaseModule):
         """
         x = self.extract_feat(batch_inputs.images)
 
-        losses = {}
-
-        # RPN forward and loss
-        proposal_cfg = self.train_cfg.get("rpn_proposal", self.test_cfg["rpn"])
-
         # Copy data entity and set gt_labels to 0 in RPN
         rpn_entity = InstanceSegBatchDataEntity(
             images=torch.empty(0),
@@ -174,19 +165,44 @@ class TwoStageDetector(BaseModule):
             polygons=batch_inputs.polygons,
         )
 
-        rpn_losses, rpn_results_list = self.rpn_head.loss_and_predict(
+        cls_reg_targets, bbox_preds, cls_scores, rpn_results_list = self.rpn_head.prepare_loss_inputs(
             x,
             rpn_entity,
-            proposal_cfg=proposal_cfg,
         )
-        # avoid get same name with roi_head loss
-        keys = rpn_losses.keys()
-        for key in list(keys):
-            if "loss" in key and "rpn" not in key:
-                rpn_losses[f"rpn_{key}"] = rpn_losses.pop(key)
-        losses.update(rpn_losses)
 
-        roi_losses = self.roi_head.loss(x, rpn_results_list, batch_inputs)
+        losses = self.rpn_criterion(
+            cls_reg_targets=cls_reg_targets,
+            bbox_preds=bbox_preds,
+            cls_scores=cls_scores,
+        )
+
+        (
+            bbox_results,
+            mask_results,
+            cls_reg_targets_roi,
+            mask_targets,
+            pos_labels,
+        ) = self.roi_head.prepare_loss_inputs(
+            x,
+            rpn_results_list,
+            batch_inputs,
+        )
+
+        labels, label_weights, bbox_targets, bbox_weights, valid_label_mask = cls_reg_targets_roi
+
+        roi_losses = self.roi_criterion(
+            cls_score=bbox_results["cls_score"],
+            bbox_pred=bbox_results["bbox_pred"],
+            labels=labels,
+            label_weights=label_weights,
+            bbox_targets=bbox_targets,
+            bbox_weights=bbox_weights,
+            mask_preds=mask_results["mask_preds"],
+            mask_targets=mask_targets,
+            pos_labels=pos_labels,
+            valid_label_mask=valid_label_mask,
+        )
+
         losses.update(roi_losses)
 
         return losses

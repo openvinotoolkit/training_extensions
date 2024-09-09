@@ -31,6 +31,7 @@ from otx.algo.modules.norm import build_norm_layer, is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 class RTMDetHead(ATSSHeadModule):
@@ -157,35 +158,26 @@ class RTMDetHead(ATSSHeadModule):
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
 
-    def loss_by_feat(  # type: ignore[override]
+    def prepare_loss_inputs(
         self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Compute losses of the head.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Decoded box for each scale
-                level with shape (N, num_anchors * 4, H, W) in
-                [tl_x, tl_y, br_x, br_y] format.
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance.  It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict[str, Tensor]: A dictionary of raw outputs.
+            dict: A dictionary of components for loss calculation.
         """
+        cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super(ATSSHeadModule, self).prepare_loss_inputs(
+            x,
+            entity,
+        )
+
         num_imgs = len(batch_img_metas)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
@@ -224,7 +216,6 @@ class RTMDetHead(ATSSHeadModule):
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
 
         return {
@@ -577,6 +568,8 @@ class RTMDetSepBNHeadModule(RTMDetHead):
             Defaults to ``nn.SiLU``.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
         exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -589,6 +582,7 @@ class RTMDetSepBNHeadModule(RTMDetHead):
         activation: Callable[..., nn.Module] = nn.SiLU,
         pred_kernel_size: int = 1,
         exp_on_reg: bool = False,
+        use_sigmoid_cls: bool = True,
         **kwargs,
     ) -> None:
         self.share_conv = share_conv
@@ -600,6 +594,7 @@ class RTMDetSepBNHeadModule(RTMDetHead):
             normalization=normalization,
             activation=activation,
             pred_kernel_size=pred_kernel_size,
+            use_sigmoid_cls=use_sigmoid_cls,
             **kwargs,
         )
 
@@ -737,6 +732,7 @@ class RTMDetSepBNHead:
             "with_objectness": False,
             "normalization": nn.BatchNorm2d,
             "activation": partial(nn.SiLU, inplace=True),
+            "use_sigmoid_cls": True,
         },
     }
 
