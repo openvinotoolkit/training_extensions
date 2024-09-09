@@ -12,7 +12,7 @@ from otx.algo.detection.detectors import SingleStageDetector, YOLOSingleStageDet
 from otx.algo.detection.heads import YOLOHead
 from otx.algo.detection.losses.yolo_loss import BCELoss, BoxLoss, DFLoss, YOLOCriterion
 from otx.algo.detection.necks import YOLONeck
-from otx.algo.detection.utils.utils import Vec2Box
+from otx.algo.detection.utils.utils import Anc2Box
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -81,15 +81,14 @@ class YOLOv7(OTXDetectionModel):
         )
 
         # set criterion
+        anchor: list[list[int]] = [[12, 16, 19, 36, 40, 28], [36, 75, 76, 55, 72, 146], [142, 110, 192, 243, 459, 401]]
         strides: list[int] = [8, 16, 32]
-        self.vec2box = Vec2Box(detector, self.input_size, strides)
-        detector.bbox_head.vec2box = self.vec2box
+        self.anc2box = Anc2Box(detector, self.input_size, anchor, strides)
+        detector.bbox_head.anc2box = self.anc2box
         detector.criterion = YOLOCriterion(
             num_classes=num_classes,
             loss_cls=BCELoss(),
-            loss_dfl=DFLoss(self.vec2box),
             loss_iou=BoxLoss(),
-            vec2box=self.vec2box,
         )
 
         return detector

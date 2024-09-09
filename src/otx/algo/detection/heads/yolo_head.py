@@ -18,7 +18,7 @@ from otx.algo.common.utils.nms import multiclass_nms
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.layers import AConv, ADown, Concat, SPPELAN, RepNCSPELAN
 from otx.algo.detection.layers.elan_layer import RepConv
-from otx.algo.detection.utils.utils import round_up, set_info_into_instance, auto_pad
+from otx.algo.detection.utils.utils import Anc2Box, Vec2Box, round_up, set_info_into_instance, auto_pad
 from otx.algo.modules import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
@@ -305,13 +305,26 @@ class YOLOv7HeadModule(BaseDenseHead):
 
     Args:
         num_classes (int): Number of classes.
+        with_nms (bool, optional): Whether to use NMS. Defaults to True.
+        min_confidence (float, optional): Minimum confidence for NMS. Defaults to 0.05.
+        min_iou (float, optional): Minimum IoU for NMS. Defaults to 0.9.
     """
+
+    anc2box: Anc2Box
 
     def __init__(
         self,
         num_classes: int,
+        with_nms: bool = True,
+        min_confidence: float = 0.05,
+        min_iou: float = 0.9,
     ) -> None:
         super().__init__()
+
+        self.num_classes = num_classes
+        self.with_nms = with_nms
+        self.min_confidence = min_confidence
+        self.min_iou = min_iou
 
         self.module = nn.ModuleList()
 
@@ -726,7 +739,7 @@ class YOLOv7HeadModule(BaseDenseHead):
         pred_scores: Tensor | list[Tensor]
         pred_labels: Tensor | list[Tensor]
 
-        prediction = self.vec2box(main_preds)
+        prediction = self.anc2box(main_preds)
         pred_classes, _, pred_bboxes = prediction[:3]
         pred_scores = pred_classes.sigmoid() * (prediction[3] if len(prediction) == 4 else 1)
 
@@ -787,6 +800,8 @@ class YOLOv9HeadModule(BaseDenseHead):
         min_confidence (float, optional): Minimum confidence for NMS. Defaults to 0.05.
         min_iou (float, optional): Minimum IoU for NMS. Defaults to 0.9.
     """
+
+    vec2box: Vec2Box
 
     def __init__(
         self,

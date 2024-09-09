@@ -16,6 +16,7 @@ import torch
 from einops import rearrange
 from torch import Tensor, nn
 from torch.autograd import Function
+from torchvision.ops import box_convert
 
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
@@ -251,6 +252,71 @@ def generate_anchors(image_size: tuple[int, int], strides: list[int]) -> tuple[T
     all_anchors = torch.cat(anchors, dim=0)
     all_scalers = torch.cat(scaler, dim=0)
     return all_anchors, all_scalers
+
+
+class Anc2Box:
+    def __init__(
+        self,
+        detector: SingleStageDetector,
+        image_size: tuple[int, int],
+        anchor: list[list[int]],
+        strides: list[int] | None = None,
+        device: str = "cpu",
+    ):
+        self.device = device
+        self.strides = strides or self.create_auto_anchor(detector, image_size)
+
+        self.head_num = len(anchor)
+        self.anchor_grid = self.generate_anchors(image_size)
+        self.anchor_scale = torch.tensor(anchor, device=device).view(self.head_num, 1, -1, 1, 1, 2)
+        self.anchor_num = self.anchor_scale.size(2)
+        self.class_num = detector.bbox_head.num_classes
+
+    def create_auto_anchor(
+        self,
+        detector: SingleStageDetector,
+        image_size: tuple[int, int],
+    ) -> list[int]:
+        dummy_input = torch.zeros(1, 3, *image_size).to(self.device)
+        dummy_output = detector(dummy_input)
+        strides = []
+        for predict_head in dummy_output:
+            _, _, *anchor_num = predict_head.shape
+            strides.append(image_size[1] // anchor_num[1])
+        return strides
+
+    def generate_anchors(self, image_size: tuple[int]) -> list[Tensor]:
+        anchor_grids = []
+        for stride in self.strides:
+            W, H = image_size[0] // stride, image_size[1] // stride
+            anchor_h, anchor_w = torch.meshgrid([torch.arange(H), torch.arange(W)], indexing="ij")
+            anchor_grid = torch.stack((anchor_w, anchor_h), 2).view((1, 1, H, W, 2)).float().to(self.device)
+            anchor_grids.append(anchor_grid)
+        return anchor_grids
+
+    def update(self, image_size: tuple[int]) -> None:
+        self.anchor_grid = self.generate_anchors(image_size)
+
+    def __call__(self, predicts: list[Tensor]):
+        preds_box, preds_cls, preds_cnf = [], [], []
+        for layer_idx, predict in enumerate(predicts):
+            predict = rearrange(predict, "B (L C) h w -> B L h w C", L=self.anchor_num)
+            pred_box, pred_cnf, pred_cls = predict.split((4, 1, self.class_num), dim=-1)
+            pred_box = pred_box.sigmoid()
+            pred_box[..., 0:2] = (pred_box[..., 0:2] * 2.0 - 0.5 + self.anchor_grid[layer_idx]) * self.strides[
+                layer_idx
+            ]
+            pred_box[..., 2:4] = (pred_box[..., 2:4] * 2) ** 2 * self.anchor_scale[layer_idx]
+            preds_box.append(rearrange(pred_box, "B L h w A -> B (L h w) A"))
+            preds_cls.append(rearrange(pred_cls, "B L h w C -> B (L h w) C"))
+            preds_cnf.append(rearrange(pred_cnf, "B L h w C -> B (L h w) C"))
+
+        preds_box = torch.concat(preds_box, dim=1)
+        preds_cls = torch.concat(preds_cls, dim=1)
+        preds_cnf = torch.concat(preds_cnf, dim=1)
+
+        preds_box = box_convert(preds_box, in_fmt="cxcywh", out_fmt="xyxy")
+        return preds_cls, None, preds_box, preds_cnf.sigmoid()
 
 
 class Vec2Box:

@@ -370,7 +370,6 @@ class YOLOCriterion(nn.Module):
         loss_cls: nn.Module | None = None,
         loss_dfl: nn.Module | None = None,
         loss_iou: nn.Module | None = None,
-        reg_max: int = 16,
         cls_rate: float = 1.5,
         dfl_rate: float = 7.5,
         iou_rate: float = 0.5,
@@ -378,15 +377,15 @@ class YOLOCriterion(nn.Module):
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
-        self.loss_cls = loss_cls or BCELoss()
-        self.loss_dfl = loss_dfl or DFLoss(vec2box, reg_max)
-        self.loss_iou = loss_iou or BoxLoss()
+        self.loss_cls = loss_cls
+        self.loss_dfl = loss_dfl
+        self.loss_iou = loss_iou
         self.vec2box = vec2box
         self.matcher = BoxMatcher(num_classes, vec2box.anchor_grid)
 
-        self.cls_rate = cls_rate
-        self.dfl_rate = dfl_rate
-        self.iou_rate = iou_rate
+        self.cls_rate = cls_rate if loss_cls else 0.0
+        self.dfl_rate = dfl_rate if loss_dfl else 0.0
+        self.iou_rate = iou_rate if loss_iou else 0.0
         self.aux_rate = aux_rate
 
     def forward(
@@ -437,7 +436,7 @@ class YOLOCriterion(nn.Module):
         ## -- IOU -- ##
         loss_iou = self.loss_iou(predicts_box, targets_bbox, valid_masks, box_norm, cls_norm)
         ## -- DFL -- ##
-        loss_dfl = self.loss_dfl(predicts_anc, targets_bbox, valid_masks, box_norm, cls_norm)
+        loss_dfl = self.loss_dfl(predicts_anc, targets_bbox, valid_masks, box_norm, cls_norm) if self.loss_dfl else None
 
         return loss_iou, loss_dfl, loss_cls
 
