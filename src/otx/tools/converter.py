@@ -276,6 +276,9 @@ class ConfigConverter:
         def update_auto_num_workers(param_value: bool) -> None:
             config["data"]["auto_num_workers"] = param_value
 
+        def update_auto_adapt_batch_size(param_value: str) -> None:
+            config["adaptive_bs"] = param_value
+
         def update_enable_tiling(param_value: bool) -> None:
             config["data"]["tile_config"]["enable_tiler"] = param_value
             if param_value:
@@ -312,11 +315,12 @@ class ConfigConverter:
             "use_adaptive_interval": update_use_adaptive_interval,
             "auto_num_workers": update_auto_num_workers,
             "enable_tiling": update_enable_tiling,
+            "auto_adapt_batch_size": update_auto_adapt_batch_size,
         }
         for param_name, param_value in param_dict.items():
             update_func = param_update_funcs.get(param_name)
             if update_func:
-                update_func(param_value)
+                update_func(param_value)  # type: ignore[operator]
                 unused_params.pop(param_name)
 
         warn("Warning: These parameters are not updated", stacklevel=1)
