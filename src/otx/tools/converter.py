@@ -273,11 +273,11 @@ class ConfigConverter:
             if not param_value and idx > -1:
                 config["callbacks"].pop(idx)
 
-        def update_auto_num_workers(param_value: str) -> None:
-            config["data"]["adaptive_bs"] = param_value
+        def update_auto_num_workers(param_value: bool) -> None:
+            config["data"]["auto_num_workers"] = param_value
 
-        def update_auto_adapt_batch_size(param_value: bool) -> None:
-            config["auto_num_workers"] = param_value
+        def update_auto_adapt_batch_size(param_value: str) -> None:
+            config["adaptive_bs"] = param_value
 
         def update_enable_tiling(param_value: bool) -> None:
             config["data"]["tile_config"]["enable_tiler"] = param_value
