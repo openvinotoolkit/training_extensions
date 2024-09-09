@@ -28,7 +28,7 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/detection.yaml
+data: ../_base_/data/detection_tile.yaml
 overrides:
   gradient_clip_val: 35.0
   data:
