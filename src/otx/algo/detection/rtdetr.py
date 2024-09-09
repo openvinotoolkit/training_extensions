@@ -111,7 +111,11 @@ class RTDETR(ExplainableOTXDetModel):
                     raise TypeError(msg)
             return losses
 
-        scores, bboxes, labels = self.model.postprocess(outputs, [img_info.ori_shape for img_info in inputs.imgs_info])
+        original_size = [img_info.img_shape for img_info in inputs.imgs_info]
+        if self.tile_config.enable_tiler:
+            original_size = [img_info.ori_shape for img_info in inputs.imgs_info]
+
+        scores, bboxes, labels = self.model.postprocess(outputs, original_size)
 
         return DetBatchPredEntity(
             batch_size=len(outputs),
