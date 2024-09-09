@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import json
 import dataclasses
 import logging
 import time
@@ -127,6 +128,9 @@ def execute_hpo(
 
     hpo_algo.print_result()
     _remove_unused_model_weights(hpo_workdir, best_hpo_weight)
+
+    with (hpo_workdir / "best_hp.json").open("w") as f:
+        json.dump(best_config, f)
 
     return best_config, best_hpo_weight
 

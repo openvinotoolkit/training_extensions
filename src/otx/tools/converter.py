@@ -15,6 +15,7 @@ from warnings import warn
 from jsonargparse import ArgumentParser, Namespace
 
 from otx.core.config.data import SamplerConfig, SubsetConfig, TileConfig, UnlabeledDataConfig
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types import PathLike
@@ -202,6 +203,8 @@ class ConfigConverter:
             task_info["task"] = task
         default_config = ConfigConverter._get_default_config(task_info)
         ConfigConverter._update_params(default_config, param_dict)
+        if (hpo_time_ratio := template_config.get("hpo_parameters", {}).get("hpo_time_ratio")) is not None:
+            default_config["hpo_config.expected_time_ratio"] = hpo_time_ratio
         ConfigConverter._remove_unused_key(default_config)
         return default_config
 
