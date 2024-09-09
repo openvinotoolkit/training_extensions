@@ -7,7 +7,6 @@ from functools import partial
 import pytest
 import torch
 from omegaconf import DictConfig
-from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
@@ -52,8 +51,6 @@ class TestRTMDetHead:
             feat_channels=96,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
-            loss_bbox=GIoULoss(loss_weight=2.0),
             with_objectness=False,
             pred_kernel_size=1,
             normalization=nn.BatchNorm2d,
@@ -139,8 +136,6 @@ class TestRTMDetSepBNHeadModule:
             feat_channels=96,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
-            loss_bbox=GIoULoss(loss_weight=2.0),
             with_objectness=False,
             exp_on_reg=False,
             share_conv=True,

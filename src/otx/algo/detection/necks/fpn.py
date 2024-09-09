@@ -84,9 +84,18 @@ class FPNModule(BaseModule):
 
         if end_level in (-1, self.num_ins - 1):
             self.backbone_end_level = self.num_ins
+            if num_outs < self.num_ins - start_level:
+                msg = "num_outs should not be less than the number of output levels"
+                raise ValueError(msg)
         else:
             # if end_level is not the last level, no extra level is allowed
             self.backbone_end_level = end_level + 1
+            if end_level >= self.num_ins:
+                msg = "end_level must be less than len(in_channels)"
+                raise ValueError(msg)
+            if num_outs != end_level - start_level + 1:
+                msg = "num_outs must be equal to end_level - start_level + 1"
+                raise ValueError(msg)
         self.start_level = start_level
         self.end_level = end_level
         self.add_extra_convs = add_extra_convs
@@ -154,6 +163,10 @@ class FPNModule(BaseModule):
         Returns:
             tuple: Feature maps, each is a 4D-tensor.
         """
+        if len(inputs) != len(self.in_channels):
+            msg = f"len(inputs) is not equal to len(in_channels): {len(inputs)} != {len(self.in_channels)}"
+            raise ValueError(msg)
+
         # build laterals
         laterals = [lateral_conv(inputs[i + self.start_level]) for i, lateral_conv in enumerate(self.lateral_convs)]
 
@@ -222,6 +235,9 @@ class FPN:
             "add_extra_convs": "on_output",
             "relu_before_extra_convs": True,
         },
+        "maskrcnn_resnet_50": {"in_channels": [256, 512, 1024, 2048], "num_outs": 5, "out_channels": 256},
+        "maskrcnn_efficientnet_b2b": {"in_channels": [24, 48, 120, 352], "out_channels": 80, "num_outs": 5},
+        "maskrcnn_swin_tiny": {"in_channels": [96, 192, 384, 768], "out_channels": 256, "num_outs": 5},
     }
 
     def __new__(cls, model_name: str) -> FPNModule:
