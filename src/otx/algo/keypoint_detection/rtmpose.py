@@ -36,7 +36,7 @@ class RTMPose(OTXKeypointDetectionModel):
             raise ValueError(msg)
 
         if self.explain_mode:
-            msg = f"Export with explain is not supported for RTMPose model."
+            msg = "Export with explain is not supported for RTMPose model."
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
@@ -50,10 +50,10 @@ class RTMPose(OTXKeypointDetectionModel):
             via_onnx=True,
             onnx_export_configuration={
                 "input_names": ["image"],
-                "output_names": ["points"],
                 "dynamic_axes": {
-                    "image": {0: "batch", 2: "height", 3: "width"},
-                    "points": {0: "batch", 1: "num_dets"},
+                    "image": {0: "batch"},
+                    "pred_x": {0: "batch"},
+                    "pred_y": {0: "batch"},
                 },
                 "autograd_inlining": False,
             },
