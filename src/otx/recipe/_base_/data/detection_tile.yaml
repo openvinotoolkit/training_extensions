@@ -18,15 +18,11 @@ train_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         scale: $(input_size)
-        keep_ratio: true
+        keep_ratio: false
         transform_bbox: true
     - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
       init_args:
         prob: 0.5
-    - class_path: otx.core.data.transform_libs.torchvision.Pad
-      init_args:
-        pad_to_square: true
-        pad_val: 114
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -48,11 +44,7 @@ val_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         scale: $(input_size)
-        keep_ratio: true
-    - class_path: otx.core.data.transform_libs.torchvision.Pad
-      init_args:
-        pad_to_square: true
-        pad_val: 114
+        keep_ratio: false
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -74,11 +66,7 @@ test_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         scale: $(input_size)
-        keep_ratio: true
-    - class_path: otx.core.data.transform_libs.torchvision.Pad
-      init_args:
-        pad_to_square: true
-        pad_val: 114
+        keep_ratio: false
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:

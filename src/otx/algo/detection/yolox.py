@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
@@ -76,13 +76,16 @@ class YOLOX(ExplainableOTXDetModel):
             raise ValueError(msg)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
+        resize_mode: Literal["standard", "fit_to_window_letterbox"] = "fit_to_window_letterbox"
+        if self.tile_config.enable_tiler:
+            resize_mode = "standard"
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
-            resize_mode="fit_to_window_letterbox",
+            resize_mode=resize_mode,
             pad_value=114,
             swap_rgb=swap_rgb,
             via_onnx=True,
