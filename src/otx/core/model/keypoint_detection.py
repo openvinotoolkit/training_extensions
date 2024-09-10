@@ -15,18 +15,19 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity, KeypointDetBatchPredEntity
 from otx.core.metrics import MetricCallable, MetricInput
 from otx.core.metrics.pck import PCKMeasureCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from model_api.models.utils import DetectedKeypoints
     from torch import nn
 
 
 class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDetBatchPredEntity]):
-    """Base class for the detection models used in OTX."""
+    """Base class for the keypoint detection models used in OTX."""
 
     def __init__(
         self,
@@ -37,8 +38,6 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
         metric: MetricCallable = PCKMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.mean = (0.0, 0.0, 0.0)
-        self.std = (255.0, 255.0, 255.0)
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -154,9 +153,100 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
         return super()._export_parameters.wrap(
-            model_type="ssd",
-            task_type="detection",
+            model_type="keypoint_detection",
+            task_type="keypoint_detection",
             confidence_threshold=self.hparams.get("best_confidence_threshold", None),
-            iou_threshold=0.5,
-            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
+
+    def get_dummy_input(self, batch_size: int = 1) -> KeypointDetBatchDataEntity:
+        """Returns a dummy input for key point detection model."""
+        images = torch.rand(batch_size, 3, *self.input_size)
+        return KeypointDetBatchDataEntity(
+            batch_size,
+            images,
+            [],
+            [torch.tensor([0, 0, self.input_size[1], self.input_size[0]])],
+            labels=[],
+            bbox_info=[],
+            keypoints=[],
+            keypoints_visible=[],
+        )
+
+
+class OVKeypointDetectionModel(OVModel[KeypointDetBatchDataEntity, KeypointDetBatchPredEntity]):
+    """Keypoint detection model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX keypoint detection model compatible for OTX testing pipeline.
+    """
+
+    def __init__(
+        self,
+        model_name: str,
+        model_type: str = "keypoint_detection",
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = PCKMeasureCallable,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
+        )
+
+    def _customize_outputs(
+        self,
+        outputs: list[DetectedKeypoints],
+        inputs: KeypointDetBatchDataEntity,
+    ) -> KeypointDetBatchPredEntity | OTXBatchLossEntity:
+        keypoints = []
+        scores = []
+        for output in outputs:
+            keypoints.append(torch.as_tensor(output.keypoints, device=self.device))
+            scores.append(torch.as_tensor(output.scores, device=self.device))
+
+        return KeypointDetBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            keypoints=keypoints,
+            scores=scores,
+            keypoints_visible=[],
+            bboxes=[],
+            labels=[],
+            bbox_info=[],
+        )
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        super().configure_metric()
+        self._metric.input_size = (self.model.h, self.model.w)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: KeypointDetBatchPredEntity,
+        inputs: KeypointDetBatchDataEntity,
+    ) -> MetricInput:
+        return {
+            "preds": [
+                {
+                    "keypoints": kpt,
+                    "scores": score,
+                }
+                for kpt, score in zip(preds.keypoints, preds.scores)
+            ],
+            "target": [
+                {
+                    "keypoints": kpt,
+                    "keypoints_visible": kpt_visible,
+                }
+                for kpt, kpt_visible in zip(inputs.keypoints, inputs.keypoints_visible)
+            ],
+        }

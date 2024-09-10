@@ -48,6 +48,7 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "visual_prompting": "test/f1-score",
     "zero_shot_visual_prompting": "test/f1-score",
     "action_classification": "test/accuracy",
+    "keypoint_detection": "test/PCK",
 }
 
 
@@ -90,7 +91,7 @@ def test_otx_export_infer(
     ):
         pytest.skip("To prevent memory bug from aborting integration test, test single model per task.")
     elif "tile" in recipe:
-        pytest.skip("Exporting models with tiling isn't supported yet.")
+        pytest.skip("Exporting tiling model is not supported.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
 
