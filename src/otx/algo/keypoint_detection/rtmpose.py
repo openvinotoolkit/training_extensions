@@ -70,6 +70,8 @@ class RTMPoseTiny(RTMPose):
     """RTMPose Tiny Model."""
 
     load_from = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/cspnext-tiny_udp-aic-coco_210e-256x192-cbed682d_20230130.pth"
+    mean = (123.675, 116.28, 103.53)
+    std = (58.395, 57.12, 57.375)
 
     def __init__(
         self,
@@ -88,9 +90,6 @@ class RTMPoseTiny(RTMPose):
             metric=metric,
             torch_compile=torch_compile,
         )
-
-        self.mean = (123.675, 116.28, 103.53)
-        self.std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> RTMPose:
         simcc_split_ratio = 2.0
