@@ -45,7 +45,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "tox==4.18.0",
+    "tox==4.18.1",
     "pre-commit==3.8.0",
     "pylint",
     "pytest",
@@ -117,11 +117,11 @@ mmlab = [
 ]
 
 ci_tox = [
-    "tox==4.18.0",
+    "tox==4.18.1",
 ]
 
 ci_publish = [
-    "build==1.2.1",
+    "build==1.2.2",
 ]
 
 ci_benchmark = [
