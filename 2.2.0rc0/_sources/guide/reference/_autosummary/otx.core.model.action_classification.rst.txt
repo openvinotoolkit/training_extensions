@@ -1,0 +1,30 @@
+otx.core.model.action\_classification
+=====================================
+
+.. automodule:: otx.core.model.action_classification
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXActionClsModel
+      OVActionClsModel
+   
+   
+
+   
+   
+   
+
+
+

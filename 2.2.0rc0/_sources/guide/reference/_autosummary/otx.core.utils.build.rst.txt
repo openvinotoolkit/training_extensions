@@ -1,0 +1,29 @@
+otx.core.utils.build
+====================
+
+.. automodule:: otx.core.utils.build
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_default_num_async_infer_requests
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
