@@ -4,6 +4,7 @@
 """Custom backbone implementations for detection task."""
 
 from .csp_darknet import CSPDarknet
+from .gelan import GELAN
 from .presnet import PResNet
 
-__all__ = ["CSPDarknet", "PResNet"]
+__all__ = ["CSPDarknet", "GELAN", "PResNet"]

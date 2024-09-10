@@ -25,7 +25,7 @@ from otx.algo.detection.utils.utils import (
     sigmoid_geometric_mean,
     unmap,
 )
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer, is_norm
 from otx.algo.modules.scale import Scale

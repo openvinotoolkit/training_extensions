@@ -262,6 +262,9 @@ def test_otx_e2e(
     if "rtdetr" in model_name:
         return  # RT-DETR currently is not supported.
 
+    if "yolov9" in model_name:
+        return  # RT-DETR currently is not supported.
+
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:
         command_cfg = [
@@ -329,12 +332,12 @@ def test_otx_explain_e2e(
 
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
-
-    if "rtdetr" in recipe:
+    elif "rtdetr" in recipe:
         pytest.skip("rtdetr model is not supported yet with explain.")
-
-    if "keypoint" in recipe:
+    elif "keypoint" in recipe:
         pytest.skip("keypoint detection models don't support explain.")
+    elif "yolov9" in recipe:
+        pytest.skip("yolov9 model is not supported yet with explain.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

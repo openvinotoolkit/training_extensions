@@ -8,9 +8,7 @@ from __future__ import annotations
 
 from torch import Tensor, nn
 
-from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.common.losses.smooth_l1_loss import L1Loss
-from otx.algo.detection.losses.iou_loss import IoULoss
+from otx.algo.common.losses import CrossEntropyLoss, IoULoss, L1Loss
 
 
 class YOLOXCriterion(nn.Module):
