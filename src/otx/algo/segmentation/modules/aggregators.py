@@ -11,8 +11,7 @@ import torch
 from torch import nn
 from torch.nn import functional as f
 
-from otx.algo.modules import Conv2dModule, DepthwiseSeparableConvModule
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import Conv2dModule, DepthwiseSeparableConvModule, build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 
 from .utils import normalize

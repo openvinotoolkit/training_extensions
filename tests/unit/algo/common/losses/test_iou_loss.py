@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.algo.detection.losses import IoULoss
+from otx.algo.common.losses import IoULoss
 
 
 class TestIoULoss:
@@ -27,7 +27,7 @@ class TestIoULoss:
         target = (torch.rand((10, 4)),)
         weight = None
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match="Invalid reduction mode"):
             # only reduction_override from [None, 'none', 'mean', 'sum'] is not allowed
             IoULoss()(pred, target, weight, reduction_override=True)
 

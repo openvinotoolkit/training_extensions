@@ -9,6 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from otx.algo.modules.base_module import BaseModule
@@ -283,4 +284,55 @@ class SingleStageDetector(BaseModule):
         """bool: whether the detector has a mask head."""
         return (hasattr(self, "roi_head") and self.roi_head.with_mask) or (
             hasattr(self, "mask_head") and self.mask_head is not None
+        )
+
+
+class YOLOSingleStageDetector(SingleStageDetector):
+    """SingleStageDetector for YOLOv7 and v9.
+
+    These models' pretrained weights have the format for nn.ModuleList.
+    For adapting the weights to the model, we need to change the keys of the state_dict separately.
+    """
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict,
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: list[str] | str,
+        unexpected_keys: list[str] | str,
+        error_msgs: list[str] | str,
+    ) -> None:
+        backbone_len: int = len(self.backbone.module)
+        neck_len: int = len(self.neck.module)  # type: ignore[union-attr]
+        new_state_dict_keys: dict[str, str] = {}
+        for key in state_dict:
+            match = re.match(r"^(\d+)\.(.*)$", key)
+            if match:
+                orig_idx = int(match.group(1))
+                rest_key = match.group(2)
+
+                if orig_idx < backbone_len:
+                    new_key = f"backbone.module.{orig_idx}.{rest_key}"
+                elif orig_idx < backbone_len + neck_len:
+                    new_idx = orig_idx - backbone_len
+                    new_key = f"neck.module.{new_idx}.{rest_key}"
+                else:  # for bbox_head
+                    new_idx = orig_idx - backbone_len - neck_len
+                    new_key = f"bbox_head.module.{new_idx}.{rest_key}"
+                new_state_dict_keys[key] = new_key
+
+        for old_key, new_key in new_state_dict_keys.items():
+            value = state_dict.pop(old_key)
+            state_dict[new_key] = value
+
+        super(SingleStageDetector, self)._load_from_state_dict(
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
         )

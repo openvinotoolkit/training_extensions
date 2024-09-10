@@ -389,7 +389,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to False.
 
         Returns:
-            list[tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]]:
+            tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
                 Detection results of each image after the post process.
         """
         outs = self(x)

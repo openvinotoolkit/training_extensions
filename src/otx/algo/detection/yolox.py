@@ -7,11 +7,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-from otx.algo.common.losses import CrossEntropyLoss, L1Loss
+from otx.algo.common.losses import CrossEntropyLoss, IoULoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import YOLOXHead
-from otx.algo.detection.losses import IoULoss, YOLOXCriterion
+from otx.algo.detection.losses import YOLOXCriterion
 from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
