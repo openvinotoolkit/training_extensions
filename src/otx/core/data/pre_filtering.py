@@ -88,7 +88,7 @@ def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int
         raise ValueError(msg)
     if len(used_labels) == len(original_categories):
         return dataset
-    if data_format == "arrow" and sorted(used_labels)[-1] != len(original_categories) - 1:
+    if data_format == "arrow" and max(used_labels) != len(original_categories) - 1:
         # we assume that empty label is always the last one. If it is not explicitly added to the dataset,
         # (not in the used labels) it will be filtered out.
         mapping = {cat: cat for cat in original_categories[:-1]}
