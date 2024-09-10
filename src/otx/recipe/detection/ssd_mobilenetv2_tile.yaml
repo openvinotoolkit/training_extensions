@@ -35,9 +35,6 @@ overrides:
     input_size:
       - 864
       - 864
-    tile_config:
-      enable_tiler: true
-      enable_adaptive_tiling: true
 
     train_subset:
       batch_size: 8

@@ -38,9 +38,6 @@ overrides:
       - 640
       - 640
     image_color_channel: BGR
-    tile_config:
-      enable_tiler: true
-      enable_adaptive_tiling: true
 
     train_subset:
       num_workers: 4

@@ -39,10 +39,6 @@ overrides:
         min_lrschedule_patience: 3
 
   data:
-    tile_config:
-      enable_tiler: true
-      enable_adaptive_tiling: true
-
     train_subset:
       batch_size: 4
       sampler:

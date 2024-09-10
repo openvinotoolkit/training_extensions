@@ -8,6 +8,9 @@ image_color_channel: RGB
 stack_images: true
 data_format: coco_instances
 unannotated_items_ratio: 0.0
+tile_config:
+  enable_tiler: true
+  enable_adaptive_tiling: true
 train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
