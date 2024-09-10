@@ -8,7 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -17,9 +17,7 @@ from otx.algo.common.utils.coders import BaseBBoxCoder
 from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.heads.anchor_head import AnchorHead
-
-if TYPE_CHECKING:
-    from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 class SSDHeadModule(AnchorHead):
@@ -44,6 +42,8 @@ class SSDHeadModule(AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         test_cfg (dict, Optional): Testing config of anchor head.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function for
+            classification prediction. Defaults to False.
     """
 
     def __init__(
@@ -59,8 +59,9 @@ class SSDHeadModule(AnchorHead):
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
         test_cfg: dict | None = None,
+        use_sigmoid_cls: bool = False,
     ) -> None:
-        super(AnchorHead, self).__init__(init_cfg=init_cfg)
+        super(AnchorHead, self).__init__(init_cfg=init_cfg, use_sigmoid_cls=use_sigmoid_cls)
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.stacked_convs = stacked_convs
@@ -79,8 +80,6 @@ class SSDHeadModule(AnchorHead):
 
         self.bbox_coder = bbox_coder
         self.reg_decoded_bbox = reg_decoded_bbox
-        self.use_sigmoid_cls = False
-        self.cls_focal_loss = False
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
@@ -111,30 +110,22 @@ class SSDHeadModule(AnchorHead):
             bbox_preds.append(reg_conv(feat))
         return cls_scores, bbox_preds
 
-    def loss_by_feat(
+    def prepare_loss_inputs(
         self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Compute losses of the head.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Box energies deltas for each scale level with shape (N, num_anchors * 4, H, W)
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional): Batch of gt_instances_ignore.
-                It includes ``bboxes`` attribute data that is ignored during training and testing.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict[str, Tensor]: A dictionary of raw outputs.
+            dict: A dictionary of components for loss calculation.
         """
+        cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(x, entity)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 
         device = cls_scores[0].device
@@ -145,7 +136,6 @@ class SSDHeadModule(AnchorHead):
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
             unmap_outputs=True,
         )
         (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor) = cls_reg_targets
@@ -248,4 +238,5 @@ class SSDHead:
             init_cfg=init_cfg,  # TODO (sungchul, kirill): remove
             train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+            use_sigmoid_cls=False,  # use softmax cls
         )

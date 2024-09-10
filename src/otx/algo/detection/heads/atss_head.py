@@ -27,6 +27,7 @@ from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 EPS = 1e-12
 
@@ -51,6 +52,8 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         init_cfg (dict, list[dict], optional): Initialization config dict.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -67,6 +70,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         ),
         reg_decoded_bbox: bool = True,
         init_cfg: dict | None = None,
+        use_sigmoid_cls: bool = True,
         **kwargs,
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
@@ -83,6 +87,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             in_channels=in_channels,
             reg_decoded_bbox=reg_decoded_bbox,
             init_cfg=init_cfg,
+            use_sigmoid_cls=use_sigmoid_cls,
             **kwargs,
         )
 
@@ -182,36 +187,24 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         centerness = self.atss_centerness(reg_feat)
         return cls_score, bbox_pred, centerness
 
-    def loss_by_feat(  # type: ignore[override]
+    def prepare_loss_inputs(
         self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        centernesses: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Compute losses of the head.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W)
-            centernesses (list[Tensor]): Centerness for each scale
-                level with shape (N, num_anchors * 1, H, W)
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict[str, Tensor]: A dictionary of raw outputs.
+            dict: A dictionary of components for loss calculation.
         """
+        outs = super().prepare_loss_inputs(x, entity)
+
+        cls_scores, bbox_preds, centernesses, batch_gt_instances, batch_img_metas = outs
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
             msg = "featmap_sizes and self.prior_generator.num_levels have different levels."
@@ -225,7 +218,6 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
 
         (
@@ -265,8 +257,6 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         This method is almost the same as `AnchorHead.get_targets()`. Besides
         returning the targets as the parent method does, it also returns the
         anchors as the first element of the returned tuple.
-        However, if the detector's head loss uses CrossSigmoidFocalLoss,
-        the labels_weights_list consists of (binarized label schema * weights) of batch images
         """
         return self.get_atss_targets(
             anchor_list,

@@ -403,6 +403,7 @@ def test_otx_ov_test(
         "h_label_cls",
         "visual_prompting",
         "zero_shot_visual_prompting",
+        "anomaly",
         "anomaly_classification",
         "anomaly_detection",
         "anomaly_segmentation",

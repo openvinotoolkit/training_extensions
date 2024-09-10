@@ -82,6 +82,5 @@ class TestSSDHead:
         assert self.head.test_cfg == test_cfg
         assert self.head.assigner == train_cfg["assigner"]
         assert self.head.sampler is not None
-        assert self.head.cls_focal_loss is False
         assert self.head.use_sigmoid_cls is False
         assert self.head.reg_decoded_bbox is False

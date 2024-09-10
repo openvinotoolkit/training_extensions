@@ -10,7 +10,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class TestYOLOXCriterion:
-    def test_forward(self):
+    def test_forward(self, mocker):
         criterion = YOLOXCriterion(num_classes=4)
 
         s = 256
@@ -25,13 +25,13 @@ class TestYOLOXCriterion:
         }
         head = YOLOXHeadModule(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
-        cls_scores, bbox_preds, objectnesses = head.forward(feat)
-
         # Test that empty ground truth encourages the network to predict
         # background
         gt_instances = InstanceData(bboxes=torch.empty((0, 4)), labels=torch.LongTensor([]))
 
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        mocker.patch("otx.algo.detection.heads.base_head.unpack_det_entity", return_value=([gt_instances], img_metas))
+        raw_dict = head.prepare_loss_inputs(feat, mocker.MagicMock())
+
         empty_gt_losses = criterion(**raw_dict)
         # When there is no truth, the cls loss should be nonzero but there
         # should be no box loss.
@@ -52,7 +52,8 @@ class TestYOLOXCriterion:
             labels=torch.LongTensor([2]),
         )
 
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        mocker.patch("otx.algo.detection.heads.base_head.unpack_det_entity", return_value=([gt_instances], img_metas))
+        raw_dict = head.prepare_loss_inputs(feat, mocker.MagicMock())
         one_gt_losses = criterion(**raw_dict)
         onegt_cls_loss = one_gt_losses["loss_cls"].sum()
         onegt_box_loss = one_gt_losses["loss_bbox"].sum()
@@ -68,7 +69,9 @@ class TestYOLOXCriterion:
             bboxes=torch.Tensor([[s * 4, s * 4, s * 4 + 10, s * 4 + 10]]),
             labels=torch.LongTensor([2]),
         )
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+
+        mocker.patch("otx.algo.detection.heads.base_head.unpack_det_entity", return_value=([gt_instances], img_metas))
+        raw_dict = head.prepare_loss_inputs(feat, mocker.MagicMock())
         empty_gt_losses = criterion(**raw_dict)
         # When gt_bboxes out of bound, the assign results should be empty,
         # so the cls and bbox loss should be zero.

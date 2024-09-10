@@ -105,10 +105,11 @@ class AnomalyOpenVINO(OVModel):
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = NullMetricCallable,  # Metrics is computed using Anomalib's metric
         task: Literal[
+            OTXTaskType.ANOMALY,
             OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
-        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        ] = OTXTaskType.ANOMALY,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -173,7 +174,7 @@ class AnomalyOpenVINO(OVModel):
             msg = "Model is already optimized by PTQ"
             raise RuntimeError(msg)
 
-        val_dataset = data_module.train_dataloader()
+        val_dataset = data_module.val_dataloader()
 
         ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
         if ptq_config is not None:

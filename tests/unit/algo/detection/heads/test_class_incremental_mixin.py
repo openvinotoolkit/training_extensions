@@ -15,7 +15,7 @@ class MockGTInstance:
 
 
 class TestClassIncrementalMixin:
-    def test_ignore_label(self) -> None:
+    def test_ignore_label(self, mocker) -> None:
         atss = ATSS(model_name="atss_mobilenetv2", label_info=3, input_size=(800, 992))
         criterion = ATSSCriterion(
             num_classes=3,
@@ -34,27 +34,13 @@ class TestClassIncrementalMixin:
         )
         atss_head = atss.model.bbox_head
 
-        cls_scores = [
-            torch.randn(1, 3, 92, 124),
-            torch.randn(1, 3, 46, 62),
-            torch.randn(1, 3, 23, 31),
-            torch.randn(1, 3, 12, 16),
-            torch.randn(1, 3, 6, 8),
-        ]
-        bbox_preds = [
-            torch.randn(1, 4, 92, 124),
-            torch.randn(1, 4, 46, 62),
-            torch.randn(1, 4, 23, 31),
-            torch.randn(1, 4, 12, 16),
-            torch.randn(1, 4, 6, 8),
-        ]
-        centernesses = [
-            torch.randn(1, 1, 92, 124),
-            torch.randn(1, 1, 46, 62),
-            torch.randn(1, 1, 23, 31),
-            torch.randn(1, 1, 12, 16),
-            torch.randn(1, 1, 6, 8),
-        ]
+        backbone_features = (
+            torch.randn(1, 64, 100, 124),
+            torch.randn(1, 64, 50, 62),
+            torch.randn(1, 64, 25, 31),
+            torch.randn(1, 64, 13, 16),
+            torch.randn(1, 64, 7, 8),
+        )
 
         batch_gt_instances = [MockGTInstance()]
         batch_img_metas = [
@@ -67,13 +53,14 @@ class TestClassIncrementalMixin:
             },
         ]
 
+        mocker.patch(
+            "otx.algo.detection.heads.base_head.unpack_det_entity",
+            return_value=(batch_gt_instances, batch_img_metas),
+        )
         loss_with_ignored_labels = criterion(
-            **atss_head.loss_by_feat(
-                cls_scores,
-                bbox_preds,
-                centernesses,
-                batch_gt_instances,
-                batch_img_metas,
+            **atss_head.prepare_loss_inputs(
+                x=backbone_features,
+                entity=mocker.MagicMock(),
             ),
         )
         loss_cls_with_ignored_labels = torch.sum(torch.Tensor(loss_with_ignored_labels["loss_cls"]))
@@ -87,13 +74,15 @@ class TestClassIncrementalMixin:
                 "pad_shape": (480, 480),
             },
         ]
+
+        mocker.patch(
+            "otx.algo.detection.heads.base_head.unpack_det_entity",
+            return_value=(batch_gt_instances, batch_img_metas),
+        )
         loss_without_ignored_labels = criterion(
-            **atss_head.loss_by_feat(
-                cls_scores,
-                bbox_preds,
-                centernesses,
-                batch_gt_instances,
-                batch_img_metas,
+            **atss_head.prepare_loss_inputs(
+                x=backbone_features,
+                entity=mocker.MagicMock(),
             ),
         )
         loss_cls_without_ignored_labels = torch.sum(torch.Tensor(loss_without_ignored_labels["loss_cls"]))
