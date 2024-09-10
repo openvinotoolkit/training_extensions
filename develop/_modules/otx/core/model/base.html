@@ -423,9 +423,9 @@
                     <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
 
-            <span class="n">total_train_loss</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_loss</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">total_train_loss</span> <span class="o">=</span> <span class="n">train_loss</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_loss&quot;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">train_loss</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
-                <span class="s2">&quot;train/loss&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;train/total_loss&quot;</span><span class="p">,</span>
                 <span class="n">total_train_loss</span><span class="p">,</span>
                 <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">on_epoch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
