@@ -412,8 +412,8 @@
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskLevelExportParameters</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines parameters required to export a particular model implementation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_export_parameters</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span>
-            <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;ssd&quot;</span><span class="p">,</span>
-            <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;detection&quot;</span><span class="p">,</span>
+            <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;keypoint_detection&quot;</span><span class="p">,</span>
+            <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;keypoint_detection&quot;</span><span class="p">,</span>
             <span class="n">confidence_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">tile_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
