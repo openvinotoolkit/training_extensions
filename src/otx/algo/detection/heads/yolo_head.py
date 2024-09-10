@@ -529,7 +529,7 @@ class YOLOHeadModule(BaseDenseHead):
             return outputs["Main"], outputs["AUX"]
         return outputs["Main"], None
 
-    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
+    def prepare_loss_inputs(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
         """Perform forward propagation and loss calculation of the detection head.
 
         Args:

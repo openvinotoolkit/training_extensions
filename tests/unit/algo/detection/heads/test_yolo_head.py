@@ -183,10 +183,15 @@ class TestYOLOHeadModule:
             assert aux_pred[1].shape == torch.Size([1, 16, 4, *shape])
             assert aux_pred[2].shape == torch.Size([1, 4, *shape])
 
-    def test_loss(self, yolo_head: YOLOHeadModule, head_inputs: dict[int | str, Any], fxt_det_data_entity) -> None:
+    def test_prepare_loss_inputs(
+        self,
+        yolo_head: YOLOHeadModule,
+        head_inputs: dict[int | str, Any],
+        fxt_det_data_entity,
+    ) -> None:
         entity = deepcopy(fxt_det_data_entity[1])
 
-        loss = yolo_head.loss(head_inputs, entity)
+        loss = yolo_head.prepare_loss_inputs(head_inputs, entity)
 
         assert "main_preds" in loss
         assert "aux_preds" in loss
