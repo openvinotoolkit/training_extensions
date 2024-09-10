@@ -53,7 +53,7 @@ class SAMCriterion(nn.Module):
 
         loss = 20.0 * loss_focal + loss_dice + loss_iou
 
-        return {"loss": loss, "loss_focal": loss_focal, "loss_dice": loss_dice, "loss_iou": loss_iou}
+        return {"total_loss": loss, "loss_focal": loss_focal, "loss_dice": loss_dice, "loss_iou": loss_iou}
 
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.

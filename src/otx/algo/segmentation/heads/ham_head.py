@@ -12,8 +12,7 @@ import torch
 import torch.nn.functional as f
 from torch import nn
 
-from otx.algo.modules import Conv2dModule
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import Conv2dModule, build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import resize
 

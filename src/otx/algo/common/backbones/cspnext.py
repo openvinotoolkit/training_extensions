@@ -14,7 +14,7 @@ from typing import Any, Callable, ClassVar
 
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer

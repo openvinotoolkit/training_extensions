@@ -13,8 +13,7 @@ import torch
 from torch import nn
 
 from otx.algo.detection.layers import CSPRepLayer
-from otx.algo.modules import Conv2dModule
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import Conv2dModule, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.norm import build_norm_layer
 
