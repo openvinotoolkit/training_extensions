@@ -418,7 +418,7 @@ class YOLOv9Criterion(nn.Module):
             "loss_df": self.dfl_rate * (aux_dfl * self.aux_rate + main_dfl),
             "loss_iou": self.iou_rate * (aux_iou * self.aux_rate + main_iou),
         }
-        loss_dict.update(loss=sum(list(loss_dict.values())) / len(loss_dict))
+        loss_dict.update(total_loss=sum(list(loss_dict.values())) / len(loss_dict))
         return loss_dict
 
     def _forward(self, predicts: tuple[Tensor, Tensor, Tensor], targets: Tensor) -> tuple[Tensor, Tensor, Tensor]:

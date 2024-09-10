@@ -43,7 +43,7 @@ class TestSAMCriterion:
 
         atol = 1e-04
         rtol = 1e-03
-        assert torch.isclose(results["loss"], expected_loss, atol=atol, rtol=rtol)
+        assert torch.isclose(results["total_loss"], expected_loss, atol=atol, rtol=rtol)
         assert torch.isclose(results["loss_focal"], expected_loss_focal, atol=atol, rtol=rtol)
         assert torch.isclose(results["loss_dice"], expected_loss_dice, atol=atol, rtol=rtol)
         assert torch.isclose(results["loss_iou"], expected_loss_iou, atol=atol, rtol=rtol)

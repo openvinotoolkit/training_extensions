@@ -193,7 +193,7 @@ class TestYOLOv9Criterion:
         assert "loss_cls" in loss_dict
         assert "loss_df" in loss_dict
         assert "loss_iou" in loss_dict
-        assert "loss" in loss_dict
+        assert "total_loss" in loss_dict
 
     def test_separate_anchor(self, criterion: YOLOv9Criterion) -> None:
         criterion.num_classes = 2
