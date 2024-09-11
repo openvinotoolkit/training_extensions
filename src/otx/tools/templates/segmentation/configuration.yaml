@@ -36,7 +36,7 @@ learning_parameters:
     editable: true
     header: Learning rate
     max_value: 0.1
-    min_value: 1.0e-07
+    min_value: 1.0e-08
     type: FLOAT
     ui_rules:
       action: DISABLE_EDITING
@@ -128,7 +128,7 @@ learning_parameters:
     warning: null
   early_stop_start:
     affects_outcome_of: TRAINING
-    default_value: 3
+    default_value: 70
     editable: true
     header: Start epoch for early stopping
     max_value: 1000
@@ -143,7 +143,7 @@ learning_parameters:
     visible_in_ui: false
   early_stop_patience:
     affects_outcome_of: TRAINING
-    default_value: 5
+    default_value: 7
     description: Training will stop if the model does not improve within the number of epochs of patience.
     editable: true
     header: Patience for early stopping

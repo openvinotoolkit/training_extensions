@@ -57,7 +57,7 @@ learning_parameters:
     editable: true
     header: Learning rate
     max_value: 0.1
-    min_value: 1.0e-07
+    min_value: 1.0e-08
     type: FLOAT
     ui_rules:
       action: DISABLE_EDITING

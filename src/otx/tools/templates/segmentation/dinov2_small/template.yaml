@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR
-name: Lite-HRNet-18-mod2
+model_template_id: Custom_Semantic_Segmentation_DINOV2_S
+name: DINOV2_S
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Semantic Segmentation with middle-sized architecture which based on the Lite-HRNet backbone for the balance between the fast inference and long training.
+summary: Class-Incremental Semantic Segmentation with larger architecture which based on the foundational DINO model for the better accuracy, especcially on small datasets.
 application: ~
 
 # Algo backend.
@@ -21,11 +21,12 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 8
+        auto_hpo_state: POSSIBLE
       learning_rate:
         default_value: 0.001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 20
       num_iters:
         default_value: 200
 
@@ -36,9 +37,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 3.63
-size: 4.8
-
-# Model spec
-model_category: BALANCE
-is_default_for_task: true
+gigaflops: 62
+size: 2.37
