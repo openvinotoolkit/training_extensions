@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import logging as log
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import torch
@@ -285,12 +284,6 @@ class OTXAnomaly(OTXModel):
         Returns:
             Path: path to the exported model.
         """
-        if export_format == OTXExportFormatType.OPENVINO:
-            if to_exportable_code:
-                msg = "Exportable code option is not supported yet for anomaly tasks and will be ignored."
-                log.warning(msg)
-            to_exportable_code = False
-
         return self._exporter.export(
             model=self.model,
             output_dir=output_dir,
