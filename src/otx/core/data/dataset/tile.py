@@ -218,6 +218,9 @@ class OTXTileDataset(OTXDataset):
             dataset.mem_cache_handler,
             dataset.mem_cache_img_max_size,
             dataset.max_refetch,
+            dataset.image_color_channel,
+            dataset.stack_images,
+            dataset.to_tv_image,
         )
         self.tile_config = tile_config
         self._dataset = dataset
