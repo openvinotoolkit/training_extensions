@@ -21,6 +21,7 @@ from torch import Tensor, nn
 
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
 from otx.algo.common.utils.utils import (
+    distance2bbox,
     filter_scores_and_topk,
     inverse_sigmoid,
     reduce_mean,
@@ -30,7 +31,7 @@ from otx.algo.detection.heads.rtmdet_head import RTMDetHead
 from otx.algo.instance_segmentation.utils.roi_extractors import OTXRoIAlign
 from otx.algo.instance_segmentation.utils.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer, is_norm
@@ -44,8 +45,8 @@ from .utils import sigmoid_geometric_mean
 # mypy: disable-error-code="call-overload, index, override, attr-defined, misc"
 
 
-class RTMDetInsHead(RTMDetHead):
-    """Detection Head of RTMDet-Ins.
+class RTMDetInstHead(RTMDetHead):
+    """Detection Head of RTMDet for Instance Segmentation.
 
     Args:
         num_prototypes (int): Number of mask prototype features extracted
@@ -54,7 +55,7 @@ class RTMDetInsHead(RTMDetHead):
             Defaults to 8.
         num_dyconvs (int): Number of the dynamic convolution layers.
             Defaults to 3.
-        mask_loss_stride (int): Down sample stride of the masks for loss
+        mask_stride (int): Down sample stride of the masks for loss
             computation. Defaults to 4.
     """
 
@@ -64,13 +65,13 @@ class RTMDetInsHead(RTMDetHead):
         num_prototypes: int = 8,
         dyconv_channels: int = 8,
         num_dyconvs: int = 3,
-        mask_loss_stride: int = 4,
+        mask_stride: int = 4,
         **kwargs,
     ) -> None:
         self.num_prototypes = num_prototypes
         self.num_dyconvs = num_dyconvs
         self.dyconv_channels = dyconv_channels
-        self.mask_loss_stride = mask_loss_stride
+        self.mask_stride = mask_stride
         super().__init__(*args, **kwargs)
 
     def _init_layers(self) -> None:
@@ -530,14 +531,14 @@ class RTMDetInsHead(RTMDetHead):
                 x = torch.nn.functional.relu(x)
         return x.reshape(num_inst, h, w)
 
-    def loss_mask_by_feat(
+    def prepare_mask_loss_inputs(
         self,
         mask_feats: Tensor,
         flatten_kernels: Tensor,
         sampling_results_list: list,
         batch_gt_instances: list[InstanceData],
     ) -> dict[str, Tensor]:
-        """Compute instance segmentation loss.
+        """Get mask targets for instance segmentation loss.
 
         Args:
             mask_feats (list[Tensor]): Mask prototype features extracted from
@@ -595,7 +596,7 @@ class RTMDetInsHead(RTMDetHead):
             .item()
         )
 
-        scale = self.prior_generator.strides[0][0] // self.mask_loss_stride
+        scale = self.prior_generator.strides[0][0] // self.mask_stride
         # upsample pred masks
         batch_pos_mask_logits = torch.nn.functional.interpolate(
             batch_pos_mask_logits.unsqueeze(0),
@@ -606,8 +607,8 @@ class RTMDetInsHead(RTMDetHead):
         # downsample gt masks
         pos_gt_masks = pos_gt_masks[
             :,
-            self.mask_loss_stride // 2 :: self.mask_loss_stride,
-            self.mask_loss_stride // 2 :: self.mask_loss_stride,
+            self.mask_stride // 2 :: self.mask_stride,
+            self.mask_stride // 2 :: self.mask_stride,
         ]
 
         return {
@@ -616,17 +617,20 @@ class RTMDetInsHead(RTMDetHead):
             "num_pos": num_pos,
         }
 
-    def loss_by_feat(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        kernel_preds: list[Tensor],
-        mask_feat: Tensor,
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Compute losses of the head."""
+    def prepare_loss_inputs(self, x: tuple[Tensor], entity: InstanceSegBatchDataEntity) -> dict:
+        """Perform forward propagation and prepare outputs for loss calculation.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
+
+        Returns:
+            dict: A dictionary of components for loss calculation.
+        """
+        cls_scores, bbox_preds, kernel_preds, mask_feat = self(x)
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
+
         num_imgs = len(batch_img_metas)
         device = cls_scores[0].device
         flatten_kernels = torch.cat(
@@ -645,23 +649,66 @@ class RTMDetInsHead(RTMDetHead):
                     ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
                 gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
 
-        raw_outputs = super().loss_by_feat(
-            cls_scores=cls_scores,
-            bbox_preds=bbox_preds,
-            batch_gt_instances=batch_gt_instances,
-            batch_img_metas=batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
+        num_imgs = len(batch_img_metas)
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+        if len(featmap_sizes) != self.prior_generator.num_levels:
+            msg = (
+                f"The number of featmap_sizes (={len(featmap_sizes)}) and the number of levels of prior_generator "
+                f"(={self.prior_generator.num_levels}) should be same."
+            )
+            raise ValueError(msg)
+
+        device = cls_scores[0].device
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
+        flatten_cls_scores = torch.cat(
+            [cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_score in cls_scores],
+            1,
+        )
+        decoded_bboxes = []
+        for anchor, bbox_pred in zip(anchor_list[0], bbox_preds):
+            anchor = anchor.reshape(-1, 4)  # noqa: PLW2901
+            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4)  # noqa: PLW2901
+            bbox_pred = distance2bbox(anchor, bbox_pred)  # noqa: PLW2901
+            decoded_bboxes.append(bbox_pred)
+
+        flatten_bboxes = torch.cat(decoded_bboxes, 1)
+
+        (
+            anchor_list,
+            labels_list,
+            label_weights_list,
+            bbox_targets_list,
+            assign_metrics_list,
+            sampling_results_list,
+        ) = self.get_targets(  # type: ignore[misc]
+            flatten_cls_scores,
+            flatten_bboxes,
+            anchor_list,
+            valid_flag_list,
+            batch_gt_instances,
+            batch_img_metas,
         )
 
-        raw_iseg_outputs = self.loss_mask_by_feat(
+        outputs = {
+            "cls_score": cls_scores,
+            "bbox_pred": decoded_bboxes,
+            "labels": labels_list,
+            "label_weights": label_weights_list,
+            "bbox_targets": bbox_targets_list,
+            "assign_metrics": assign_metrics_list,
+            "stride": self.prior_generator.strides,
+            "sampling_results_list": sampling_results_list,
+        }
+
+        iseg_outputs = self.prepare_mask_loss_inputs(
             mask_feat,
             flatten_kernels,
-            raw_outputs["sampling_results_list"],
+            outputs["sampling_results_list"],
             batch_gt_instances,
         )
-        raw_outputs.update(raw_iseg_outputs)
+        outputs.update(iseg_outputs)
 
-        return raw_outputs
+        return outputs
 
 
 class MaskFeatModule(BaseModule):
@@ -729,7 +776,7 @@ class MaskFeatModule(BaseModule):
         return self.projection(mask_features)
 
 
-class RTMDetInsSepBNHead(RTMDetInsHead):
+class RTMDetInstSepBNHead(RTMDetInstHead):
     """Detection Head of RTMDet-Ins with sep-bn layers.
 
     Args:
@@ -743,6 +790,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``partial(nn.SiLU, inplace=True)``.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -754,6 +803,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, requires_grad=True),
         activation: Callable[..., nn.Module] = partial(nn.SiLU, inplace=True),
         pred_kernel_size: int = 1,
+        use_sigmoid_cls: bool = True,
         **kwargs,
     ) -> None:
         self.share_conv = share_conv
@@ -764,6 +814,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             activation=activation,
             pred_kernel_size=pred_kernel_size,
             with_objectness=with_objectness,
+            use_sigmoid_cls=use_sigmoid_cls,
             **kwargs,
         )
 
@@ -945,24 +996,6 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             bbox_preds.append(reg_dist)
             kernel_preds.append(kernel_pred)
         return tuple(cls_scores), tuple(bbox_preds), tuple(kernel_preds), mask_feat
-
-    def loss(self, x: tuple[Tensor], entity: InstanceSegBatchDataEntity) -> dict:
-        """Perform forward propagation and loss calculation.
-
-        Args:
-            x (tuple[Tensor]): Features from the upstream network, each is
-                a 4D-tensor.
-            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
-
-        Returns:
-            dict: A dictionary of loss components.
-        """
-        outs = self(x)
-
-        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
-
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas)
-        return self.loss_by_feat(*loss_inputs)
 
     def export_by_feat(
         self,

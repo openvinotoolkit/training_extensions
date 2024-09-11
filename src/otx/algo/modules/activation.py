@@ -57,7 +57,6 @@ ACTIVATION_LIST_NOT_SUPPORTING_INPLACE: list[nn.Module] = [
     nn.Sigmoid,
     Swish,
     nn.GELU,
-    nn.SiLU,
 ]
 
 

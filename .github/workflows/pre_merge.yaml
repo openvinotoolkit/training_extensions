@@ -111,6 +111,7 @@ jobs:
           - task: "anomaly_classification"
           - task: "anomaly_detection"
           - task: "anomaly_segmentation"
+          - task: "keypoint_detection"
     name: Integration-Test-${{ matrix.task }}-py310
     steps:
       - name: Checkout repository

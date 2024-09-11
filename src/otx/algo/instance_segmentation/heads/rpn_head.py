@@ -8,8 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
-import copy
 import warnings
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import torch
 import torch.nn.functional
@@ -20,48 +20,101 @@ from otx.algo.common.utils.utils import dynamic_topk, gather_topk
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.instance_segmentation.utils.structures.bbox import empty_box_as, get_box_wh
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
+if TYPE_CHECKING:
+    from otx.algo.common.utils.assigners import MaxIoUAssigner
+    from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
+    from otx.algo.common.utils.prior_generators import AnchorGenerator
+    from otx.algo.common.utils.samplers.base_sampler import BaseSampler
+
 # ruff: noqa: PLW2901
 
 
-class RPNHead(AnchorHead):
+class RPNHeadModule(AnchorHead):
     """Implementation of RPN head.
 
     Args:
-        in_channels (int): Number of channels in the input feature map.
-        num_classes (int): Number of categories excluding the background
-            category. Defaults to 1.
-        init_cfg (dict or list[dict]): Initialization config dict.
-        num_convs (int): Number of convolution layers in the head.
-            Defaults to 1.
+        in_channels (int): Number of input channels.
+        anchor_generator (nn.Module): Module that generates anchors.
+        bbox_coder (nn.Module): Module that encodes/decodes bboxes.
+        assigner (nn.Module): Module that assigns bboxes to ground truth.
+        sampler (nn.Module): Module that samples bboxes.
+        train_cfg (dict): Training configuration.
+        test_cfg (dict): Testing configuration.
+        init_cfg (dict, optional): Initialization configuration. Defaults to None.
+        feat_channels (int, optional): Number of feature channels. Defaults to 256.
+        reg_decoded_bbox (bool, optional): Whether to decode bbox. Defaults to False.
+        allowed_border (float, optional): Allowed border. Defaults to 0.0.
+        pos_weight (float, optional): Positive weight. Defaults to 1.0.
+        num_classes (int, optional): Number of classes. Defaults to 1.
+        num_convs (int, optional): Number of convolutions. Defaults to 1.
+        max_per_img (int, optional): Maximum number of bboxes per image. Defaults to 1000.
+        min_bbox_size (int, optional): Minimum bbox size. Defaults to 0.
+        nms_iou_threshold (float, optional): NMS IoU threshold. Defaults to 0.7.
+        score_threshold (float, optional): Score threshold. Defaults to 0.5.
+        nms_pre (int, optional): NMS pre. Defaults to 1000.
+        with_nms (bool, optional): Whether to use NMS. Defaults to True.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         in_channels: int,
+        anchor_generator: nn.Module,
+        bbox_coder: nn.Module,
+        assigner: nn.Module,
+        sampler: nn.Module,
+        train_cfg: dict,
+        test_cfg: dict,
+        init_cfg: dict | None = None,
+        feat_channels: int = 256,
+        reg_decoded_bbox: bool = False,
+        allowed_border: float = 0.0,
+        pos_weight: float = 1.0,
         num_classes: int = 1,
-        init_cfg: dict | list[dict] | None = None,
         num_convs: int = 1,
-        **kwargs,
+        max_per_img: int = 1000,
+        min_bbox_size: int = 0,
+        nms_iou_threshold: float = 0.7,
+        score_threshold: float = 0.5,
+        nms_pre: int = 1000,
+        with_nms: bool = True,
+        use_sigmoid_cls: bool = True,
     ) -> None:
         self.num_convs = num_convs
-        if init_cfg is None:
-            init_cfg = {"type": "Normal", "layer": "Conv2d", "std": 0.01}
-
         if num_classes != 1:
             msg = "num_classes must be 1 for RPNHead"
             raise ValueError(msg)
+        if init_cfg is None:
+            init_cfg = {"type": "Normal", "layer": "Conv2d", "std": 0.01}
+
         super().__init__(
             num_classes=num_classes,
             in_channels=in_channels,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            feat_channels=feat_channels,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
             init_cfg=init_cfg,
-            **kwargs,
+            use_sigmoid_cls=use_sigmoid_cls,
         )
+
+        self.nms_iou_threshold = nms_iou_threshold
+        self.nms_pre = nms_pre
+        self.with_nms = with_nms
+        self.min_bbox_size = min_bbox_size
+        self.max_per_img = max_per_img
+        self.pos_weight = pos_weight
+        self.reg_decoded_bbox = reg_decoded_bbox
+        self.allowed_border = allowed_border
+        self.score_threshold = score_threshold
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -107,37 +160,33 @@ class RPNHead(AnchorHead):
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
 
-    def loss_and_predict(
+    def prepare_loss_inputs(
         self,
         x: tuple[Tensor],
-        rpn_entity: InstanceSegBatchDataEntity,
-        proposal_cfg: dict | None = None,
-    ) -> tuple[dict, list[InstanceData]]:
-        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
+        entity: InstanceSegBatchDataEntity,  # type: ignore[override]
+    ) -> tuple:
+        """Perform forward propagation and prepare outputs for loss calculation.
 
         Args:
-            x (tuple[Tensor]): Features from FPN.
-            batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
-                the meta information of each image and corresponding
-                annotations.
-            proposal_cfg (dict, optional): Test / postprocessing
-                configuration, if None, test_cfg would be used.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            tuple: the return value is a tuple contains:
-
-                - losses: (dict[str, Tensor]): A dictionary of loss components.
-                - predictions (list[InstanceData]): Detection
-                  results of each image after the post process.
+            dict: A dictionary of components for loss calculation.
         """
-        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
-
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
         cls_scores, bbox_preds = self(x)
 
-        losses = self.loss_by_feat(
-            cls_scores,
-            bbox_preds,
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+
+        device = cls_scores[0].device
+
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
+
+        cls_reg_targets = self.get_targets(
+            anchor_list,
+            valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
         )
@@ -146,9 +195,10 @@ class RPNHead(AnchorHead):
             cls_scores,
             bbox_preds,
             batch_img_metas=batch_img_metas,
-            cfg=proposal_cfg,
+            cfg=self.test_cfg,
         )
-        return losses, predictions
+
+        return cls_reg_targets, bbox_preds, cls_scores, predictions
 
     def predict(
         self,
@@ -184,42 +234,13 @@ class RPNHead(AnchorHead):
 
         cls_scores, bbox_preds = self(x)
 
-        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
-
-    def loss_by_feat(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head.
-
-        Args:
-            cls_scores (list[Tensor]): Box scores for each scale level,
-                has shape (N, num_anchors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-
-        Returns:
-            dict[str, Tensor]: A dictionary of loss components.
-        """
-        losses = super().loss_by_feat(
+        return self.predict_by_feat(
             cls_scores,
             bbox_preds,
-            batch_gt_instances,
-            batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
+            batch_img_metas=batch_img_metas,
+            rescale=rescale,
+            cfg=self.test_cfg,
         )
-        return {"loss_rpn_cls": losses["loss_cls"], "loss_rpn_bbox": losses["loss_bbox"]}
 
     def _predict_by_feat_single(  # type: ignore[override]
         self,
@@ -250,8 +271,6 @@ class RPNHead(AnchorHead):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (dict, optional): Test / postprocessing configuration,
-                if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
@@ -267,10 +286,7 @@ class RPNHead(AnchorHead):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        cfg = self.test_cfg if cfg is None else cfg
-        cfg = copy.deepcopy(cfg)
         img_shape = img_meta["img_shape"]
-        nms_pre = cfg.get("nms_pre", -1)
 
         mlvl_bbox_preds = []
         mlvl_valid_priors = []
@@ -284,15 +300,14 @@ class RPNHead(AnchorHead):
             reg_dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)
-            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
+            scores = cls_score.sigmoid()
 
             scores = torch.squeeze(scores)
-            if 0 < nms_pre < scores.shape[0]:
+            if 0 < self.nms_pre < scores.shape[0]:
                 # sort is faster than topk
-                # _, topk_inds = scores.topk(cfg.nms_pre)
                 ranked_scores, rank_inds = scores.sort(descending=True)
-                topk_inds = rank_inds[:nms_pre]
-                scores = ranked_scores[:nms_pre]
+                topk_inds = rank_inds[: self.nms_pre]
+                scores = ranked_scores[: self.nms_pre]
                 bbox_pred = bbox_pred[topk_inds, :]
                 priors = priors[topk_inds]
 
@@ -312,7 +327,7 @@ class RPNHead(AnchorHead):
         results.scores = torch.cat(mlvl_scores)
         results.level_ids = torch.cat(level_ids)
 
-        return self._bbox_post_process(results=results, cfg=cfg, rescale=rescale, img_meta=img_meta)
+        return self._bbox_post_process(results=results, rescale=rescale, img_meta=img_meta, cfg={})
 
     def _bbox_post_process(
         self,
@@ -330,12 +345,9 @@ class RPNHead(AnchorHead):
         Args:
             results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (dict): Test / postprocessing configuration.
             img_meta (dict, optional): Image meta info. Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
-            with_nms (bool): If True, do nms before return boxes.
-                Default to True.
 
         Returns:
             InstanceData: Detection results of each image
@@ -349,7 +361,7 @@ class RPNHead(AnchorHead):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        if not with_nms:
+        if not self.with_nms:
             msg = "`with_nms` must be True in RPNHead"
             raise RuntimeError(msg)
 
@@ -358,19 +370,23 @@ class RPNHead(AnchorHead):
             raise NotImplementedError
 
         # filter small size bboxes
-        if cfg.get("min_bbox_size", -1) >= 0:
+        if self.min_bbox_size >= 0:
             w, h = get_box_wh(results.bboxes)  # type: ignore[attr-defined]
-            valid_mask = (w > cfg["min_bbox_size"]) & (h > cfg["min_bbox_size"])
+            valid_mask = (w > self.min_bbox_size) & (h > self.min_bbox_size)
             if not valid_mask.all():
                 results = results[valid_mask]
 
         if results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             bboxes = results.bboxes  # type: ignore[attr-defined]
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg["nms"])  # type: ignore[attr-defined]
+            nms_cfg = {
+                "type": "nms",
+                "iou_threshold": self.nms_iou_threshold,
+            }  # TODO(Kirill, Sungchul): depricate
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, nms_cfg)  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: cfg["max_per_img"]]
+            results = results[: self.max_per_img]
 
             #  in visualization
             results.labels = results.scores.new_zeros(len(results), dtype=torch.long)  # type: ignore[attr-defined]
@@ -393,7 +409,7 @@ class RPNHead(AnchorHead):
         cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Rewrite `predict_by_feat` of `RPNHead` for default backend."""
         warnings.warn(f"score_factors: {score_factors} is not used in RPNHead.export", stacklevel=2)
         warnings.warn(f"rescale: {rescale} is not used in RPNHead.export", stacklevel=2)
@@ -413,19 +429,7 @@ class RPNHead(AnchorHead):
             msg = "mlvl_cls_scores, mlvl_bbox_preds and mlvl_anchors should have the same length"
             raise ValueError(msg)
 
-        cfg = self.test_cfg if cfg is None else cfg
-        if cfg is None:
-            warnings.warn("cfg is None, use default cfg", stacklevel=2)
-            cfg = {
-                "score_thr": 0.05,
-                "max_per_img": 1000,
-                "min_bbox_size": 0,
-                "nms": {"iou_threshold": 0.7, "type": "nms"},
-                "nms_pre": 1000,
-            }
         batch_size = mlvl_cls_scores[0].shape[0]
-        pre_topk = cfg.get("nms_pre", -1)
-
         # loop over features, decode boxes
         mlvl_valid_bboxes = []
         mlvl_scores = []
@@ -439,23 +443,16 @@ class RPNHead(AnchorHead):
                 msg = "cls_score and bbox_pred should have the same size"
                 raise ValueError(msg)
             cls_score = cls_score.permute(0, 2, 3, 1)
-            if self.use_sigmoid_cls:
-                cls_score = cls_score.reshape(batch_size, -1)
-                scores = cls_score.sigmoid()
-            else:
-                cls_score = cls_score.reshape(batch_size, -1, 2)
-                # We set FG labels to [0, num_class-1] and BG label to
-                # num_class in RPN head since mmdet v2.5, which is unified to
-                # be consistent with other head since mmdet v2.0. In mmdet v2.0
-                # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
-                scores = cls_score.softmax(-1)[..., 0]
+            cls_score = cls_score.reshape(batch_size, -1)
+            scores = cls_score.sigmoid()
+
             scores = scores.reshape(batch_size, -1, 1)
             dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
             anchors = anchors.unsqueeze(0)
 
-            if pre_topk > 0:
-                _, topk_inds = dynamic_topk(scores.squeeze(2), pre_topk)
+            if self.nms_pre > 0:
+                _, topk_inds = dynamic_topk(scores.squeeze(2), self.nms_pre)
                 bbox_pred, scores = gather_topk(
                     bbox_pred,
                     scores,
@@ -482,23 +479,64 @@ class RPNHead(AnchorHead):
             max_shape=img_metas[0]["img_shape"],  # type: ignore[index]
         )
         # ignore background class
-        if not self.use_sigmoid_cls:
-            batch_mlvl_scores = batch_mlvl_scores[..., : self.num_classes]
-        if not with_nms:
+        batch_mlvl_scores = batch_mlvl_scores[..., : self.num_classes]
+        if not self.with_nms:
             return batch_mlvl_bboxes, batch_mlvl_scores
 
         pre_top_k = 5000
-        iou_threshold = cfg["nms"].get("iou_threshold")
-        score_threshold = cfg.get("score_thr", 0.05)
-        keep_top_k = cfg.get("max_per_img", 1000)
+
         # only one class in rpn
-        max_output_boxes_per_class = keep_top_k
+        max_output_boxes_per_class = self.max_per_img
+
         return multiclass_nms(
             batch_mlvl_bboxes,
             batch_mlvl_scores,
             max_output_boxes_per_class,
-            iou_threshold=iou_threshold,
-            score_threshold=score_threshold,
+            iou_threshold=self.nms_iou_threshold,
+            score_threshold=self.score_threshold,
             pre_top_k=pre_top_k,
-            keep_top_k=keep_top_k,
+            keep_top_k=self.max_per_img,
+        )
+
+
+class RPNHead:
+    """RPNHead factory for instance segmentation regional proposal network."""
+
+    RPNHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "maskrcnn_resnet_50": {
+            "in_channels": 256,
+            "feat_channels": 256,
+        },
+        "maskrcnn_efficientnet_b2b": {
+            "in_channels": 80,
+            "feat_channels": 80,
+            "max_per_img": 500,
+            "nms_iou_threshold": 0.8,
+            "nms_pre": 800,
+        },
+        "maskrcnn_swin_tiny": {
+            "in_channels": 256,
+            "feat_channels": 256,
+        },
+    }
+
+    def __new__(
+        cls,
+        model_name: str,
+        anchor_generator: AnchorGenerator,
+        bbox_coder: DeltaXYWHBBoxCoder,
+        assigner: MaxIoUAssigner,
+        sampler: BaseSampler,
+        train_cfg: dict,
+        test_cfg: dict,
+    ) -> RPNHeadModule:
+        """RPNHead factory for instance segmentation regional proposal network."""
+        return RPNHeadModule(
+            **cls.RPNHEAD_CFG[model_name],
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            assigner=assigner,
+            sampler=sampler,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
         )

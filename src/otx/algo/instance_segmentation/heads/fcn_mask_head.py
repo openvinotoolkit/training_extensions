@@ -38,7 +38,6 @@ class FCNMaskHead(BaseModule):
 
     def __init__(
         self,
-        loss_mask: nn.Module,
         num_convs: int = 4,
         roi_feat_size: int = 14,
         in_channels: int = 256,
@@ -47,13 +46,10 @@ class FCNMaskHead(BaseModule):
         num_classes: int = 80,
         class_agnostic: int = False,
         normalization: Callable[..., nn.Module] | None = None,
-        init_cfg: dict | list[dict] | None = None,
+        mask_size: int = 28,
+        mask_thr_binary: float = 0.5,
     ) -> None:
-        if init_cfg is not None:
-            msg = "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
-            raise ValueError(msg)
-
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
         self.num_convs = num_convs
         # WARN: roi_feat_size is reserved and not used
         self.roi_feat_size = _pair(roi_feat_size)
@@ -63,8 +59,8 @@ class FCNMaskHead(BaseModule):
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
         self.normalization = normalization
-
-        self.loss_mask = loss_mask
+        self.mask_size = mask_size
+        self.mask_thr_binary = mask_thr_binary
 
         self.convs = ModuleList()
         for i in range(self.num_convs):
@@ -82,13 +78,12 @@ class FCNMaskHead(BaseModule):
         upsample_in_channels = self.conv_out_channels if self.num_convs > 0 else in_channels
 
         _scale_factor = 2
-        upsample_cfg = {
-            "in_channels": upsample_in_channels,
-            "out_channels": self.conv_out_channels,
-            "kernel_size": _scale_factor,
-            "stride": _scale_factor,
-        }
-        self.upsample = nn.ConvTranspose2d(**upsample_cfg)
+        self.upsample = nn.ConvTranspose2d(
+            in_channels=upsample_in_channels,
+            out_channels=self.conv_out_channels,
+            kernel_size=_scale_factor,
+            stride=_scale_factor,
+        )
         out_channels = 1 if self.class_agnostic else self.num_classes
         logits_in_channel = self.conv_out_channels
         self.conv_logits = nn.Conv2d(logits_in_channel, out_channels, 1)
@@ -125,7 +120,6 @@ class FCNMaskHead(BaseModule):
         self,
         sampling_results: list[SamplingResult],
         batch_gt_instances: list[InstanceData],
-        rcnn_train_cfg: dict,
     ) -> Tensor:
         """Calculate the ground truth for all samples in a batch according to the sampling_results.
 
@@ -135,7 +129,6 @@ class FCNMaskHead(BaseModule):
             batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes``, ``labels``, and
                 ``masks`` attributes.
-            rcnn_train_cfg (dict): `train_cfg` of RCNN.
 
         Returns:
             Tensor: Mask target of each positive proposals in the image.
@@ -148,56 +141,15 @@ class FCNMaskHead(BaseModule):
             pos_proposals,
             pos_assigned_gt_inds,
             gt_masks,
-            rcnn_train_cfg,
+            self.mask_size,
             meta_infos,
         )
-
-    def loss_and_target(
-        self,
-        mask_preds: Tensor,
-        sampling_results: list[SamplingResult],
-        batch_gt_instances: list[InstanceData],
-        rcnn_train_cfg: dict,
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the mask head.
-
-        Args:
-            mask_preds (Tensor): Predicted foreground masks, has shape
-                (num_pos, num_classes, h, w).
-            sampling_results (List[SamplingResult]): Assign results of
-                all images in a batch after sampling.
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes``, ``labels``, and
-                ``masks`` attributes.
-            rcnn_train_cfg (dict): `train_cfg` of RCNN.
-
-        Returns:
-            dict: A dictionary of loss and targets components.
-        """
-        mask_targets = self.get_targets(
-            sampling_results=sampling_results,
-            batch_gt_instances=batch_gt_instances,
-            rcnn_train_cfg=rcnn_train_cfg,
-        )
-
-        pos_labels = torch.cat([res.pos_gt_labels for res in sampling_results])
-
-        loss = {}
-        if mask_preds.size(0) == 0:
-            loss_mask = mask_preds.sum()
-        elif self.class_agnostic:
-            loss_mask = self.loss_mask(mask_preds, mask_targets, torch.zeros_like(pos_labels))
-        else:
-            loss_mask = self.loss_mask(mask_preds, mask_targets, pos_labels)
-        loss["loss_mask"] = loss_mask
-        return {"loss_mask": loss, "mask_targets": mask_targets}
 
     def predict_by_feat(
         self,
         mask_preds: tuple[Tensor],
         results_list: list[InstanceData],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: dict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> list[InstanceData]:
@@ -209,7 +161,6 @@ class FCNMaskHead(BaseModule):
             results_list (list[InstanceData]): Detection results of
                 each image.
             batch_img_metas (list[dict]): List of image information.
-            rcnn_test_cfg (dict): `test_cfg` of Bbox Head.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             activate_map (book): Whether get results with augmentations test.
@@ -242,7 +193,7 @@ class FCNMaskHead(BaseModule):
                     bboxes.device,
                     task_type="mask",
                     instance_results=[results],
-                    mask_thr_binary=rcnn_test_cfg["mask_thr_binary"],
+                    mask_thr_binary=self.mask_thr_binary,
                 )[0]
             else:
                 im_mask = self._predict_by_feat_single(
@@ -250,7 +201,6 @@ class FCNMaskHead(BaseModule):
                     bboxes=bboxes,
                     labels=results.labels,  # type: ignore[attr-defined]
                     img_meta=img_meta,
-                    rcnn_test_cfg=rcnn_test_cfg,
                     rescale=rescale,
                     activate_map=activate_map,
                 )
@@ -263,7 +213,6 @@ class FCNMaskHead(BaseModule):
         bboxes: Tensor,
         labels: Tensor,
         img_meta: dict,
-        rcnn_test_cfg: dict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> Tensor:
@@ -275,8 +224,6 @@ class FCNMaskHead(BaseModule):
             bboxes (Tensor): Predicted bboxes, has shape (n, 4)
             labels (Tensor): Labels of bboxes, has shape (n, )
             img_meta (dict): image information.
-            rcnn_test_cfg (dict): `test_cfg` of Bbox Head.
-                Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             activate_map (book): Whether get results with augmentations test.
@@ -321,7 +268,7 @@ class FCNMaskHead(BaseModule):
                 raise ValueError(msg)
         chunks = torch.chunk(torch.arange(num_preds, device=device), num_chunks)
 
-        threshold = rcnn_test_cfg["mask_thr_binary"]
+        threshold = self.mask_thr_binary
         im_mask = torch.zeros(
             num_preds,
             img_h,
@@ -351,7 +298,6 @@ class FCNMaskHead(BaseModule):
         mask_preds: Tensor,
         results_list: tuple[Tensor, ...],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: dict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> torch.Tensor:

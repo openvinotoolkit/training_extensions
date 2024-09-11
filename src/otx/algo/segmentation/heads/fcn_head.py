@@ -11,8 +11,7 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar
 import torch
 from torch import Tensor, nn
 
-from otx.algo.modules import Conv2dModule
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import Conv2dModule, build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import IterativeAggregator
 
