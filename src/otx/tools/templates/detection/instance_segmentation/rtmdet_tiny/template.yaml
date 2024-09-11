@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50
-name: MaskRCNN-ResNet50
+model_template_id: Custom_Instance_Segmentation_RTMDet_tiny
+name: RTMDet_tiny
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-ResNet50
+summary: Class-Incremental Instance Segmentation for RTMDet_tiny
 application: ~
 
 # Algo backend.

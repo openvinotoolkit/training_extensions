@@ -69,6 +69,22 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.DETECTION,
         "model_name": "yolox_tiny",
     },
+    "Object_Detection_RTDetr_18": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_18",
+    },
+    "Object_Detection_RTDetr_50": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_50",
+    },
+    "Object_Detection_RTDetr_101": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_101",
+    },
+    "Object_Detection_RTMDet_tiny": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtmdet_tiny",
+    },
     # INSTANCE_SEGMENTATION
     "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
@@ -81,6 +97,10 @@ TEMPLATE_ID_DICT = {
     "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
         "model_name": "maskrcnn_efficientnetb2b",
+    },
+    "Object_Detection_RTMDet_tiny": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtmdet_tiny",
     },
     # ROTATED_DETECTION
     "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50": {
