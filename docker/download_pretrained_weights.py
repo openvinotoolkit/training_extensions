@@ -32,10 +32,6 @@ def download_all() -> None:
             msg = f"Skip {config_path} since it is not a PyTorch config."
             logger.warning(msg)
             continue
-        if "anomaly_" in str(config_path) or "dino_v2" in str(config_path) or "h_label_cls" in str(config_path):
-            msg = f"Skip {config_path} since those models show errors on instantiation."
-            logger.warning(msg)
-            continue
 
         config = OmegaConf.load(config_path)
         init_model = next(iter(partial_instantiate_class(config.model)))

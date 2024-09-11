@@ -39,7 +39,8 @@ if TYPE_CHECKING:
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
-from otx.core.types.label import AnomalyLabelInfo
+
+    from otx.core.types.label import LabelInfoTypes
 
 AnomalyModelInputs: TypeAlias = (
     AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch
@@ -57,8 +58,8 @@ class OTXAnomaly(OTXModel):
             Model input size in the order of height and width. Defaults to None.
     """
 
-    def __init__(self, input_size: tuple[int, int]) -> None:
-        super().__init__(label_info=AnomalyLabelInfo(), input_size=input_size)
+    def __init__(self, label_info: LabelInfoTypes, input_size: tuple[int, int]) -> None:
+        super().__init__(label_info=label_info, input_size=input_size)
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
         self.trainer: Trainer

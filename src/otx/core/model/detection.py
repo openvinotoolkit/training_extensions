@@ -241,6 +241,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             inputs.imgs_info,
             self.num_classes,
             self.tile_config,
+            self.explain_mode,
         )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward_explain(batch_tile_input) if self.explain_mode else self.forward(batch_tile_input)

@@ -104,6 +104,11 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
             bbox_info=[],
         )
 
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        super().configure_metric()
+        self._metric.input_size = self.input_size
+
     def _convert_pred_entity_to_compute_metric(
         self,
         preds: KeypointDetBatchPredEntity,

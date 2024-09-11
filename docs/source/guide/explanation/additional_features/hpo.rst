@@ -143,9 +143,15 @@ Here is explanation of all HPO configuration.
 
 - **mode** (*str*, *default='max'*) - Optimization mode for the metric. It determines whether the metric should be maximized or minimized. The possible values are 'max' and 'min', respectively.
 
-- **num_workers** (*int*, *default=1*) How many trials will be executed in parallel.
+- **num_trials** (*int*, *default=None*) The number of training trials to perform during HPO. If not provided, the number of trials will be determined based on the expected time ratio. Defaults to None.
+
+- **num_workers** (*int*, *default=None*) The number of trials that will be run concurrently.
 
 - **expected_time_ratio** (*int*, *default=4*) How many times to use for HPO compared to training time.
+
+- **metric_name** (*str*, *default=None*) The name of the performance metric to be optimized during HPO. If not specified, the metric will be selected based on the configured callbacks. Defaults to None.
+
+- **adapt_bs_search_space_max_val** (*Literal["None", "Safe", "Full"]*, *default="None"*) Whether to execute `Auto-adapt batch size` prior to HPO. This step finds the maximum batch size value, which then serves as the upper limit for the batch size search space during HPO. For further information on `Auto-adapt batch size`, please refer to the `Auto-configuration` documentation. Defaults to "None".
 
 - **maximum_resource** (*int*, *default=None*) - Maximum number of training epochs for each trial. When the training epochs reaches this value, the trial stop to train.
 

@@ -20,7 +20,7 @@ overrides:
       init_args:
         patience: 5
         mode: max
-        monitor: image_F1Score
+        monitor: pixel_F1Score
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
       init_args:
         max_interval: 1

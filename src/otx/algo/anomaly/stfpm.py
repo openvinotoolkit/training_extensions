@@ -14,6 +14,7 @@ from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.models.image.stfpm import Stfpm as AnomalibStfpm
 
 from otx.core.model.anomaly import OTXAnomaly
+from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
     from torch.optim.optimizer import Optimizer
 
     from otx.core.model.anomaly import AnomalyModelInputs, AnomalyModelOutputs
+    from otx.core.types.label import LabelInfoTypes
 
 
 class Stfpm(OTXAnomaly, AnomalibStfpm):
@@ -38,6 +40,7 @@ class Stfpm(OTXAnomaly, AnomalibStfpm):
 
     def __init__(
         self,
+        label_info: LabelInfoTypes = AnomalyLabelInfo(),
         layers: Sequence[str] = ["layer1", "layer2", "layer3"],
         backbone: str = "resnet18",
         task: Literal[
@@ -49,7 +52,7 @@ class Stfpm(OTXAnomaly, AnomalibStfpm):
         input_size: tuple[int, int] = (256, 256),
         **kwargs,
     ) -> None:
-        OTXAnomaly.__init__(self, input_size=input_size)
+        OTXAnomaly.__init__(self, label_info=label_info, input_size=input_size)
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,

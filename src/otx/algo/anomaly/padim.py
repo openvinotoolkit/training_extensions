@@ -14,6 +14,7 @@ from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.models.image import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import OTXAnomaly
+from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
     from torch.optim.optimizer import Optimizer
 
     from otx.core.model.anomaly import AnomalyModelInputs, AnomalyModelOutputs
+    from otx.core.types.label import LabelInfoTypes
 
 
 class Padim(OTXAnomaly, AnomalibPadim):
@@ -40,6 +42,7 @@ class Padim(OTXAnomaly, AnomalibPadim):
 
     def __init__(
         self,
+        label_info: LabelInfoTypes = AnomalyLabelInfo(),
         backbone: str = "resnet18",
         layers: list[str] = ["layer1", "layer2", "layer3"],  # noqa: B006
         pre_trained: bool = True,
@@ -52,7 +55,7 @@ class Padim(OTXAnomaly, AnomalibPadim):
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
         input_size: tuple[int, int] = (256, 256),
     ) -> None:
-        OTXAnomaly.__init__(self, input_size)
+        OTXAnomaly.__init__(self, label_info=label_info, input_size=input_size)
         AnomalibPadim.__init__(
             self,
             backbone=backbone,

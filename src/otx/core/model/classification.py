@@ -154,6 +154,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             task_type="classification",
             multilabel=False,
             hierarchical=False,
+            output_raw_scores=True,
         )
 
     @property
@@ -279,6 +280,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             multilabel=True,
             hierarchical=False,
             confidence_threshold=0.5,
+            output_raw_scores=True,
         )
 
     @property
@@ -401,6 +403,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
             multilabel=False,
             hierarchical=True,
             confidence_threshold=0.5,
+            output_raw_scores=True,
         )
 
     @property

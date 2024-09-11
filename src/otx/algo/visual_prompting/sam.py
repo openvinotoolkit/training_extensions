@@ -109,6 +109,47 @@ class CommonSettingMixin:
         for param in self.model.mask_decoder.parameters():
             param.requires_grad = not freeze_mask_decoder
 
+    @torch.no_grad()
+    def forward_for_tracing(
+        self,
+        image_embeddings: Tensor,
+        point_coords: Tensor,
+        point_labels: Tensor,
+        mask_input: Tensor,
+        has_mask_input: Tensor,
+        ori_shape: Tensor,
+    ) -> tuple[Tensor, ...]:
+        """Forward method for SAM inference (export/deploy).
+
+        Args:
+            image_embeddings (Tensor): The image embedding with a batch index of length 1.
+                If it is a zero tensor, the image embedding will be computed from the image.
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs.
+                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+                This input has 1x1 shape due to supporting openvino input layout.
+            ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
+                This input has 1x2 shape due to supporting openvino input layout.
+        """
+        return self.model.forward_for_tracing(
+            image_embeddings=image_embeddings,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            mask_input=mask_input,
+            has_mask_input=has_mask_input,
+            ori_shape=ori_shape,
+        )
+
 
 class SAM(OTXVisualPromptingModel, CommonSettingMixin):
     """OTX visual prompting model class for Segment Anything Model (SAM)."""
@@ -175,47 +216,6 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
             return_single_mask=self.return_single_mask,
             return_extra_metrics=self.return_extra_metrics,
             stability_score_offset=self.stability_score_offset,
-        )
-
-    @torch.no_grad()
-    def forward_for_tracing(
-        self,
-        image_embeddings: Tensor,
-        point_coords: Tensor,
-        point_labels: Tensor,
-        mask_input: Tensor,
-        has_mask_input: Tensor,
-        ori_shape: Tensor,
-    ) -> tuple[Tensor, ...]:
-        """Forward method for SAM inference (export/deploy).
-
-        Args:
-            image_embeddings (Tensor): The image embedding with a batch index of length 1.
-                If it is a zero tensor, the image embedding will be computed from the image.
-            point_coords (Tensor): Coordinates of sparse input prompts,
-                corresponding to both point inputs and box inputs.
-                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
-                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
-            point_labels (Tensor): Labels for the sparse input prompts.
-                0 is a negative input point, 1 is a positive input point,
-                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
-                If there is no box input, a single padding point with label -1 and
-                coordinates (0.0, 0.0) should be concatenated.
-            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
-                This must be supplied even if there is no mask input. In this case, it can just be zeros.
-            has_mask_input (Tensor): An indicator for the mask input.
-                1 indicates a mask input, 0 indicates no mask input.
-                This input has 1x1 shape due to supporting openvino input layout.
-            ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
-                This input has 1x2 shape due to supporting openvino input layout.
-        """
-        return self.model.forward_for_tracing(
-            image_embeddings=image_embeddings,
-            point_coords=point_coords,
-            point_labels=point_labels,
-            mask_input=mask_input,
-            has_mask_input=has_mask_input,
-            ori_shape=ori_shape,
         )
 
 
