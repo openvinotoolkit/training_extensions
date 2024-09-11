@@ -29,7 +29,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         img_infos (list[ImageInfo]): Original image information before tiling.
         num_classes (int): Number of classes.
         tile_config (TileConfig): Tile configuration.
-        explain_mode (bool): Whether or not tiles have explain features. Default: False.
+        explain_mode (bool, optional): Whether or not tiles have explain features. Default: False.
     """
 
     def __init__(

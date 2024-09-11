@@ -115,7 +115,7 @@ class DETR(BaseModule):
 
         Args:
             outputs (dict[str, Tensor]): The model outputs.
-            original_size (tuple[int, int], optional): The original size of the input images. Defaults to None.
+            original_sizes (list[tuple[int, int]]): The original image sizes.
             deploy_mode (bool, optional): Whether to run in deploy mode. Defaults to False.
 
         Returns:
