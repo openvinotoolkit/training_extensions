@@ -42,7 +42,6 @@ overrides:
     input_size:
       - 640
       - 640
-    image_color_channel: BGR
     train_subset:
       batch_size: 16
       transforms:
