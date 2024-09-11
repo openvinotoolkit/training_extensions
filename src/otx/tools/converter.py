@@ -98,9 +98,9 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
         "model_name": "maskrcnn_efficientnetb2b",
     },
-    "Object_Detection_RTMDet_tiny": {
-        "task": OTXTaskType.DETECTION,
-        "model_name": "rtmdet_tiny",
+    "Custom_Instance_Segmentation_RTMDet_tiny": {
+        "task": OTXTaskType.INSTANCE_SEGMENTATION,
+        "model_name": "rtmdet_inst_tiny",
     },
     # ROTATED_DETECTION
     "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50": {
@@ -139,6 +139,10 @@ TEMPLATE_ID_DICT = {
     "Custom_Semantic_Segmentation_SegNext_B": {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "segnext_b",
+    },
+    "Custom_Semantic_Segmentation_DINOV2_S": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "dino_v2",
     },
     # ANOMALY_CLASSIFICATION
     "ote_anomaly_classification_padim": {
