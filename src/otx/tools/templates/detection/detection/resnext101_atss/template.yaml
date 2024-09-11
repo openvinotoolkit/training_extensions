@@ -10,11 +10,6 @@ application: ~
 # Algo backend.
 framework: OTXDetection v2.9.1
 
-# Task implementations.
-entrypoints:
-  base: otx.algorithms.detection.adapters.mmdet.task.MMDetectionTask
-  openvino: otx.algorithms.detection.adapters.openvino.task.OpenVINODetectionTask
-
 # Capabilities.
 capabilities:
   - compute_representations
@@ -36,18 +31,6 @@ hyper_parameters:
         default_value: 3
       num_iters:
         default_value: 200
-    nncf_optimization:
-      enable_quantization:
-        default_value: true
-      enable_pruning:
-        default_value: false
-      pruning_supported:
-        default_value: true
-      maximal_accuracy_degradation:
-        default_value: 1.0
-    algo_backend:
-      train_type:
-        default_value: Incremental
 
 # Training resources.
 max_nodes: 1
