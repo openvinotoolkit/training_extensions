@@ -70,6 +70,7 @@ class AnomalyDataset(OTXDataset):
             to_tv_image,
         )
         self.label_info = AnomalyLabelInfo()
+        self._label_mapping = self._map_id_to_label()
 
     def _get_item_impl(
         self,
@@ -201,22 +202,23 @@ class AnomalyDataset(OTXDataset):
             # mean?
             label: torch.LongTensor = AnomalyLabel.NORMAL if "good" in datumaro_item.id else AnomalyLabel.ANOMALOUS
         elif isinstance(datumaro_item.media, ImageFromBytes):
-            # Geti labels have strange ids so it walks through the attributes to get the label
-            # id_label_mapping can be made efficient by caching it somewhere.
-            id_label_mapping = {}
-            label_items = self.dm_subset.categories()[AnnotationType.label].items
-            for label_item in label_items:
-                if any("normal" in attribute.lower() for attribute in label_item.attributes):
-                    label = AnomalyLabel.NORMAL
-                else:
-                    label = AnomalyLabel.ANOMALOUS
-                id_label_mapping[label_item.name] = label
-            # There is probably a better way to get the label id from datumaro
-            label = id_label_mapping[datumaro_item.attributes["roi"]["labels"][0]["label"]["_id"]]
+            label = self._label_mapping[datumaro_item.annotations[0].label]
         else:
             msg = f"Media type {type(datumaro_item.media)} is not supported."
             raise NotImplementedError(msg)
         return label.value
+
+    def _map_id_to_label(self) -> dict[int, torch.Tensor]:
+        """Map label id to label tensor."""
+        id_label_mapping = {}
+        categories = self.dm_subset.categories()[AnnotationType.label]
+        for label_item in categories.items:
+            if any("normal" in attribute.lower() for attribute in label_item.attributes):
+                label = AnomalyLabel.NORMAL
+            else:
+                label = AnomalyLabel.ANOMALOUS
+            id_label_mapping[categories.find(label_item.name)[0]] = label
+        return id_label_mapping
 
     def _mask_image_from_file(self, datumaro_item: DatasetItem) -> torch.Tensor | None:
         """Assumes MVTec format and returns mask from disk."""
