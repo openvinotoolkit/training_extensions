@@ -67,7 +67,7 @@ learning_parameters:
     visible_in_ui: true
     lr:
       affects_outcome_of: TRAINING
-      default_value: 0.0001
+      default_value: 0.00001
       description:
         Increasing this value will speed up training convergence but might
         make it unstable.

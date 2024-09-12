@@ -40,7 +40,7 @@ learning_parameters:
       affects_outcome_of: TRAINING
       auto_hpo_state: not_possible
       auto_hpo_value: null
-      default_value: 2
+      default_value: 1
       description:
         The number of training samples seen in each iteration of training.
         Increasing this value improves training time and may make the training more

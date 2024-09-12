@@ -378,7 +378,6 @@ algo_backend:
     header: Train type
     options:
       Incremental: "Incremental"
-      Semisupervised: "Semisupervised"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
