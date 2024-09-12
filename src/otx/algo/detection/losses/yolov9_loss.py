@@ -371,9 +371,9 @@ class YOLOv9Criterion(nn.Module):
         loss_dfl: nn.Module | None = None,
         loss_iou: nn.Module | None = None,
         reg_max: int = 16,
-        cls_rate: float = 1.5,
-        dfl_rate: float = 7.5,
-        iou_rate: float = 0.5,
+        cls_rate: float = 0.5,
+        dfl_rate: float = 1.5,
+        iou_rate: float = 7.5,
         aux_rate: float = 0.25,
     ) -> None:
         super().__init__()
