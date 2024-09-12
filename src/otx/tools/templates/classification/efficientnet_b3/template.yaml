@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_MobileNet-V3-large-1x
-name: MobileNet-V3-large-1x
+model_template_id: Custom_Image_Classification_EfficinetNet-B3
+name: EfficientNet-B3
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-large-1x
+summary: Class-Incremental Image Classification for EfficientNet-B3
 application: ~
 
 # Algo backend.
@@ -23,10 +23,10 @@ hyper_parameters:
         default_value: 64
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.0058
+        default_value: 0.01
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 0
       num_iters:
         default_value: 90
 
@@ -37,8 +37,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.44
-size: 4.29
-
-# Model spec
-model_category: SPEED
+gigaflops: 1.92
+size: 10.3

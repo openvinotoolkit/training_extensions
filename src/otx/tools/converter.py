@@ -40,6 +40,18 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.MULTI_CLASS_CLS,
         "model_name": "mobilenet_v3_large",
     },
+    "Custom_Image_Classification_EfficinetNet-B3": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_efficientnet_b3",
+    },
+    "Custom_Image_Classification_EfficinetNet-V2-L": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_efficientnet_v2_l",
+    },
+    "Custom_Image_Classification_MobileNet-V3-small": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_mobilenet_v3_small",
+    },
     # DETECTION
     "Custom_Object_Detection_Gen3_ATSS": {
         "task": OTXTaskType.DETECTION,

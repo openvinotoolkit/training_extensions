@@ -40,7 +40,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    visible_in_ui: true
+    visible_in_ui: false
     warning:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
@@ -236,7 +236,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    visible_in_ui: true
+    visible_in_ui: false
     warning: null
   auto_adapt_batch_size:
     affects_outcome_of: TRAINING
