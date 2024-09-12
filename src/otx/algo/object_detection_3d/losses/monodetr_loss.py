@@ -4,12 +4,12 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from utils import box_ops
-from utils.misc import (accuracy, get_world_size,
+from otx.algo.object_detection_3d.utils import box_ops
+from otx.algo.object_detection_3d.utils.misc import (accuracy, get_world_size,
                         is_dist_avail_and_initialized)
 
 from .ddn_loss import DDNLoss
-from lib.losses.focal_loss import sigmoid_focal_loss
+from .focal_loss import sigmoid_focal_loss
 from otx.algo.object_detection_3d.matcher import HungarianMatcher
 
 
@@ -19,7 +19,7 @@ class MonoDETRCriterion(nn.Module):
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
-    def __init__(self, num_classes, matcher, weight_dict, focal_alpha, losses, group_num=11):
+    def __init__(self, num_classes, weight_dict, focal_alpha, group_num=11):
         """ Create the criterion.
         Parameters:
             num_classes: number of object categories, omitting the special no-object category
@@ -32,7 +32,6 @@ class MonoDETRCriterion(nn.Module):
         self.num_classes = num_classes
         self.matcher = HungarianMatcher(cost_class=2, cost_3dcenter=10, cost_bbox=5, cost_giou=2)
         self.weight_dict = weight_dict
-        self.losses = losses
         self.focal_alpha = focal_alpha
         self.ddn_loss = DDNLoss()  # for depth map
         self.group_num = group_num

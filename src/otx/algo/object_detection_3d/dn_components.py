@@ -5,11 +5,11 @@
 
 
 import torch
-from utils.misc import (NestedTensor, nested_tensor_from_tensor_list,
+from otx.algo.object_detection_3d.utils.misc import (NestedTensor, nested_tensor_from_tensor_list,
                        accuracy, get_world_size, interpolate,
                        is_dist_avail_and_initialized, inverse_sigmoid)
 # from .DABDETR import sigmoid_focal_loss
-from utils import box_ops
+from otx.algo.object_detection_3d.utils import box_ops
 import torch.nn.functional as F
 
 
@@ -116,13 +116,13 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
             p = torch.rand_like(known_labels_expaned.float())
             chosen_indice = torch.nonzero(p < (label_noise_scale)).view(-1)  # usually half of bbox noise
             new_label = torch.randint_like(chosen_indice, 0, num_classes)  # randomly put a new one here
-     
+
             new_label=new_label.to(torch.int8)
             known_labels_expaned.scatter_(0, chosen_indice, new_label)
         # noise on the box
         if box_noise_scale > 0:
             diff = torch.zeros_like(known_bbox_expand)
-        
+
             # diff[:, :2] = known_bbox_expand[:, 2:] / 2
             diff[:, 0] = (known_bbox_expand[:, 2]+ known_bbox_expand[:,3])/ 2
             diff[:, 1] = (known_bbox_expand[:, 4]+ known_bbox_expand[:,5])/ 2
@@ -130,7 +130,7 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
             known_bbox_expand += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0),
                                            diff).cuda() * box_noise_scale
             known_bbox_expand = known_bbox_expand.clamp(min=0.0, max=1.0)
- 
+
         m = known_labels_expaned.long().to('cuda')
         input_label_embed = label_enc(m)
         # add dn part indicator
@@ -141,10 +141,10 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
         pad_size = int(single_pad * scalar)
         padding_label = torch.zeros(pad_size, hidden_dim).cuda()
         padding_bbox = torch.zeros(pad_size, 6).cuda()
-       
+
         input_query_label = torch.cat([padding_label, tgt], dim=0).repeat(batch_size, 1, 1)
         input_query_bbox = torch.cat([padding_bbox, refpoint_emb], dim=0).repeat(batch_size, 1, 1)
-     
+
         # map in order
         map_known_indice = torch.tensor([]).to('cuda')
         if len(known_num):
@@ -266,15 +266,15 @@ def tgt_loss_3dcenter(src_boxes, tgt_boxes, num_tgt):
     losses['tgt_loss_center'] = loss_3dcenter.sum() / num_tgt
     return losses
 
-def tgt_loss_depths(src_depth, tgt_depth, num_tgt):  
+def tgt_loss_depths(src_depth, tgt_depth, num_tgt):
 
-    depth_input, depth_log_variance = src_depth[:, 0], src_depth[:, 1] 
-    depth_loss = 1.4142 * torch.exp(-depth_log_variance) * torch.abs(depth_input - tgt_depth) + depth_log_variance  
+    depth_input, depth_log_variance = src_depth[:, 0], src_depth[:, 1]
+    depth_loss = 1.4142 * torch.exp(-depth_log_variance) * torch.abs(depth_input - tgt_depth) + depth_log_variance
     losses = {}
-    losses['tgt_loss_depth'] = depth_loss.sum() / num_tgt 
-    return losses  
-    
-def tgt_loss_dims(src_dim, tgt_dim, num_tgt):  
+    losses['tgt_loss_depth'] = depth_loss.sum() / num_tgt
+    return losses
+
+def tgt_loss_dims(src_dim, tgt_dim, num_tgt):
 
     dimension = tgt_dim.clone().detach()
     dim_loss = torch.abs(src_dim - tgt_dim)
@@ -286,7 +286,7 @@ def tgt_loss_dims(src_dim, tgt_dim, num_tgt):
     losses['tgt_loss_dim'] = dim_loss.sum() / num_tgt
     return losses
 
-def tgt_loss_angles(heading_input, target_heading_cls, target_heading_res, num_tgt):  
+def tgt_loss_angles(heading_input, target_heading_cls, target_heading_res, num_tgt):
 
     heading_input = heading_input.view(-1, 24)
     heading_target_cls = target_heading_cls.view(-1).long()
@@ -301,10 +301,10 @@ def tgt_loss_angles(heading_input, target_heading_cls, target_heading_res, num_t
     cls_onehot = torch.zeros(heading_target_cls.shape[0], 12).cuda().scatter_(dim=1, index=heading_target_cls.view(-1, 1), value=1)
     heading_input_res = torch.sum(heading_input_res * cls_onehot, 1)
     reg_loss = F.l1_loss(heading_input_res, heading_target_res, reduction='none')
-    
+
     angle_loss = cls_loss + reg_loss
     losses = {}
-    losses['tgt_loss_angle'] = angle_loss.sum() / num_tgt 
+    losses['tgt_loss_angle'] = angle_loss.sum() / num_tgt
     return losses
 
 def tgt_loss_labels(src_logits_, tgt_labels_, num_tgt, focal_alpha, log=True):
@@ -345,7 +345,7 @@ def compute_dn_loss(mask_dict, training, aux_num, focal_alpha):
     if training and 'output_known_lbs_bboxes' in mask_dict:
         known_labels, known_bboxs, known_size_3ds, known_depths, known_target_heading_cls, known_target_heading_res,\
         output_known_class, output_known_coord, output_known_3d_dim,output_known_depth,output_known_angle, num_tgt = prepare_for_loss(mask_dict)
-     
+
         losses.update(tgt_loss_labels(output_known_class[-1], known_labels, num_tgt, focal_alpha))
         losses.update(tgt_loss_boxes(output_known_coord[-1], known_bboxs, num_tgt))
         losses.update(tgt_loss_3dcenter(output_known_coord[-1], known_bboxs, num_tgt))
@@ -361,7 +361,7 @@ def compute_dn_loss(mask_dict, training, aux_num, focal_alpha):
         # losses['tgt_loss_depth'] = torch.as_tensor(0.).to('cuda')
         #losses['tgt_loss_dim'] = torch.as_tensor(0.).to('cuda')
         losses['tgt_loss_angle'] = torch.as_tensor(0.).to('cuda')
-        
+
 
     if aux_num:
         for i in range(aux_num):

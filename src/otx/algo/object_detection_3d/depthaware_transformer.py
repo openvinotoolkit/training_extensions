@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch import nn
 from torch.nn.init import xavier_uniform_, constant_, normal_
 
-from utils.misc import inverse_sigmoid
+from otx.algo.object_detection_3d.utils.misc import inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention
 
 class MLP(nn.Module):
@@ -667,5 +667,5 @@ class DepthAwareTransformerBuilder:
         }
     }
 
-    def __new__(model_name: str):
-        return DepthAwareTransformer(**DepthAwareTransformerBuilder.CFG[model_name])
+    def __new__(cls, model_name: str):
+        return DepthAwareTransformer(**cls.CFG[model_name])

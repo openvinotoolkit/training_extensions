@@ -47,12 +47,9 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         self.model_name = model_name
         super().__init__(*args, **kwargs)
 
-    def _create_model(self) -> nn.Module:
-        pass
-
     def _customize_inputs(
         self,
-        entity: Det3DBatchDataEntity,
+        entity: DetBatchDataEntity,
         pad_size_divisor: int = 32,
         pad_value: int = 0,
     ) -> dict[str, Any]:

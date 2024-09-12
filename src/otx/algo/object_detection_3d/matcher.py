@@ -8,7 +8,7 @@ from scipy.optimize import linear_sum_assignment
 from torch import nn
 import numpy as np
 
-from utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou, box_xyxy_to_cxcywh, box_cxcylrtb_to_xyxy
+from otx.algo.object_detection_3d.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou, box_xyxy_to_cxcywh, box_cxcylrtb_to_xyxy
 
 
 class HungarianMatcher(nn.Module):
@@ -53,7 +53,7 @@ class HungarianMatcher(nn.Module):
         bs, num_queries = outputs["pred_boxes"].shape[:2]
 
         # We flatten to compute the cost matrices in a batch
-        
+
         out_prob = outputs["pred_logits"].flatten(0, 1).sigmoid()  # [batch_size * num_queries, num_classes]
         # Also concat the target labels and boxes
         tgt_ids = torch.cat([v["labels"] for v in targets]).long()

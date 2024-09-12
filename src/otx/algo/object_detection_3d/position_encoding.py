@@ -14,7 +14,7 @@ import math
 import torch
 from torch import nn
 
-from utils.misc import NestedTensor
+from otx.algo.object_detection_3d.utils.misc import NestedTensor
 
 
 class PositionEmbeddingSine(nn.Module):
@@ -86,14 +86,14 @@ class PositionEmbeddingLearned(nn.Module):
         return embed(floor_coord) * (1 - delta) + embed(ceil_coord) * delta
 
 
-def build_position_encoding(cfg):
-    N_steps = cfg['hidden_dim'] // 2
-    if cfg['position_embedding'] in ('v2', 'sine'):
+def build_position_encoding(hidden_dim, position_embedding):
+    N_steps = hidden_dim // 2
+    if position_embedding in ('v2', 'sine'):
         # TODO find a better way of exposing other arguments
         position_embedding = PositionEmbeddingSine(N_steps, normalize=True)
-    elif cfg['position_embedding'] in ('v3', 'learned'):
+    elif position_embedding in ('v3', 'learned'):
         position_embedding = PositionEmbeddingLearned(N_steps)
     else:
-        raise ValueError(f"not supported {cfg['position_embedding']}")
+        raise ValueError(f"not supported {position_embedding}")
 
     return position_embedding

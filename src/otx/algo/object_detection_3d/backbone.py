@@ -17,9 +17,9 @@ import torch.nn.functional as F
 import torchvision
 from torch import nn
 from torchvision.models._utils import IntermediateLayerGetter
-from typing import Dict, List
+from typing import Dict, List, ClassVar, Any
 
-from utils.misc import NestedTensor, is_main_process
+from otx.algo.object_detection_3d.utils.misc import NestedTensor, is_main_process
 
 from .position_encoding import build_position_encoding
 
@@ -95,7 +95,8 @@ class Backbone(BackboneBase):
     def __init__(self, name: str,
                  train_backbone: bool,
                  return_interm_layers: bool,
-                 dilation: bool):
+                 dilation: bool,
+                 **kwargs):
         norm_layer = FrozenBatchNorm2d
         backbone = getattr(torchvision.models, name)(
             replace_stride_with_dilation=[False, False, dilation],
@@ -126,10 +127,32 @@ class Joiner(nn.Sequential):
         return out, pos
 
 
-def build_backbone(cfg):
-    
+def Back(cfg):
+
     position_embedding = build_position_encoding(cfg)
     return_interm_layers = cfg['masks'] or cfg['num_feature_levels'] > 1
     backbone = Backbone(cfg['backbone'], cfg['train_backbone'], return_interm_layers, cfg['dilation'])
     model = Joiner(backbone, position_embedding)
     return model
+
+
+class BackboneBuilder:
+    """ DepthAwareTransformerBuilder. """
+
+    CFG : ClassVar[dict[str, Any]] = {
+        "monodetr_50" : {
+            "name": "resnet50",
+            "train_backbone": True,
+            "dilation": False,
+            "return_interm_layers": True,
+            "positional_encoding": {
+                "hidden_dim": 256,
+                "position_embedding": "sine"
+            }
+        }
+    }
+
+    def __new__(cls, model_name: str):
+        backbone = Backbone(**cls.CFG[model_name])
+        position_embedding = build_position_encoding(**cls.CFG[model_name]["positional_encoding"])
+        return Joiner(backbone, position_embedding)

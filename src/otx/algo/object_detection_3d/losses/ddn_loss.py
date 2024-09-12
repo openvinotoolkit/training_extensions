@@ -3,7 +3,7 @@ import torch.nn as nn
 import math
 
 from .balancer import Balancer
-from .focalloss import FocalLoss
+from .focal_loss import FocalLoss
 
 
 class DDNLoss(nn.Module):

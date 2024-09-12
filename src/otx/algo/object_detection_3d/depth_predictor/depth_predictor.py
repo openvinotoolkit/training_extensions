@@ -13,7 +13,7 @@ class DepthPredictor(nn.Module):
             model_cfg [EasyDict]: Depth classification network config
         """
         super().__init__()
-
+        self.depth_max = depth_max
         bin_size = 2 * (depth_max - depth_min) / (depth_num_bins * (1 + depth_num_bins))
         bin_indice = torch.linspace(0, depth_num_bins - 1, depth_num_bins)
         bin_value = (bin_indice + 0.5).pow(2) * bin_size / 2 - bin_size / 8 + depth_min

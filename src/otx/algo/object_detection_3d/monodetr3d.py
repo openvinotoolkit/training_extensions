@@ -10,7 +10,7 @@ import re
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 from torchvision.ops import box_convert
 from torchvision.tv_tensors import BoundingBoxFormat
 
@@ -22,7 +22,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.object_detection_3d import OTX3DDetectionModel
+from otx.core.model.detection_3d import OTX3DDetectionModel
 from .backbone import BackboneBuilder
 from otx.algo.object_detection_3d.losses import MonoDETRCriterion
 from otx.algo.object_detection_3d.depthaware_transformer import DepthAwareTransformerBuilder
@@ -55,7 +55,7 @@ class MonoDETR3D(OTX3DDetectionModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
+        self.load_from: str = None
         super().__init__(
             model_name=model_name,
             label_info=label_info,
@@ -67,7 +67,7 @@ class MonoDETR3D(OTX3DDetectionModel):
             tile_config=tile_config,
         )
 
-    def _build_model(self, num_classes: int) -> DETR:
+    def _create_model(self) -> DETR:
         # backbone
         backbone = BackboneBuilder(self.model_name)
         depthaware_transformer = DepthAwareTransformerBuilder(self.model_name)
@@ -83,21 +83,21 @@ class MonoDETR3D(OTX3DDetectionModel):
                        'loss_depth_map': 1}
 
         aux_weight_dict = {}
-        for i in range(depthaware_transformer.dec_layers - 1):
+        for i in range(depthaware_transformer.decoder.num_layers - 1):
             aux_weight_dict.update({k + f'_{i}': v for k, v in weight_dict.items()})
         aux_weight_dict.update({k + f'_enc': v for k, v in weight_dict.items()})
         weight_dict.update(aux_weight_dict)
 
         criterion = MonoDETRCriterion(
-            num_classes,
+            num_classes=self.num_classes,
             focal_alpha=0.25,
             weight_dict=weight_dict)
 
-        return MonoDETR(
+        model = MonoDETR(
             backbone,
             depthaware_transformer,
             depth_predictor,
-            num_classes=num_classes,
+            num_classes=self.num_classes,
             criterion=criterion,
             num_queries=50,
             aux_loss=True,
@@ -108,6 +108,8 @@ class MonoDETR3D(OTX3DDetectionModel):
             use_dab=False,
             two_stage_dino=False)
 
+        return model
+
     def _customize_inputs(
         self,
         entity: DetBatchDataEntity,
@@ -116,6 +118,7 @@ class MonoDETR3D(OTX3DDetectionModel):
     ) -> dict[str, Any]:
         targets: list[dict[str, Any]] = []
         # prepare bboxes for the model
+        breakpoint()
         for bb, ll in zip(entity.bboxes, entity.labels):
             # convert to cxcywh if needed
             converted_bboxes = (
@@ -162,78 +165,6 @@ class MonoDETR3D(OTX3DDetectionModel):
             bboxes=bboxes,
             labels=labels,
         )
-
-    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict[str, Any]]]:
-        """Configure an optimizer and learning-rate schedulers.
-
-        Configure an optimizer and learning-rate schedulers
-        from the given optimizer and scheduler or scheduler list callable in the constructor.
-        Generally, there is two lr schedulers. One is for a linear warmup scheduler and
-        the other is the main scheduler working after the warmup period.
-
-        Returns:
-            Two list. The former is a list that contains an optimizer
-            The latter is a list of lr scheduler configs which has a dictionary format.
-        """
-        param_groups = self._get_optim_params(self.model.optimizer_configuration, self.model)
-        optimizer = self.optimizer_callable(param_groups)
-        schedulers = self.scheduler_callable(optimizer)
-
-        def ensure_list(item: Any) -> list:  # noqa: ANN401
-            return item if isinstance(item, list) else [item]
-
-        lr_scheduler_configs = []
-        for scheduler in ensure_list(schedulers):
-            lr_scheduler_config = {"scheduler": scheduler}
-            if hasattr(scheduler, "interval"):
-                lr_scheduler_config["interval"] = scheduler.interval
-            if hasattr(scheduler, "monitor"):
-                lr_scheduler_config["monitor"] = scheduler.monitor
-            lr_scheduler_configs.append(lr_scheduler_config)
-
-        return [optimizer], lr_scheduler_configs
-
-    @staticmethod
-    def _get_optim_params(cfg: list[dict[str, Any]] | None, model: nn.Module) -> list[dict[str, Any]]:
-        """Perform no bias decay and learning rate correction for the modules.
-
-        The configuration dict should consist of regular expression pattern for the model parameters with "params" key.
-        Other optimizer parameters can be added as well.
-
-        E.g.:
-            cfg = [{"params": "^((?!b).)*$", "lr": 0.01, "weight_decay": 0.0}, ..]
-            The above configuration is for the parameters that do not contain "b".
-
-            ^(?=.*a)(?=.*b).*$         means including a and b
-            ^((?!b.)*a((?!b).)*$       means including a but not b
-            ^((?!b|c).)*a((?!b|c).)*$  means including a but not (b | c)
-        """
-        if cfg is None:
-            return model.parameters()
-
-        cfg = copy.deepcopy(cfg)
-
-        param_groups = []
-        visited = []
-        for pg in cfg:
-            if "params" not in pg:
-                msg = f"The 'params' key should be included in the configuration, but got {pg.keys()}"
-                raise ValueError(msg)
-            pattern = pg["params"]
-            params = {k: v for k, v in model.named_parameters() if v.requires_grad and len(re.findall(pattern, k)) > 0}
-            pg["params"] = params.values()
-            param_groups.append(pg)
-            visited.extend(list(params.keys()))
-
-        names = [k for k, v in model.named_parameters() if v.requires_grad]
-
-        if len(visited) < len(names):
-            unseen = set(names) - set(visited)
-            params = {k: v for k, v in model.named_parameters() if v.requires_grad and k in unseen}
-            param_groups.append({"params": params.values()})
-            visited.extend(list(params.keys()))
-
-        return param_groups
 
     @property
     def _exporter(self) -> OTXModelExporter:
