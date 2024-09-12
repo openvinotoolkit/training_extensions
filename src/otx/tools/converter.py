@@ -40,6 +40,18 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.MULTI_CLASS_CLS,
         "model_name": "mobilenet_v3_large",
     },
+    "Custom_Image_Classification_EfficinetNet-B3": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_efficientnet_b3",
+    },
+    "Custom_Image_Classification_EfficinetNet-V2-L": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_efficientnet_v2_l",
+    },
+    "Custom_Image_Classification_MobileNet-V3-small": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_mobilenet_v3_small",
+    },
     # DETECTION
     "Custom_Object_Detection_Gen3_ATSS": {
         "task": OTXTaskType.DETECTION,
@@ -69,6 +81,22 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.DETECTION,
         "model_name": "yolox_tiny",
     },
+    "Object_Detection_RTDetr_18": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_18",
+    },
+    "Object_Detection_RTDetr_50": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_50",
+    },
+    "Object_Detection_RTDetr_101": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_101",
+    },
+    "Object_Detection_RTMDet_tiny": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtmdet_tiny",
+    },
     # INSTANCE_SEGMENTATION
     "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
@@ -81,6 +109,10 @@ TEMPLATE_ID_DICT = {
     "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
         "model_name": "maskrcnn_efficientnetb2b",
+    },
+    "Custom_Instance_Segmentation_RTMDet_tiny": {
+        "task": OTXTaskType.INSTANCE_SEGMENTATION,
+        "model_name": "rtmdet_inst_tiny",
     },
     # ROTATED_DETECTION
     "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50": {
@@ -119,6 +151,10 @@ TEMPLATE_ID_DICT = {
     "Custom_Semantic_Segmentation_SegNext_B": {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "segnext_b",
+    },
+    "Custom_Semantic_Segmentation_DINOV2_S": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "dino_v2",
     },
     # ANOMALY_CLASSIFICATION
     "ote_anomaly_classification_padim": {

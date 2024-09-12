@@ -1,0 +1,41 @@
+# Description.
+model_template_id: Custom_Image_Classification_MobileNet-V3-small
+name: MobileNet-V3-small
+task_type: CLASSIFICATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Image Classification for MobileNet-V3-small
+application: ~
+
+# Algo backend.
+framework: OTXClassification v1.2.3
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 64
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.01
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 0
+      num_iters:
+        default_value: 90
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 0.11
+size: 1.6

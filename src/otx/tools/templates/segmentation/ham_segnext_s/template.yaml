@@ -1,0 +1,45 @@
+# Description.
+model_template_id: Custom_Semantic_Segmentation_SegNext_s
+name: SegNext-s
+task_type: SEGMENTATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Semantic Segmentation with medium-sized architecture which based on the MSCAN backbone for the balance between accuracy and fast inference.
+application: ~
+
+# Algo backend.
+framework: OTXSegmentation v0.14.0
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 8
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.00006
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 200
+      early_stop_start:
+        default_value: 100
+      early_stop_patience:
+        default_value: 10
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 15.35
+size: 13.9

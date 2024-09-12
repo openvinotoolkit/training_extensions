@@ -1,0 +1,25 @@
+# Description.
+model_template_id: Visual_Prompting_SAM_ViT_B
+name: SAM_ViT_B
+task_type: VISUAL_PROMPTING
+task_family: VISION
+instantiation: "CLASS"
+summary: Visual Prompting with ViT-B for the accurate predictions
+application: ~
+
+# Algo backend.
+framework: OTXVisualPrompting v0.1.0
+
+# Hyper Parameters
+hyper_parameters:
+  base_path: ../configuration.yaml
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Computational Complexity
+gigaflops: 483.71
+size: 362

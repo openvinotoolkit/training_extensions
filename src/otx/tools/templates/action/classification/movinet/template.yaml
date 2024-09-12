@@ -1,0 +1,42 @@
+# Description.
+model_template_id: Custom_Action_Classification_MoViNet
+name: MoViNet
+task_type: ACTION_CLASSIFICATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Basic transfer learning template for MoViNet
+application: ~
+
+# Algo backend.
+framework: OTXAction v2.9.1
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 8
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.0003
+        auto_hpo_state: POSSIBLE
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 2.71
+size: 3.1
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

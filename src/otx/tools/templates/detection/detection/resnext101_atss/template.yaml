@@ -1,0 +1,48 @@
+# Description.
+model_template_id: Object_Detection_ResNeXt101_ATSS
+name: ResNeXt101-ATSS
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Object Detection for ResNeXt101-ATSS
+application: ~
+
+# Algo backend.
+framework: OTXDetection v2.9.1
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+        auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 4
+      learning_rate:
+        default_value: 0.004
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 3
+      num_iters:
+        default_value: 200
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 434.75
+size: 344
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

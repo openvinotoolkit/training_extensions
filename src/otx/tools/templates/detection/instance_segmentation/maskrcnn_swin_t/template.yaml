@@ -1,0 +1,43 @@
+# Description.
+model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_SwinT_FP16
+name: MaskRCNN-SwinT-FP16
+task_type: INSTANCE_SEGMENTATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Instance Segmentation for MaskRCNN-SwinT-FP16
+application: ~
+
+# Algo backend.
+framework: OTXDetection v2.9.1
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+        auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 1
+      learning_rate:
+        default_value: 0.0001
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 100
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 407.32
+size: 191.46
