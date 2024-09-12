@@ -17,7 +17,7 @@ from omegaconf import DictConfig, OmegaConf
 from otx.algo.detection.atss import MobileNetV2ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet
 from otx.core.config.data import (
-    SubsetConfig,
+    SamplerConfig,
     TileConfig,
     VisualPromptingConfig,
 )
@@ -28,7 +28,6 @@ from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
 from otx.core.types.task import OTXTaskType
-from otx.core.types.transformer_libs import TransformLibType
 from torchvision import tv_tensors
 
 from tests.test_helpers import generate_random_bboxes
@@ -40,74 +39,24 @@ class TestOTXTiling:
         return create_autospec(OTXDetectionModel)
 
     @pytest.fixture()
-    def fxt_tv_det_transform_config(self) -> list[DictConfig]:
-        mmdet_base = OmegaConf.load("src/otx/recipe/_base_/data/torchvision_base.yaml")
-        return mmdet_base.train_subset.transforms
+    def fxt_det_transform_config(self) -> DictConfig:
+        config = OmegaConf.load("src/otx/recipe/_base_/data/detection_tile.yaml")
+        config.train_subset.input_size = config.input_size
+        config.val_subset.input_size = config.input_size
+        config.test_subset.input_size = config.input_size
+        config.train_subset.sampler = SamplerConfig(**config.train_subset.sampler)
+        return config
 
     @pytest.fixture()
-    def fxt_det_data_config(self, fxt_tv_det_transform_config) -> dict:
+    def fxt_det_data_config(self, fxt_det_transform_config) -> dict:
         data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
 
-        batch_size = 8
-        num_workers = 0
         return {
             "data_format": "coco_instances",
             "data_root": data_root,
-            "train_subset": SubsetConfig(
-                subset_name="train",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "val_subset": SubsetConfig(
-                subset_name="val",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "test_subset": SubsetConfig(
-                subset_name="test",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "tile_config": TileConfig(),
-            "vpm_config": VisualPromptingConfig(),
-        }
-
-    @pytest.fixture()
-    def fxt_instseg_data_config(self, fxt_tv_det_transform_config) -> dict:
-        data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
-
-        batch_size = 8
-        num_workers = 0
-        return {
-            "data_format": "coco_instances",
-            "data_root": data_root,
-            "train_subset": SubsetConfig(
-                subset_name="train",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "val_subset": SubsetConfig(
-                subset_name="val",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "test_subset": SubsetConfig(
-                subset_name="test",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
+            "train_subset": fxt_det_transform_config.train_subset,
+            "val_subset": fxt_det_transform_config.val_subset,
+            "test_subset": fxt_det_transform_config.test_subset,
             "tile_config": TileConfig(),
             "vpm_config": VisualPromptingConfig(),
         }
@@ -379,13 +328,13 @@ class TestOTXTiling:
             assert prediction.saliency_map[0].ndim == 3
         self.explain_mode = False
 
-    def test_instseg_tile_merge(self, fxt_instseg_data_config):
+    def test_instseg_tile_merge(self, fxt_det_data_config):
         model = MaskRCNNEfficientNet(label_info=3)
         # Enable tile adapter
-        fxt_instseg_data_config["tile_config"] = TileConfig(enable_tiler=True)
+        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True)
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.INSTANCE_SEGMENTATION,
-            **fxt_instseg_data_config,
+            **fxt_det_data_config,
         )
 
         self.explain_mode = False
@@ -395,13 +344,13 @@ class TestOTXTiling:
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
 
-    def test_explain_instseg_tile_merge(self, fxt_instseg_data_config):
+    def test_explain_instseg_tile_merge(self, fxt_det_data_config):
         model = MaskRCNNEfficientNet(label_info=3)
         # Enable tile adapter
-        fxt_instseg_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
+        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.INSTANCE_SEGMENTATION,
-            **fxt_instseg_data_config,
+            **fxt_det_data_config,
         )
 
         self.explain_mode = model.explain_mode = True

@@ -1,14 +1,13 @@
 model:
-  class_path: otx.algo.detection.yolox.YOLOXX
+  class_path: otx.algo.detection.rtmdet.RTMDetTiny
   init_args:
     label_info: 80
 
     optimizer:
-      class_path: torch.optim.SGD
+      class_path: torch.optim.AdamW
       init_args:
-        lr: 0.001
-        momentum: 0.9
-        weight_decay: 0.0001
+        lr: 0.0007
+        weight_decay: 0.05
 
     scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
@@ -30,8 +29,6 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/detection_tile.yaml
 overrides:
-  reset:
-    - data.train_subset.transforms
   gradient_clip_val: 35.0
   data:
     input_size:
@@ -39,47 +36,34 @@ overrides:
       - 640
     image_color_channel: BGR
     train_subset:
-      num_workers: 4
-      batch_size: 4
+      batch_size: 8
       transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             scale: $(input_size)
-            keep_ratio: false
-            transform_bbox: true
-        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-          init_args:
-            prob: 0.5
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
-            mean: [0.0, 0.0, 0.0]
-            std: [1.0, 1.0, 1.0]
+            mean: [103.53, 116.28, 123.675]
+            std: [57.375, 57.12, 58.395]
 
     val_subset:
-      num_workers: 4
-      batch_size: 4
+      batch_size: 8
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             scale: $(input_size)
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
-            mean: [0.0, 0.0, 0.0]
-            std: [1.0, 1.0, 1.0]
+            mean: [103.53, 116.28, 123.675]
+            std: [57.375, 57.12, 58.395]
 
     test_subset:
-      num_workers: 4
-      batch_size: 4
+      batch_size: 8
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             scale: $(input_size)
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
-            mean: [0.0, 0.0, 0.0]
-            std: [1.0, 1.0, 1.0]
+            mean: [103.53, 116.28, 123.675]
+            std: [57.375, 57.12, 58.395]

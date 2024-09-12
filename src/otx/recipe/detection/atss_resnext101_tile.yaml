@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.detection.atss.MobileNetV2ATSS
+  class_path: otx.algo.detection.atss.ResNeXt101ATSS
   init_args:
     label_info: 80
 
@@ -31,14 +31,21 @@ callback_monitor: val/map_50
 data: ../_base_/data/detection_tile.yaml
 overrides:
   gradient_clip_val: 35.0
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 5
+        decay: -0.025
+        min_lrschedule_patience: 3
+
   data:
     train_subset:
-      batch_size: 8
+      batch_size: 4
       sampler:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 
     val_subset:
-      batch_size: 8
+      batch_size: 4
 
     test_subset:
-      batch_size: 8
+      batch_size: 4

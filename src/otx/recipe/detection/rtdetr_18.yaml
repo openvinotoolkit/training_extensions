@@ -87,7 +87,6 @@ overrides:
           init_args:
             scale: $(input_size)
             keep_ratio: false
-            transform_bbox: true
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
@@ -102,7 +101,6 @@ overrides:
           init_args:
             scale: $(input_size)
             keep_ratio: false
-            transform_bbox: true
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
