@@ -180,18 +180,12 @@ class OTXAnomaly(OTXModel):
         inputs: AnomalyModelInputs,
     ) -> dict[str, Any]:
         """Customize inputs for the model."""
-        return_dict = {}
-        if isinstance(inputs, AnomalyClassificationDataBatch):
-            return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
-        if isinstance(inputs, AnomalySegmentationDataBatch):
-            return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
-        if isinstance(inputs, AnomalyDetectionDataBatch):
-            return_dict = {
-                "image": inputs.images,
-                "label": torch.vstack(inputs.labels).squeeze(),
-                "mask": inputs.masks,
-                "boxes": inputs.boxes,
-            }
+        return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
+        if isinstance(inputs, AnomalySegmentationDataBatch) and inputs.masks is not None:
+            return_dict["mask"] = inputs.masks
+        if isinstance(inputs, AnomalyDetectionDataBatch) and inputs.masks is not None and inputs.boxes is not None:
+            return_dict["mask"] = inputs.masks
+            return_dict["boxes"] = inputs.boxes
 
         if return_dict["label"].size() == torch.Size([]):  # when last batch size is 1
             return_dict["label"] = return_dict["label"].unsqueeze(0)
