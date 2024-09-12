@@ -53,6 +53,10 @@ if TYPE_CHECKING:
 # NOTE: Disable private-member-access (SLF001).
 # This is a workaround so we could apply the same transforms to tiles as the original dataset.
 
+# NOTE: Datumaro subset name should be standardized.
+TRAIN_SUBSET_NAMES = ("train", "TRAINING")
+VAL_SUBSET_NAMES = ("val", "VALIDATION")
+
 
 class OTXTileTransform(Tile):
     """OTX tile transform.
@@ -188,7 +192,7 @@ class OTXTileDatasetFactory:
         Returns:
             OTXTileDataset: Tile dataset.
         """
-        if dataset.dm_subset[0].subset == "train":
+        if dataset.dm_subset[0].subset in TRAIN_SUBSET_NAMES:
             return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
@@ -230,12 +234,17 @@ class OTXTileDataset(OTXDataset):
         """Get item implementation from the original dataset."""
         return self._dataset._get_item_impl(index)
 
-    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> OTXDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> OTXDataEntity:
         """Convert a tile dataset item to OTXDataEntity."""
         msg = "Method _convert_entity is not implemented."
         raise NotImplementedError(msg)
 
-    def get_tiles(self, image: np.ndarray, item: DatasetItem) -> tuple[list[OTXDataEntity], list[dict]]:
+    def get_tiles(
+        self,
+        image: np.ndarray,
+        item: DatasetItem,
+        parent_idx: int,
+    ) -> tuple[list[OTXDataEntity], list[dict]]:
         """Retrieves tiles from the given image and dataset item.
 
         Args:
@@ -256,14 +265,14 @@ class OTXTileDataset(OTXDataset):
             with_full_img=self.tile_config.with_full_img,
         )
 
-        if item.subset == "val":
+        if item.subset in VAL_SUBSET_NAMES:
             # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
             tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
 
         tile_entities: list[OTXDataEntity] = []
         tile_attrs: list[dict] = []
         for tile in tile_ds:
-            tile_entity = self._convert_entity(image, tile)
+            tile_entity = self._convert_entity(image, tile, parent_idx)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
             if transformed_tile is None:
@@ -346,7 +355,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
         )
         labels = torch.as_tensor([ann.label for ann in bbox_anns])
 
-        tile_entities, tile_attrs = self.get_tiles(img_data, item)
+        tile_entities, tile_attrs = self.get_tiles(img_data, item, index)
 
         return TileDetDataEntity(
             num_tiles=len(tile_entities),
@@ -365,13 +374,13 @@ class OTXTileDetTestDataset(OTXTileDataset):
             ori_labels=labels,
         )
 
-    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> DetDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> DetDataEntity:
         """Convert a tile datumaro dataset item to DetDataEntity."""
         x1, y1, w, h = dataset_item.attributes["roi"]
         tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
-            img_idx=dataset_item.attributes["id"],
+            img_idx=parent_idx,
             img_shape=tile_shape,
             ori_shape=tile_shape,
         )
@@ -448,7 +457,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
         masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)
         labels = np.array(gt_labels, dtype=np.int64)
 
-        tile_entities, tile_attrs = self.get_tiles(img_data, item)
+        tile_entities, tile_attrs = self.get_tiles(img_data, item, index)
 
         return TileInstSegDataEntity(
             num_tiles=len(tile_entities),
@@ -469,13 +478,13 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             ori_polygons=gt_polygons,
         )
 
-    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> InstanceSegDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> InstanceSegDataEntity:
         """Convert a tile dataset item to InstanceSegDataEntity."""
         x1, y1, w, h = dataset_item.attributes["roi"]
         tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
-            img_idx=dataset_item.attributes["id"],
+            img_idx=parent_idx,
             img_shape=tile_shape,
             ori_shape=tile_shape,
         )

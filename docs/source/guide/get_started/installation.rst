@@ -62,7 +62,7 @@ according to your system environment.
 
         .. code-block:: shell
 
-            otx install -v
+            otx install -v --option full
 
 [Optional] Refer to the `torch official installation guide <https://pytorch.org/get-started/previous-versions/>`_
 
