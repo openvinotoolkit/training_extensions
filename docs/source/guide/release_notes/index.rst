@@ -31,6 +31,9 @@ Enhancements
 - Enable to use input_size at transforms in recipe
 - Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
 - Refactoring `ConvModule` by removing `conv_cfg`, `norm_cfg`, and `act_cfg`
+- Support ImageFromBytes
+- enable model export
+- Move templates from OTX1.X to OTX2.X
 
 Bug fixes
 ^^^^^^^^^
@@ -38,7 +41,8 @@ Bug fixes
 - Fix Combined Dataloader & unlabeled warmup loss in Semi-SL
 - Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
 - Add num_devices in Engine for multi-gpu training
-
+- Add missing tile recipes and various tile recipe changes
+- Change categories mapping logic
 
 v2.1.0 (2024.07)
 ----------------
