@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Multi-class Classification &#8212; OpenVINO™ Training Extensions 2.2.0rc1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=0a108b04" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script src="../../../../_static/documentation_options.js?v=c72e87a7"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/algorithms/classification/multi_class_classification';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Multi-label Classification" href="multi_label_classification.html" />
+    <link rel="prev" title="Classification" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search" aria-label="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search" aria-label="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+      </div>
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search" aria-label="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+      </div>
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/installation.html"><svg aria-hidden="true" class="sd-octicon sd-octicon-package" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="m8.878.392 5.25 3.045c.54.314.872.89.872 1.514v6.098a1.75 1.75 0 0 1-.872 1.514l-5.25 3.045a1.75 1.75 0 0 1-1.756 0l-5.25-3.045A1.75 1.75 0 0 1 1 11.049V4.951c0-.624.332-1.201.872-1.514L7.122.392a1.75 1.75 0 0 1 1.756 0ZM7.875 1.69l-4.63 2.685L8 7.133l4.755-2.758-4.63-2.685a.248.248 0 0 0-.25 0ZM2.5 5.677v5.372c0 .09.047.171.125.216l4.625 2.683V8.432Zm6.25 8.271 4.625-2.683a.25.25 0 0 0 .125-.216V5.677L8.75 8.432Z"></path></svg> Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/cli_commands.html"><svg aria-hidden="true" class="sd-octicon sd-octicon-terminal" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 14.25 15H1.75A1.75 1.75 0 0 1 0 13.25Zm1.75-.25a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25ZM7.25 8a.749.749 0 0 1-.22.53l-2.25 2.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L5.44 8 3.72 6.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.25 2.25c.141.14.22.331.22.53Zm1.5 1.5h3a.75.75 0 0 1 0 1.5h-3a.75.75 0 0 1 0-1.5Z"></path></svg> CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/api_tutorial.html"><svg aria-hidden="true" class="sd-octicon sd-octicon-code-square" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Zm7.47 3.97a.75.75 0 0 1 1.06 0l2 2a.75.75 0 0 1 0 1.06l-2 2a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L10.69 8 9.22 6.53a.75.75 0 0 1 0-1.06ZM6.78 6.53 5.31 8l1.47 1.47a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215l-2-2a.75.75 0 0 1 0-1.06l2-2a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path></svg> API Quick-Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorials/base/index.html">Base Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../tutorials/base/how_to_train/index.html">Training to deployment tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html">Classification  model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/detection.html">Object Detection model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/instance_segmentation.html">Instance Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/action_classification.html">Action Classification model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/how_to_train/visual_prompting.html">Visual Prompting model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/base/explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/base/export.html">Deploy &amp; Demo</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/advanced/configuration.html">How to write OTX Configuration (recipe)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/advanced/semi_supervised_learning.html">Use Semi-Supervised Learning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/advanced/huggingface_model.html">Training with Hugging Face pretrained vision models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/advanced/multi_gpu.html">Multi-GPU Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/advanced/low_rank_adaptation.html">LoRA: Low Rank Adaptation for Classification Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/advanced/torch_compile.html">[BETA] Enable torch.compile</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Algorithms</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Classification</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hierarhical_classification.html">Hierarchical Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../object_detection/object_detection.html">Object Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../action/action_classification.html">Action Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../visual_prompting/index.html">Visual Prompting</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../visual_prompting/fine_tuning.html">Visual Prompting (Fine-tuning)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../visual_prompting/zero_shot.html">Visual Prompting (Zero-shot learning)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/adaptive_training.html">Adaptive Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/xai.html">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/tiling.html">Improve Small Object Detection with Image Tiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/class_incremental_sampler.html">Class-Incremental Sampler</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../additional_features/configurable_input_size.html">Configurable Input Size</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../product_design.html">Product Design</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.cli.html">otx.cli.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.install.html">otx.cli.install</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.utils.html">otx.cli.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.config.html">otx.core.config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.data.html">otx.core.data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.metrics.html">otx.core.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.optimizer.html">otx.core.optimizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.schedulers.html">otx.core.schedulers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.types.html">otx.core.types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.engine.html">otx.engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.tools.converter.html">otx.tools.converter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.tools.templates.html">otx.tools.templates</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.utils.html">otx.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+  </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="multi-class-classification">
+<h1>Multi-class Classification<a class="headerlink" href="#multi-class-classification" title="Link to this heading">#</a></h1>
+<p>Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
+For the supervised training we use the following algorithms components:</p>
+<ul class="simple" id="mcl-cls-supervised-pipeline">
+<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html">ReduceLROnPlateau</a>. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standard <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a>  to train a model. However, for the class-incremental scenario we use <a class="reference external" href="https://arxiv.org/abs/2110.02444">Influence-Balanced Loss</a>. IB loss is a solution for the class imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">training</span> <span class="pre">techniques</span></code></dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Early</span> <span class="pre">stopping</span></code>: To add adaptability to the training pipeline and prevent overfitting.</p></li>
+<li><p><a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/src/otx/algo/samplers/balanced_sampler.py#L11">Balanced Sampler</a>: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="dataset-format">
+<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Link to this heading">#</a></h2>
+<p>We support a commonly used format for multi-class image classification task: <a class="reference external" href="https://www.image-net.org/">ImageNet</a> class folder format.
+This format has the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
+├── train
+    ├── class 0
+        ├── 0.png
+        ├── 1.png
+        ...
+        └── N.png
+    ├── class 1
+        ├── 0.png
+        ├── 1.png
+        ...
+        └── N.png
+    ...
+    └── class N
+        ├── 0.png
+        ├── 1.png
+        ...
+        └── N.png
+└── val
+    ...
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classification models.</p>
+</div>
+</section>
+<section id="models">
+<h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
+<p id="classification-models">We support the following ready-to-use model recipes:</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model Name</p></th>
+<th class="head"><p>Complexity (GFLOPs)</p></th>
+<th class="head"><p>Model size (MB)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml">MobileNet-V3-large-1x</a></p></td>
+<td><p>0.44</p></td>
+<td><p>4.29</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml">EfficinetNet-B0</a></p></td>
+<td><p>0.81</p></td>
+<td><p>4.09</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml">EfficientNet-V2-S</a></p></td>
+<td><p>5.76</p></td>
+<td><p>20.23</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/deit_tiny.yaml">DeiT-Tiny</a></p></td>
+<td><p>2.51</p></td>
+<td><p>22.0</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/dino_v2.yaml">DINO-V2</a></p></td>
+<td><p>12.46</p></td>
+<td><p>88.0</p></td>
+</tr>
+</tbody>
+</table>
+<p><a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this recipe provides competitive accuracy as well.
+<a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B0</a> consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.
+<a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance.
+<a class="reference external" href="https://arxiv.org/abs/2012.12877">DeiT-Tiny</a> is a transformer-based model that provides a good trade-off between accuracy and computational cost.
+<a class="reference external" href="https://arxiv.org/abs/2304.07193">DINO-V2</a> produce high-performance visual features that can be directly employed with classifiers as simple as linear layers on a variety of computer vision tasks.</p>
+<p>To see which models are available for the task, the following command can be executed:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>MULTI_CLASS_CLS
+</pre></div>
+</div>
+<p>In the table below the top-1 accuracy on some academic datasets using our <a class="reference internal" href="#mcl-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. The results were obtained on our Recipes without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related recipe. We trained each model with single Nvidia GeForce RTX3090.</p>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Model</p></td>
+<td><p>CIFAR10</p></td>
+<td><p>SVHN</p></td>
+<td><p>FMNIST</p></td>
+</tr>
+<tr class="row-even"><td><p>EfficientNet-B0</p></td>
+<td><p>91.83</p></td>
+<td><p>90.89</p></td>
+<td><p>91.35</p></td>
+</tr>
+<tr class="row-odd"><td><p>MobileNet-V3-Large</p></td>
+<td><p>92.44</p></td>
+<td><p>95.14</p></td>
+<td><p>93.81</p></td>
+</tr>
+<tr class="row-even"><td><p>EfficientNet-V2-S</p></td>
+<td><p>94.36</p></td>
+<td><p>94.49</p></td>
+<td><p>93.63</p></td>
+</tr>
+<tr class="row-odd"><td><p>DeiT-Tiny</p></td>
+<td><p>92.63</p></td>
+<td><p>96.37</p></td>
+<td><p>94.01</p></td>
+</tr>
+<tr class="row-even"><td><p>DINO-V2</p></td>
+<td><p>96.10</p></td>
+<td><p>96.84</p></td>
+<td><p>94.17</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The results are obtained on the validation set of the corresponding dataset.
+Also, OTX includes adaptive training scheduling, which is unique to OTX, so results may vary.</p>
+</div>
+<p id="classification-torchvision-models">We can also use the classification model provided by torchvision.
+There are 58 different models available from torchvision, see <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/99ce015b9f7d20029a74747ad2a8817e593790f4/src/otx/algo/classification/torchvision_model.py#L32">TVModelType</a>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--model<span class="w"> </span>otx.algo.classification.torchvision_model.TVModelForMulticlassCls<span class="w"> </span>--backbone<span class="w"> </span><span class="o">{</span>backbone_name<span class="o">}</span><span class="w"> </span>...
+</pre></div>
+</div>
+</section>
+<section id="semi-supervised-learning">
+<h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Link to this heading">#</a></h2>
+<p>We provide Semi-SL Training so that the models introduced above can be trained with unlabeled data.</p>
+<p>Semi-SL (Semi-supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.</p>
+<p>We use <a class="reference external" href="https://arxiv.org/abs/2001.07685">FixMatch</a> as a core algorithm for Semi-SL task solving. It is a specific implementation of Semi-SL that has been shown to be effective in various applications. FixMatch introduces pseudo-labeling, which is the process of generating labels for the unlabeled data and treating them as if they were labeled data. Pseudo-labeling is based on the idea that the model’s prediction for the unlabeled data is likely to be correct, which can improve the model’s accuracy and reduce the need for labeled data.</p>
+<p>In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations to further improve the accuracy of the model.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<a class="reference internal image-reference" href="../../../../_images/semi-sl-algo.png"><img alt="../../../../_images/semi-sl-algo.png" src="../../../../_images/semi-sl-algo.png" style="width: 600px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
+<ul class="simple" id="mcl-cls-semi-supervised-pipeline">
+<li><p><code class="docutils literal notranslate"><span class="pre">Pseudo-labeling</span> <span class="pre">(FixMatch)</span></code>: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Adaptable</span> <span class="pre">Threshold</span></code>: A novel addition to our solution that calculates a class-wise threshold for pseudo-labeling, which can solve the issue of imbalanced data and produce high-quality pseudo-labels that improve the overall score.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Unlabeled</span> <span class="pre">Warm-Up</span> <span class="pre">Loss</span></code>: A technique for preventing the initial unstable learning of pseudo-labeling by increasing the coefficient of the unlabeled loss from 0 to 1.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">techniques</span></code>: Other than that, we use several solutions that apply to supervised learning (Augmentations, Early-Stopping, etc.)</p></li>
+</ul>
+<p>Training time depends on the number of images and can be up to several times longer than conventional supervised learning.</p>
+<p>The recipe that provides Semi-SL can be found below.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>MULTI_CLASS_CLS<span class="w"> </span>--pattern<span class="w"> </span>semisl
+</pre></div>
+</div>
+<p>You can select the model configuration and run Semi-SL training with the command below.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--config<span class="w"> </span><span class="o">{</span>semi_sl_config_path<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--data_root<span class="w"> </span><span class="o">{</span>path_to_labeled_data<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--data.unlabeled_subset.data_root<span class="w"> </span><span class="o">{</span>path_to_unlabeled_data<span class="o">}</span>
+</pre></div>
+</div>
+<p>Below are the results of comparing supervised learning and semi-supervised learning for each label per class on three datasets, three models.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+EfficientNet-B0</label><div class="sd-tab-content docutils">
+<a class="reference internal image-reference" href="../../../../_images/semi-sl-effnet-b0.png"><img alt="../../../../_images/semi-sl-effnet-b0.png" src="../../../../_images/semi-sl-effnet-b0.png" style="width: 600px;" /></a>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Model</p></td>
+<td></td>
+<td><p>CIFAR10</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>SVHN</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>FMNIST</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>EfficientNet-B0</p></td>
+<td><p>Labels per class</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-odd"><td><p>SL</p></td>
+<td><p>top-1 (%)</p></td>
+<td><p>30.06</p></td>
+<td><p>41.21</p></td>
+<td><p>55.21</p></td>
+<td><p>63.69</p></td>
+<td><p>16.47</p></td>
+<td><p>23.04</p></td>
+<td><p>41.74</p></td>
+<td><p>59.52</p></td>
+<td><p>58.97</p></td>
+<td><p>72.71</p></td>
+<td><p>78.03</p></td>
+<td><p>82.45</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>E2E time (s)</p></td>
+<td><p>121</p></td>
+<td><p>95</p></td>
+<td><p>141</p></td>
+<td><p>143</p></td>
+<td><p>287</p></td>
+<td><p>233</p></td>
+<td><p>241</p></td>
+<td><p>228</p></td>
+<td><p>107</p></td>
+<td><p>135</p></td>
+<td><p>162</p></td>
+<td><p>154</p></td>
+</tr>
+<tr class="row-odd"><td><p>Semi-SL</p></td>
+<td><p>top-1 (%)</p></td>
+<td><p>35.9</p></td>
+<td><p>50.9</p></td>
+<td><p>63.6</p></td>
+<td><p>73.04</p></td>
+<td><p>27.13</p></td>
+<td><p>65.08</p></td>
+<td><p>80.66</p></td>
+<td><p>85.4</p></td>
+<td><p>72.2</p></td>
+<td><p>79.16</p></td>
+<td><p>82.9</p></td>
+<td><p>85.36</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>E2E time (s)</p></td>
+<td><p>160</p></td>
+<td><p>295</p></td>
+<td><p>417</p></td>
+<td><p>722</p></td>
+<td><p>419</p></td>
+<td><p>500</p></td>
+<td><p>549</p></td>
+<td><p>728</p></td>
+<td><p>196</p></td>
+<td><p>281</p></td>
+<td><p>339</p></td>
+<td><p>395</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+MobileNet-V3-Large</label><div class="sd-tab-content docutils">
+<a class="reference internal image-reference" href="../../../../_images/semi-sl-mv3-large.png"><img alt="../../../../_images/semi-sl-mv3-large.png" src="../../../../_images/semi-sl-mv3-large.png" style="width: 600px;" /></a>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Model</p></td>
+<td></td>
+<td><p>CIFAR10</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>SVHN</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>FMNIST</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>MobileNet-V3-Large</p></td>
+<td><p>Labels per class</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-odd"><td><p>SL</p></td>
+<td><p>top-1 (%)</p></td>
+<td><p>34.21</p></td>
+<td><p>47.37</p></td>
+<td><p>59.5</p></td>
+<td><p>67.13</p></td>
+<td><p>17.08</p></td>
+<td><p>24.01</p></td>
+<td><p>41.42</p></td>
+<td><p>58.14</p></td>
+<td><p>60.41</p></td>
+<td><p>69.8</p></td>
+<td><p>76.61</p></td>
+<td><p>81.57</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>E2E time (s)</p></td>
+<td><p>109</p></td>
+<td><p>127</p></td>
+<td><p>153</p></td>
+<td><p>159</p></td>
+<td><p>333</p></td>
+<td><p>277</p></td>
+<td><p>254</p></td>
+<td><p>287</p></td>
+<td><p>141</p></td>
+<td><p>135</p></td>
+<td><p>126</p></td>
+<td><p>136</p></td>
+</tr>
+<tr class="row-odd"><td><p>Semi-SL</p></td>
+<td><p>top-1 (%)</p></td>
+<td><p>34.37</p></td>
+<td><p>52.87</p></td>
+<td><p>68.15</p></td>
+<td><p>72.42</p></td>
+<td><p>22.38</p></td>
+<td><p>59.11</p></td>
+<td><p>76.91</p></td>
+<td><p>84.4</p></td>
+<td><p>66.65</p></td>
+<td><p>77.45</p></td>
+<td><p>81.38</p></td>
+<td><p>85.63</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>E2E time (s)</p></td>
+<td><p>112</p></td>
+<td><p>348</p></td>
+<td><p>489</p></td>
+<td><p>684</p></td>
+<td><p>302</p></td>
+<td><p>512</p></td>
+<td><p>515</p></td>
+<td><p>815</p></td>
+<td><p>172</p></td>
+<td><p>240</p></td>
+<td><p>238</p></td>
+<td><p>442</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+EfficientNet-V2-S</label><div class="sd-tab-content docutils">
+<a class="reference internal image-reference" href="../../../../_images/semi-sl-effnet-v2.png"><img alt="../../../../_images/semi-sl-effnet-v2.png" src="../../../../_images/semi-sl-effnet-v2.png" style="width: 600px;" /></a>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Model</p></td>
+<td></td>
+<td><p>CIFAR10</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>SVHN</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>FMNIST</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>EfficientNet-V2-S</p></td>
+<td><p>Labels per class</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-odd"><td><p>SL</p></td>
+<td><p>top-1 (%)</p></td>
+<td><p>26.19</p></td>
+<td><p>36.23</p></td>
+<td><p>49.01</p></td>
+<td><p>60.22</p></td>
+<td><p>13.85</p></td>
+<td><p>19.71</p></td>
+<td><p>35.5</p></td>
+<td><p>53.05</p></td>
+<td><p>57.7</p></td>
+<td><p>65.61</p></td>
+<td><p>74.34</p></td>
+<td><p>79.71</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>E2E time (s)</p></td>
+<td><p>110</p></td>
+<td><p>128</p></td>
+<td><p>149</p></td>
+<td><p>165</p></td>
+<td><p>322</p></td>
+<td><p>308</p></td>
+<td><p>325</p></td>
+<td><p>407</p></td>
+<td><p>149</p></td>
+<td><p>113</p></td>
+<td><p>142</p></td>
+<td><p>163</p></td>
+</tr>
+<tr class="row-odd"><td><p>Semi-SL</p></td>
+<td><p>top-1 (%)</p></td>
+<td><p>29.99</p></td>
+<td><p>54.29</p></td>
+<td><p>72.8</p></td>
+<td><p>80.77</p></td>
+<td><p>16.68</p></td>
+<td><p>60.68</p></td>
+<td><p>80.34</p></td>
+<td><p>86.84</p></td>
+<td><p>69.41</p></td>
+<td><p>77.46</p></td>
+<td><p>83.25</p></td>
+<td><p>86.26</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>E2E time (s)</p></td>
+<td><p>166</p></td>
+<td><p>318</p></td>
+<td><p>475</p></td>
+<td><p>726</p></td>
+<td><p>297</p></td>
+<td><p>481</p></td>
+<td><p>629</p></td>
+<td><p>748</p></td>
+<td><p>204</p></td>
+<td><p>215</p></td>
+<td><p>305</p></td>
+<td><p>542</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Overall, you can expect to see an increase in metric scores, albeit slower than Supervised learning.</p>
+</section>
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="index.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Classification</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="multi_label_classification.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Multi-label Classification</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset-format">
+   Dataset Format
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#models">
+   Models
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#semi-supervised-learning">
+   Semi-supervised Learning
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../../_sources/guide/explanation/algorithms/classification/multi_class_classification.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
