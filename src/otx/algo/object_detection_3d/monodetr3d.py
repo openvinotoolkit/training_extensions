@@ -5,9 +5,8 @@
 
 from __future__ import annotations
 
-import copy
-import re
 from typing import TYPE_CHECKING, Any, Literal
+import numpy as np
 
 import torch
 from torch import Tensor
@@ -17,10 +16,10 @@ from torchvision.tv_tensors import BoundingBoxFormat
 from otx.algo.detection.detectors import DETR
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.metrics.ap_3d import KittiMetric
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection_3d import OTX3DDetectionModel
 from .backbone import BackboneBuilder
@@ -51,7 +50,7 @@ class MonoDETR3D(OTX3DDetectionModel):
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        metric: MetricCallable = KittiMetric,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -112,34 +111,36 @@ class MonoDETR3D(OTX3DDetectionModel):
 
     def _customize_inputs(
         self,
-        entity: DetBatchDataEntity,
-        pad_size_divisor: int = 32,
-        pad_value: int = 0,
+        entity: Det3DBatchDataEntity,
     ) -> dict[str, Any]:
-        targets: list[dict[str, Any]] = []
         # prepare bboxes for the model
+        targets_list = []
+        mask = entity.mask_2d
+
+        key_list = ['labels', 'bboxes_2d', 'calibs', 'depth', 'size_3d', 'heading_bin', 'heading_res', 'bboxes_3d']
+        for bz in range(len(entity.imgs_info)):
+            target_dict = {}
+            for key in key_list:
+                val = getattr(entity, key)
+                target_dict[key] = val[bz][mask[bz]]
+            targets_list.append(target_dict)
+
         breakpoint()
-        for bb, ll in zip(entity.bboxes, entity.labels):
-            # convert to cxcywh if needed
-            converted_bboxes = (
-                box_convert(bb, in_fmt="xyxy", out_fmt="cxcywh") if bb.format == BoundingBoxFormat.XYXY else bb
-            )
-            # normalize the bboxes
-            scaled_bboxes = converted_bboxes / torch.tensor(bb.canvas_size[::-1]).tile(2)[None].to(
-                converted_bboxes.device,
-            )
-            targets.append({"boxes": scaled_bboxes, "labels": ll})
+        img_sizes = np.array([img_info.img_shape for img_info in entity.imgs_info])
 
         return {
-            "images": entity.images,
-            "targets": targets,
+            "inputs": entity.images,
+            "calibs": entity.calib_p2,
+            "targets" : targets_list,
+            "img_sizes": img_sizes,
+            "mode": "loss" if self.training else "predict",
         }
 
     def _customize_outputs(
         self,
         outputs: list[torch.Tensor] | dict,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        inputs: Det3DBatchDataEntity,
+    ) -> Det3DBatchPredEntity | OTXBatchLossEntity:
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)
@@ -155,15 +156,23 @@ class MonoDETR3D(OTX3DDetectionModel):
                     raise TypeError(msg)
             return losses
 
-        scores, bboxes, labels = self.model.postprocess(outputs, [img_info.img_shape for img_info in inputs.imgs_info])
-
-        return DetBatchPredEntity(
+        breakpoint()
+        return Det3DBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            labels=labels,
+            bboxes_2d=outputs["boxes"],
+            labels=outputs["labels"],
+            calibs=outputs["calibs"],
+            bboxes_3d=outputs["bboxes_3d"],
+            size_2d=outputs["size_2d"],
+            size_3d=outputs["size_3d"],
+            src_size_3d=outputs["src_size_3d"],
+            depth=outputs["depth"],
+            heading_bin=outputs["heading_bin"],
+            heading_res=outputs["heading_res"],
+            mask_2d=outputs["mask_2d"],
+            indices=outputs["indices"],
         )
 
     @property

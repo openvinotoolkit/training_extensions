@@ -42,6 +42,7 @@ class Det3DDataEntity(OTXDataEntity):
         return OTXTaskType.OBJECT_DETECTION_3D
 
     bboxes_2d: tv_tensors.BoundingBoxes
+    calib_p2: np.ndarray
     calibs: np.ndarray
     bboxes_3d: np.ndarray
     size_2d: np.ndarray
@@ -69,6 +70,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     """ # TODO(Kirill): UPDATE!
 
     bboxes_2d: list[tv_tensors.BoundingBoxes]
+    calib_p2: list[np.ndarray]
     calibs: list[np.ndarray]
     bboxes_3d: list[np.ndarray]
     size_2d: list[np.ndarray]
@@ -112,6 +114,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
             imgs_info=batch_data.imgs_info,
             bboxes_2d=[entity.bboxes_2d for entity in entities],
             labels=[entity.labels for entity in entities],
+            calib_p2=[entity.calib_p2 for entity in entities],
             calibs=[entity.calibs for entity in entities],
             bboxes_3d=[entity.bboxes_3d for entity in entities],
             size_2d=[entity.size_2d for entity in entities],
@@ -133,6 +136,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
                 bboxes_2d=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes_2d],
                 labels=[label.pin_memory() for label in self.labels],
                 calibs=self.calibs,
+                calib_p2=self.calib_p2,
                 bboxes_3d=self.bboxes_3d,
                 size_2d=self.size_2d,
                 size_3d=self.size_3d,

@@ -49,7 +49,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         self.label_info = LabelInfo(label_names=["Car"], label_groups=[["Car"]])
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
-        inputs, _, targets, info = self.dm_subset[index]
+        inputs, p2, targets, info = self.dm_subset[index]
         entity = Det3DDataEntity(
             image=torch.tensor(inputs),
             img_info=ImageInfo(
@@ -66,6 +66,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
                 dtype=torch.float32,
             ),
             labels=torch.as_tensor(targets["labels"], dtype=torch.long),
+            calib_p2=p2,
             calibs=targets["calibs"],
             bboxes_3d=targets["boxes_3d"],
             size_2d=targets["size_2d"],
