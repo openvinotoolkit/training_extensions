@@ -13,7 +13,7 @@ import shapely.geometry as sg
 import torch
 from datumaro import Dataset as DmDataset
 from datumaro import Polygon
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import OmegaConf
 from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.core.config.data import (
@@ -24,7 +24,8 @@ from otx.core.config.data import (
 from otx.core.data.dataset.tile import OTXTileTransform
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.data.entity.tile import TileBatchDetDataEntity
+from otx.core.data.entity.segmentation import SegBatchDataEntity
+from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDataEntity, TileBatchSegDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
 from otx.core.types.task import OTXTaskType
@@ -40,76 +41,73 @@ class TestOTXTiling:
         return create_autospec(OTXDetectionModel)
 
     @pytest.fixture()
-    def fxt_tv_det_transform_config(self) -> list[DictConfig]:
-        mmdet_base = OmegaConf.load("src/otx/recipe/_base_/data/torchvision_base.yaml")
-        return mmdet_base.train_subset.transforms
-
-    @pytest.fixture()
-    def fxt_det_data_config(self, fxt_tv_det_transform_config) -> dict:
-        data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
-
-        batch_size = 8
-        num_workers = 0
+    def fxt_data_roots(self) -> dict[OTXTaskType, Path]:
+        parent_root = Path(__file__).parent.parent.parent.parent / "assets"
         return {
-            "data_format": "coco_instances",
-            "data_root": data_root,
-            "train_subset": SubsetConfig(
-                subset_name="train",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "val_subset": SubsetConfig(
-                subset_name="val",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "test_subset": SubsetConfig(
-                subset_name="test",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "tile_config": TileConfig(),
-            "vpm_config": VisualPromptingConfig(),
+            OTXTaskType.DETECTION: parent_root / "car_tree_bug",
+            OTXTaskType.INSTANCE_SEGMENTATION: parent_root / "car_tree_bug",
+            OTXTaskType.SEMANTIC_SEGMENTATION: parent_root / "common_semantic_segmentation_dataset" / "supervised",
         }
 
     @pytest.fixture()
-    def fxt_instseg_data_config(self, fxt_tv_det_transform_config) -> dict:
-        data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
-
+    def fxt_data_config(self, fxt_data_roots) -> dict[dict]:
+        torchvision_base = OmegaConf.load("src/otx/recipe/_base_/data/torchvision_base.yaml")
+        transforms = torchvision_base.train_subset.transforms
         batch_size = 8
         num_workers = 0
+
+        train_subset = SubsetConfig(
+            subset_name="train",
+            batch_size=batch_size,
+            num_workers=num_workers,
+            transform_lib_type=TransformLibType.TORCHVISION,
+            transforms=transforms,
+        )
+
+        val_subset = SubsetConfig(
+            subset_name="val",
+            batch_size=batch_size,
+            num_workers=num_workers,
+            transform_lib_type=TransformLibType.TORCHVISION,
+            transforms=transforms,
+        )
+
+        test_subset = SubsetConfig(
+            subset_name="test",
+            batch_size=batch_size,
+            num_workers=num_workers,
+            transform_lib_type=TransformLibType.TORCHVISION,
+            transforms=transforms,
+        )
+
         return {
-            "data_format": "coco_instances",
-            "data_root": data_root,
-            "train_subset": SubsetConfig(
-                subset_name="train",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "val_subset": SubsetConfig(
-                subset_name="val",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "test_subset": SubsetConfig(
-                subset_name="test",
-                batch_size=batch_size,
-                num_workers=num_workers,
-                transform_lib_type=TransformLibType.TORCHVISION,
-                transforms=fxt_tv_det_transform_config,
-            ),
-            "tile_config": TileConfig(),
-            "vpm_config": VisualPromptingConfig(),
+            OTXTaskType.DETECTION: {
+                "data_format": "coco_instances",
+                "data_root": fxt_data_roots[OTXTaskType.DETECTION],
+                "train_subset": train_subset,
+                "val_subset": val_subset,
+                "test_subset": test_subset,
+                "tile_config": TileConfig(),
+                "vpm_config": VisualPromptingConfig(),
+            },
+            OTXTaskType.INSTANCE_SEGMENTATION: {
+                "data_format": "coco_instances",
+                "data_root": fxt_data_roots[OTXTaskType.INSTANCE_SEGMENTATION],
+                "train_subset": train_subset,
+                "val_subset": val_subset,
+                "test_subset": test_subset,
+                "tile_config": TileConfig(),
+                "vpm_config": VisualPromptingConfig(),
+            },
+            OTXTaskType.SEMANTIC_SEGMENTATION: {
+                "data_format": "common_semantic_segmentation_with_subset_dirs",
+                "data_root": fxt_data_roots[OTXTaskType.SEMANTIC_SEGMENTATION],
+                "train_subset": train_subset,
+                "val_subset": val_subset,
+                "test_subset": test_subset,
+                "tile_config": TileConfig(),
+                "vpm_config": VisualPromptingConfig(),
+            },
         }
 
     def det_dummy_forward(self, x: DetBatchDataEntity) -> DetBatchPredEntity:
@@ -228,17 +226,27 @@ class TestOTXTiling:
 
         return pred_entity
 
-    def test_tile_transform(self):
-        dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
-        first_item = next(iter(dataset), None)
-        height, width = first_item.media.data.shape[:2]
+    @pytest.mark.parametrize(
+        "task",
+        [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.SEMANTIC_SEGMENTATION],
+    )
+    def test_tile_transform(self, task, fxt_data_roots):
+        if task in (OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.DETECTION):
+            dataset_format = "coco_instances"
+        elif task == OTXTaskType.SEMANTIC_SEGMENTATION:
+            dataset_format = "common_semantic_segmentation_with_subset_dirs"
+        else:
+            pytest.skip("Task not supported")
+
+        data_root = str(fxt_data_roots[task])
+        dataset = DmDataset.import_from(data_root, format=dataset_format)
 
         rng = np.random.default_rng()
         tile_size = rng.integers(low=100, high=500, size=(2,))
         overlap = rng.random(2)
         overlap = overlap.clip(0, 0.9)
         threshold_drop_ann = rng.random()
-        tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
+        tiled_dataset = DmDataset.import_from(data_root, format=dataset_format)
         tiled_dataset.transform(
             OTXTileTransform,
             tile_size=tile_size,
@@ -249,13 +257,17 @@ class TestOTXTiling:
 
         h_stride = max(int((1 - overlap[0]) * tile_size[0]), 1)
         w_stride = max(int((1 - overlap[1]) * tile_size[1]), 1)
-        num_tile_rows = (height + h_stride - 1) // h_stride
-        num_tile_cols = (width + w_stride - 1) // w_stride
-        assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)) + len(
-            dataset,
-        ), "Incorrect number of tiles"
 
-        tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
+        num_tiles = 0
+        for dataset_item in dataset:
+            height, width = dataset_item.media.data.shape[:2]
+            for _ in range(0, height, h_stride):
+                for _ in range(0, width, w_stride):
+                    num_tiles += 1
+
+        assert len(tiled_dataset) == num_tiles + len(dataset), "Incorrect number of tiles"
+
+        tiled_dataset = DmDataset.import_from(data_root, format=dataset_format)
         tiled_dataset.transform(
             OTXTileTransform,
             tile_size=tile_size,
@@ -263,7 +275,7 @@ class TestOTXTiling:
             threshold_drop_ann=threshold_drop_ann,
             with_full_img=False,
         )
-        assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
+        assert len(tiled_dataset) == num_tiles, "Incorrect number of tiles"
 
     def test_tile_polygon_func(self):
         points = np.array([(1, 2), (3, 5), (4, 2), (4, 6), (1, 6)])
@@ -281,87 +293,129 @@ class TestOTXTiling:
         invalid_polygon = Polygon(points=[0, 0, 5, 0, 5, 5, 5, 0])
         assert OTXTileTransform._tile_polygon(invalid_polygon, roi) is None, "Invalid polygon should be None"
 
-    def test_adaptive_tiling(self, fxt_det_data_config):
-        # Enable tile adapter
-        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=True)
+    def test_adaptive_tiling(self, fxt_data_config):
+        for task, data_config in fxt_data_config.items():
+            # Enable tile adapter
+            data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=True)
 
-        tile_datamodule = OTXDataModule(
-            task=OTXTaskType.DETECTION,
-            **fxt_det_data_config,
-        )
-        tile_datamodule.prepare_data()
+            if task is OTXTaskType.DETECTION:
+                tile_datamodule = OTXDataModule(
+                    task=OTXTaskType.DETECTION,
+                    **data_config,
+                )
+                tile_datamodule.prepare_data()
+                assert tile_datamodule.tile_config.tile_size == (8380, 8380), "Tile size should be [8380, 8380]"
+                assert (
+                    pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.04255
+                ), "Overlap should be 0.04255"
+                assert tile_datamodule.tile_config.max_num_instances == 3, "Max num instances should be 3"
+            elif task is OTXTaskType.INSTANCE_SEGMENTATION:
+                tile_datamodule = OTXDataModule(
+                    task=OTXTaskType.INSTANCE_SEGMENTATION,
+                    **data_config,
+                )
+                tile_datamodule.prepare_data()
+                assert tile_datamodule.tile_config.tile_size == (6750, 6750), "Tile size should be [6750, 6750]"
+                assert (
+                    pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.03608
+                ), "Overlap should be 0.03608"
+                assert tile_datamodule.tile_config.max_num_instances == 3, "Max num instances should be 3"
+            elif task is OTXTaskType.SEMANTIC_SEGMENTATION:
+                tile_datamodule = OTXDataModule(
+                    task=OTXTaskType.SEMANTIC_SEGMENTATION,
+                    **data_config,
+                )
+                tile_datamodule.prepare_data()
+                assert tile_datamodule.tile_config.tile_size == (2878, 2878), "Tile size should be [6750, 6750]"
+                assert (
+                    pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.04412
+                ), "Overlap should be 0.04412"
+                assert tile_datamodule.tile_config.max_num_instances == 2, "Max num instances should be 3"
+            else:
+                pytest.skip("Task not supported")
 
-        assert tile_datamodule.tile_config.tile_size == (8380, 8380), "Tile size should be [6750, 6750]"
-        assert pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.04255, "Overlap should be 0.03608"
-        assert tile_datamodule.tile_config.max_num_instances == 3, "Max num instances should be 3"
+    def test_tile_sampler(self, fxt_data_config):
+        for task, data_config in fxt_data_config.items():
+            rng = np.random.default_rng()
+            sampling_ratio = rng.random()
+            data_config["tile_config"] = TileConfig(
+                enable_tiler=True,
+                enable_adaptive_tiling=False,
+                sampling_ratio=sampling_ratio,
+            )
+            tile_datamodule = OTXDataModule(
+                task=task,
+                **data_config,
+            )
+            tile_datamodule.prepare_data()
+            sampled_count = max(
+                1,
+                int(len(tile_datamodule._get_dataset("train")) * sampling_ratio),
+            )
 
-        tile_datamodule = OTXDataModule(
-            task=OTXTaskType.INSTANCE_SEGMENTATION,
-            **fxt_det_data_config,
-        )
-        tile_datamodule.prepare_data()
+            count = 0
+            for batch in tile_datamodule.train_dataloader():
+                count += batch.batch_size
+                if task is OTXTaskType.DETECTION:
+                    assert isinstance(batch, DetBatchDataEntity)
+                elif task is OTXTaskType.INSTANCE_SEGMENTATION:
+                    assert isinstance(batch, InstanceSegBatchDataEntity)
+                elif task is OTXTaskType.SEMANTIC_SEGMENTATION:
+                    assert isinstance(batch, SegBatchDataEntity)
+                else:
+                    pytest.skip("Task not supported")
 
-        assert tile_datamodule.tile_config.tile_size == (6750, 6750), "Tile size should be [6750, 6750]"
-        assert pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.03608, "Overlap should be 0.03608"
-        assert tile_datamodule.tile_config.max_num_instances == 3, "Max num instances should be 3"
+            assert sampled_count == count, "Sampled count should be equal to the count of the dataloader batch size"
 
-    def test_tile_sampler(self, fxt_det_data_config):
-        rng = np.random.default_rng()
-        sampling_ratio = rng.random()
-        fxt_det_data_config["tile_config"] = TileConfig(
-            enable_tiler=True,
-            enable_adaptive_tiling=False,
-            sampling_ratio=sampling_ratio,
-        )
-        tile_datamodule = OTXDataModule(
-            task=OTXTaskType.DETECTION,
-            **fxt_det_data_config,
-        )
-        tile_datamodule.prepare_data()
-        sampled_count = max(
-            1,
-            int(len(tile_datamodule._get_dataset("train")) * sampling_ratio),
-        )
+    def test_train_dataloader(self, fxt_data_config) -> None:
+        for task, data_config in fxt_data_config.items():
+            # Enable tile adapter
+            data_config["tile_config"] = TileConfig(enable_tiler=True)
+            tile_datamodule = OTXDataModule(
+                task=task,
+                **data_config,
+            )
+            tile_datamodule.prepare_data()
+            for batch in tile_datamodule.train_dataloader():
+                if task is OTXTaskType.DETECTION:
+                    assert isinstance(batch, DetBatchDataEntity)
+                elif task is OTXTaskType.INSTANCE_SEGMENTATION:
+                    assert isinstance(batch, InstanceSegBatchDataEntity)
+                elif task is OTXTaskType.SEMANTIC_SEGMENTATION:
+                    assert isinstance(batch, SegBatchDataEntity)
+                else:
+                    pytest.skip("Task not supported")
 
-        count = 0
-        for batch in tile_datamodule.train_dataloader():
-            count += batch.batch_size
-            assert isinstance(batch, DetBatchDataEntity)
+    def test_val_dataloader(self, fxt_data_config) -> None:
+        for task, data_config in fxt_data_config.items():
+            # Enable tile adapter
+            data_config["tile_config"] = TileConfig(enable_tiler=True)
+            tile_datamodule = OTXDataModule(
+                task=task,
+                **data_config,
+            )
+            tile_datamodule.prepare_data()
+            for batch in tile_datamodule.val_dataloader():
+                if task is OTXTaskType.DETECTION:
+                    assert isinstance(batch, TileBatchDetDataEntity)
+                elif task is OTXTaskType.INSTANCE_SEGMENTATION:
+                    assert isinstance(batch, TileBatchInstSegDataEntity)
+                elif task is OTXTaskType.SEMANTIC_SEGMENTATION:
+                    assert isinstance(batch, TileBatchSegDataEntity)
+                else:
+                    pytest.skip("Task not supported")
 
-        assert sampled_count == count, "Sampled count should be equal to the count of the dataloader batch size"
-
-    def test_train_dataloader(self, fxt_det_data_config) -> None:
-        # Enable tile adapter
-        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True)
-        tile_datamodule = OTXDataModule(
-            task=OTXTaskType.DETECTION,
-            **fxt_det_data_config,
-        )
-        tile_datamodule.prepare_data()
-        for batch in tile_datamodule.train_dataloader():
-            assert isinstance(batch, DetBatchDataEntity)
-
-    def test_val_dataloader(self, fxt_det_data_config) -> None:
-        # Enable tile adapter
-        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True)
-        tile_datamodule = OTXDataModule(
-            task=OTXTaskType.DETECTION,
-            **fxt_det_data_config,
-        )
-        tile_datamodule.prepare_data()
-        for batch in tile_datamodule.val_dataloader():
-            assert isinstance(batch, TileBatchDetDataEntity)
-
-    def test_det_tile_merge(self, fxt_det_data_config):
+    def test_det_tile_merge(self, fxt_data_config):
+        data_config = fxt_data_config[OTXTaskType.DETECTION]
         model = ATSS(
             model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter
-        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True)
+        data_config["tile_config"] = TileConfig(enable_tiler=True)
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
-            **fxt_det_data_config,
+            **data_config,
         )
 
         self.explain_mode = False
@@ -371,16 +425,17 @@ class TestOTXTiling:
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
 
-    def test_explain_det_tile_merge(self, fxt_det_data_config):
+    def test_explain_det_tile_merge(self, fxt_data_config):
+        data_config = fxt_data_config[OTXTaskType.DETECTION]
         model = ATSS(
             model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter
-        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
+        data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
-            **fxt_det_data_config,
+            **data_config,
         )
 
         self.explain_mode = model.explain_mode = True
@@ -392,13 +447,14 @@ class TestOTXTiling:
             assert prediction.saliency_map[0].ndim == 3
         self.explain_mode = False
 
-    def test_instseg_tile_merge(self, fxt_instseg_data_config):
+    def test_instseg_tile_merge(self, fxt_data_config):
+        data_config = fxt_data_config[OTXTaskType.INSTANCE_SEGMENTATION]
         model = MaskRCNN(label_info=3, model_name="maskrcnn_efficientnet_b2b")
         # Enable tile adapter
-        fxt_instseg_data_config["tile_config"] = TileConfig(enable_tiler=True)
+        data_config["tile_config"] = TileConfig(enable_tiler=True)
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.INSTANCE_SEGMENTATION,
-            **fxt_instseg_data_config,
+            **data_config,
         )
 
         self.explain_mode = False
@@ -408,13 +464,14 @@ class TestOTXTiling:
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
 
-    def test_explain_instseg_tile_merge(self, fxt_instseg_data_config):
+    def test_explain_instseg_tile_merge(self, fxt_data_config):
+        data_config = fxt_data_config[OTXTaskType.INSTANCE_SEGMENTATION]
         model = MaskRCNN(label_info=3, model_name="maskrcnn_efficientnet_b2b")
         # Enable tile adapter
-        fxt_instseg_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
+        data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.INSTANCE_SEGMENTATION,
-            **fxt_instseg_data_config,
+            **data_config,
         )
 
         self.explain_mode = model.explain_mode = True
