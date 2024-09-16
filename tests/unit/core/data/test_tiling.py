@@ -284,8 +284,19 @@ class TestOTXTiling:
     def test_adaptive_tiling(self, fxt_det_data_config):
         # Enable tile adapter
         fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=True)
+
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
+            **fxt_det_data_config,
+        )
+        tile_datamodule.prepare_data()
+
+        assert tile_datamodule.tile_config.tile_size == (8380, 8380), "Tile size should be [6750, 6750]"
+        assert pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.04255, "Overlap should be 0.03608"
+        assert tile_datamodule.tile_config.max_num_instances == 3, "Max num instances should be 3"
+
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.INSTANCE_SEGMENTATION,
             **fxt_det_data_config,
         )
         tile_datamodule.prepare_data()

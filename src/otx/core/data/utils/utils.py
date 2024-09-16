@@ -80,14 +80,14 @@ def compute_robust_scale_statistics(values: np.array) -> dict[str, float]:
 
 def compute_robust_dataset_statistics(
     dataset: DatasetSubset,
-    task: OTXTaskType,
+    task: OTXTaskType = OTXTaskType.DETECTION,
     max_samples: int = 1000,
 ) -> dict[str, Any]:
     """Computes robust statistics of image & annotation sizes.
 
     Args:
-        task: Task type of the model.
         dataset (DatasetSubset): Input dataset.
+        task (OTXTaskType, optional): Task type of the model. Defaults to OTXTaskType.DETECTION.
         max_samples (int, optional): Maximum number of dataset subsamples to analyze. Defaults to 1000.
 
     Returns:
@@ -121,7 +121,7 @@ def compute_robust_dataset_statistics(
         width_arr.append(width)
     stat["image"]["height"] = compute_robust_scale_statistics(np.array(height_arr))
     stat["image"]["width"] = compute_robust_scale_statistics(np.array(width_arr))
-    label_names = [label_cat.name for label_cat in dataset.as_dataset().categories()[AnnotationType.label]]
+    label_names = dataset.as_dataset().categories()
 
     num_per_images: list[int] = []
     size_of_shapes: dict[str, list] = defaultdict(list)
@@ -131,7 +131,7 @@ def compute_robust_dataset_statistics(
         for ann in data.annotations:
             if task is OTXTaskType.SEMANTIC_SEGMENTATION:
                 # Skip background class
-                if label_names[ann.label] == "background":
+                if label_names and label_names[AnnotationType.label][ann.label].name == "background":
                     continue
 
                 # convert Mask to Polygon
@@ -172,7 +172,7 @@ _MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
 
 def adapt_input_size_to_dataset(
     dataset: Dataset,
-    task: OTXTaskType,
+    task: OTXTaskType = OTXTaskType.DETECTION,
     base_input_size: int | tuple[int, int] | None = None,
     downscale_only: bool = True,
     input_size_multiplier: int | None = None,
@@ -181,6 +181,7 @@ def adapt_input_size_to_dataset(
 
     Args:
         dataset (Dataset): Datumaro dataset including all subsets.
+        task (OTXTaskType, optional): Task type of the model. Defaults to OTXTaskType.DETECTION.
         base_input_size (int | tuple[int, int] | None, optional): Base input size of the model. Defaults to None.
         downscale_only (bool, optional) : Whether to allow only smaller size than default setting. Defaults to True.
         input_size_multiplier (int | None, optional):
@@ -274,20 +275,20 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task: OTXTaskTy
         logger.info(f"----> [stat] scale min: {min_size}")
         logger.info(f"----> [stat] scale max: {max_size}")
 
-        logger.info("[Adaptive tiling pararms]")
+        logger.warning("[Adaptive tiling pararms]")
         object_tile_ratio = tile_config.object_tile_ratio
         tile_size = int(avg_size / object_tile_ratio)
         tile_overlap = max_size / tile_size
         logger.info(f"----> avg_object_size: {avg_size}")
         logger.info(f"----> max_object_size: {max_size}")
-        logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
-        logger.info(f"----> tile_size: {avg_size} / {object_tile_ratio} = {tile_size}")
-        logger.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
+        logger.warning(f"----> object_tile_ratio: {object_tile_ratio}")
+        logger.warning(f"----> tile_size: {avg_size} / {object_tile_ratio} = {tile_size}")
+        logger.warning(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
 
         if tile_overlap >= 0.9:
             # Use the average object area if the tile overlap is too large to prevent 0 stride.
             tile_overlap = min(avg_size / tile_size, 0.9)
-            logger.info(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = min[{tile_overlap}, 0.9]")
+            logger.warning(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = min[{tile_overlap}, 0.9]")
 
         # TODO(Eugene): how to validate lower/upper_bound? dataclass? pydantic?
         # https://github.com/openvinotoolkit/training_extensions/pull/2903
