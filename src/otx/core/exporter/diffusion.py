@@ -1,3 +1,5 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 """Exporter for diffusion models that uses native torch and OpenVINO conversion tools."""
 
 from __future__ import annotations
