@@ -547,7 +547,7 @@ class OTXTileSemanticSegTestDataset(OTXTileDataset):
     for testing/predicting.
 
     Args:
-        dataset (OTXSegmentationDataset): OTX inst-seg dataset.
+        dataset (OTXSegmentationDataset): OTX semantic-seg dataset.
         tile_config (TilerConfig): Tile configuration.
     """
 
@@ -570,7 +570,7 @@ class OTXTileSemanticSegTestDataset(OTXTileDataset):
             index (int): Index of the dataset item.
 
         Returns:
-            TileSegDataEntity: tile inst-seg data entity that wraps a list of inst-seg data entities.
+            TileSegDataEntity: tile semantic-seg data entity that wraps a list of semantic-seg data entities.
         """
         item = self.dm_subset[index]
         img = item.media_as(Image)

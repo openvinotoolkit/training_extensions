@@ -134,7 +134,7 @@ def compute_robust_dataset_statistics(
                 if label_names and label_names[AnnotationType.label][ann.label].name == "background":
                     continue
 
-                # convert Mask to Polygon
+                # convert foreground mask to multiple polygons
                 contours, _ = cv2.findContours(ann.image.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 annotations[Polygon].extend(
                     [Polygon(contour.flatten()) for contour in contours if len(contour) > 2],

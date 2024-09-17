@@ -16,6 +16,7 @@ from datumaro import Polygon
 from omegaconf import OmegaConf
 from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
+from otx.algo.segmentation.litehrnet import LiteHRNet
 from otx.core.config.data import (
     SubsetConfig,
     TileConfig,
@@ -53,6 +54,16 @@ class TestOTXTiling:
     def fxt_data_config(self, fxt_data_roots) -> dict[dict]:
         torchvision_base = OmegaConf.load("src/otx/recipe/_base_/data/torchvision_base.yaml")
         transforms = torchvision_base.train_subset.transforms
+        transforms.append(
+            {
+                "class_path": "torchvision.transforms.v2.ToDtype",
+                "init_args": {
+                    "dtype": "${as_torch_dtype:torch.float32}",
+                    "scale": True,
+                },
+            },
+        )
+
         batch_size = 8
         num_workers = 0
 
@@ -482,3 +493,19 @@ class TestOTXTiling:
             prediction = model.forward_tiles(batch)
             assert prediction.saliency_map[0].ndim == 3
         self.explain_mode = False
+
+    def test_seg_tile_merge(self, fxt_data_config):
+        data_config = fxt_data_config[OTXTaskType.SEMANTIC_SEGMENTATION]
+        model = LiteHRNet(label_info=3, model_name="lite_hrnet_18")
+        # Enable tile adapter
+        data_config["tile_config"] = TileConfig(enable_tiler=True)
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.SEMANTIC_SEGMENTATION,
+            **data_config,
+        )
+
+        self.explain_mode = False
+        model.eval()
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.val_dataloader():
+            model.forward_tiles(batch)

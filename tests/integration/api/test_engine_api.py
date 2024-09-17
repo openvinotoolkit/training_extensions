@@ -16,7 +16,7 @@ from otx.core.types.task import OTXTaskType
 from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_PER_TASK
 
-from .test_helpers import CommonSemanticSegmentationExporter
+from tests.test_helpers import CommonSemanticSegmentationExporter
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
