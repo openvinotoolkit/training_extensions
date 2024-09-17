@@ -1,42 +1,43 @@
-import os
-import os.path as osp
-from datumaro.components.dataset import Dataset, DatasetItem
-from datumaro.plugins.splitter import Split
-from datumaro.plugins.data_formats.common_semantic_segmentation import (
-    CommonSemanticSegmentationPath,
-)
-from datumaro.components.exporter import Exporter
-from matplotlib.text import Annotation
-from otx.core.utils.mask_util import polygon_to_bitmap
-from datumaro.components.media import Image
+from pathlib import Path
+
+import numpy as np
+from datumaro import Polygon
 from datumaro.components.annotation import (
     AnnotationType,
     LabelCategories,
     MaskCategories,
 )
+from datumaro.components.dataset import DatasetItem
 from datumaro.components.errors import MediaTypeError
+from datumaro.components.exporter import Exporter
+from datumaro.components.media import Image
+from datumaro.plugins.data_formats.common_semantic_segmentation import (
+    CommonSemanticSegmentationPath,
+)
 from datumaro.util.definitions import DEFAULT_SUBSET_NAME
 from datumaro.util.image import save_image
 from datumaro.util.meta_file_util import save_meta_file
-import numpy as np
-from datumaro import Polygon, Bbox
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 
 class CommonSemanticSegmentationExporter(Exporter):
     """Exporter for common semantic segmentation format."""
+
     DEFAULT_IMAGE_EXT = ".jpg"
 
-    def _apply_impl(self):
+    def _apply_impl(self) -> None:
         """Apply the exporter to the dataset."""
         extractor = self._extractor
-        save_dir = self._save_dir
+        save_dir = Path(self._save_dir)
 
         if self._extractor.media_type() and not issubclass(
-            self._extractor.media_type(), Image
+            self._extractor.media_type(),
+            Image,
         ):
-            raise MediaTypeError("Media type is not an image")
+            msg = "Media type is not an image"
+            raise MediaTypeError(msg)
 
-        os.makedirs(save_dir, exist_ok=True)
+        save_dir.mkdir(parents=True, exist_ok=True)
 
         categories = extractor.categories()
         label_names = [label.name for label in categories[AnnotationType.label]]
@@ -54,15 +55,15 @@ class CommonSemanticSegmentationExporter(Exporter):
         }
         subsets = self._extractor.subsets()
         for subset_name, subset in subsets.items():
-            if not subset_name or subset_name == DEFAULT_SUBSET_NAME:
-                subset_name = DEFAULT_SUBSET_NAME
+            _subset_name = subset_name
+            if not _subset_name or _subset_name == DEFAULT_SUBSET_NAME:
+                _subset_name = DEFAULT_SUBSET_NAME
 
-            subset_dir = osp.join(save_dir, subset_name)
-            os.makedirs(subset_dir, exist_ok=True)
+            subset_dir = Path(save_dir, _subset_name)
+            subset_dir.mkdir(parents=True, exist_ok=True)
 
-            mask_dir = osp.join(subset_dir, CommonSemanticSegmentationPath.MASKS_DIR)
-            img_dir = osp.join(subset_dir, CommonSemanticSegmentationPath.IMAGES_DIR)
-
+            mask_dir = subset_dir / CommonSemanticSegmentationPath.MASKS_DIR
+            img_dir = subset_dir / CommonSemanticSegmentationPath.IMAGES_DIR
             for item in subset:
                 self._export_item_annotation(item, mask_dir)
                 if self._save_media:
@@ -73,7 +74,7 @@ class CommonSemanticSegmentationExporter(Exporter):
         self,
         item: DatasetItem,
         save_dir: str,
-    ):
+    ) -> None:
         """Export the annotations of an item."""
         annotations = item.annotations
         height, width, _ = item.media.data.shape
@@ -89,30 +90,30 @@ class CommonSemanticSegmentationExporter(Exporter):
                 bitmask = polygon_to_bitmap([Polygon(ann.as_polygon(20))], height, width)[0]
                 index_map[bitmask] = ann.label + 1
             elif ann.type is AnnotationType.bbox:
-                x1, y1, w, h = [int(v) for v in ann.get_bbox()]
-                index_map[y1: y1+h, x1: x1+w] = ann.label + 1
+                x1, y1, w, h = (int(v) for v in ann.get_bbox())
+                index_map[y1 : y1 + h, x1 : x1 + w] = ann.label + 1
             else:
                 raise NotImplementedError(
-                    "Exporting %s is not supported" % ann.type
+                    "Exporting %s is not supported" % ann.type,
                 )
 
         # standardise item id
         item_id = item.id.replace("/", "_")
-        dst = osp.join(save_dir, item_id + ".png")
+        dst = save_dir / (item_id + ".png")
 
         # save index map as an image
         save_image(
-            dst=dst,
+            dst=str(dst),
             image=index_map,
             create_dir=True,
         )
 
-    def _export_media(self, item, save_dir):
+    def _export_media(self, item, save_dir) -> None:
         """Export the media of an item."""
         item_id = item.id.replace("/", "_")
-        dst = osp.join(save_dir, item_id + self.DEFAULT_IMAGE_EXT)
+        dst = save_dir / (item_id + self.DEFAULT_IMAGE_EXT)
         save_image(
-            dst=dst,
+            dst=str(dst),
             image=item.media.data,
             create_dir=True,
         )
