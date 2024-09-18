@@ -189,7 +189,18 @@ class OTXDataModule(LightningDataModule):
 
         if self.task == "OBJECT_DETECTION_3D":
             for name in config_mapping:
-                dm_subset = KITTI_Dataset(self.data_root, split=name)
+                if name in ["val", "test"]:
+                    aug_pd = False
+                    random_flip = 0.0
+                    aug_crop = False
+                    random_crop = 0.0
+                else:
+                    aug_pd = True
+                    random_flip = 0.5
+                    aug_crop = True
+                    random_crop = 0.5
+
+                dm_subset = KITTI_Dataset(self.data_root, split=name, random_crop=random_crop, aug_crop=aug_crop, random_flip=random_flip, aug_pd=aug_pd)
                 dataset = OTXDatasetFactory.create(
                     task=self.task,
                     dm_subset=dm_subset,

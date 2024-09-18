@@ -27,6 +27,8 @@ from otx.algo.object_detection_3d.losses import MonoDETRCriterion
 from otx.algo.object_detection_3d.depthaware_transformer import DepthAwareTransformerBuilder
 from otx.algo.object_detection_3d.depth_predictor import DepthPredictor
 from otx.algo.object_detection_3d.monodetr import MonoDETR
+from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy
+from otx.core.data.dataset.kitti_utils import class2angle
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -54,7 +56,7 @@ class MonoDETR3D(OTX3DDetectionModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = None
+        self.load_from: str = "/home/kprokofi/MonoDETR/checkpoint_best_2.pth"
         super().__init__(
             model_name=model_name,
             label_info=label_info,
@@ -66,12 +68,19 @@ class MonoDETR3D(OTX3DDetectionModel):
             tile_config=tile_config,
         )
 
-    def _create_model(self) -> DETR:
+    def _build_model(self, num_classes) -> DETR:
         # backbone
         backbone = BackboneBuilder(self.model_name)
         depthaware_transformer = DepthAwareTransformerBuilder(self.model_name)
         # depth prediction module
-        depth_predictor = DepthPredictor(depth_num_bins=80, depth_min=1e-3, depth_max=60.0, hidden_dim=256)
+        cfg_model={'num_classes': 3, 'return_intermediate_dec': True, 'device': 'cuda', 'backbone': 'resnet50', 'train_backbone': True,
+        'num_feature_levels': 4, 'dilation': False, 'position_embedding': 'sine', 'masks': False, 'mode': 'LID', 'num_depth_bins': 80,
+        'depth_min': '1e-3', 'depth_max': 60.0, 'with_box_refine': True, 'two_stage': False, 'use_dab': False, 'use_dn': False, 'two_stage_dino': False,
+        'init_box': False, 'enc_layers': 3, 'dec_layers': 3, 'hidden_dim': 256, 'dim_feedforward': 256, 'dropout': 0.1, 'nheads': 8, 'num_queries': 50,
+        'enc_n_points': 4, 'dec_n_points': 4, 'scalar': 5, 'label_noise_scale': 0.2, 'box_noise_scale': 0.4, 'num_patterns': 0, 'aux_loss': True,
+        'cls_loss_coef': 2, 'focal_alpha': 0.25, 'bbox_loss_coef': 5, 'giou_loss_coef': 2, '3dcenter_loss_coef': 10, 'dim_loss_coef': 1, 'angle_loss_coef': 1,
+        'depth_loss_coef': 1, 'depth_map_loss_coef': 1, 'set_cost_class': 2, 'set_cost_bbox': 5, 'set_cost_giou': 2, 'set_cost_3dcenter': 10}
+        depth_predictor = DepthPredictor(cfg_model)
         weight_dict = {'loss_ce': 2,
                        'loss_bbox': 5,
                        'loss_giou': 2,
@@ -86,9 +95,9 @@ class MonoDETR3D(OTX3DDetectionModel):
             aux_weight_dict.update({k + f'_{i}': v for k, v in weight_dict.items()})
         aux_weight_dict.update({k + f'_enc': v for k, v in weight_dict.items()})
         weight_dict.update(aux_weight_dict)
-
+        print("NUM_CLASSES: ", num_classes)
         criterion = MonoDETRCriterion(
-            num_classes=self.num_classes,
+            num_classes=num_classes,
             focal_alpha=0.25,
             weight_dict=weight_dict)
 
@@ -96,7 +105,7 @@ class MonoDETR3D(OTX3DDetectionModel):
             backbone,
             depthaware_transformer,
             depth_predictor,
-            num_classes=self.num_classes,
+            num_classes=num_classes,
             criterion=criterion,
             num_queries=50,
             aux_loss=True,
@@ -115,22 +124,17 @@ class MonoDETR3D(OTX3DDetectionModel):
     ) -> dict[str, Any]:
         # prepare bboxes for the model
         targets_list = []
-        mask = entity.mask_2d
-
-        key_list = ['labels', 'bboxes_2d', 'calibs', 'depth', 'size_3d', 'heading_bin', 'heading_res', 'bboxes_3d']
+        key_list = ['labels', 'boxes', 'calibs', 'depth', 'size_3d', 'heading_bin', 'heading_res', 'boxes_3d']
         for bz in range(len(entity.imgs_info)):
             target_dict = {}
             for key in key_list:
-                val = getattr(entity, key)
-                target_dict[key] = val[bz][mask[bz]]
+                target_dict[key] = getattr(entity, key)[bz]
             targets_list.append(target_dict)
-
-        breakpoint()
-        img_sizes = np.array([img_info.img_shape for img_info in entity.imgs_info])
+        img_sizes = torch.tensor([img_info.ori_shape for img_info in entity.imgs_info]).to(device=entity.images.device)
 
         return {
-            "inputs": entity.images,
-            "calibs": entity.calib_p2,
+            "images": entity.images,
+            "calibs": torch.cat([torch.as_tensor(cal.P2, device=entity.images.device).unsqueeze(0) for cal in entity.calib]),
             "targets" : targets_list,
             "img_sizes": img_sizes,
             "mode": "loss" if self.training else "predict",
@@ -156,24 +160,93 @@ class MonoDETR3D(OTX3DDetectionModel):
                     raise TypeError(msg)
             return losses
 
-        breakpoint()
+        labels, scores, size_3d, size_2d, heading_angle, boxes_2d, boxes_3d, output_depth = self.extract_dets_from_outputs(outputs, score_threshold=0)
+        assert not torch.any(torch.isnan(boxes_3d))
+        assert not torch.any(torch.isnan(boxes_2d))
+        assert not torch.any(torch.isnan(heading_angle))
+        assert not torch.any(torch.isnan(output_depth))
+        assert not torch.any(torch.isnan(size_2d))
+        assert not torch.any(torch.isnan(size_3d))
+        assert not torch.any(torch.isnan(scores))
+        assert not torch.any(torch.isnan(labels))
+
         return Det3DBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            bboxes_2d=outputs["boxes"],
-            labels=outputs["labels"],
-            calibs=outputs["calibs"],
-            bboxes_3d=outputs["bboxes_3d"],
-            size_2d=outputs["size_2d"],
-            size_3d=outputs["size_3d"],
-            src_size_3d=outputs["src_size_3d"],
-            depth=outputs["depth"],
-            heading_bin=outputs["heading_bin"],
-            heading_res=outputs["heading_res"],
-            mask_2d=outputs["mask_2d"],
-            indices=outputs["indices"],
+            boxes=boxes_2d,
+            calib=inputs.calib,
+            calibs=inputs.calibs,
+            labels=labels,
+            boxes_3d=boxes_3d,
+            size_2d=size_2d,
+            size_3d=size_3d,
+            depth=output_depth,
+            heading_bin=inputs.heading_bin,
+            heading_res=heading_angle,
+            scores=scores,
+            kitti_label_object=inputs.kitti_label_object,
         )
+
+    @staticmethod
+    def extract_dets_from_outputs(outputs, topk=50, score_threshold=0.2):
+        # get src outputs
+
+        # b, q, c
+        out_logits = outputs['pred_logits']
+        out_bbox = outputs['pred_boxes']
+
+        prob = out_logits.sigmoid()
+        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), topk, dim=1)
+
+        # final scores
+        scores = topk_values
+        # final indexes
+        topk_boxes = (topk_indexes // out_logits.shape[2]).unsqueeze(-1)
+        # final labels
+        labels = topk_indexes % out_logits.shape[2]
+
+        heading = outputs['pred_angle']
+        size_3d = outputs['pred_3d_dim']
+        depth = outputs['pred_depth'][:, :, 0: 1]
+        sigma = outputs['pred_depth'][:, :, 1: 2]
+        sigma = torch.exp(-sigma)
+
+
+        # decode boxes
+        boxes_3d = torch.gather(out_bbox, 1, topk_boxes.repeat(1, 1, 6))  # b, q', 4
+        # heading angle decoding
+        heading = torch.gather(heading, 1, topk_boxes.repeat(1, 1, 24))
+        # depth decoding
+        depth = torch.gather(depth, 1, topk_boxes)
+        sigma = torch.gather(sigma, 1, topk_boxes)
+        output_depth = torch.cat([depth, sigma], dim=2) # predicted averaged depth and its deviation
+        # 3d dims decoding
+        size_3d = torch.gather(size_3d, 1, topk_boxes.repeat(1, 1, 3))
+        # 2d boxes of the corners decoding
+        boxes_2d = box_cxcylrtb_to_xyxy(boxes_3d)
+        # size 2d decoding
+        xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
+        size_2d = xywh_2d[:, :, 2: 4]
+
+        return labels, scores, size_3d, size_2d, heading, boxes_2d, boxes_3d, output_depth
+
+        # xs3d = boxes[:, :, 0: 1]
+        # ys3d = boxes[:, :, 1: 2]
+        # xs2d = xywh_2d[:, :, 0: 1]
+        # ys2d = xywh_2d[:, :, 1: 2]
+
+        # batch = out_logits.shape[0]
+        # labels = labels.view(batch, -1, 1)
+        # scores = scores.view(batch, -1, 1)
+        # xs2d = xs2d.view(batch, -1, 1)
+        # ys2d = ys2d.view(batch, -1, 1)
+        # xs3d = xs3d.view(batch, -1, 1)
+        # ys3d = ys3d.view(batch, -1, 1)
+
+        # detections = torch.cat([labels, scores, xs2d, ys2d, size_2d, depth, heading, size_3d, xs3d, ys3d, sigma], dim=2)
+
+        # return detections
 
     @property
     def _exporter(self) -> OTXModelExporter:

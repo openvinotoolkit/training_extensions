@@ -9,6 +9,7 @@ import types
 from abc import abstractmethod
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from torchvision.ops import box_convert
 
 import torch
 from model_api.tilers import DetectionTiler
@@ -18,7 +19,9 @@ from torchvision import tv_tensors
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
+from otx.core.data.dataset.kitti_utils import class2angle
+import numpy as np
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.metrics import MetricCallable, MetricInput
@@ -38,7 +41,7 @@ if TYPE_CHECKING:
     from otx.algo.detection.detectors import SingleStageDetector
 
 
-class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
+class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     """Base class for the 3d detection models used in OTX."""
 
     input_size: tuple[int, int]
@@ -47,9 +50,18 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         self.model_name = model_name
         super().__init__(*args, **kwargs)
 
+    def _create_model(self) -> nn.Module:
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        if hasattr(detector, "init_weights"):
+            detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
+
     def _customize_inputs(
         self,
-        entity: DetBatchDataEntity,
+        entity: Det3DBatchDataEntity,
         pad_size_divisor: int = 32,
         pad_value: int = 0,
     ) -> dict[str, Any]:
@@ -58,8 +70,8 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     def _customize_outputs(
         self,
         outputs: list[InstanceData] | dict,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        inputs: Det3DBatchDataEntity,
+    ) -> Det3DBatchPredEntity | OTXBatchLossEntity:
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)
@@ -109,7 +121,7 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             saliency_map = outputs["saliency_map"].detach().cpu().numpy()
             feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
-            return DetBatchPredEntity(
+            return Det3DBatchPredEntity(
                 batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -120,7 +132,7 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 feature_vector=feature_vector,
             )
 
-        return DetBatchPredEntity(
+        return Det3DBatchPredEntity(
             batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
@@ -142,30 +154,109 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: DetBatchPredEntity,
-        inputs: DetBatchDataEntity,
+        preds: Det3DBatchPredEntity,
+        inputs: Det3DBatchDataEntity,
     ) -> MetricInput:
+
+        depth, sigma = preds.depth[:,:,0:1], preds.depth[:,:,1:2]
+        boxes = preds.boxes_3d
+        xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
+
+        xs3d = boxes[:, :, 0: 1]
+        ys3d = boxes[:, :, 1: 2]
+        xs2d = xywh_2d[:, :, 0: 1]
+        ys2d = xywh_2d[:, :, 1: 2]
+
+        batch = len(inputs.imgs_info)
+        labels = preds.labels.view(batch, -1, 1)
+        scores = preds.scores.view(batch, -1, 1)
+        xs2d = xs2d.view(batch, -1, 1)
+        ys2d = ys2d.view(batch, -1, 1)
+        xs3d = xs3d.view(batch, -1, 1)
+        ys3d = ys3d.view(batch, -1, 1)
+
+        detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, depth, preds.heading_res, preds.size_3d, xs3d, ys3d, sigma], dim=2).detach().cpu().numpy()
+        img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
+        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib, class_names=self.label_info.label_names, threshold=0.0)
+
         return {
-            "preds": [
-                {
-                    "boxes": bboxes.data,
-                    "scores": scores.type(torch.float32),
-                    "labels": labels,
-                }
-                for bboxes, scores, labels in zip(
-                    preds.bboxes,
-                    preds.scores,
-                    preds.labels,
-                )
-            ],
-            "target": [
-                {
-                    "boxes": bboxes.data,
-                    "labels": labels,
-                }
-                for bboxes, labels in zip(inputs.bboxes, inputs.labels)
-            ],
+            "preds": result_list,
+            "target": inputs.kitti_label_object, # TODO (KIRILL): change it later to pre process metrics here
         }
+
+    @staticmethod
+    def _decode_detections_for_kitti_format(dets, img_size, calibs, class_names, threshold=0.2):
+        '''
+        input: dets, numpy array, shape in [batch x max_dets x dim]
+        input: img_info, dict, necessary information of input images
+        input: calibs, corresponding calibs for the input batch
+        output:
+        '''
+        def get_heading_angle(heading):
+            heading_bin, heading_res = heading[0:12], heading[12:24]
+            cls = np.argmax(heading_bin)
+            res = heading_res[cls]
+            return class2angle(cls, res, to_label_format=True)
+
+        results = []
+        for i in range(dets.shape[0]):  # batch
+            preds = {
+                'name': [],
+                'truncated': [],
+                'occluded': [],
+                'alpha': [],
+                'bbox': [],
+                'dimensions': [],
+                'location': [],
+                'rotation_y': [],
+                'score' : [],
+            }
+            for j in range(dets.shape[1]):  # max_dets
+                cls_id = int(dets[i, j, 0])
+                score = dets[i, j, 1]
+                if score < threshold:
+                    continue
+                # 2d bboxs decoding
+                x = dets[i, j, 2] * img_size[i][0]
+                y = dets[i, j, 3] * img_size[i][1]
+                w = dets[i, j, 4] * img_size[i][0]
+                h = dets[i, j, 5] * img_size[i][1]
+                bbox = [x-w/2, y-h/2, x+w/2, y+h/2]
+
+                # 3d bboxs decoding
+                # depth decoding
+                depth = dets[i, j, 6]
+
+                # dimensions decoding
+                dimensions = dets[i, j, 31:34]
+
+                # positions decoding
+                x3d = dets[i, j, 34] * img_size[i][0]
+                y3d = dets[i, j, 35] * img_size[i][1]
+                locations = calibs[i].img_to_rect(x3d, y3d, depth).reshape(-1)
+                locations[1] += dimensions[0] / 2
+
+                # heading angle decoding
+                alpha = dets[i, j, 7:31]
+                alpha = get_heading_angle(dets[i, j, 7:31])
+                ry = calibs[i].alpha2ry(alpha, x)
+
+                score = dets[i, j, 1] * dets[i, j, -1]
+
+                preds["name"].append(class_names[cls_id])
+                preds["alpha"].append(alpha)
+                preds["bbox"].append(bbox)
+                preds["dimensions"].append(dimensions.tolist())
+                preds["location"].append(locations.tolist())
+                preds["rotation_y"].append(ry)
+                preds["score"].append(score) # can be discarded I think
+
+            for key, value in preds.items():
+                preds[key] = np.array(value)
+
+            results.append(preds)
+
+        return results
 
     def on_load_checkpoint(self, ckpt: dict[str, Any]) -> None:
         """Load state_dict from checkpoint.
@@ -218,7 +309,7 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 self._best_confidence_threshold = 0.5
         return self._best_confidence_threshold
 
-    def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
+    def get_dummy_input(self, batch_size: int = 1) -> Det3DBatchDataEntity:
         """Returns a dummy input for detection model."""
         if self.input_size is None:
             msg = f"Input size attribute is not set for {self.__class__}"
@@ -234,7 +325,7 @@ class OTX3DDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                     ori_shape=img.shape,
                 ),
             )
-        return DetBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
+        return Det3DBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
         """Get final classification layer information for incremental learning case."""

@@ -12,7 +12,7 @@ train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
   batch_size: 8
-  num_workers: 0
+  num_workers: 4
   to_tv_image: false
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.MinIoURandomCrop
@@ -37,8 +37,8 @@ train_subset:
 val_subset:
   subset_name: val
   transform_lib_type: TORCHVISION
-  batch_size: 8
-  num_workers: 0
+  batch_size: 16
+  num_workers: 4
   to_tv_image: false
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -58,8 +58,8 @@ val_subset:
 test_subset:
   subset_name: test
   transform_lib_type: TORCHVISION
-  batch_size: 8
-  num_workers: 0
+  batch_size: 16
+  num_workers: 4
   to_tv_image: false
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize

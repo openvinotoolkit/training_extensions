@@ -297,13 +297,13 @@ def rotate_iou_gpu_eval(boxes, query_boxes, criterion=-1, device_id=0):
     (take 5ms in one example with numba.cuda code).
     convert from [this project](
         https://github.com/hongzhenwang/RRPN-revise/tree/master/pcdet/rotation).
-    
+
     Args:
-        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims, 
+        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims,
             angles(clockwise when positive)
         query_boxes (float tensor: [K, 5]): [description]
         device_id (int, optional): Defaults to 0. [description]
-    
+
     Returns:
         [type]: [description]
     """
@@ -318,7 +318,7 @@ def rotate_iou_gpu_eval(boxes, query_boxes, criterion=-1, device_id=0):
     threadsPerBlock = 8 * 8
     cuda.select_device(device_id)
     blockspergrid = (div_up(N, threadsPerBlock), div_up(K, threadsPerBlock))
-    
+
     stream = cuda.stream()
     with stream.auto_synchronize():
         boxes_dev = cuda.to_device(boxes.reshape([-1]), stream)

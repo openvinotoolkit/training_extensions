@@ -34,6 +34,8 @@ class KITTI_Dataset(data.Dataset):
 
         # basic configuration
         self.root_dir = root_dir
+        if split == "test":
+            split = "val"
         self.split = split
         self.num_classes = 3
         self.max_objs = 50
@@ -60,7 +62,7 @@ class KITTI_Dataset(data.Dataset):
         self.idx_list = [x.strip() for x in open(self.split_file).readlines()]
 
         # path configuration
-        self.data_dir = os.path.join(self.root_dir, 'testing' if split == 'test' else 'training')
+        self.data_dir = os.path.join(self.root_dir, 'training')
         self.image_dir = os.path.join(self.data_dir, 'image_2')
         self.calib_dir = os.path.join(self.data_dir, 'calib')
         self.label_dir = os.path.join(self.data_dir, 'label_2')
@@ -95,7 +97,7 @@ class KITTI_Dataset(data.Dataset):
 
     def get_image(self, idx):
         img_file = os.path.join(self.image_dir, '%06d.png' % idx)
-        assert os.path.exists(img_file)
+        assert os.path.exists(img_file), "{} does not exist!".format(img_file)
         return Image.open(img_file)    # (H, W, 3) RGB mode
 
     def get_label(self, idx):
@@ -107,6 +109,10 @@ class KITTI_Dataset(data.Dataset):
         calib_file = os.path.join(self.calib_dir, '%06d.txt' % idx)
         assert os.path.exists(calib_file)
         return Calibration(calib_file)
+
+    def prepare_kitti_format(self):
+        img_ids = [int(id) for id in self.idx_list]
+        return kitti.get_label_annos(self.label_dir, img_ids)
 
     def eval(self, results_dir, logger):
         logger.info("==> Loading detections and GTs...")
@@ -126,7 +132,8 @@ class KITTI_Dataset(data.Dataset):
         return car_moderate
 
     def __len__(self):
-        return self.idx_list.__len__()
+        return 100
+        # return self.idx_list.__len__()
 
     def __getitem__(self, item):
         #  ============================   get inputs   ===========================
@@ -139,8 +146,7 @@ class KITTI_Dataset(data.Dataset):
         # data augmentation for image
         center = np.array(img_size) / 2
         crop_size, crop_scale = img_size, 1
-        random_flip_flag, random_crop_flag = False, False
-
+        random_flip_flag = False
         if self.data_augmentation:
 
             if self.aug_pd:
@@ -154,7 +160,6 @@ class KITTI_Dataset(data.Dataset):
 
             if self.aug_crop:
                 if np.random.random() < self.random_crop:
-                    random_crop_flag = True
                     crop_scale = np.clip(np.random.randn() * self.scale + 1, 1 - self.scale, 1 + self.scale)
                     crop_size = img_size * crop_scale
                     center[0] += img_size[0] * np.clip(np.random.randn() * self.shift, -2 * self.shift, 2 * self.shift)
@@ -176,9 +181,9 @@ class KITTI_Dataset(data.Dataset):
                 'img_size': img_size,
                 'bbox_downsample_ratio': img_size / features_size}
 
-        if self.split == 'test':
-            calib = self.get_calib(index)
-            return img, calib.P2, img, info
+        # if self.split == 'test':
+        #     calib = self.get_calib(index)
+        #     return img, calib.P2, img, info
 
         #  ============================   get labels   ==============================
         objects = self.get_label(index)
@@ -319,24 +324,21 @@ class KITTI_Dataset(data.Dataset):
         # collect return data
         inputs = img
         targets = {
-                   'calibs': calibs,
-                   'indices': indices,
-                   'img_size': img_size,
-                   'labels': labels,
-                   'boxes': boxes,
-                   'boxes_3d': boxes_3d,
-                   'depth': depth,
-                   'size_2d': size_2d,
-                   'size_3d': size_3d,
-                   'src_size_3d': src_size_3d,
-                   'heading_bin': heading_bin,
-                   'heading_res': heading_res,
-                   'mask_2d': mask_2d}
+                   'calibs': calibs[mask_2d],
+                   'labels': labels[mask_2d],
+                   'boxes': boxes[mask_2d],
+                   'boxes_3d': boxes_3d[mask_2d],
+                   'depth': depth[mask_2d],
+                   'size_2d': size_2d[mask_2d],
+                   'size_3d': size_3d[mask_2d],
+                   'heading_bin': heading_bin[mask_2d],
+                   'heading_res': heading_res[mask_2d]
+                   }
 
         info = {'img_id': index,
                 'img_size': img_size,
                 'bbox_downsample_ratio': img_size / features_size}
-        return inputs, calib.P2, targets, info
+        return inputs, calib, targets, info, objects
 
 
 if __name__ == '__main__':

@@ -58,9 +58,6 @@ class MonoDETRCriterion(nn.Module):
         loss_ce = sigmoid_focal_loss(src_logits, target_classes_onehot, num_boxes, alpha=self.focal_alpha, gamma=2) * src_logits.shape[1]
         losses = {'loss_ce': loss_ce}
 
-        if log:
-            # TODO this should probably be a separate loss, not hacked in this one here
-            losses['class_error'] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
         return losses
 
     @torch.no_grad()
@@ -155,7 +152,7 @@ class MonoDETRCriterion(nn.Module):
 
         # regression loss
         heading_input_res = heading_input[:, 12:24]
-        cls_onehot = torch.zeros(heading_target_cls.shape[0], 12).cuda().scatter_(dim=1, index=heading_target_cls.view(-1, 1), value=1)
+        cls_onehot = torch.zeros(heading_target_cls.shape[0], 12).to(device=heading_input.device).scatter_(dim=1, index=heading_target_cls.view(-1, 1), value=1)
         heading_input_res = torch.sum(heading_input_res * cls_onehot, 1)
         reg_loss = F.l1_loss(heading_input_res, heading_target_res, reduction='none')
 
@@ -168,7 +165,7 @@ class MonoDETRCriterion(nn.Module):
         depth_map_logits = outputs['pred_depth_map_logits']
 
         num_gt_per_img = [len(t['boxes']) for t in targets]
-        gt_boxes2d = torch.cat([t['boxes'] for t in targets], dim=0) * torch.tensor([80, 24, 80, 24], device='cuda')
+        gt_boxes2d = torch.cat([t['boxes'] for t in targets], dim=0) * torch.tensor([80, 24, 80, 24], device=depth_map_logits.device)
         gt_boxes2d = box_ops.box_cxcywh_to_xyxy(gt_boxes2d)
         gt_center_depth = torch.cat([t['depth'] for t in targets], dim=0).squeeze(dim=1)
 
@@ -194,7 +191,6 @@ class MonoDETRCriterion(nn.Module):
     def loss_map(self):
         return {
             'labels': self.loss_labels,
-            'cardinality': self.loss_cardinality,
             'boxes': self.loss_boxes,
             'depths': self.loss_depths,
             'dims': self.loss_dims,
@@ -226,7 +222,7 @@ class MonoDETRCriterion(nn.Module):
         # Compute all the requested losses
 
         losses = {}
-        for name, loss in self.loss_map:
+        for name, loss in self.loss_map.items():
             #ipdb.set_trace()
             losses.update(loss(outputs, targets, indices, num_boxes))
 
@@ -234,7 +230,7 @@ class MonoDETRCriterion(nn.Module):
         if 'aux_outputs' in outputs:
             for i, aux_outputs in enumerate(outputs['aux_outputs']):
                 indices = self.matcher(aux_outputs, targets, group_num=group_num)
-                for name, loss in self.loss_map:
+                for name, loss in self.loss_map.items():
                     if name == 'depth_map':
                         # Intermediate masks losses are too costly to compute, we ignore them.
                         continue
@@ -245,4 +241,7 @@ class MonoDETRCriterion(nn.Module):
                     l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)
                     l_dict = {k + f'_{i}': v for k, v in l_dict.items()}
                     losses.update(l_dict)
-        return losses
+
+        # TODO (KIRILL): refactor
+        losses_weighted = {k : losses[k] * self.weight_dict[k] for k in losses.keys() if k in self.weight_dict}
+        return losses_weighted

@@ -242,6 +242,7 @@ def compute_statistics_jit(overlaps,
                            thresh=0,
                            compute_fp=False,
                            compute_aos=False):
+
     det_size = dt_datas.shape[0]
     gt_size = gt_datas.shape[0]
     dt_scores = dt_datas[:, -1]
@@ -653,7 +654,7 @@ def print_str(value, *arg, sstream=None):
     return sstream.getvalue()
 
 
-def do_eval(gt_annos,
+def do_eval_official(gt_annos,
             dt_annos,
             current_classes,
             min_overlaps,
@@ -696,22 +697,41 @@ def do_eval(gt_annos,
     return mAP_bbox, mAP_bev, mAP_3d, mAP_aos, mAP_bbox_R40, mAP_bev_R40, mAP_3d_R40, mAP_aos_R40
 
 
+def do_eval_cut_version(gt_annos,
+            dt_annos,
+            current_classes,
+            min_overlaps,
+            compute_aos=False,
+            DIForDIS=True):
+    # min_overlaps: [num_minoverlap, metric, num_class]
+    difficultys = [0, 1, 2]
+    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 0,
+                     min_overlaps, compute_aos, DIForDIS=DIForDIS)
+    # ret: [num_class, num_diff, num_minoverlap, num_sample_points]
+    # get 2D bbox mAP
+    mAP_bbox = get_mAP(ret["precision"])
+
+    # get 3D bbox mAP
+    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2,
+                     min_overlaps, DIForDIS=DIForDIS)
+    mAP_3d = get_mAP(ret["precision"])
+
+    return mAP_bbox, mAP_3d
+
+
 def do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges,
                        compute_aos):
     # overlap_ranges: [range, metric, num_class]
     min_overlaps = np.zeros([10, *overlap_ranges.shape[1:]])
+
     for i in range(overlap_ranges.shape[1]):
         for j in range(overlap_ranges.shape[2]):
-            min_overlaps[:, i, j] = np.linspace(*overlap_ranges[:, i, j])
-    mAP_bbox, mAP_bev, mAP_3d, mAP_aos = do_eval(
+            min_overlaps[:, i, j] = np.linspace(*overlap_ranges[:, i, j][:2], 10)
+
+    mAP_bbox, mAP_3d = do_eval_cut_version(
         gt_annos, dt_annos, current_classes, min_overlaps, compute_aos)
-    # ret: [num_class, num_diff, num_minoverlap]
-    mAP_bbox = mAP_bbox.mean(-1)
-    mAP_bev = mAP_bev.mean(-1)
-    mAP_3d = mAP_3d.mean(-1)
-    if mAP_aos is not None:
-        mAP_aos = mAP_aos.mean(-1)
-    return mAP_bbox, mAP_bev, mAP_3d, mAP_aos
+
+    return mAP_bbox.mean(-1), mAP_3d.mean(-1)
 
 
 def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict=None):
@@ -750,7 +770,7 @@ def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict
                 compute_aos = True
             break
 
-    mAPbbox, mAPbev, mAP3d, mAPaos, mAPbbox_R40, mAPbev_R40, mAP3d_R40, mAPaos_R40 = do_eval(
+    mAPbbox, mAPbev, mAP3d, mAPaos, mAPbbox_R40, mAPbev_R40, mAP3d_R40, mAPaos_R40 = do_eval_official(
         gt_annos, dt_annos, current_classes, min_overlaps, compute_aos, PR_detail_dict=PR_detail_dict, DIForDIS=True)
 
     ret_dict = {}
@@ -822,7 +842,8 @@ def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict
                 ret_dict['%s_image_moderate_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 1, 0]
                 ret_dict['%s_image_hard_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 2, 0]
 
-    return result, ret_dict, mAP3d_R40[0, 1, 0]
+    print(result)
+    return mAPbbox.mean(), mAPbev.mean(), mAP3d.mean(), mAPaos.mean(), mAPbbox_R40.mean(), mAPbev_R40.mean(), mAP3d_R40.mean(), mAPaos_R40.mean()
 
 
 def get_distance_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict=None):
@@ -932,7 +953,7 @@ def get_distance_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict
                 ret_dict['%s_image_30m_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 0, 0]
                 ret_dict['%s_image_50m_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 1, 0]
                 ret_dict['%s_image_70m_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 2, 0]
-
+    print(result)
     return result, ret_dict
 
 
@@ -973,8 +994,8 @@ def get_coco_eval_result(gt_annos, dt_annos, current_classes):
             if anno['alpha'][0] != -10:
                 compute_aos = True
             break
-    mAPbbox, mAPbev, mAP3d, mAPaos = do_coco_style_eval(
-        gt_annos, dt_annos, current_classes, overlap_ranges, compute_aos)
+    mAPbbox, mAP3d = do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges, compute_aos)
+
     for j, curcls in enumerate(current_classes):
         # mAP threshold array: [num_minoverlap, metric, class]
         # mAP result: [num_class, num_diff, num_minoverlap]
@@ -985,14 +1006,10 @@ def get_coco_eval_result(gt_annos, dt_annos, current_classes):
         result += print_str((f"bbox AP:{mAPbbox[j, 0]:.2f}, "
                              f"{mAPbbox[j, 1]:.2f}, "
                              f"{mAPbbox[j, 2]:.2f}"))
-        result += print_str((f"bev  AP:{mAPbev[j, 0]:.2f}, "
-                             f"{mAPbev[j, 1]:.2f}, "
-                             f"{mAPbev[j, 2]:.2f}"))
         result += print_str((f"3d   AP:{mAP3d[j, 0]:.2f}, "
                              f"{mAP3d[j, 1]:.2f}, "
                              f"{mAP3d[j, 2]:.2f}"))
-        if compute_aos:
-            result += print_str((f"aos  AP:{mAPaos[j, 0]:.2f}, "
-                                 f"{mAPaos[j, 1]:.2f}, "
-                                 f"{mAPaos[j, 2]:.2f}"))
-    return result
+
+        print(result)
+
+    return mAPbbox, mAP3d

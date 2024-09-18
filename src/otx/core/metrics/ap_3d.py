@@ -11,7 +11,7 @@ import numpy as np
 import numba
 from torch import Tensor
 from torchmetrics import Metric
-from otx.core.data.dataset.kitti_eval_python.eval import get_coco_eval_result
+from otx.core.data.dataset.kitti_eval_python.eval import get_coco_eval_result, get_official_eval_result
 
 if TYPE_CHECKING:
     from otx.core.types.label import LabelInfo
@@ -54,38 +54,61 @@ class KittiMetric(Metric):
         Please be careful that some variables should not be reset for each epoch.
         """
         super().reset()
-        self.preds: list[np.ndarray] = []
+        self.preds: list[dict[str, np.array]] = []
         self.targets: list[np.ndarray] = []
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update total predictions and targets from given batch predicitons and targets."""
-        breakpoint()
-        for pred, tget in zip(preds, target):
-            self.preds.extend(
-                [
-                    (pred["keypoints"], pred["scores"]),
-                ],
-            )
-            self.targets.extend(
-                [
-                    (tget["keypoints"], tget["keypoints_visible"]),
-                ],
-            )
+        self.preds.extend(preds)
+        self.targets.extend(target)
 
     def compute(self) -> dict:
         """Compute metrics for 3d object detection."""
-        gt_annos = self.targets
-        dt_annos = self.preds
+        gt_annos = self._prepare_annos_for_kitti_metric(self.targets)
+        # gt_annos = self.targets[0].prepare_kitti_format()[:len(self.preds)]
         current_classes = self.label_info.label_names
-
-        mAP_bbox, mAP_bev, mAP_3d, mAP_aos = get_coco_eval_result(
+        mAP3d, mAP3d_R40 = get_coco_eval_result(
+        # mAPbbox, mAPbev, mAP3d, mAPaos, mAPbbox_R40, mAPbev_R40, mAP3d_R40, mAPaos_R40  = get_official_eval_result(
             gt_annos,
-            dt_annos,
-            current_classes,
+            self.preds,
+            current_classes=0,
         )
+        return {"mAP_3d": Tensor([mAP3d]), "mAP_3d_R40": Tensor([mAP3d_R40])}
+        # return {"mAP_3d": Tensor([mAP3d]), "mAP_bbox_2d": Tensor([mAPbbox]), "mAP_bev": Tensor([mAPbev]), "mAP_aos": Tensor([mAPaos]),
+                # "mAP_bbox_R40": Tensor([mAPbbox_R40]), "mAP_bev_R40": Tensor([mAPbev_R40]), "mAP_3d_R40": Tensor([mAP3d_R40]), "mAP_aos_R40": Tensor([mAPaos_R40])}
 
-        return {"mAP_3d": Tensor([mAP_3d]), "mAP_bbox_2d": Tensor([mAP_bbox]), "mAP_bev": Tensor([mAP_bev]), "mAP_aos": Tensor([mAP_aos])}
+    @staticmethod
+    def _prepare_annos_for_kitti_metric(targets):
+        gt_annos = []
+        for images in targets:
+            annos = {
+                'name': [],
+                'truncated': [],
+                'occluded': [],
+                'alpha': [],
+                'bbox': [],
+                'dimensions': [],
+                'location': [],
+                'rotation_y': [],
+                'score' : [],
+            }
+            for obj in images:
+                annos["name"].append(obj.cls_type)
+                annos["truncated"].append(obj.trucation)
+                annos["occluded"].append(obj.occlusion)
+                annos["alpha"].append(obj.alpha)
+                annos["bbox"].append(obj.box2d)
+                annos["dimensions"].append([obj.h, obj.w, obj.l ])
+                annos["location"].append(obj.pos)
+                annos["rotation_y"].append(obj.ry)
+                annos["score"].append(obj.score)
 
+            for key in annos:
+                annos[key] = np.array(annos[key])
+
+            gt_annos.append(annos)
+
+        return gt_annos
 
 def _kitti_metric_measure_callable(label_info: LabelInfo) -> KittiMetric:
     return KittiMetric(label_info=label_info)

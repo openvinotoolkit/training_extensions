@@ -37,7 +37,7 @@ callbacks:
       log_momentum: true
   - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
     init_args:
-      max_interval: 5
+      max_interval: 1
       decay: -0.025
 logger:
   - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger

@@ -139,9 +139,15 @@ class MonoDETR(nn.Module):
 
 
     def forward(self, images, calibs=None, targets=None, img_sizes=None, dn_args=None, mode="predict"):
-        """ The forward expects a NestedTensor, which consists of:
-               - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
-               - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
+        """
+        Forward method of the MonoDETR model.
+
+        Args:
+            images (list[Tensor]): images for each sample
+            calibs (list[Tensor]): camera matrices for each sample
+            targets (list[Dict[Tensor]): ground truth boxes and labels for each
+                sample
+            img_sizes (list[Tensor]): image sizes for each sample
         """
         features, pos = self.backbone(images)
 

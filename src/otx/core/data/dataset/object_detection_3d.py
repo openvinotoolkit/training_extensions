@@ -46,10 +46,10 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
         self.to_tv_image = to_tv_image
-        self.label_info = LabelInfo(label_names=["Car"], label_groups=[["Car"]])
+        self.label_info = LabelInfo(label_names=self.dm_subset.class_name, label_groups=[self.dm_subset.class_name])
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
-        inputs, p2, targets, info = self.dm_subset[index]
+        inputs, calib_entity, targets, info, objects = self.dm_subset[index]
         entity = Det3DDataEntity(
             image=torch.tensor(inputs),
             img_info=ImageInfo(
@@ -59,24 +59,22 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
                 image_color_channel=self.image_color_channel,
                 ignored_labels=[],
             ),
-            bboxes_2d=tv_tensors.BoundingBoxes(
+            boxes=tv_tensors.BoundingBoxes(
                 targets["boxes"],
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=(384, 1280),
                 dtype=torch.float32,
             ),
             labels=torch.as_tensor(targets["labels"], dtype=torch.long),
-            calib_p2=p2,
-            calibs=targets["calibs"],
-            bboxes_3d=targets["boxes_3d"],
-            size_2d=targets["size_2d"],
-            size_3d=targets["size_3d"],
-            src_size_3d=targets["src_size_3d"],
-            depth=targets["depth"],
-            heading_bin=targets["heading_bin"],
-            heading_res=targets["heading_res"],
-            mask_2d=targets["mask_2d"],
-            indices=targets["indices"],
+            calib=calib_entity,
+            calibs=torch.as_tensor(targets["calibs"], dtype=torch.float32),
+            boxes_3d=torch.as_tensor(targets["boxes_3d"], dtype=torch.float32),
+            size_2d=torch.as_tensor(targets["size_2d"], dtype=torch.float32),
+            size_3d=torch.as_tensor(targets["size_3d"], dtype=torch.float32),
+            depth=torch.as_tensor(targets["depth"], dtype=torch.float32),
+            heading_bin=torch.as_tensor(targets["heading_bin"], dtype=torch.int32),
+            heading_res=torch.as_tensor(targets["heading_res"], dtype=torch.float32),
+            kitti_label_object=objects,
         )
 
         return entity

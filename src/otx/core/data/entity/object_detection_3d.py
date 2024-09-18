@@ -6,13 +6,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
-import torch
+from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import (
-    BboxInfo,
     OTXBatchDataEntity,
     OTXBatchPredEntity,
     OTXDataEntity,
@@ -20,10 +18,10 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
+from otx.core.data.dataset.kitti_utils import Calibration, Object3d
 
 if TYPE_CHECKING:
-    import numpy as np
-    from torch import LongTensor
+    from torch import LongTensor, Tensor
 
 
 @register_pytree_node
@@ -41,19 +39,17 @@ class Det3DDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.OBJECT_DETECTION_3D
 
-    bboxes_2d: tv_tensors.BoundingBoxes
-    calib_p2: np.ndarray
-    calibs: np.ndarray
-    bboxes_3d: np.ndarray
-    size_2d: np.ndarray
-    size_3d: np.ndarray
-    src_size_3d: np.ndarray
-    depth: np.ndarray
-    heading_bin: np.ndarray
-    heading_res: np.ndarray
-    mask_2d: np.ndarray
-    indices: np.ndarray
+    boxes: tv_tensors.BoundingBoxes
+    calib: Calibration
+    calibs: Tensor
+    boxes_3d: Tensor
+    size_2d: Tensor
+    size_3d: Tensor
+    depth: Tensor
+    heading_bin: Tensor
+    heading_res: Tensor
     labels: LongTensor
+    kitti_label_object: list[Object3d]
 
 @dataclass
 class Det3DPredEntity(OTXPredEntity, Det3DDataEntity):
@@ -69,19 +65,17 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     :param labels: A list of bbox labels as integer indices
     """ # TODO(Kirill): UPDATE!
 
-    bboxes_2d: list[tv_tensors.BoundingBoxes]
-    calib_p2: list[np.ndarray]
-    calibs: list[np.ndarray]
-    bboxes_3d: list[np.ndarray]
-    size_2d: list[np.ndarray]
-    size_3d: list[np.ndarray]
-    src_size_3d: list[np.ndarray]
-    depth: list[np.ndarray]
-    heading_bin: list[np.ndarray]
-    heading_res: list[np.ndarray]
-    mask_2d: list[np.ndarray]
-    indices: list[np.ndarray]
+    boxes: list[tv_tensors.BoundingBoxes]
+    calib: list[Calibration]
+    calibs: list[Tensor]
+    boxes_3d: list[Tensor]
+    size_2d: list[Tensor]
+    size_3d: list[Tensor]
+    depth: list[Tensor]
+    heading_bin: list[Tensor]
+    heading_res: list[Tensor]
     labels: list[LongTensor]
+    kitti_label_object: list[list[Object3d]]
 
     @property
     def task(self) -> OTXTaskType:
@@ -112,19 +106,17 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
             batch_size=batch_data.batch_size,
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
-            bboxes_2d=[entity.bboxes_2d for entity in entities],
+            boxes=[entity.boxes for entity in entities],
             labels=[entity.labels for entity in entities],
-            calib_p2=[entity.calib_p2 for entity in entities],
+            calib=[entity.calib for entity in entities],
             calibs=[entity.calibs for entity in entities],
-            bboxes_3d=[entity.bboxes_3d for entity in entities],
+            boxes_3d=[entity.boxes_3d for entity in entities],
             size_2d=[entity.size_2d for entity in entities],
             size_3d=[entity.size_3d for entity in entities],
-            src_size_3d=[entity.src_size_3d for entity in entities],
             depth=[entity.depth for entity in entities],
             heading_bin=[entity.heading_bin for entity in entities],
             heading_res=[entity.heading_res for entity in entities],
-            mask_2d=[entity.mask_2d for entity in entities],
-            indices=[entity.indices for entity in entities],
+            kitti_label_object=[entity.kitti_label_object for entity in entities],
         )
 
     def pin_memory(self) -> Det3DBatchDataEntity:
@@ -133,19 +125,17 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
             super()
             .pin_memory()
             .wrap(
-                bboxes_2d=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes_2d],
+                boxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.boxes],
                 labels=[label.pin_memory() for label in self.labels],
-                calibs=self.calibs,
-                calib_p2=self.calib_p2,
-                bboxes_3d=self.bboxes_3d,
-                size_2d=self.size_2d,
-                size_3d=self.size_3d,
-                src_size_3d=self.src_size_3d,
-                depth=self.depth,
-                heading_bin=self.heading_bin,
-                heading_res=self.heading_res,
-                mask_2d=self.mask_2d,
-                indices=self.indices,
+                calibs=[calib.pin_memory() for calib in self.calibs],
+                calib=self.calib,
+                boxes_3d=[boxes_3d.pin_memory() for boxes_3d in self.boxes_3d],
+                size_2d=[size_2d.pin_memory() for size_2d in self.size_2d],
+                size_3d=[size_3d.pin_memory() for size_3d in self.size_3d],
+                depth=[depth.pin_memory() for depth in self.depth],
+                heading_bin=[heading_bin.pin_memory() for heading_bin in self.heading_bin],
+                heading_res=[heading_res.pin_memory() for heading_res in self.heading_res],
+                kitti_label_object=self.kitti_label_object,
             )
         )
 
@@ -153,3 +143,26 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
 @dataclass
 class Det3DBatchPredEntity(OTXBatchPredEntity, Det3DBatchDataEntity):
     """Data entity to represent model output predictions for detection task."""
+    # boxes: list[tv_tensors.BoundingBoxes]
+    # boxes_3d: list[Tensor]
+    # size_2d: list[Tensor]
+    # size_3d: list[Tensor]
+    # depth: list[Tensor]
+    # alpha_angle: list[Tensor]
+    # labels: list[LongTensor]
+
+    # def pin_memory(self) -> Det3DBatchPredEntity:
+    #     """Pin memory for member tensor variables."""
+    #     return (
+    #         super()
+    #         .pin_memory()
+    #         .wrap(
+    #             boxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.boxes],
+    #             boxes_3d=[boxes_3d.pin_memory() for boxes_3d in self.boxes_3d],
+    #             size_2d=[size_2d.pin_memory() for size_2d in self.size_2d],
+    #             size_3d=[size_3d.pin_memory() for size_3d in self.size_3d],
+    #             depth=[depth.pin_memory() for depth in self.depth],
+    #             alpha_angle=[alpha_angle.pin_memory() for alpha_angle in self.alpha_angle],
+    #             labels=[label.pin_memory() for label in self.labels],
+    #         )
+    #     )
