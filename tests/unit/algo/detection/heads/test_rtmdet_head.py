@@ -7,12 +7,11 @@ from functools import partial
 import pytest
 import torch
 from omegaconf import DictConfig
-from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHead
+from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHeadModule
 from torch import nn
 
 
@@ -52,8 +51,6 @@ class TestRTMDetHead:
             feat_channels=96,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
-            loss_bbox=GIoULoss(loss_weight=2.0),
             with_objectness=False,
             pred_kernel_size=1,
             normalization=nn.BatchNorm2d,
@@ -69,29 +66,6 @@ class TestRTMDetHead:
         for cls_score, bbox_pred in zip(cls_scores, bbox_preds):
             assert cls_score.shape[1] == rtmdet_head.num_base_priors * rtmdet_head.cls_out_channels
             assert bbox_pred.shape[1] == rtmdet_head.num_base_priors * 4
-
-    def test_loss_by_feat_single(self, rtmdet_head) -> None:
-        # Create dummy data to simulate the inputs to the loss_by_feat_single method
-        cls_score = torch.rand(1, 2, 100, 80)
-        bbox_pred = torch.rand(1, 2, 100, 4)
-        labels = torch.randint(0, 80, (2, 100))
-        label_weights = torch.rand(2, 100)
-        bbox_targets = torch.rand(2, 100, 4)
-        assign_metrics = torch.rand(2, 100)
-        stride = [8, 8]
-
-        loss_cls, loss_bbox, _, _ = rtmdet_head.loss_by_feat_single(
-            cls_score,
-            bbox_pred,
-            labels,
-            label_weights,
-            bbox_targets,
-            assign_metrics,
-            stride,
-        )
-
-        assert loss_cls is not None
-        assert loss_bbox is not None
 
     def test_export_by_feat(self, mocker, rtmdet_head) -> None:
         batch_size = 2
@@ -134,9 +108,9 @@ class TestRTMDetHead:
                 assert valid_flag.dtype == torch.bool
 
 
-class TestRTMDetSepBNHead:
+class TestRTMDetSepBNHeadModule:
     @pytest.fixture()
-    def rtmdet_sep_bn_head(self) -> RTMDetSepBNHead:
+    def rtmdet_sep_bn_head(self) -> RTMDetSepBNHeadModule:
         train_cfg = {
             "assigner": DynamicSoftLabelAssigner(topk=13),
             "sampler": PseudoSampler(),
@@ -155,15 +129,13 @@ class TestRTMDetSepBNHead:
                 "nms_pre": 30000,
             },
         )
-        return RTMDetSepBNHead(
+        return RTMDetSepBNHeadModule(
             num_classes=80,
             in_channels=96,
             stacked_convs=2,
             feat_channels=96,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
-            loss_bbox=GIoULoss(loss_weight=2.0),
             with_objectness=False,
             exp_on_reg=False,
             share_conv=True,

@@ -17,7 +17,7 @@ from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
-from otx.algo.instance_segmentation.two_stage import TwoStageDetector
+from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
@@ -44,18 +44,31 @@ if TYPE_CHECKING:
 
 
 class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity]):
-    """Base class for the Instance Segmentation models used in OTX."""
+    """Base class for the Instance Segmentation models used in OTX.
+
+    Args:
+        label_info (LabelInfoTypes): label information
+        input_size (tuple[int, int]): model input size
+        model_name (str): model name/version
+        optimizer (OptimizerCallable, optional): optimizer
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): scheduler
+        metric (MetricCallable, optional): metric
+        torch_compile (bool, optional): torch compile
+        tile_config (TileConfig, optional): tile configuration
+    """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
+        input_size: tuple[int, int] = (1024, 1024),
+        model_name: str = "inst_segm_model",
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        self.model_name = model_name
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -72,11 +85,15 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
+        if hasattr(detector, "init_weights"):
+            detector.init_weights()
         self.classification_layers = self.get_classification_layers("model.")
 
-        if self.load_from is not None:
+        if isinstance(self.load_from, dict):
+            load_checkpoint(detector, self.load_from[self.model_name], map_location="cpu")
+        elif self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
+
         return detector
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
@@ -381,12 +398,25 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
-    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
+    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch.
+
+    Args:
+        label_info (LabelInfoTypes): label information
+        input_size (tuple[int, int]): model input size
+        model_name (str): model name/version
+        optimizer (OptimizerCallable, optional): optimizer
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): scheduler
+        metric (MetricCallable, optional): metric
+        torch_compile (bool, optional): torch compile
+        tile_config (TileConfig, optional): tile configuration
+
+    """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
+        model_name: str,
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -396,6 +426,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         super().__init__(
             label_info=label_info,
             input_size=input_size,
+            model_name=model_name,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -473,9 +504,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             tuple[Tensor] | list[InstanceData]: The predicted results from the head of the model.
             Tuple for the Export case, list for the Predict case.
         """
-        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInstTiny
+        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
 
-        if isinstance(self, RTMDetInstTiny):
+        if isinstance(self, RTMDetInst):
             return self.model.bbox_head.predict(x, entity, rescale=False)
         rpn_results_list = self.model.rpn_head.predict(x, entity, rescale=False)
         return self.model.roi_head.predict(x, rpn_results_list, entity, rescale=True)

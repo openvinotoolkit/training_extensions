@@ -3,7 +3,7 @@
 
 import pytest
 import torch
-from otx.algo.classification.backbones import OTXEfficientNet
+from otx.algo.classification.backbones import EfficientNetBackbone
 from otx.algo.classification.classifier import ImageClassifier
 from otx.algo.classification.heads import LinearClsHead, MultiLabelLinearClsHead
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
@@ -21,7 +21,7 @@ class TestImageClassifier:
     )
     def fxt_model_and_inputs(self, request):
         head_cls, loss_cls, input_fxt_name = request.param
-        backbone = OTXEfficientNet(version="b0")
+        backbone = EfficientNetBackbone(version="b0")
         neck = GlobalAveragePooling(dim=2)
         head = head_cls(num_classes=3, in_channels=backbone.num_features)
         loss = loss_cls()

@@ -7,11 +7,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-from otx.algo.common.losses import CrossEntropyLoss, L1Loss
+from otx.algo.common.losses import CrossEntropyLoss, IoULoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import YOLOXHead
-from otx.algo.detection.losses import IoULoss
+from otx.algo.detection.losses import YOLOXCriterion
 from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -35,13 +35,36 @@ if TYPE_CHECKING:
     from otx.core.types.label import LabelInfoTypes
 
 
+PRETRAINED_ROOT: dict[str, str] = {
+    "openvino": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/",
+    "mmdet": "https://download.openmmlab.com/mmdetection/v2.0/yolox/",
+}
+
+PRETRAINED_WEIGHTS: dict[str, str] = {
+    "yolox_tiny": PRETRAINED_ROOT["openvino"] + "yolox_tiny_8x8.pth",
+    "yolox_s": PRETRAINED_ROOT["mmdet"] + "yolox_s_8x8_300e_coco/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth",
+    "yolox_l": PRETRAINED_ROOT["mmdet"] + "yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth",
+    "yolox_x": PRETRAINED_ROOT["mmdet"] + "yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth",
+}
+
+
 class YOLOX(ExplainableOTXDetModel):
-    """OTX Detection model class for YOLOX."""
+    """OTX Detection model class for YOLOX.
+
+    Default input size per model:
+        - yolox_tiny : (416, 416)
+        - yolox_s : (640, 640)
+        - yolox_l : (640, 640)
+        - yolox_x : (640, 640)
+    """
 
     input_size_multiplier = 32
+    mean: tuple[float, float, float]
+    std: tuple[float, float, float]
 
     def __init__(
         self,
+        model_name: Literal["yolox_tiny", "yolox_s", "yolox_l", "yolox_x"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -50,7 +73,9 @@ class YOLOX(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -58,6 +83,44 @@ class YOLOX(ExplainableOTXDetModel):
             metric=metric,
             torch_compile=torch_compile,
             tile_config=tile_config,
+        )
+
+        if model_name == "yolox_tiny":
+            self.mean = (123.675, 116.28, 103.53)
+            self.std = (58.395, 57.12, 57.375)
+        else:
+            self.mean = (0.0, 0.0, 0.0)
+            self.std = (1.0, 1.0, 1.0)
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.01,
+            "max_per_img": 100,
+        }
+        backbone = CSPDarknet(model_name=self.model_name)
+        neck = YOLOXPAFPN(model_name=self.model_name)
+        bbox_head = YOLOXHead(
+            model_name=self.model_name,
+            num_classes=num_classes,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )
+        criterion = YOLOXCriterion(
+            num_classes=num_classes,
+            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
+            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
+        )
+        return SingleStageDetector(
+            backbone=backbone,
+            neck=neck,
+            bbox_head=bbox_head,
+            criterion=criterion,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
 
     def _customize_inputs(
@@ -75,10 +138,10 @@ class YOLOX(ExplainableOTXDetModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
         resize_mode: Literal["standard", "fit_to_window_letterbox"] = "fit_to_window_letterbox"
         if self.tile_config.enable_tiler:
             resize_mode = "standard"
+        swap_rgb = self.model_name != "yolox_tiny"  # only YOLOX-TINY uses RGB
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
@@ -138,166 +201,3 @@ class YOLOX(ExplainableOTXDetModel):
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
-
-
-class YOLOXTINY(YOLOX):
-    """YOLOX-TINY detector."""
-
-    load_from = (
-        "https://storage.openvinotoolkit.org/repositories/"
-        "openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth"
-    )
-    mean = (123.675, 116.28, 103.53)
-    std = (58.395, 57.12, 57.375)
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        input_size: tuple[int, int] = (416, 416),
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        super().__init__(
-            label_info=label_info,
-            input_size=input_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = {
-            "nms": {"type": "nms", "iou_threshold": 0.65},
-            "score_thr": 0.01,
-            "max_per_img": 100,
-        }
-        backbone = CSPDarknet(deepen_factor=0.33, widen_factor=0.375)
-        neck = YOLOXPAFPN(
-            in_channels=[96, 192, 384],
-            out_channels=96,
-            num_csp_blocks=1,
-        )
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=96,
-            feat_channels=96,
-            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
-            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
-
-
-class YOLOXS(YOLOX):
-    """YOLOX-S detector."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_s_8x8_300e_coco/"
-        "yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth"
-    )
-    mean = (0.0, 0.0, 0.0)
-    std = (1.0, 1.0, 1.0)
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = {
-            "nms": {"type": "nms", "iou_threshold": 0.65},
-            "score_thr": 0.01,
-            "max_per_img": 100,
-        }
-        backbone = CSPDarknet(deepen_factor=0.33, widen_factor=0.5)
-        neck = YOLOXPAFPN(
-            in_channels=[128, 256, 512],
-            out_channels=128,
-            num_csp_blocks=1,
-        )
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=128,
-            feat_channels=128,
-            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
-            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
-
-
-class YOLOXL(YOLOX):
-    """YOLOX-L detector."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
-        "yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth"
-    )
-    mean = (0.0, 0.0, 0.0)
-    std = (1.0, 1.0, 1.0)
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = {
-            "nms": {"type": "nms", "iou_threshold": 0.65},
-            "score_thr": 0.01,
-            "max_per_img": 100,
-        }
-        backbone = CSPDarknet()
-        neck = YOLOXPAFPN(in_channels=[256, 512, 1024], out_channels=256)
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=256,
-            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
-            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
-
-
-class YOLOXX(YOLOX):
-    """YOLOX-X detector."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
-        "yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
-    )
-    mean = (0.0, 0.0, 0.0)
-    std = (1.0, 1.0, 1.0)
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = {
-            "nms": {"type": "nms", "iou_threshold": 0.65},
-            "score_thr": 0.01,
-            "max_per_img": 100,
-        }
-        backbone = CSPDarknet(deepen_factor=1.33, widen_factor=1.25)
-        neck = YOLOXPAFPN(
-            in_channels=[320, 640, 1280],
-            out_channels=320,
-            num_csp_blocks=4,
-        )
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=320,
-            feat_channels=320,
-            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
-            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)

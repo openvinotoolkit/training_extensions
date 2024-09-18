@@ -4,14 +4,14 @@
 """Test of HybridEncoder."""
 
 import torch
-from otx.algo.detection.necks.hybrid_encoder import HybridEncoder
+from otx.algo.detection.necks.hybrid_encoder import HybridEncoderModule
 
 
 def test_hybrid_encoder_forward():
     hidden_dim = 256
     feat_strides = [8, 16, 32]
     in_channels = [128, 256, 512]
-    encoder = HybridEncoder(in_channels=in_channels, hidden_dim=hidden_dim, feat_strides=feat_strides)
+    encoder = HybridEncoderModule(in_channels=in_channels, hidden_dim=hidden_dim, feat_strides=feat_strides)
 
     # Create dummy input
     batch_size = 2

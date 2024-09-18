@@ -157,6 +157,16 @@ TEMPLATE_ID_DICT = {
         "model_name": "dino_v2",
     },
     # ANOMALY_CLASSIFICATION
+    # ANOMALY
+    "ote_anomaly_padim": {
+        "task": OTXTaskType.ANOMALY,
+        "model_name": "padim",
+    },
+    "ote_anomaly_stfpm": {
+        "task": OTXTaskType.ANOMALY,
+        "model_name": "stfpm",
+    },
+    # ANOMALY CLASSIFICATION
     "ote_anomaly_classification_padim": {
         "task": OTXTaskType.ANOMALY_CLASSIFICATION,
         "model_name": "padim",

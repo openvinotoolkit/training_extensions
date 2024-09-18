@@ -422,6 +422,7 @@ def test_otx_hpo_e2e_cli(
     # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
     model_cfg = []
     if task in {
+        OTXTaskType.ANOMALY,
         OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,

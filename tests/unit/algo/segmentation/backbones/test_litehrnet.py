@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
-from otx.algo.segmentation.backbones.litehrnet import NeighbourSupport, NNLiteHRNet, SpatialWeightingV2, StemV2
+from otx.algo.segmentation.backbones.litehrnet import LiteHRNetModule, NeighbourSupport, SpatialWeightingV2, Stem
 
 
 class TestSpatialWeightingV2:
@@ -15,27 +15,27 @@ class TestSpatialWeightingV2:
         assert outputs is not None
 
 
-class TestStemV2:
+class TestStem:
     @pytest.fixture()
-    def stemv2(self) -> StemV2:
-        return StemV2(in_channels=32, stem_channels=32, out_channels=32, expand_ratio=1)
+    def stem(self) -> Stem:
+        return Stem(in_channels=32, stem_channels=32, out_channels=32, expand_ratio=1)
 
     def test_init(self) -> None:
-        stemv2_extra_stride = StemV2(
+        stem_extra_stride = Stem(
             in_channels=32,
             stem_channels=32,
             out_channels=32,
             expand_ratio=1,
             extra_stride=True,
         )
-        assert stemv2_extra_stride is not None
+        assert stem_extra_stride is not None
 
-        stemv2_input_norm = StemV2(in_channels=32, stem_channels=32, out_channels=32, expand_ratio=1, input_norm=True)
-        assert stemv2_input_norm is not None
+        stem_input_norm = Stem(in_channels=32, stem_channels=32, out_channels=32, expand_ratio=1, input_norm=True)
+        assert stem_input_norm is not None
 
-    def test_forward(self, stemv2) -> None:
+    def test_forward(self, stem) -> None:
         inputs = torch.randn(1, 32, 32, 32)
-        outputs = stemv2(inputs)
+        outputs = stem(inputs)
         assert outputs is not None
 
 
@@ -49,18 +49,11 @@ class TestNeighbourSupport:
         assert outputs is not None
 
 
-class TestNNLiteHRNet:
+class TestLiteHRNetModule:
     @pytest.fixture()
     def cfg(self) -> dict:
         return {
-            "stem": {
-                "stem_channels": 32,
-                "out_channels": 32,
-                "expand_ratio": 1,
-                "strides": (2, 2),
-                "extra_stride": False,
-                "input_norm": False,
-            },
+            "stem_configuration": {},
             "num_stages": 3,
             "stages_spec": {
                 "num_modules": (2, 4, 2),
@@ -78,8 +71,8 @@ class TestNNLiteHRNet:
         }
 
     @pytest.fixture()
-    def backbone(self, cfg) -> NNLiteHRNet:
-        return NNLiteHRNet(**cfg)
+    def backbone(self, cfg) -> LiteHRNetModule:
+        return LiteHRNetModule(**cfg)
 
     @pytest.fixture()
     def mock_torch_load(self, mocker) -> MagicMock:
@@ -100,7 +93,7 @@ class TestNNLiteHRNet:
         return str(weight)
 
     def test_init(self, cfg) -> None:
-        model = NNLiteHRNet(**cfg)
+        model = LiteHRNetModule(**cfg)
         assert model is not None
 
     def test_forward(self, cfg, backbone) -> None:
@@ -127,7 +120,7 @@ class TestNNLiteHRNet:
         mock_torch_load,
         mock_load_checkpoint_to_model,
     ):
-        model = NNLiteHRNet(**cfg)
+        model = LiteHRNetModule(**cfg)
         model.load_pretrained_weights(pretrained=pretrained_weight)
 
         mock_torch_load.assert_called_once_with(pretrained_weight, "cpu")

@@ -1,6 +1,7 @@
 model:
-  class_path: otx.core.model.rotated_detection.RotatedMaskRCNNEfficientNet
+  class_path: otx.core.model.rotated_detection.RotatedMaskRCNNModel
   init_args:
+    model_name: efficientnet_b2b
     label_info: 80
 
     optimizer:

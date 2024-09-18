@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import math
 from functools import partial
-from typing import Callable, ClassVar
+from typing import Any, Callable, ClassVar
 
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
@@ -22,7 +22,7 @@ from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 
-class CSPNeXt(BaseModule):
+class CSPNeXtModule(BaseModule):
     """CSPNeXt backbone used in RTMDet.
 
     Args:
@@ -225,3 +225,43 @@ class CSPNeXt(BaseModule):
             if i in self.out_indices:
                 outs.append(x)
         return tuple(outs)
+
+
+class CSPNeXt:
+    """CSPNeXt factory for detection."""
+
+    CSPNEXT_CFG: ClassVar[dict[str, Any]] = {
+        "rtmdet_tiny": {
+            "deepen_factor": 0.167,
+            "widen_factor": 0.375,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+        "rtmpose_tiny": {
+            "arch": "P5",
+            "expand_ratio": 0.5,
+            "deepen_factor": 0.167,
+            "widen_factor": 0.375,
+            "out_indices": (4,),
+            "channel_attention": True,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+        "rtmdet_inst_tiny": {
+            "arch": "P5",
+            "expand_ratio": 0.5,
+            "deepen_factor": 0.167,
+            "widen_factor": 0.375,
+            "channel_attention": True,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+    }
+
+    def __new__(cls, model_name: str) -> CSPNeXtModule:
+        """Constructor for CSPNeXt."""
+        if model_name not in cls.CSPNEXT_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return CSPNeXtModule(**cls.CSPNEXT_CFG[model_name])

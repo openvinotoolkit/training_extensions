@@ -53,8 +53,8 @@ V1_V2_NAME_MAP = {
     "multi_label_classification": "classification/multi_label_cls",
     "hierarchical_label_classification": "classification/h_label_cls",
     # Model names
-    "ote_anomaly_classification_padim": "padim",
-    "ote_anomaly_classification_stfpm": "stfpm",
+    "ote_anomaly_padim": "padim",
+    "ote_anomaly_stfpm": "stfpm",
     "ote_anomaly_detection_padim": "padim",
     "ote_anomaly_detection_stfpm": "stfpm",
     "ote_anomaly_segmentation_padim": "padim",
@@ -154,7 +154,7 @@ V1_V2_NAME_MAP = {
 
 
 TASK_METRIC_MAP = {
-    "anomaly_classification": "f1-score",
+    "anomaly": "f1-score",
     "anomaly_detection": "f1-score",
     "anomaly_segmentation": "f1-score",
     "classification/multi_class_cls": "accuracy",
@@ -169,7 +169,7 @@ TASK_METRIC_MAP = {
 
 
 TASK_ABBR_MAP = {
-    "anomaly_classification": "anc",
+    "anomaly": "anc",
     "anomaly_detection": "and",
     "anomaly_segmentation": "ans",
     "classification/multi_class_cls": "cls",
@@ -239,7 +239,7 @@ def normalize(data: pd.DataFrame) -> pd.DataFrame:
     data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
     data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
     # Map anomaly metrics
-    anomaly_indices = data["task"] == "anomaly_classification"
+    anomaly_indices = data["task"] == "anomaly"
     if "test/image_F1Score" in data:
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
     if "export/image_F1Score" in data:

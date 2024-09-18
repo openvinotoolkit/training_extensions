@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.segmentation.litehrnet.LiteHRNet
   init_args:
     label_info: 2
-    model_version: lite_hrnet_18
+    model_name: lite_hrnet_18
     train_type: SEMI_SUPERVISED
     drop_unreliable_pixels_percent: 80
 

@@ -1,7 +1,11 @@
 model:
-  class_path: otx.algo.instance_segmentation.rtmdet_inst.RTMDetInstTiny
+  class_path: otx.algo.instance_segmentation.rtmdet_inst.RTMDetInst
   init_args:
     label_info: 80
+    model_name: rtmdet_inst_tiny
+    input_size:
+      - 640
+      - 640
 
     optimizer:
       class_path: torch.optim.SGD

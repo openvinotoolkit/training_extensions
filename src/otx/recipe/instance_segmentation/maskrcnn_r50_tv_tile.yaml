@@ -1,6 +1,7 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn_tv.TVMaskRCNNR50
+  class_path: otx.algo.instance_segmentation.maskrcnn_tv.MaskRCNNTV
   init_args:
+    model_name: maskrcnn_resnet_50
     label_info: 80
 
     optimizer:

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 from torch import Tensor, nn
 
-from otx.algo.classification.backbones import OTXMobileNetV3
+from otx.algo.classification.backbones import MobileNetV3Backbone
 from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalCBAMClsHead,
@@ -102,16 +102,16 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXMobileNetV3(mode=self.mode, input_size=self.input_size)
+        backbone = MobileNetV3Backbone(mode=self.mode, input_size=self.input_size)
+        backbone_out_chennels = MobileNetV3Backbone.MV3_CFG[self.mode]["out_channels"]
         neck = GlobalAveragePooling(dim=2)
-        in_channels = 960 if self.mode == "large" else 576
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=backbone,
                 neck=neck,
                 head=SemiSLLinearClsHead(
                     num_classes=num_classes,
-                    in_channels=in_channels,
+                    in_channels=backbone_out_chennels,
                 ),
                 loss=nn.CrossEntropyLoss(reduction="none"),
             )
@@ -121,7 +121,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             neck=neck,
             head=LinearClsHead(
                 num_classes=num_classes,
-                in_channels=in_channels,
+                in_channels=backbone_out_chennels,
             ),
             loss=nn.CrossEntropyLoss(),
         )
@@ -190,13 +190,14 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
+        backbone = MobileNetV3Backbone(mode=self.mode, input_size=self.input_size)
         return ImageClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size),
+            backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelNonLinearClsHead(
                 num_classes=num_classes,
-                in_channels=960,
-                hid_channels=1280,
+                in_channels=MobileNetV3Backbone.MV3_CFG[self.mode]["out_channels"],
+                hid_channels=MobileNetV3Backbone.MV3_CFG[self.mode]["hid_channels"],
                 normalized=True,
                 activation=nn.PReLU(),
             ),
@@ -314,11 +315,12 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         copied_head_config = copy(head_config)
         copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
 
+        backbone = MobileNetV3Backbone(mode=self.mode, input_size=self.input_size)
         return HLabelClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size),
+            backbone=backbone,
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
-                in_channels=960,
+                in_channels=MobileNetV3Backbone.MV3_CFG[self.mode]["out_channels"],
                 **copied_head_config,
             ),
             multiclass_loss=nn.CrossEntropyLoss(),

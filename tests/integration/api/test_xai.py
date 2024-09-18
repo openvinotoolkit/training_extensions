@@ -60,6 +60,9 @@ def test_forward_explain(
     if "rtdetr" in recipe:
         pytest.skip("rtdetr on detection is not supported yet.")
 
+    if "yolov9" in recipe:
+        pytest.skip("yolov9 on detection is not supported yet.")
+
     engine = Engine.from_config(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],
@@ -124,6 +127,9 @@ def test_predict_with_explain(
 
     if "rtdetr" in recipe:
         pytest.skip("rtdetr on detection is not supported yet.")
+
+    if "yolov9" in recipe:
+        pytest.skip("yolov9 on detection is not supported yet.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
