@@ -989,11 +989,6 @@ def get_coco_eval_result(gt_annos, dt_annos, current_classes):
     result = ''
     # check whether alpha is valid
     compute_aos = False
-    for anno in dt_annos:
-        if anno['alpha'].shape[0] != 0:
-            if anno['alpha'][0] != -10:
-                compute_aos = True
-            break
     mAPbbox, mAP3d = do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges, compute_aos)
 
     for j, curcls in enumerate(current_classes):

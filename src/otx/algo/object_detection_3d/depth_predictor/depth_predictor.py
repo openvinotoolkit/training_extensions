@@ -6,16 +6,13 @@ from .transformer import TransformerEncoder, TransformerEncoderLayer
 
 class DepthPredictor(nn.Module):
 
-    def __init__(self, model_cfg):
+    def __init__(self, depth_num_bins, depth_min, depth_max, hidden_dim):
         """
         Initialize depth predictor and depth encoder
         Args:
             model_cfg [EasyDict]: Depth classification network config
         """
         super().__init__()
-        depth_num_bins = int(model_cfg["num_depth_bins"])
-        depth_min = float(model_cfg["depth_min"])
-        depth_max = float(model_cfg["depth_max"])
         self.depth_max = depth_max
 
         bin_size = 2 * (depth_max - depth_min) / (depth_num_bins * (1 + depth_num_bins))
@@ -25,7 +22,7 @@ class DepthPredictor(nn.Module):
         self.depth_bin_values = nn.Parameter(bin_value, requires_grad=False)
 
         # Create modules
-        d_model = model_cfg["hidden_dim"]
+        d_model = hidden_dim
         self.downsample = nn.Sequential(
             nn.Conv2d(d_model, d_model, kernel_size=(3, 3), stride=(2, 2), padding=1),
             nn.GroupNorm(32, d_model))

@@ -12,6 +12,7 @@ import numba
 from torch import Tensor
 from torchmetrics import Metric
 from otx.core.data.dataset.kitti_eval_python.eval import get_coco_eval_result, get_official_eval_result
+from otx.core.data.dataset.kitti3d import KITTI_Dataset
 
 if TYPE_CHECKING:
     from otx.core.types.label import LabelInfo
@@ -65,46 +66,52 @@ class KittiMetric(Metric):
     def compute(self) -> dict:
         """Compute metrics for 3d object detection."""
         gt_annos = self._prepare_annos_for_kitti_metric(self.targets)
-        # gt_annos = self.targets[0].prepare_kitti_format()[:len(self.preds)]
         current_classes = self.label_info.label_names
-        mAP3d, mAP3d_R40 = get_coco_eval_result(
-        # mAPbbox, mAPbev, mAP3d, mAPaos, mAPbbox_R40, mAPbev_R40, mAP3d_R40, mAPaos_R40  = get_official_eval_result(
+
+        mAPbbox, mAP3d = get_coco_eval_result(
             gt_annos,
             self.preds,
             current_classes=0,
         )
-        return {"mAP_3d": Tensor([mAP3d]), "mAP_3d_R40": Tensor([mAP3d_R40])}
-        # return {"mAP_3d": Tensor([mAP3d]), "mAP_bbox_2d": Tensor([mAPbbox]), "mAP_bev": Tensor([mAPbev]), "mAP_aos": Tensor([mAPaos]),
-                # "mAP_bbox_R40": Tensor([mAPbbox_R40]), "mAP_bev_R40": Tensor([mAPbev_R40]), "mAP_3d_R40": Tensor([mAP3d_R40]), "mAP_aos_R40": Tensor([mAPaos_R40])}
+
+        return {"mAP_bbox_3d": Tensor([mAP3d.mean(-1)]), "mAP_bbox_2d": Tensor([mAPbbox.mean(-1)])}
 
     @staticmethod
     def _prepare_annos_for_kitti_metric(targets):
         gt_annos = []
         for images in targets:
-            annos = {
-                'name': [],
-                'truncated': [],
-                'occluded': [],
-                'alpha': [],
-                'bbox': [],
-                'dimensions': [],
-                'location': [],
-                'rotation_y': [],
-                'score' : [],
-            }
-            for obj in images:
-                annos["name"].append(obj.cls_type)
-                annos["truncated"].append(obj.trucation)
-                annos["occluded"].append(obj.occlusion)
-                annos["alpha"].append(obj.alpha)
-                annos["bbox"].append(obj.box2d)
-                annos["dimensions"].append([obj.h, obj.w, obj.l ])
-                annos["location"].append(obj.pos)
-                annos["rotation_y"].append(obj.ry)
-                annos["score"].append(obj.score)
+            names = []
+            alphas = []
+            bboxes = []
+            dimensions = []
+            locations = []
+            rotation_y = []
+            occlusions = []
+            truncations = []
+            scores = []
 
-            for key in annos:
-                annos[key] = np.array(annos[key])
+            for obj in images:
+                names.append(obj.cls_type)
+                alphas.append(obj.alpha)
+                bboxes.append(obj.box2d)
+                dimensions.append([obj.h, obj.w, obj.l])
+                locations.append(obj.pos)
+                rotation_y.append(obj.ry)
+                truncations.append(obj.trucation)
+                occlusions.append(obj.occlusion)
+                scores.append(obj.score)
+
+            annos = {
+                "name": np.array(names),
+                "alpha": np.array(alphas),
+                "bbox": np.array(bboxes).reshape(-1, 4),
+                "dimensions": np.array(dimensions).reshape(-1, 3),
+                "location": np.array(locations).reshape(-1, 3),
+                "rotation_y": np.array(rotation_y),
+                "occluded" : np.array(occlusions),
+                "truncated": np.array(truncations),
+                "score": np.array(scores),
+            }
 
             gt_annos.append(annos)
 

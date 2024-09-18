@@ -21,12 +21,12 @@ model:
             mode: max
             factor: 0.1
             patience: 10
-            monitor: val/mAP_3d
+            monitor: val/mAP_bbox_3d
 
 engine:
   task: OBJECT_DETECTION_3D
   device: auto
 
-callback_monitor: val/mAP_3d
+callback_monitor: val/mAP_bbox_3d
 
 data: ../_base_/data/object_detection_3d.yaml

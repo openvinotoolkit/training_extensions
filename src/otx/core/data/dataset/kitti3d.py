@@ -111,7 +111,7 @@ class KITTI_Dataset(data.Dataset):
         return Calibration(calib_file)
 
     def prepare_kitti_format(self):
-        img_ids = [int(id) for id in self.idx_list]
+        img_ids = [int(self.idx_list[item]) for item in range(self.__len__())]
         return kitti.get_label_annos(self.label_dir, img_ids)
 
     def eval(self, results_dir, logger):
@@ -132,8 +132,8 @@ class KITTI_Dataset(data.Dataset):
         return car_moderate
 
     def __len__(self):
-        return 100
-        # return self.idx_list.__len__()
+        # return 100
+        return self.idx_list.__len__()
 
     def __getitem__(self, item):
         #  ============================   get inputs   ===========================
@@ -217,6 +217,7 @@ class KITTI_Dataset(data.Dataset):
         src_size_3d = np.zeros((self.max_objs, 3), dtype=np.float32)
         boxes = np.zeros((self.max_objs, 4), dtype=np.float32)
         boxes_3d = np.zeros((self.max_objs, 6), dtype=np.float32)
+        objects_list = []
 
         object_num = len(objects) if len(objects) < self.max_objs else self.max_objs
 
@@ -318,6 +319,7 @@ class KITTI_Dataset(data.Dataset):
 
             if objects[i].trucation <= 0.5 and objects[i].occlusion <= 2:
                 mask_2d[i] = 1
+                objects_list.append(objects[i])
 
             calibs[i] = calib.P2
 
@@ -332,13 +334,14 @@ class KITTI_Dataset(data.Dataset):
                    'size_2d': size_2d[mask_2d],
                    'size_3d': size_3d[mask_2d],
                    'heading_bin': heading_bin[mask_2d],
-                   'heading_res': heading_res[mask_2d]
+                   'heading_res': heading_res[mask_2d],
                    }
 
         info = {'img_id': index,
                 'img_size': img_size,
                 'bbox_downsample_ratio': img_size / features_size}
-        return inputs, calib, targets, info, objects
+
+        return inputs, calib, targets, info, objects_list
 
 
 if __name__ == '__main__':

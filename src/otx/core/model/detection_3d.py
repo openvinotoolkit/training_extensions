@@ -177,7 +177,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, depth, preds.heading_res, preds.size_3d, xs3d, ys3d, sigma], dim=2).detach().cpu().numpy()
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
-        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib, class_names=self.label_info.label_names, threshold=0.0)
+        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib, class_names=self.label_info.label_names, threshold=0.2)
 
         return {
             "preds": result_list,
@@ -200,17 +200,14 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         results = []
         for i in range(dets.shape[0]):  # batch
-            preds = {
-                'name': [],
-                'truncated': [],
-                'occluded': [],
-                'alpha': [],
-                'bbox': [],
-                'dimensions': [],
-                'location': [],
-                'rotation_y': [],
-                'score' : [],
-            }
+            names = []
+            alphas = []
+            bboxes = []
+            dimensions = []
+            locations = []
+            rotation_y = []
+            scores = []
+
             for j in range(dets.shape[1]):  # max_dets
                 cls_id = int(dets[i, j, 0])
                 score = dets[i, j, 1]
@@ -228,13 +225,13 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 depth = dets[i, j, 6]
 
                 # dimensions decoding
-                dimensions = dets[i, j, 31:34]
+                dimension = dets[i, j, 31:34]
 
                 # positions decoding
                 x3d = dets[i, j, 34] * img_size[i][0]
                 y3d = dets[i, j, 35] * img_size[i][1]
-                locations = calibs[i].img_to_rect(x3d, y3d, depth).reshape(-1)
-                locations[1] += dimensions[0] / 2
+                location = calibs[i].img_to_rect(x3d, y3d, depth).reshape(-1)
+                location[1] += dimension[0] / 2
 
                 # heading angle decoding
                 alpha = dets[i, j, 7:31]
@@ -243,71 +240,25 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
                 score = dets[i, j, 1] * dets[i, j, -1]
 
-                preds["name"].append(class_names[cls_id])
-                preds["alpha"].append(alpha)
-                preds["bbox"].append(bbox)
-                preds["dimensions"].append(dimensions.tolist())
-                preds["location"].append(locations.tolist())
-                preds["rotation_y"].append(ry)
-                preds["score"].append(score) # can be discarded I think
+                names.append(class_names[cls_id])
+                alphas.append(alpha)
+                bboxes.append(bbox)
+                dimensions.append(dimension)
+                locations.append(location)
+                rotation_y.append(ry)
+                scores.append(score)
 
-            for key, value in preds.items():
-                preds[key] = np.array(value)
-
-            results.append(preds)
+            results.append({
+                "name": np.array(names),
+                "alpha": np.array(alphas),
+                "bbox": np.array(bboxes).reshape(-1, 4),
+                "dimensions": np.array(dimensions).reshape(-1, 3),
+                "location": np.array(locations).reshape(-1, 3),
+                "rotation_y": np.array(rotation_y),
+                "score": np.array(scores),
+            })
 
         return results
-
-    def on_load_checkpoint(self, ckpt: dict[str, Any]) -> None:
-        """Load state_dict from checkpoint.
-
-        For detection, it is need to update confidence threshold information when
-        the metric is FMeasure.
-        """
-        if best_confidence_threshold := ckpt.get("confidence_threshold", None) or (
-            (hyper_parameters := ckpt.get("hyper_parameters", None))
-            and (best_confidence_threshold := hyper_parameters.get("best_confidence_threshold", None))
-        ):
-            self.hparams["best_confidence_threshold"] = best_confidence_threshold
-        super().on_load_checkpoint(ckpt)
-
-    def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
-        if key == "val":
-            retval = super()._log_metrics(meter, key)
-
-            # NOTE: Validation metric logging can update `best_confidence_threshold`
-            if (
-                isinstance(meter, MetricCollection)
-                and (fmeasure := getattr(meter, "FMeasure", None))
-                and (best_confidence_threshold := getattr(fmeasure, "best_confidence_threshold", None))
-            ) or (
-                isinstance(meter, FMeasure)
-                and (best_confidence_threshold := getattr(meter, "best_confidence_threshold", None))
-            ):
-                self.hparams["best_confidence_threshold"] = best_confidence_threshold
-
-            return retval
-
-        if key == "test":
-            # NOTE: Test metric logging should use `best_confidence_threshold` found previously.
-            best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
-            compute_kwargs = (
-                {"best_confidence_threshold": best_confidence_threshold} if best_confidence_threshold else {}
-            )
-
-            return super()._log_metrics(meter, key, **compute_kwargs)
-
-        raise ValueError(key)
-
-    @property
-    def best_confidence_threshold(self) -> float:
-        """Best confidence threshold to filter outputs."""
-        if not hasattr(self, "_best_confidence_threshold"):
-            self._best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
-            if self._best_confidence_threshold is None:
-                log.warning("There is no predefined best_confidence_threshold, 0.5 will be used as default.")
-                self._best_confidence_threshold = 0.5
-        return self._best_confidence_threshold
 
     def get_dummy_input(self, batch_size: int = 1) -> Det3DBatchDataEntity:
         """Returns a dummy input for detection model."""
