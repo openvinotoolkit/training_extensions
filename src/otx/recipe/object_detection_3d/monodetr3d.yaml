@@ -20,7 +20,7 @@ model:
           init_args:
             mode: max
             factor: 0.1
-            patience: 10
+            patience: 100
             monitor: val/mAP_bbox_3d
 
 engine:

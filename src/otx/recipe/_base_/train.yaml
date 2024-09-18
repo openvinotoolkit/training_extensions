@@ -5,7 +5,7 @@ callbacks:
     init_args:
       monitor: null
       mode: max
-      patience: 10
+      patience: 170
       check_on_train_epoch_end: false
       min_delta: 0.001
       warmup_iters: 30
