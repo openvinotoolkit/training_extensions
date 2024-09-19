@@ -28,7 +28,6 @@ from otx.algo.object_detection_3d.depthaware_transformer import DepthAwareTransf
 from otx.algo.object_detection_3d.depth_predictor import DepthPredictor
 from otx.algo.object_detection_3d.monodetr import MonoDETR
 from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy
-from otx.core.data.dataset.kitti_utils import class2angle
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -132,7 +131,7 @@ class MonoDETR3D(OTX3DDetectionModel):
 
         return {
             "images": entity.images,
-            "calibs": entity.calib_matrix,
+            "calibs": torch.cat([p2.unsqueeze(0) for p2 in entity.calib_matrix], dim=0),
             "targets" : targets_list,
             "img_sizes": img_sizes,
             "mode": "loss" if self.training else "predict",
@@ -158,7 +157,12 @@ class MonoDETR3D(OTX3DDetectionModel):
                     raise TypeError(msg)
             return losses
 
-        labels, scores, size_3d, size_2d, heading_angle, boxes_2d, boxes_3d, depth = self.extract_dets_from_outputs(outputs)
+        labels, scores, size_3d, heading_angle, boxes_3d, depth = self.extract_dets_from_outputs(outputs)
+        # bbox 2d decoding
+        boxes_2d = box_cxcylrtb_to_xyxy(boxes_3d)
+        xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
+        # size 2d decoding
+        size_2d = xywh_2d[:, :, 2: 4]
 
         return Det3DBatchPredEntity(
             batch_size=len(outputs),
@@ -206,12 +210,8 @@ class MonoDETR3D(OTX3DDetectionModel):
         # 3d dims decoding
         size_3d = torch.gather(size_3d, 1, topk_boxes.repeat(1, 1, 3))
         # 2d boxes of the corners decoding
-        boxes_2d = box_cxcylrtb_to_xyxy(boxes_3d)
-        # size 2d decoding
-        xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
-        size_2d = xywh_2d[:, :, 2: 4]
 
-        return labels, scores, size_3d, size_2d, heading, boxes_2d, boxes_3d, depth
+        return labels, scores, size_3d, heading, boxes_3d, depth
 
 
     @property

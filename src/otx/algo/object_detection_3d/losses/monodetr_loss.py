@@ -139,12 +139,11 @@ class MonoDETRCriterion(nn.Module):
 
         idx = self._get_src_permutation_idx(indices)
         heading_input = outputs['pred_angle'][idx]
-        target_heading_cls = torch.cat([t['heading_angle'][i][0:12] for t, (_, i) in zip(targets, indices)], dim=0)
-        target_heading_res = torch.cat([t['heading_angle'][i][12:24] for t, (_, i) in zip(targets, indices)], dim=0)
+        target_heading_angle = torch.cat([t['heading_angle'][i] for t, (_, i) in zip(targets, indices)], dim=0)
+        heading_target_cls = target_heading_angle[:, 0].view(-1).long()
+        heading_target_res = target_heading_angle[:, 1].view(-1)
 
         heading_input = heading_input.view(-1, 24)
-        heading_target_cls = target_heading_cls.view(-1).long()
-        heading_target_res = target_heading_res.view(-1)
 
         # classification loss
         heading_input_cls = heading_input[:, 0:12]

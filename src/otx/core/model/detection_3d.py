@@ -28,8 +28,9 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
     input_size: tuple[int, int]
 
-    def __init__(self, model_name: str, *args, **kwargs) -> None:
+    def __init__(self, model_name: str, *args, score_threshold: float = 0.2, **kwargs) -> None:
         self.model_name = model_name
+        self.score_threshold = score_threshold
         super().__init__(*args, **kwargs)
 
     def _create_model(self) -> nn.Module:
@@ -61,10 +62,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         boxes = preds.boxes_3d
         # bbox 2d decoding
-        boxes_2d = box_cxcylrtb_to_xyxy(boxes)
-        xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
-        # size 2d decoding
-        size_2d = xywh_2d[:, :, 2: 4]
+        xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
 
         xs3d = boxes[:, :, 0: 1]
         ys3d = boxes[:, :, 1: 2]
@@ -79,15 +77,15 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         xs3d = xs3d.view(batch, -1, 1)
         ys3d = ys3d.view(batch, -1, 1)
 
-        detections = torch.cat([labels, scores, xs2d, ys2d, size_2d, preds.depth,
+        detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, preds.depth,
                           preds.heading_angle, preds.size_3d, xs3d, ys3d], dim=2).detach().cpu().numpy()
 
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
-        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib_matrix, class_names=self.label_info.label_names, threshold=0.2)
+        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib_matrix, class_names=self.label_info.label_names, threshold=self.score_threshold)
 
         return {
             "preds": result_list,
-            "target": inputs.kitti_label_object, # TODO (Kirill): change it later to pre process metrics here
+            "target": inputs.kitti_label_object, # TODO (Kirill): change it later to pre-process gt annotations here
         }
 
     @staticmethod
@@ -103,6 +101,44 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             cls = np.argmax(heading_bin)
             res = heading_res[cls]
             return class2angle(cls, res, to_label_format=True)
+
+        def alpha2ry(calib_matrix, alpha, u):
+            """
+            Get rotation_y by alpha + theta - 180
+            alpha : Observation angle of object, ranging [-pi..pi]
+            x : Object center x to the camera center (x-W/2), in pixels
+            rotation_y : Rotation ry around Y-axis in camera coordinates [-pi..pi]
+            """
+            cu = calib_matrix[0, 2]
+            fu = calib_matrix[0, 0]
+
+            ry = alpha + np.arctan2(u - cu, fu)
+
+            if ry > np.pi:
+                ry -= 2 * np.pi
+            if ry < -np.pi:
+                ry += 2 * np.pi
+
+            return ry
+
+        def img_to_rect(calib_matrix, u, v, depth_rect):
+            """
+            :param u: (N)
+            :param v: (N)
+            :param depth_rect: (N)
+            :return:
+            """
+            cu = calib_matrix[0, 2]
+            cv = calib_matrix[1, 2]
+            fu = calib_matrix[0, 0]
+            fv = calib_matrix[1, 1]
+            tx = calib_matrix[0, 3] / (-fu)
+            ty = calib_matrix[1, 3] / (-fv)
+
+            x = ((u - cu) * depth_rect) / fu + tx
+            y = ((v - cv) * depth_rect) / fv + ty
+            pts_rect = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1), depth_rect.reshape(-1, 1)), axis=1)
+            return pts_rect
 
         results = []
         for i in range(dets.shape[0]):  # batch
@@ -136,13 +172,15 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 # positions decoding
                 x3d = dets[i, j, 34] * img_size[i][0]
                 y3d = dets[i, j, 35] * img_size[i][1]
-                location = calibs[i].img_to_rect(x3d, y3d, depth).reshape(-1)
+                location = img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
                 location[1] += dimension[0] / 2
 
                 # heading angle decoding
                 alpha = dets[i, j, 7:31]
                 alpha = get_heading_angle(dets[i, j, 7:31])
-                ry = calibs[i].alpha2ry(alpha, x)
+                ry = alpha2ry(calib_matrix[i], alpha, x)
+
+                score = dets[i, j, 1] * dets[i, j, -1]
 
                 names.append(class_names[cls_id])
                 alphas.append(alpha)

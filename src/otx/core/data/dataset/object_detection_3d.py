@@ -17,7 +17,7 @@ from otx.core.data.dataset.kitti3d import KITTI_Dataset
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
-from otx.core.types.label import LabelInfo, NullLabelInfo
+from otx.core.types.label import LabelInfo
 from .base import OTXDataset
 from otx.core.data.entity.object_detection_3d import Det3DDataEntity, Det3DBatchDataEntity
 
@@ -50,7 +50,6 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
         inputs, calib_entity, targets, info, objects = self.dm_subset[index]
-        breakpoint()
         entity = Det3DDataEntity(
             image=torch.tensor(inputs),
             img_info=ImageInfo(
