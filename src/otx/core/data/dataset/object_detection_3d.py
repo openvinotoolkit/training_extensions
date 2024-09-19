@@ -50,6 +50,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
         inputs, calib_entity, targets, info, objects = self.dm_subset[index]
+        breakpoint()
         entity = Det3DDataEntity(
             image=torch.tensor(inputs),
             img_info=ImageInfo(
@@ -66,14 +67,12 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
                 dtype=torch.float32,
             ),
             labels=torch.as_tensor(targets["labels"], dtype=torch.long),
-            calib=calib_entity,
-            calibs=torch.as_tensor(targets["calibs"], dtype=torch.float32),
+            calib_matrix=torch.as_tensor(calib_entity.P2, dtype=torch.float32),
             boxes_3d=torch.as_tensor(targets["boxes_3d"], dtype=torch.float32),
             size_2d=torch.as_tensor(targets["size_2d"], dtype=torch.float32),
             size_3d=torch.as_tensor(targets["size_3d"], dtype=torch.float32),
             depth=torch.as_tensor(targets["depth"], dtype=torch.float32),
-            heading_bin=torch.as_tensor(targets["heading_bin"], dtype=torch.int32),
-            heading_res=torch.as_tensor(targets["heading_res"], dtype=torch.float32),
+            heading_angle=torch.as_tensor(np.concatenate([targets["heading_bin"], targets["heading_res"]], axis=1), dtype=torch.float32),
             kitti_label_object=objects,
         )
 

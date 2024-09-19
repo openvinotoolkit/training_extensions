@@ -7,7 +7,7 @@ model:
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
-        lr: 0.0001
+        lr: 0.0002
         betas: [0.9, 0.999]
         weight_decay: 0.0001
 
@@ -30,3 +30,4 @@ engine:
 callback_monitor: val/mAP_bbox_3d
 
 data: ../_base_/data/object_detection_3d.yaml
+precision: 32 # MonoDETR do not support fp16 training

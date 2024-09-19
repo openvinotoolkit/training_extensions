@@ -44,19 +44,19 @@ class MonoDETR3D(OTX3DDetectionModel):
 
     mean: tuple[float, float, float] = [0.485, 0.456, 0.406]
     std: tuple[float, float, float] = [0.229, 0.224, 0.225]
+    load_from: str | None = None
 
     def __init__(
         self,
         model_name: Literal["monodetr_50"],
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int] = (384, 1200),
+        input_size: tuple[int, int] = (1280, 384),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = KittiMetric,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str | None = None
         super().__init__(
             model_name=model_name,
             label_info=label_info,
@@ -122,17 +122,17 @@ class MonoDETR3D(OTX3DDetectionModel):
     ) -> dict[str, Any]:
         # prepare bboxes for the model
         targets_list = []
-        key_list = ['labels', 'boxes', 'calibs', 'depth', 'size_3d', 'heading_bin', 'heading_res', 'boxes_3d']
+        img_sizes = torch.from_numpy(np.array([img_info.ori_shape for img_info in entity.imgs_info])).to(device=entity.images.device)
+        key_list = ['labels', 'boxes', 'depth', 'size_3d', 'heading_angle', 'boxes_3d']
         for bz in range(len(entity.imgs_info)):
             target_dict = {}
             for key in key_list:
                 target_dict[key] = getattr(entity, key)[bz]
             targets_list.append(target_dict)
 
-        img_sizes = torch.from_numpy(np.array([img_info.ori_shape for img_info in entity.imgs_info])).to(device=entity.images.device)
         return {
             "images": entity.images,
-            "calibs": torch.cat([torch.as_tensor(cal.P2, device=entity.images.device).unsqueeze(0) for cal in entity.calib]),
+            "calibs": entity.calib_matrix,
             "targets" : targets_list,
             "img_sizes": img_sizes,
             "mode": "loss" if self.training else "predict",
@@ -158,23 +158,20 @@ class MonoDETR3D(OTX3DDetectionModel):
                     raise TypeError(msg)
             return losses
 
-        labels, scores, size_3d, size_2d, heading_angle, boxes_2d, boxes_3d, output_depth = self.extract_dets_from_outputs(outputs)
-
+        labels, scores, size_3d, size_2d, heading_angle, boxes_2d, boxes_3d, depth = self.extract_dets_from_outputs(outputs)
 
         return Det3DBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
+            calib_matrix=inputs.calib_matrix,
             boxes=boxes_2d,
-            calib=inputs.calib,
-            calibs=inputs.calibs,
             labels=labels,
             boxes_3d=boxes_3d,
             size_2d=size_2d,
             size_3d=size_3d,
-            depth=output_depth,
-            heading_bin=inputs.heading_bin,
-            heading_res=heading_angle,
+            depth=depth,
+            heading_angle=heading_angle,
             scores=scores,
             kitti_label_object=inputs.kitti_label_object,
         )
@@ -200,17 +197,12 @@ class MonoDETR3D(OTX3DDetectionModel):
         heading = outputs['pred_angle']
         size_3d = outputs['pred_3d_dim']
         depth = outputs['pred_depth'][:, :, 0: 1]
-        sigma = outputs['pred_depth'][:, :, 1: 2]
-        sigma = torch.exp(-sigma)
-
         # decode boxes
         boxes_3d = torch.gather(out_bbox, 1, topk_boxes.repeat(1, 1, 6))  # b, q', 4
         # heading angle decoding
         heading = torch.gather(heading, 1, topk_boxes.repeat(1, 1, 24))
         # depth decoding
         depth = torch.gather(depth, 1, topk_boxes)
-        sigma = torch.gather(sigma, 1, topk_boxes)
-        output_depth = torch.cat([depth, sigma], dim=2) # predicted averaged depth and its deviation
         # 3d dims decoding
         size_3d = torch.gather(size_3d, 1, topk_boxes.repeat(1, 1, 3))
         # 2d boxes of the corners decoding
@@ -219,7 +211,7 @@ class MonoDETR3D(OTX3DDetectionModel):
         xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
         size_2d = xywh_2d[:, :, 2: 4]
 
-        return labels, scores, size_3d, size_2d, heading, boxes_2d, boxes_3d, output_depth
+        return labels, scores, size_3d, size_2d, heading, boxes_2d, boxes_3d, depth
 
 
     @property

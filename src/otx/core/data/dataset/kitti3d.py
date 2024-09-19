@@ -132,8 +132,8 @@ class KITTI_Dataset(data.Dataset):
         return car_moderate
 
     def __len__(self):
-        # return 100
-        return self.idx_list.__len__()
+        return 10
+        # return self.idx_list.__len__()
 
     def __getitem__(self, item):
         #  ============================   get inputs   ===========================
@@ -167,10 +167,7 @@ class KITTI_Dataset(data.Dataset):
 
         # add affine transformation for 2d images.
         trans, trans_inv = get_affine_transform(center, crop_size, 0, self.resolution, inv=1)
-        img = img.transform(tuple(self.resolution.tolist()),
-                            method=Image.AFFINE,
-                            data=tuple(trans_inv.reshape(-1).tolist()),
-                            resample=Image.BILINEAR)
+        img = img.transform(tuple(self.resolution.tolist()), method=Image.AFFINE, data=tuple(trans_inv.reshape(-1).tolist()), resample=Image.BILINEAR)
 
         # image encoding
         img = np.array(img).astype(np.float32) / 255.0
@@ -326,7 +323,6 @@ class KITTI_Dataset(data.Dataset):
         # collect return data
         inputs = img
         targets = {
-                   'calibs': calibs[mask_2d],
                    'labels': labels[mask_2d],
                    'boxes': boxes[mask_2d],
                    'boxes_3d': boxes_3d[mask_2d],

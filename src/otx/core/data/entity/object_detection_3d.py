@@ -40,14 +40,12 @@ class Det3DDataEntity(OTXDataEntity):
         return OTXTaskType.OBJECT_DETECTION_3D
 
     boxes: tv_tensors.BoundingBoxes
-    calib: Calibration
-    calibs: Tensor
+    calib_matrix: Tensor
     boxes_3d: Tensor
     size_2d: Tensor
     size_3d: Tensor
     depth: Tensor
-    heading_bin: Tensor
-    heading_res: Tensor
+    heading_angle: Tensor
     labels: LongTensor
     kitti_label_object: list[Object3d]
 
@@ -66,14 +64,12 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     """ # TODO(Kirill): UPDATE!
 
     boxes: list[tv_tensors.BoundingBoxes]
-    calib: list[Calibration]
-    calibs: list[Tensor]
+    calib_matrix: list[Tensor]
     boxes_3d: list[Tensor]
     size_2d: list[Tensor]
     size_3d: list[Tensor]
     depth: list[Tensor]
-    heading_bin: list[Tensor]
-    heading_res: list[Tensor]
+    heading_angle: list[Tensor]
     labels: list[LongTensor]
     kitti_label_object: list[list[Object3d]]
 
@@ -108,14 +104,12 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
             imgs_info=batch_data.imgs_info,
             boxes=[entity.boxes for entity in entities],
             labels=[entity.labels for entity in entities],
-            calib=[entity.calib for entity in entities],
-            calibs=[entity.calibs for entity in entities],
+            calib_matrix=[entity.calib_matrix for entity in entities],
             boxes_3d=[entity.boxes_3d for entity in entities],
             size_2d=[entity.size_2d for entity in entities],
             size_3d=[entity.size_3d for entity in entities],
             depth=[entity.depth for entity in entities],
-            heading_bin=[entity.heading_bin for entity in entities],
-            heading_res=[entity.heading_res for entity in entities],
+            heading_angle=[entity.heading_angle for entity in entities],
             kitti_label_object=[entity.kitti_label_object for entity in entities],
         )
 
@@ -127,14 +121,12 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
             .wrap(
                 boxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.boxes],
                 labels=[label.pin_memory() for label in self.labels],
-                calibs=[calib.pin_memory() for calib in self.calibs],
-                calib=self.calib,
+                calib_matrix=[calib_matrix.pin_memory() for calib_matrix in self.calib_matrix],
                 boxes_3d=[boxes_3d.pin_memory() for boxes_3d in self.boxes_3d],
                 size_2d=[size_2d.pin_memory() for size_2d in self.size_2d],
                 size_3d=[size_3d.pin_memory() for size_3d in self.size_3d],
                 depth=[depth.pin_memory() for depth in self.depth],
-                heading_bin=[heading_bin.pin_memory() for heading_bin in self.heading_bin],
-                heading_res=[heading_res.pin_memory() for heading_res in self.heading_res],
+                heading_angle=[heading_angle.pin_memory() for heading_angle in self.heading_angle],
                 kitti_label_object=self.kitti_label_object,
             )
         )
@@ -143,26 +135,3 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
 @dataclass
 class Det3DBatchPredEntity(OTXBatchPredEntity, Det3DBatchDataEntity):
     """Data entity to represent model output predictions for detection task."""
-    # boxes: list[tv_tensors.BoundingBoxes]
-    # boxes_3d: list[Tensor]
-    # size_2d: list[Tensor]
-    # size_3d: list[Tensor]
-    # depth: list[Tensor]
-    # alpha_angle: list[Tensor]
-    # labels: list[LongTensor]
-
-    # def pin_memory(self) -> Det3DBatchPredEntity:
-    #     """Pin memory for member tensor variables."""
-    #     return (
-    #         super()
-    #         .pin_memory()
-    #         .wrap(
-    #             boxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.boxes],
-    #             boxes_3d=[boxes_3d.pin_memory() for boxes_3d in self.boxes_3d],
-    #             size_2d=[size_2d.pin_memory() for size_2d in self.size_2d],
-    #             size_3d=[size_3d.pin_memory() for size_3d in self.size_3d],
-    #             depth=[depth.pin_memory() for depth in self.depth],
-    #             alpha_angle=[alpha_angle.pin_memory() for alpha_angle in self.alpha_angle],
-    #             labels=[label.pin_memory() for label in self.labels],
-    #         )
-    #     )

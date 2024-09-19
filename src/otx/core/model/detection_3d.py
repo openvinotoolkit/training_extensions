@@ -1,44 +1,26 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Class definition for detection model entity used in OTX."""
+"""Class definition for 3d object detection model entity used in OTX."""
 
 from __future__ import annotations
 
-import logging as log
-import types
-from abc import abstractmethod
-from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from typing import TYPE_CHECKING
 from torchvision.ops import box_convert
 
 import torch
-from model_api.tilers import DetectionTiler
-from torchmetrics import Metric, MetricCollection
-from torchvision import tv_tensors
 
-from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
-from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
+from otx.algo.utils.mmengine_utils import load_checkpoint
+from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.data.dataset.kitti_utils import class2angle
 import numpy as np
-from otx.core.data.entity.tile import OTXTileBatchDataEntity
-from otx.core.data.entity.utils import stack_batch
-from otx.core.metrics import MetricCallable, MetricInput
-from otx.core.metrics.fmeasure import FMeasure, MeanAveragePrecisionFMeasureCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
-from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.metrics import MetricInput
+from otx.core.model.base import OTXModel
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.tile_merge import DetectionTileMerge
+from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from model_api.adapters import OpenvinoAdapter
-    from model_api.models.utils import DetectionResult
     from torch import nn
-
-    from otx.algo.detection.detectors import SingleStageDetector
 
 
 class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
@@ -59,88 +41,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
-    def _customize_inputs(
-        self,
-        entity: Det3DBatchDataEntity,
-        pad_size_divisor: int = 32,
-        pad_value: int = 0,
-    ) -> dict[str, Any]:
-        pass
-
-    def _customize_outputs(
-        self,
-        outputs: list[InstanceData] | dict,
-        inputs: Det3DBatchDataEntity,
-    ) -> Det3DBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                if isinstance(v, list):
-                    losses[k] = sum(v)
-                elif isinstance(v, torch.Tensor):
-                    losses[k] = v
-                else:
-                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
-                    raise TypeError(msg)
-            return losses
-
-        scores = []
-        bboxes = []
-        labels = []
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for img_info, prediction in zip(inputs.imgs_info, predictions):
-            if not isinstance(prediction, InstanceData):
-                raise TypeError(prediction)
-
-            scores.append(prediction.scores)  # type: ignore[attr-defined]
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    prediction.bboxes,  # type: ignore[attr-defined]
-                    format="XYXY",
-                    canvas_size=img_info.ori_shape,
-                ),
-            )
-            labels.append(prediction.labels)  # type: ignore[attr-defined]
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
-
-            return Det3DBatchPredEntity(
-                batch_size=len(predictions),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                labels=labels,
-                saliency_map=saliency_map,
-                feature_vector=feature_vector,
-            )
-
-        return Det3DBatchPredEntity(
-            batch_size=len(predictions),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            labels=labels,
-        )
-
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
@@ -157,17 +57,21 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         preds: Det3DBatchPredEntity,
         inputs: Det3DBatchDataEntity,
     ) -> MetricInput:
+        """Converts the prediction entity to the format required for computing metrics."""
 
-        depth, sigma = preds.depth[:,:,0:1], preds.depth[:,:,1:2]
         boxes = preds.boxes_3d
-        xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
+        # bbox 2d decoding
+        boxes_2d = box_cxcylrtb_to_xyxy(boxes)
+        xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
+        # size 2d decoding
+        size_2d = xywh_2d[:, :, 2: 4]
 
         xs3d = boxes[:, :, 0: 1]
         ys3d = boxes[:, :, 1: 2]
         xs2d = xywh_2d[:, :, 0: 1]
         ys2d = xywh_2d[:, :, 1: 2]
 
-        batch = len(inputs.imgs_info)
+        batch = len(boxes)
         labels = preds.labels.view(batch, -1, 1)
         scores = preds.scores.view(batch, -1, 1)
         xs2d = xs2d.view(batch, -1, 1)
@@ -175,17 +79,19 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         xs3d = xs3d.view(batch, -1, 1)
         ys3d = ys3d.view(batch, -1, 1)
 
-        detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, depth, preds.heading_res, preds.size_3d, xs3d, ys3d, sigma], dim=2).detach().cpu().numpy()
+        detections = torch.cat([labels, scores, xs2d, ys2d, size_2d, preds.depth,
+                          preds.heading_angle, preds.size_3d, xs3d, ys3d], dim=2).detach().cpu().numpy()
+
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
-        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib, class_names=self.label_info.label_names, threshold=0.2)
+        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib_matrix, class_names=self.label_info.label_names, threshold=0.2)
 
         return {
             "preds": result_list,
-            "target": inputs.kitti_label_object, # TODO (KIRILL): change it later to pre process metrics here
+            "target": inputs.kitti_label_object, # TODO (Kirill): change it later to pre process metrics here
         }
 
     @staticmethod
-    def _decode_detections_for_kitti_format(dets, img_size, calibs, class_names, threshold=0.2):
+    def _decode_detections_for_kitti_format(dets, img_size, calib_matrix, class_names, threshold=0.2):
         '''
         input: dets, numpy array, shape in [batch x max_dets x dim]
         input: img_info, dict, necessary information of input images
@@ -237,8 +143,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 alpha = dets[i, j, 7:31]
                 alpha = get_heading_angle(dets[i, j, 7:31])
                 ry = calibs[i].alpha2ry(alpha, x)
-
-                score = dets[i, j, 1] * dets[i, j, -1]
 
                 names.append(class_names[cls_id])
                 alphas.append(alpha)
