@@ -1,7 +1,7 @@
 task: OBJECT_DETECTION_3D
 input_size:
-  - 1280
   - 384
+  - 1280
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB

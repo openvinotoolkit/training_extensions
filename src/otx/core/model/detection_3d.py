@@ -17,21 +17,46 @@ import numpy as np
 from otx.core.metrics import MetricInput
 from otx.core.model.base import OTXModel
 from otx.core.types.export import TaskLevelExportParameters
-from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy
+from otx.core.metrics.ap_3d import KittiMetric
 
 if TYPE_CHECKING:
     from torch import nn
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 
 
 class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     """Base class for the 3d detection models used in OTX."""
 
-    input_size: tuple[int, int]
+    mean: tuple[float, float, float]
+    std: tuple[float, float, float]
+    load_from: str | None
 
-    def __init__(self, model_name: str, *args, score_threshold: float = 0.2, **kwargs) -> None:
+    def __init__(self,
+                label_info: LabelInfoTypes,
+                model_name: str,
+                input_size: tuple[int, int],
+                optimizer: OptimizerCallable = DefaultOptimizerCallable,
+                scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+                metric: MetricCallable = KittiMetric,
+                torch_compile: bool = False,
+                score_threshold: float = 0.2,
+                ) -> None:
+
         self.model_name = model_name
         self.score_threshold = score_threshold
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile
+        )
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
@@ -48,9 +73,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         return super()._export_parameters.wrap(
             model_type="ssd",
             task_type="detection",
-            confidence_threshold=self.hparams.get("best_confidence_threshold", None),
-            iou_threshold=0.5,
-            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
 
     def _convert_pred_entity_to_compute_metric(
@@ -81,7 +103,9 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                           preds.heading_angle, preds.size_3d, xs3d, ys3d], dim=2).detach().cpu().numpy()
 
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
-        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, inputs.calib_matrix, class_names=self.label_info.label_names, threshold=self.score_threshold)
+        calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
+        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, calib_matrix,
+                                                               class_names=self.label_info.label_names, threshold=self.score_threshold)
 
         return {
             "preds": result_list,
@@ -209,6 +233,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             raise ValueError(msg)
 
         images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
+        calib_matrix = [torch.rand(3, 4) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -218,7 +243,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                     ori_shape=img.shape,
                 ),
             )
-        return Det3DBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
+        return Det3DBatchDataEntity(batch_size, images, infos, boxes=[], labels=[], calib_matrix=calib_matrix, boxes_3d=[],
+                                    size_2d=[], size_3d=[], depth=[], heading_angle=[], kitti_label_object=[])
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
         """Get final classification layer information for incremental learning case."""
@@ -235,6 +261,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
         return classification_layers
 
-    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | tuple[torch.Tensor]:
+    def forward_for_tracing(self, image: torch.Tensor, calib_matrix: torch.Tensor) -> dict[str, torch.Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         return self.model.forward(inputs=image, mode="tensor")

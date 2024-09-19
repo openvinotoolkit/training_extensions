@@ -5,22 +5,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any
 import numpy as np
 
 import torch
 from torch import Tensor
 from torchvision.ops import box_convert
-from torchvision.tv_tensors import BoundingBoxFormat
 
 from otx.algo.detection.detectors import DETR
-from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.ap_3d import KittiMetric
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.exporter.detection_3d import OTXObjectDetection3DExporter
 from otx.core.model.detection_3d import OTX3DDetectionModel
 from .backbone import BackboneBuilder
 from otx.algo.object_detection_3d.losses import MonoDETRCriterion
@@ -29,43 +25,14 @@ from otx.algo.object_detection_3d.depth_predictor import DepthPredictor
 from otx.algo.object_detection_3d.monodetr import MonoDETR
 from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy
 
-if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
-    from otx.core.schedulers import LRSchedulerListCallable
-    from otx.core.types.label import LabelInfoTypes
-
 
 class MonoDETR3D(OTX3DDetectionModel):
     """OTX Detection model class for MonoDETR3D.
     """
-
     mean: tuple[float, float, float] = [0.485, 0.456, 0.406]
     std: tuple[float, float, float] = [0.229, 0.224, 0.225]
+    input_size: tuple[int, int] = (384, 1280)
     load_from: str | None = None
-
-    def __init__(
-        self,
-        model_name: Literal["monodetr_50"],
-        label_info: LabelInfoTypes,
-        input_size: tuple[int, int] = (1280, 384),
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = KittiMetric,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        super().__init__(
-            model_name=model_name,
-            label_info=label_info,
-            input_size=input_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
 
     def _build_model(self, num_classes) -> DETR:
         # backbone
@@ -180,6 +147,18 @@ class MonoDETR3D(OTX3DDetectionModel):
             kitti_label_object=inputs.kitti_label_object,
         )
 
+    def forward_for_tracing(self, images: torch.Tensor, calib_matrix: torch.Tensor, img_sizes: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        outputs = self.model(images=images, calibs=calib_matrix, img_sizes=img_sizes, mode="predict")
+
+        return {
+            "scores": outputs['pred_logits'].sigmoid(),
+            "boxes_3d": outputs['pred_boxes'],
+            "size_3d": outputs['pred_3d_dim'],
+            "heading_angle": outputs['pred_angle'],
+            "depth": outputs['pred_depth'], # depth + deviation
+        }
+
     @staticmethod
     def extract_dets_from_outputs(outputs, topk=50):
         # get src outputs
@@ -221,7 +200,7 @@ class MonoDETR3D(OTX3DDetectionModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        return OTXNativeModelExporter(
+        return OTXObjectDetection3DExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
@@ -230,21 +209,24 @@ class MonoDETR3D(OTX3DDetectionModel):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration={
-                "input_names": ["images"],
-                "output_names": ["bboxes", "labels", "scores"],
+                "input_names": ["images", "calib_matrix", "img_sizes"],
+                "output_names": ["scores", "size_3d", "heading_angle", "boxes_3d", "depth"],
                 "dynamic_axes": {
                     "images": {0: "batch"},
-                    "boxes": {0: "batch", 1: "num_dets"},
-                    "labels": {0: "batch", 1: "num_dets"},
+                    "boxes_3d": {0: "batch", 1: "num_dets"},
                     "scores": {0: "batch", 1: "num_dets"},
+                    "heading_angle": {0: "batch", 1: "num_dets"},
+                    "depth": {0: "batch", 1: "num_dets"},
+                    "size_3d": {0: "batch", 1: "num_dets"},
                 },
                 "autograd_inlining": False,
                 "opset_version": 16,
             },
-            output_names=["bboxes", "labels", "scores"],
+            input_names=["images", "calib_matrix", "img_sizes"],
+            output_names=["scores", "boxes_3d", "size_3d", "heading_angle", "depth"],
         )
 
     @property
     def _optimization_config(self) -> dict[str, Any]:
-        """PTQ config for RT-DETR."""
+        """PTQ config for MonoDETR."""
         return {"model_type": "transformer"}

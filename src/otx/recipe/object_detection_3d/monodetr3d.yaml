@@ -3,11 +3,14 @@ model:
   init_args:
     label_info: 17
     model_name: monodetr_50
+    input_size:
+      - 384
+      - 1280
 
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
-        lr: 0.0002
+        lr: 0.0001
         betas: [0.9, 0.999]
         weight_decay: 0.0001
 

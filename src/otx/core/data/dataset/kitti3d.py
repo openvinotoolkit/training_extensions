@@ -132,8 +132,7 @@ class KITTI_Dataset(data.Dataset):
         return car_moderate
 
     def __len__(self):
-        return 10
-        # return self.idx_list.__len__()
+        return self.idx_list.__len__()
 
     def __getitem__(self, item):
         #  ============================   get inputs   ===========================
