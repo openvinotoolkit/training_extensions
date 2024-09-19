@@ -250,6 +250,8 @@ class OTXTileDataset(OTXDataset):
         )
         self.tile_config = tile_config
         self._dataset = dataset
+
+        # LabelInfo differs from SegLabelInfo, thus we need to update it for semantic segmentation.
         if self.label_info != dataset.label_info:
             msg = (
                 "Replace the label info to match the dataset's label info",
@@ -286,6 +288,7 @@ class OTXTileDataset(OTXDataset):
         Args:
             image (np.ndarray): The input image.
             item (DatasetItem): The dataset item.
+            parent_idx (int): The parent index. This is to keep track of the original dataset item index for merging.
 
         Returns:
             A tuple containing two lists:

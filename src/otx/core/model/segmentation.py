@@ -233,7 +233,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             inputs (TileBatchSegDataEntity): Tile batch data entity.
 
         Returns:
-            DetBatchPredEntity: Merged detection prediction.
+            SegBatchPredEntity: Merged semantic segmentation prediction.
         """
         if self.explain_mode:
             msg = "Explain mode is not supported for tiling"

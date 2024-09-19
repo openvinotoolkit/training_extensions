@@ -319,7 +319,7 @@ class TileBatchSegDataEntity(OTXTileBatchDataEntity):
                     raise RuntimeError(msg)
 
                 if not isinstance(entity, SegDataEntity):
-                    msg = "All entities should be InstanceSegDataEntity before collate_fn()"
+                    msg = "All entities should be SegDataEntity before collate_fn()"
                     raise TypeError(msg)
 
         return TileBatchSegDataEntity(

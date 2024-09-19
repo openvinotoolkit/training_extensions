@@ -462,9 +462,11 @@ class SegmentationTileMerge(TileMerge):
         """Merge batch tile predictions to a list of full-size prediction data entities.
 
         Args:
-            batch_tile_preds (list): segmentation tile predictions.
-            batch_tile_attrs (list): segmentation tile attributes.
+            batch_tile_preds (list[SegBatchPredEntity]): segmentation tile predictions.
+            batch_tile_attrs (list[list[dict]]): segmentation tile attributes.
 
+        Returns:
+            list[SegPredEntity]: List of full-size prediction data entities after merging.
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
