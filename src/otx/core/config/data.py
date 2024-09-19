@@ -76,7 +76,7 @@ class TileConfig:
     tile_size: tuple[int, int] = (400, 400)
     overlap: float = 0.2
     iou_threshold: float = 0.45
-    max_num_instances: int = 500
+    max_num_instances: int = 1500
     object_tile_ratio: float = 0.03
     sampling_ratio: float = 1.0
     with_full_img: bool = False
