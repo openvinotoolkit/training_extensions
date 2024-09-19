@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import create_autospec
+from unittest.mock import MagicMock, create_autospec
 
 import numpy as np
 import pytest
@@ -13,6 +13,8 @@ import shapely.geometry as sg
 import torch
 from datumaro import Dataset as DmDataset
 from datumaro import Polygon
+from model_api.models import Model
+from model_api.models.utils import ImageResultWithSoftPrediction
 from omegaconf import OmegaConf
 from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
@@ -29,6 +31,7 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDataEntity, TileBatchSegDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
+from otx.core.model.seg_tiler import SegTiler
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 from torchvision import tv_tensors
@@ -509,3 +512,37 @@ class TestOTXTiling:
         tile_datamodule.prepare_data()
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
+
+    def test_seg_tiler(self, mocker):
+        rng = np.random.default_rng()
+        rnd_tile_size = rng.integers(low=100, high=500)
+        rnd_tile_overlap = rng.random()
+        image_size = rng.integers(low=1000, high=5000)
+        np_image = np.zeros((image_size, image_size, 3), dtype=np.uint8)
+
+        mock_model = MagicMock(spec=Model)
+        mocker.patch("model_api.tilers.tiler.Tiler.__init__", return_value=None)
+        mocker.patch.multiple(SegTiler, __abstractmethods__=set())
+
+        num_labels = rng.integers(low=1, high=10)
+
+        tiler = SegTiler(model=mock_model)
+        tiler.model = mock_model
+        tiler.model.labels = [f"label{i}" for i in range(num_labels)]
+        tiler.tile_with_full_img = True
+        tiler.tile_size = rnd_tile_size
+        tiler.tiles_overlap = rnd_tile_overlap
+
+        tile_results = []
+        for coord in tiler._tile(image=np_image):
+            x1, y1, x2, y2 = coord
+            h, w = y2 - y1, x2 - x1
+            tile_predictions = ImageResultWithSoftPrediction(
+                resultImage=np.zeros((h, w), dtype=np.uint8),
+                soft_prediction=np.random.rand(h, w, num_labels),
+                feature_vector=np.array([]),
+                saliency_map=np.array([]),
+            )
+            tile_result = tiler._postprocess_tile(tile_predictions, coord)
+            tile_results.append(tile_result)
+        tiler._merge_results(tile_results, np_image.shape)
