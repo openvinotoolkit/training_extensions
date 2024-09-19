@@ -22,6 +22,13 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Annotation type for each task
+TASK_ANNO_TYPE = {
+    OTXTaskType.INSTANCE_SEGMENTATION: Polygon,
+    OTXTaskType.SEMANTIC_SEGMENTATION: Polygon,
+    OTXTaskType.DETECTION: Bbox,
+}
+
 
 def compute_robust_statistics(values: np.array) -> dict[str, float]:
     """Computes robust statistics of given samples.
@@ -153,15 +160,17 @@ def compute_robust_dataset_statistics(
             )
 
     stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
-    if task is OTXTaskType.INSTANCE_SEGMENTATION or task is OTXTaskType.SEMANTIC_SEGMENTATION:
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes[Polygon]))
-    elif task is OTXTaskType.DETECTION:
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(
-            np.array(size_of_shapes[Bbox]),
+
+    target_ann_type = TASK_ANNO_TYPE.get(task)
+    if not target_ann_type:
+        msg = (
+            f"Task type {task} is not supported for computing annotation statistics. "
+            "OTX will try to continue with annotation found in the dataset."
         )
-    else:
-        msg = f"Task type {task} is not supported."
-        raise NotImplementedError(msg)
+        logger.warning(msg)
+        target_ann_type = sorted(size_of_shapes.keys(), key=lambda x: len(size_of_shapes[x]), reverse=True)[0]
+        logger.warning(f"Selected annotation type: {target_ann_type}")
+    stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes[target_ann_type]))
     return stat
 
 
