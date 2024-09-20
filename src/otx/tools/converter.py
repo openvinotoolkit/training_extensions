@@ -277,12 +277,22 @@ class ConfigConverter:
             config["data"]["test_subset"]["batch_size"] = param_value
 
         def update_learning_rate(param_value: float) -> None:
-            config["model"]["init_args"]["optimizer"]["init_args"]["lr"] = param_value
+            optimizer = config["model"]["init_args"]["optimizer"]
+            if isinstance(optimizer, dict) and "init_args" in optimizer:
+                optimizer["init_args"]["lr"] = param_value
+            else:
+                warn("Warning: learning_rate is not updated", stacklevel=1)
 
         def update_learning_rate_warmup_iters(param_value: int) -> None:
             scheduler = config["model"]["init_args"]["scheduler"]
-            if scheduler["class_path"] == "otx.core.schedulers.LinearWarmupSchedulerCallable":
+            if (
+                isinstance(scheduler, dict)
+                and "class_path" in scheduler
+                and scheduler["class_path"] == "otx.core.schedulers.LinearWarmupSchedulerCallable"
+            ):
                 scheduler["init_args"]["num_warmup_steps"] = param_value
+            else:
+                warn("Warning: learning_rate_warmup_iters is not updated", stacklevel=1)
 
         def update_num_iters(param_value: int) -> None:
             config["max_epochs"] = param_value
