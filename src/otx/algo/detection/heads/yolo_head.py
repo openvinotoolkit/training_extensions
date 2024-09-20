@@ -311,8 +311,8 @@ class YOLOHeadModule(BaseDenseHead):
         csp_args: dict[str, Any] | None = None,
         aux_cfg: dict[str, Any] | None = None,
         with_nms: bool = True,
-        min_confidence: float = 0.05,
-        min_iou: float = 0.9,
+        min_confidence: float = 0.1,
+        min_iou: float = 0.65,
     ) -> None:
         if len(csp_channels) - 1 != len(concat_sources):
             msg = (
