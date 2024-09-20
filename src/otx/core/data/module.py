@@ -30,7 +30,7 @@ from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
-from otx.core.data.dataset.kitti3d import KITTI_Dataset
+from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
@@ -189,18 +189,7 @@ class OTXDataModule(LightningDataModule):
 
         if self.task == "OBJECT_DETECTION_3D":
             for name in config_mapping:
-                if name in ["val", "test"]:
-                    aug_pd = False
-                    random_flip = 0.0
-                    aug_crop = False
-                    random_crop = 0.0
-                else:
-                    aug_pd = True
-                    random_flip = 0.5
-                    aug_crop = True
-                    random_crop = 0.5
-
-                dm_subset = KITTI_Dataset(self.data_root, split=name, random_crop=random_crop, aug_crop=aug_crop, random_flip=random_flip, aug_pd=aug_pd)
+                dm_subset = KITTI_Dataset(self.data_root, split=name)
                 dataset = OTXDatasetFactory.create(
                     task=self.task,
                     dm_subset=dm_subset,

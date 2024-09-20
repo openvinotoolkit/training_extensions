@@ -31,8 +31,8 @@ class MonoDETR3D(OTX3DDetectionModel):
     """
     mean: tuple[float, float, float] = [0.485, 0.456, 0.406]
     std: tuple[float, float, float] = [0.229, 0.224, 0.225]
-    input_size: tuple[int, int] = (384, 1280)
-    load_from: str | None = None
+    input_size: tuple[int, int] = (384, 1280) # HxW
+    load_from: str | None = "/home/kprokofi/MonoDETR/checkpoint_best_2.pth"
 
     def _build_model(self, num_classes) -> DETR:
         # backbone
@@ -46,13 +46,13 @@ class MonoDETR3D(OTX3DDetectionModel):
                                          hidden_dim=256)
 
         loss_weight_dict = {'loss_ce': 2,
-                       'loss_bbox': 5,
-                       'loss_giou': 2,
-                       'loss_dim': 1,
-                       'loss_angle': 1,
-                       'loss_depth': 1,
-                       'loss_center': 10,
-                       'loss_depth_map': 1}
+                            'loss_bbox': 5,
+                            'loss_giou': 2,
+                            'loss_dim': 1,
+                            'loss_angle': 1,
+                            'loss_depth': 1,
+                            'loss_center': 10,
+                            'loss_depth_map': 1}
 
         aux_weight_dict = {}
         for i in range(depthaware_transformer.decoder.num_layers - 1):
@@ -179,13 +179,13 @@ class MonoDETR3D(OTX3DDetectionModel):
 
         heading = outputs['pred_angle']
         size_3d = outputs['pred_3d_dim']
-        depth = outputs['pred_depth'][:, :, 0: 1]
+        depth = outputs['pred_depth']
         # decode boxes
         boxes_3d = torch.gather(out_bbox, 1, topk_boxes.repeat(1, 1, 6))  # b, q', 4
         # heading angle decoding
         heading = torch.gather(heading, 1, topk_boxes.repeat(1, 1, 24))
         # depth decoding
-        depth = torch.gather(depth, 1, topk_boxes)
+        depth = torch.gather(depth, 1, topk_boxes.repeat(1, 1, 2))
         # 3d dims decoding
         size_3d = torch.gather(size_3d, 1, topk_boxes.repeat(1, 1, 3))
         # 2d boxes of the corners decoding

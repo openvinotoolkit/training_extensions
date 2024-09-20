@@ -127,15 +127,6 @@ class Joiner(nn.Sequential):
         return out, pos
 
 
-def Back(cfg):
-
-    position_embedding = build_position_encoding(cfg)
-    return_interm_layers = cfg['masks'] or cfg['num_feature_levels'] > 1
-    backbone = Backbone(cfg['backbone'], cfg['train_backbone'], return_interm_layers, cfg['dilation'])
-    model = Joiner(backbone, position_embedding)
-    return model
-
-
 class BackboneBuilder:
     """ DepthAwareTransformerBuilder. """
 

@@ -8,11 +8,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-import numba
 from torch import Tensor
 from torchmetrics import Metric
-from otx.core.data.dataset.kitti_eval_python.eval import get_coco_eval_result, get_official_eval_result
-from otx.core.data.dataset.kitti3d import KITTI_Dataset
+from otx.core.data.dataset.kitti_3d.kitti_eval_python.eval import get_coco_eval_result
+
 
 if TYPE_CHECKING:
     from otx.core.types.label import LabelInfo
@@ -94,7 +93,7 @@ class KittiMetric(Metric):
                 names.append(obj.cls_type)
                 alphas.append(obj.alpha)
                 bboxes.append(obj.box2d)
-                dimensions.append([obj.h, obj.w, obj.l])
+                dimensions.append([obj.l, obj.h, obj.w])
                 locations.append(obj.pos)
                 rotation_y.append(obj.ry)
                 truncations.append(obj.trucation)

@@ -13,7 +13,7 @@ import torch
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.dataset.kitti3d import KITTI_Dataset
+from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel

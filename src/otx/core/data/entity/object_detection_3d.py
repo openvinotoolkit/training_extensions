@@ -18,7 +18,7 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
-from otx.core.data.dataset.kitti_utils import Calibration, Object3d
+from otx.core.data.dataset.kitti_3d.kitti_utils import Object3d
 
 if TYPE_CHECKING:
     from torch import LongTensor, Tensor

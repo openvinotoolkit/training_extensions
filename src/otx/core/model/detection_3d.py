@@ -12,7 +12,7 @@ import torch
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
-from otx.core.data.dataset.kitti_utils import class2angle
+from otx.core.data.dataset.kitti_3d.kitti_utils import class2angle
 import numpy as np
 from otx.core.metrics import MetricInput
 from otx.core.model.base import OTXModel
@@ -99,8 +99,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         xs3d = xs3d.view(batch, -1, 1)
         ys3d = ys3d.view(batch, -1, 1)
 
-        detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, preds.depth,
-                          preds.heading_angle, preds.size_3d, xs3d, ys3d], dim=2).detach().cpu().numpy()
+        detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, preds.depth[:,:,0:1],
+                          preds.heading_angle, preds.size_3d, xs3d, ys3d, torch.exp(-preds.depth[:,:,1:2])], dim=2).detach().cpu().numpy()
 
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
         calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
@@ -179,6 +179,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 score = dets[i, j, 1]
                 if score < threshold:
                     continue
+
                 # 2d bboxs decoding
                 x = dets[i, j, 2] * img_size[i][0]
                 y = dets[i, j, 3] * img_size[i][1]
@@ -204,12 +205,12 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 alpha = get_heading_angle(dets[i, j, 7:31])
                 ry = alpha2ry(calib_matrix[i], alpha, x)
 
-                score = dets[i, j, 1] * dets[i, j, -1]
+                score = score * dets[i, j, -1]
 
                 names.append(class_names[cls_id])
                 alphas.append(alpha)
                 bboxes.append(bbox)
-                dimensions.append(dimension)
+                dimensions.append(np.array([dimension[2], dimension[0], dimension[1]]))
                 locations.append(location)
                 rotation_y.append(ry)
                 scores.append(score)

@@ -4,14 +4,14 @@ import torch.utils.data as data
 from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-from otx.core.data.dataset.kitti_utils import angle2class
-from otx.core.data.dataset.kitti_utils import get_objects_from_label
-from otx.core.data.dataset.kitti_utils import Calibration
-from otx.core.data.dataset.kitti_utils import get_affine_transform
-from otx.core.data.dataset.kitti_utils import affine_transform
-from otx.core.data.dataset.kitti_eval_python.eval import get_official_eval_result
-import otx.core.data.dataset.kitti_eval_python.kitti_common as kitti
-from otx.core.data.dataset.kitti_utils import PhotometricDistort
+from otx.core.data.dataset.kitti_3d.kitti_utils import angle2class
+from otx.core.data.dataset.kitti_3d.kitti_utils import get_objects_from_label
+from otx.core.data.dataset.kitti_3d.kitti_utils import Calibration
+from otx.core.data.dataset.kitti_3d.kitti_utils import get_affine_transform
+from otx.core.data.dataset.kitti_3d.kitti_utils import affine_transform
+from otx.core.data.dataset.kitti_3d.kitti_eval_python.eval import get_official_eval_result
+import otx.core.data.dataset.kitti_3d.kitti_eval_python.kitti_common as kitti
+from otx.core.data.dataset.kitti_3d.kitti_utils import PhotometricDistort
 
 
 class KITTI_Dataset(data.Dataset):
@@ -57,7 +57,7 @@ class KITTI_Dataset(data.Dataset):
             self.writelist.extend(['DontCare'])
 
         # data split loading
-        assert self.split in ['train', 'val', 'trainval', 'test']
+        assert self.split in ['train', 'val', 'test']
         self.split_file = os.path.join(self.root_dir, 'ImageSets', self.split + '.txt')
         self.idx_list = [x.strip() for x in open(self.split_file).readlines()]
 
@@ -68,7 +68,7 @@ class KITTI_Dataset(data.Dataset):
         self.label_dir = os.path.join(self.data_dir, 'label_2')
 
         # data augmentation configuration
-        self.data_augmentation = True if split in ['train', 'trainval'] else False
+        self.data_augmentation = True if split in ['train'] else False
 
         self.aug_pd = aug_pd
         self.aug_crop = aug_crop
@@ -171,7 +171,7 @@ class KITTI_Dataset(data.Dataset):
         # image encoding
         img = np.array(img).astype(np.float32) / 255.0
         img = (img - self.mean) / self.std
-        img = img.transpose(2, 0, 1)  # C * H * W
+        img = img.transpose(2, 0, 1)  # C * H * W -> (384 * 1280)
 
         info = {'img_id': index,
                 'img_size': img_size,

@@ -8,7 +8,7 @@ from scipy.optimize import linear_sum_assignment
 from torch import nn
 import numpy as np
 
-from otx.algo.object_detection_3d.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou, box_xyxy_to_cxcywh, box_cxcylrtb_to_xyxy
+from otx.algo.object_detection_3d.utils.box_ops import generalized_box_iou, box_cxcylrtb_to_xyxy
 
 
 class HungarianMatcher(nn.Module):
@@ -102,11 +102,3 @@ class HungarianMatcher(nn.Module):
                     for indice1, indice2 in zip(indices, indices_g)
                 ]
         return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
-
-
-def build_matcher(cfg):
-    return HungarianMatcher(
-        cost_class=cfg['set_cost_class'],
-        cost_bbox=cfg['set_cost_bbox'],
-        cost_3dcenter=cfg['set_cost_3dcenter'],
-        cost_giou=cfg['set_cost_giou'])
