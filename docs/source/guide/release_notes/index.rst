@@ -34,6 +34,9 @@ Enhancements
 - Support ImageFromBytes
 - enable model export
 - Move templates from OTX1.X to OTX2.X
+- Include Geti arrow dataset subset names
+- Include full image with anno in case there's no tile in tile dataset
+- Add type checker in converter for callable functions (optimizer, scheduler)
 
 Bug fixes
 ^^^^^^^^^
