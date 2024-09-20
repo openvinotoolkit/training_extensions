@@ -3,7 +3,7 @@ input_size:
   - 1024
   - 1024
 mem_cache_size: 1GB
-mem_cache_img_max_size: null
+mem_cache_img_min_size: null
 image_color_channel: RGB
 stack_images: false
 data_format: coco_instances

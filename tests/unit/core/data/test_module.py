@@ -133,6 +133,7 @@ class TestModule:
         assert fxt_config.train_subset.input_size is None
         assert fxt_config.val_subset.input_size is None
         assert fxt_config.test_subset.input_size is None
+        assert module.mem_cache_img_min_size is None
 
     def test_init_input_size(
         self,
@@ -148,7 +149,7 @@ class TestModule:
         fxt_config.val_subset.input_size = None
         fxt_config.test_subset.input_size = (800, 800)
 
-        OTXDataModule(
+        data_module = OTXDataModule(
             task=OTXTaskType.MULTI_CLASS_CLS,
             data_format=fxt_config.data_format,
             data_root=fxt_config.data_root,
@@ -161,6 +162,7 @@ class TestModule:
         assert fxt_config.train_subset.input_size == (1200, 1200)
         assert fxt_config.val_subset.input_size == (1200, 1200)
         assert fxt_config.test_subset.input_size == (800, 800)
+        assert data_module.mem_cache_img_min_size == (1200, 1200)
 
     @pytest.fixture()
     def mock_adapt_input_size_to_dataset(self, mocker) -> MagicMock:

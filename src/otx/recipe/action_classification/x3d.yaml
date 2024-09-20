@@ -30,7 +30,7 @@ data:
     - 224
   data_format: kinetics
   mem_cache_size: 1GB
-  mem_cache_img_max_size:
+  mem_cache_img_min_size:
     - 500
     - 500
   image_color_channel: BGR

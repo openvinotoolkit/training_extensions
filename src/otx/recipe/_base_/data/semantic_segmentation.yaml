@@ -3,7 +3,7 @@ input_size:
   - 512
   - 512
 mem_cache_size: 1GB
-mem_cache_img_max_size: null
+mem_cache_img_min_size: null
 image_color_channel: RGB
 data_format: common_semantic_segmentation_with_subset_dirs
 include_polygons: true

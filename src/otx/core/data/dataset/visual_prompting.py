@@ -147,7 +147,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
             image=img_data,
             img_info=ImageInfo(
                 img_idx=index,
-                img_shape=img_shape,
+                img_shape=img_data.shape[:2],
                 ori_shape=img_shape,
             ),
             masks=None,
@@ -270,7 +270,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
             image=to_image(img_data),
             img_info=ImageInfo(
                 img_idx=index,
-                img_shape=img_shape,
+                img_shape=img_data.shape[:2],
                 ori_shape=img_shape,
             ),
             masks=masks,

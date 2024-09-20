@@ -66,7 +66,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         dm_subset: Datumaro subset of a dataset
         transforms: Transforms to apply on images
         mem_cache_handler: Handler of the images cache
-        mem_cache_img_max_size: Max size of images to put in cache
+        mem_cache_img_min_size: Minimum size of images to put in cache
         max_refetch: Maximum number of images to fetch in cache
         image_color_channel: Color channel of images
         stack_images: Whether or not to stack images in collate function in OTXBatchData entity.
@@ -78,7 +78,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         dm_subset: DatasetSubset,
         transforms: Transforms,
         mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
-        mem_cache_img_max_size: tuple[int, int] | None = None,
+        mem_cache_img_min_size: tuple[int, int] | None = None,
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
@@ -87,7 +87,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.dm_subset = dm_subset
         self.transforms = transforms
         self.mem_cache_handler = mem_cache_handler
-        self.mem_cache_img_max_size = mem_cache_img_max_size
+        self.mem_cache_img_min_size = mem_cache_img_min_size
         self.max_refetch = max_refetch
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
@@ -142,10 +142,13 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         raise RuntimeError(msg)
 
     def _get_img_data_and_shape(self, img: Image) -> tuple[np.ndarray, tuple[int, int]]:
+        """Get image and original image shape from the memory cache."""
         key = img.path if isinstance(img, ImageFromFile) else id(img)
+        img_shape = img.size
 
-        if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
-            return img_data, img_data.shape[:2]
+        img_data, _ = self.mem_cache_handler.get(key=key)
+        if img_data is not None:
+            return img_data, img_shape or img_data.shape[:2]
 
         with image_decode_context():
             img_data = (
@@ -160,13 +163,13 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
         img_data = self._cache_img(key=key, img_data=img_data.astype(np.uint8))
 
-        return img_data, img_data.shape[:2]
+        return img_data, img_shape or img_data.shape[:2]
 
     def _cache_img(self, key: str | int, img_data: np.ndarray) -> np.ndarray:
         """Cache an image after resizing.
 
         If there is available space in the memory pool, the input image is cached.
-        Before caching, the input image is resized if it is larger than the maximum image size
+        Before caching, the input image is resized if it is larger than the minimum image size
         specified by the memory caching handler.
         Otherwise, the input image is directly cached.
         After caching, the processed image data is returned.
@@ -181,21 +184,21 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if self.mem_cache_handler.frozen:
             return img_data
 
-        if self.mem_cache_img_max_size is None:
+        if self.mem_cache_img_min_size is None:
             self.mem_cache_handler.put(key=key, data=img_data, meta=None)
             return img_data
 
         height, width = img_data.shape[:2]
-        max_height, max_width = self.mem_cache_img_max_size
+        min_height, min_width = self.mem_cache_img_min_size
 
-        if height <= max_height and width <= max_width:
+        if height <= min_height or width <= min_width:
             self.mem_cache_handler.put(key=key, data=img_data, meta=None)
             return img_data
 
-        # Preserve the image size ratio and fit to max_height or max_width
-        # e.g. (1000 / 2000 = 0.5, 1000 / 1000 = 1.0) => 0.5
-        # h, w = 2000 * 0.5 => 1000, 1000 * 0.5 => 500, bounded by max_height
-        min_scale = min(max_height / height, max_width / width)
+        # Preserve the image size ratio and fit to min_height or min_width
+        # e.g. (1000 / 2000 = 0.5, 1000 / 4000 = 0.25) => 0.5
+        # h, w = 2000 * 0.5 => 1000, 4000 * 0.5 => 2000, bounded by min_height
+        min_scale = max(min_height / height, min_width / width)
         new_height, new_width = int(min_scale * height), int(min_scale * width)
         resized_img = cv2.resize(
             src=img_data,

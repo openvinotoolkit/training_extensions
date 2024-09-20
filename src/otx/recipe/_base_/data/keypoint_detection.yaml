@@ -1,6 +1,6 @@
 task: KEYPOINT_DETECTION
 mem_cache_size: 1GB
-mem_cache_img_max_size: null
+mem_cache_img_min_size: null
 stack_images: true
 data_format: coco_person_keypoints
 unannotated_items_ratio: 0.0
