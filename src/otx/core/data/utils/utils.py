@@ -250,7 +250,7 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
         tile_config (TileConfig): tiling parameters of the model
         dataset (Dataset): Datumaro dataset including all subsets
     """
-    if (train_dataset := dataset.subsets().get("train")) is not None:
+    if (train_dataset := dataset.subsets().get("train") or dataset.subsets().get("TRAINING")) is not None:
         stat = compute_robust_dataset_statistics(train_dataset)
         max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
         avg_size = stat["annotation"]["size_of_shape"]["avg"]
