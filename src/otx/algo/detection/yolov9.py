@@ -19,6 +19,7 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import OTXDetectionModel
+from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -133,6 +134,14 @@ class YOLOv9(OTXDetectionModel):
                 "autograd_inlining": False,
             },
             output_names=None,  # TODO (someone): support XAI
+        )
+
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        return super()._export_parameters.wrap(
+            confidence_threshold=self.model.bbox_head.min_confidence,
+            iou_threshold=self.model.bbox_head.min_iou,
         )
 
     def to(self, *args, **kwargs) -> Self:
