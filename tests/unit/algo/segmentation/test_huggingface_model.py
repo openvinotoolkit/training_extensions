@@ -24,7 +24,7 @@ class TestHuggingFaceModelForSegmentation:
     @pytest.fixture()
     def fxt_seg_model(self):
         return HuggingFaceModelForSegmentation(
-            model_name_or_path="nvidia/segformer-b0-finetuned-ade-512-512",
+            model_name="nvidia/segformer-b0-finetuned-ade-512-512",
             label_info=2,
         )
 
@@ -86,7 +86,7 @@ class TestHuggingFaceModelForSegmentation:
     def test_set_input_size(self, mock_pretrainedconfig, mock_automodel):
         input_size = (1, 3, 1024, 1024)
         HuggingFaceModelForSegmentation(
-            model_name_or_path="facebook/deit-tiny-patch16-224",
+            model_name="facebook/deit-tiny-patch16-224",
             label_info=10,
             input_size=input_size,
         )

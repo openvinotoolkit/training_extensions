@@ -10,7 +10,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 class TestSegNext:
     @pytest.fixture()
     def fxt_segnext(self) -> SegNext:
-        return SegNext(10, model_version="segnext_base", input_size=(512, 512))
+        return SegNext(10, model_name="segnext_base", input_size=(512, 512))
 
     def test_segnext_init(self, fxt_segnext):
         assert isinstance(fxt_segnext, SegNext)

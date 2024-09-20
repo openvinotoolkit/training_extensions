@@ -9,7 +9,7 @@ import torch
 from datumaro import Polygon
 from torchvision import tv_tensors
 
-from otx.algo.instance_segmentation.maskrcnn import MaskRCNN, MaskRCNNEfficientNet, MaskRCNNResNet50
+from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 from otx.core.model.instance_segmentation import OVInstanceSegmentationModel
 
@@ -92,14 +92,6 @@ class RotatedMaskRCNNModel(MaskRCNN):
             polygons=batch_polygons,
             labels=batch_labels,
         )
-
-
-class RotatedMaskRCNNResNet50(RotatedMaskRCNNModel, MaskRCNNResNet50):
-    """Rotated MaskRCNN model with ResNet50 backbone."""
-
-
-class RotatedMaskRCNNEfficientNet(RotatedMaskRCNNModel, MaskRCNNEfficientNet):
-    """Rotated MaskRCNN model with EfficientNet backbone."""
 
 
 class OVRotatedDetectionModel(OVInstanceSegmentationModel):

@@ -14,8 +14,8 @@ import torch
 from datumaro import Dataset as DmDataset
 from datumaro import Polygon
 from omegaconf import DictConfig, OmegaConf
-from otx.algo.detection.atss import MobileNetV2ATSS
-from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet
+from otx.algo.detection.atss import ATSS
+from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.core.config.data import (
     SubsetConfig,
     TileConfig,
@@ -342,7 +342,8 @@ class TestOTXTiling:
             assert isinstance(batch, TileBatchDetDataEntity)
 
     def test_det_tile_merge(self, fxt_det_data_config):
-        model = MobileNetV2ATSS(
+        model = ATSS(
+            model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter
@@ -360,7 +361,8 @@ class TestOTXTiling:
             model.forward_tiles(batch)
 
     def test_explain_det_tile_merge(self, fxt_det_data_config):
-        model = MobileNetV2ATSS(
+        model = ATSS(
+            model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter
@@ -380,7 +382,7 @@ class TestOTXTiling:
         self.explain_mode = False
 
     def test_instseg_tile_merge(self, fxt_instseg_data_config):
-        model = MaskRCNNEfficientNet(label_info=3)
+        model = MaskRCNN(label_info=3, model_name="maskrcnn_efficientnet_b2b")
         # Enable tile adapter
         fxt_instseg_data_config["tile_config"] = TileConfig(enable_tiler=True)
         tile_datamodule = OTXDataModule(
@@ -396,7 +398,7 @@ class TestOTXTiling:
             model.forward_tiles(batch)
 
     def test_explain_instseg_tile_merge(self, fxt_instseg_data_config):
-        model = MaskRCNNEfficientNet(label_info=3)
+        model = MaskRCNN(label_info=3, model_name="maskrcnn_efficientnet_b2b")
         # Enable tile adapter
         fxt_instseg_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False)
         tile_datamodule = OTXDataModule(

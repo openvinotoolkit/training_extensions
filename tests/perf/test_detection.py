@@ -40,6 +40,9 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Model(task="detection", name="rtdetr_18", category="other"),
         Benchmark.Model(task="detection", name="rtdetr_50", category="other"),
         Benchmark.Model(task="detection", name="rtdetr_101", category="other"),
+        Benchmark.Model(task="detection", name="yolov9_s", category="other"),
+        Benchmark.Model(task="detection", name="yolov9_m", category="other"),
+        Benchmark.Model(task="detection", name="yolov9_c", category="other"),
     ]
 
     DATASET_TEST_CASES = [

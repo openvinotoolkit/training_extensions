@@ -13,8 +13,10 @@ import torch
 from otx.algo.detection.utils.utils import clip_bboxes
 from torch import Tensor
 
+from .base_bbox_coder import BaseBBoxCoder
 
-class DeltaXYWHBBoxCoder:
+
+class DeltaXYWHBBoxCoder(BaseBBoxCoder):
     """Delta XYWH BBox coder.
 
     Following the practice in `R-CNN <https://arxiv.org/abs/1311.2524>`_,

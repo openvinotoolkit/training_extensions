@@ -324,7 +324,7 @@ class OverlapPatchEmbed(BaseModule):
         return x, h, w
 
 
-class NNMSCAN(nn.Module):
+class MSCANModule(nn.Module):
     """SegNeXt Multi-Scale Convolutional Attention Network (MCSAN) backbone.
 
     This backbone is the implementation of `SegNeXt: Rethinking
@@ -462,10 +462,10 @@ class MSCAN:
         },
     }
 
-    def __new__(cls, version: str) -> NNMSCAN:
+    def __new__(cls, model_name: str) -> MSCANModule:
         """Constructor for MSCAN backbone."""
-        if version not in cls.MSCAN_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.MSCAN_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return NNMSCAN(**cls.MSCAN_CFG[version])
+        return MSCANModule(**cls.MSCAN_CFG[model_name])

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
-from otx.algo.segmentation.segmentors import BaseSegmModel
+from otx.algo.segmentation.segmentors import BaseSegmentationModel
 from otx.core.model.segmentation import OTXSegmentationModel
 
 if TYPE_CHECKING:
@@ -26,15 +26,15 @@ class DinoV2Seg(OTXSegmentationModel):
     ]
 
     def _build_model(self) -> nn.Module:
-        if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        backbone = DinoVisionTransformer(name=self.model_version, freeze_backbone=True, out_index=[8, 9, 10, 11])
-        decode_head = FCNHead(self.model_version, num_classes=self.num_classes)
+        backbone = DinoVisionTransformer(model_name=self.model_name, freeze_backbone=True, out_index=[8, 9, 10, 11])
+        decode_head = FCNHead(self.model_name, num_classes=self.num_classes)
         criterion = CrossEntropyLossWithIgnore(ignore_index=self.label_info.ignore_index)  # type: ignore[attr-defined]
 
-        return BaseSegmModel(
+        return BaseSegmentationModel(
             backbone=backbone,
             decode_head=decode_head,
             criterion=criterion,

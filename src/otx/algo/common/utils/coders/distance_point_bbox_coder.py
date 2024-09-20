@@ -13,11 +13,13 @@ from typing import TYPE_CHECKING
 from otx.algo.common.utils.utils import bbox2distance, distance2bbox
 from otx.algo.detection.utils.utils import distance2bbox_export
 
+from .base_bbox_coder import BaseBBoxCoder
+
 if TYPE_CHECKING:
     from torch import Tensor
 
 
-class DistancePointBBoxCoder:
+class DistancePointBBoxCoder(BaseBBoxCoder):
     """Distance Point BBox coder.
 
     This coder encodes gt bboxes (x1, y1, x2, y2) into (top, bottom, left,

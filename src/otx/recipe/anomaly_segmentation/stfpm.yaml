@@ -19,9 +19,13 @@ overrides:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
         patience: 5
+        mode: max
+        monitor: pixel_F1Score
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
       init_args:
         max_interval: 1
+  gradient_clip_val: 0
+  num_sanity_val_steps: 0
 
   data:
     task: ANOMALY_SEGMENTATION

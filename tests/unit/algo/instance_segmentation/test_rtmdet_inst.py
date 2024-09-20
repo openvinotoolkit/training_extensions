@@ -3,13 +3,13 @@
 """Test of OTX RTMDetInst architecture."""
 
 import torch
-from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInstTiny
+from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 
 
 class TestRTMDetInst:
     def test_loss(self, fxt_data_module):
-        model = RTMDetInstTiny(3)
+        model = RTMDetInst(3, "rtmdet_inst_tiny")
         data = next(iter(fxt_data_module.train_dataloader()))
         data.images = torch.randn([2, 3, 32, 32])
         data.masks = [torch.zeros((len(masks), 32, 32)) for masks in data.masks]
@@ -20,7 +20,7 @@ class TestRTMDetInst:
         assert "loss_mask" in output
 
     def test_predict(self, fxt_data_module):
-        model = RTMDetInstTiny(3)
+        model = RTMDetInst(3, "rtmdet_inst_tiny")
         data = next(iter(fxt_data_module.train_dataloader()))
         data.images = [torch.randn(3, 32, 32), torch.randn(3, 48, 48)]
         model.eval()
@@ -28,7 +28,7 @@ class TestRTMDetInst:
         assert isinstance(output, InstanceSegBatchPredEntity)
 
     def test_export(self):
-        model = RTMDetInstTiny(3)
+        model = RTMDetInst(3, "rtmdet_inst_tiny")
         model.eval()
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 3

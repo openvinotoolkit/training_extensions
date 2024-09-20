@@ -8,7 +8,7 @@ from __future__ import annotations
 import copy
 import math
 from collections import OrderedDict
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 import torchvision
@@ -450,7 +450,7 @@ class TransformerDecoder(nn.Module):
         return torch.stack(dec_out_bboxes), torch.stack(dec_out_logits)
 
 
-class RTDETRTransformer(BaseModule):
+class RTDETRTransformerModule(BaseModule):
     """RTDETRTransformer.
 
     Args:
@@ -800,3 +800,38 @@ class RTDETRTransformer(BaseModule):
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.
         return [{"pred_logits": a, "pred_boxes": b} for a, b in zip(outputs_class, outputs_coord)]
+
+
+class RTDETRTransformer:
+    """RTDETRTransformer factory for detection."""
+
+    RTDETRTRANSFORMER_CFG: ClassVar[dict[str, Any]] = {
+        "rtdetr_18": {
+            "num_decoder_layers": 3,
+            "feat_channels": [256, 256, 256],
+        },
+        "rtdetr_50": {
+            "num_decoder_layers": 6,
+            "feat_channels": [256, 256, 256],
+        },
+        "rtdetr_101": {
+            "feat_channels": [384, 384, 384],
+        },
+    }
+
+    def __new__(
+        cls,
+        model_name: str,
+        num_classes: int,
+        eval_spatial_size: tuple[int, int] | None = None,
+    ) -> RTDETRTransformerModule:
+        """Constructor for RTDETRTransformer."""
+        if model_name not in cls.RTDETRTRANSFORMER_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return RTDETRTransformerModule(
+            **cls.RTDETRTRANSFORMER_CFG[model_name],
+            num_classes=num_classes,
+            eval_spatial_size=eval_spatial_size,
+        )

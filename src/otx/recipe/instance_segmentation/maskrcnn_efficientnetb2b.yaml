@@ -1,6 +1,7 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNEfficientNet
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
   init_args:
+    model_name: maskrcnn_efficientnet_b2b
     label_info: 80
 
     optimizer:

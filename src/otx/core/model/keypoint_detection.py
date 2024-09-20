@@ -149,8 +149,8 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
         return super()._export_parameters.wrap(
-            model_type="ssd",
-            task_type="detection",
+            model_type="keypoint_detection",
+            task_type="keypoint_detection",
             confidence_threshold=self.hparams.get("best_confidence_threshold", None),
             iou_threshold=0.5,
             tile_config=self.tile_config if self.tile_config.enable_tiler else None,

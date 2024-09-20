@@ -7,14 +7,13 @@ from __future__ import annotations
 
 import copy
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import nn
 
 from otx.algo.detection.layers import CSPRepLayer
-from otx.algo.modules import Conv2dModule
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import Conv2dModule, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.norm import build_norm_layer
 
@@ -100,7 +99,7 @@ class TransformerEncoder(nn.Module):
         return output
 
 
-class HybridEncoder(BaseModule):
+class HybridEncoderModule(BaseModule):
     """HybridEncoder for RTDetr.
 
     Args:
@@ -319,3 +318,28 @@ class HybridEncoder(BaseModule):
             outs.append(out)
 
         return outs
+
+
+class HybridEncoder:
+    """HybridEncoder factory for detection."""
+
+    HYBRIDENCODER_CFG: ClassVar[dict[str, Any]] = {
+        "rtdetr_18": {
+            "in_channels": [128, 256, 512],
+            "expansion": 0.5,
+        },
+        "rtdetr_50": {},
+        "rtdetr_101": {
+            "hidden_dim": 384,
+            "dim_feedforward": 2048,
+            "in_channels": [512, 1024, 2048],
+        },
+    }
+
+    def __new__(cls, model_name: str, eval_spatial_size: tuple[int, int] | None = None) -> HybridEncoderModule:
+        """Constructor for HybridEncoder."""
+        if model_name not in cls.HYBRIDENCODER_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return HybridEncoderModule(**cls.HYBRIDENCODER_CFG[model_name], eval_spatial_size=eval_spatial_size)

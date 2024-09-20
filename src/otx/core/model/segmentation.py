@@ -47,13 +47,13 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        model_name: str,
         input_size: tuple[int, int] = (512, 512),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
-        model_version: str | None = None,
         unsupervised_weight: float = 0.7,
         semisl_start_epoch: int = 2,
         drop_unreliable_pixels_percent: int = 20,
@@ -62,6 +62,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
+            model_name (str): The version/name/size of the model.
             input_size (tuple[int, int]): Model input size in the order of height and width.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
@@ -73,7 +74,6 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
                 Defaults to False.
             train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional):
                 The training type of the model. Defaults to OTXTrainType.SUPERVISED.
-            model_version (str | None, optional): The version of the model. Defaults to None.
             unsupervised_weight (float, optional): The weight of the unsupervised loss.
                 Only for semi-supervised learning. Defaults to 0.7.
             semisl_start_epoch (int, optional): The epoch at which the semi-supervised learning starts.
@@ -81,7 +81,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             drop_unreliable_pixels_percent (int, optional): The percentage of unreliable pixels to drop.
                 Only for semi-supervised learning. Defaults to 20.
         """
-        self.model_version = model_version
+        self.model_name = model_name
         self.unsupervised_weight = unsupervised_weight
         self.semisl_start_epoch = semisl_start_epoch
         self.drop_unreliable_pixels_percent = drop_unreliable_pixels_percent

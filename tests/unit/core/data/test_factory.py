@@ -72,6 +72,7 @@ class TestOTXDatasetFactory:
             (OTXTaskType.VISUAL_PROMPTING, OTXVisualPromptingDataset),
             (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING, OTXZeroShotVisualPromptingDataset),
             (OTXTaskType.ACTION_CLASSIFICATION, OTXActionClsDataset),
+            (OTXTaskType.ANOMALY, AnomalyDataset),
             (OTXTaskType.ANOMALY_CLASSIFICATION, AnomalyDataset),
             (OTXTaskType.ANOMALY_DETECTION, AnomalyDataset),
             (OTXTaskType.ANOMALY_SEGMENTATION, AnomalyDataset),

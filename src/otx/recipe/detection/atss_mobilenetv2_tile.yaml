@@ -1,6 +1,7 @@
 model:
-  class_path: otx.algo.detection.atss.MobileNetV2ATSS
+  class_path: otx.algo.detection.atss.ATSS
   init_args:
+    model_name: atss_mobilenetv2
     label_info: 80
 
     optimizer:

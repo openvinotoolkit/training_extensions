@@ -6,7 +6,7 @@
 from .cross_entropy_loss import CrossEntropyLoss
 from .cross_focal_loss import CrossSigmoidFocalLoss
 from .gfocal_loss import QualityFocalLoss
-from .iou_loss import GIoULoss
+from .iou_loss import GIoULoss, IoULoss
 from .smooth_l1_loss import L1Loss, smooth_l1_loss
 
 __all__ = [
@@ -14,6 +14,7 @@ __all__ = [
     "CrossSigmoidFocalLoss",
     "QualityFocalLoss",
     "GIoULoss",
+    "IoULoss",
     "L1Loss",
     "smooth_l1_loss",
 ]

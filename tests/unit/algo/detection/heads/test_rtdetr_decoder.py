@@ -5,13 +5,13 @@
 
 import pytest
 import torch
-from otx.algo.detection.heads.rtdetr_decoder import RTDETRTransformer
+from otx.algo.detection.heads.rtdetr_decoder import RTDETRTransformerModule
 
 
 class TestRTDETRTransformer:
     @pytest.fixture()
     def rt_detr_transformer(self):
-        return RTDETRTransformer(num_classes=10, feat_channels=[128, 128, 128], num_decoder_layers=1)
+        return RTDETRTransformerModule(num_classes=10, feat_channels=[128, 128, 128], num_decoder_layers=1)
 
     @pytest.fixture()
     def targets(self):
@@ -20,7 +20,7 @@ class TestRTDETRTransformer:
         ]
 
     def test_rt_detr_transformer_init(self, rt_detr_transformer):
-        assert isinstance(rt_detr_transformer, RTDETRTransformer)
+        assert isinstance(rt_detr_transformer, RTDETRTransformerModule)
         assert rt_detr_transformer.num_classes == 10
         assert rt_detr_transformer.aux_loss
 

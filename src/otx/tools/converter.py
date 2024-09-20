@@ -120,31 +120,40 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "segnext_b",
     },
-    # ANOMALY_CLASSIFICATION
+    # ANOMALY
+    "ote_anomaly_padim": {
+        "task": OTXTaskType.ANOMALY,
+        "model_name": "padim",
+    },
+    "ote_anomaly_stfpm": {
+        "task": OTXTaskType.ANOMALY,
+        "model_name": "stfpm",
+    },
+    # ANOMALY CLASSIFICATION
     "ote_anomaly_classification_padim": {
-        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "task": OTXTaskType.ANOMALY_CLASSIFICATION,
         "model_name": "padim",
     },
     "ote_anomaly_classification_stfpm": {
-        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "task": OTXTaskType.ANOMALY_CLASSIFICATION,
         "model_name": "stfpm",
     },
     # ANOMALY_DETECTION
     "ote_anomaly_detection_padim": {
-        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "task": OTXTaskType.ANOMALY_DETECTION,
         "model_name": "padim",
     },
     "ote_anomaly_detection_stfpm": {
-        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "task": OTXTaskType.ANOMALY_DETECTION,
         "model_name": "stfpm",
     },
     # ANOMALY_SEGMENTATION
     "ote_anomaly_segmentation_padim": {
-        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "task": OTXTaskType.ANOMALY_SEGMENTATION,
         "model_name": "padim",
     },
     "ote_anomaly_segmentation_stfpm": {
-        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "task": OTXTaskType.ANOMALY_SEGMENTATION,
         "model_name": "stfpm",
     },
 }

@@ -1,0 +1,24 @@
+model:
+  class_path: otx.algo.anomaly.stfpm.Stfpm
+  init_args:
+    layers: ["layer1", "layer2", "layer3"]
+    backbone: "resnet18"
+    task: ANOMALY
+
+engine:
+  task: ANOMALY
+  device: auto
+
+callback_monitor: image_F1Score
+
+data: ../_base_/data/anomaly.yaml
+overrides:
+  precision: 32
+  max_epochs: 100
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 5
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 1
