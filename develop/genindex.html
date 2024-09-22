@@ -524,6 +524,8 @@
 </li>
         <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_tiles">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
 </li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.forward_tiles">(otx.core.model.segmentation.OTXSegmentationModel method)</a>
+</li>
       </ul></li>
       <li><a href="guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.from_callable">from_callable() (otx.core.optimizer.OptimizerCallableSupportHPO class method)</a>
 
@@ -796,6 +798,8 @@
       <ul>
         <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.InstanceSegTileMerge.merge">(otx.core.utils.tile_merge.InstanceSegTileMerge method)</a>
 </li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.SegmentationTileMerge.merge">(otx.core.utils.tile_merge.SegmentationTileMerge method)</a>
+</li>
         <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.TileMerge.merge">(otx.core.utils.tile_merge.TileMerge method)</a>
 </li>
       </ul></li>
@@ -896,6 +900,8 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#module-otx.core.model.keypoint_detection">otx.core.model.keypoint_detection</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#module-otx.core.model.rotated_detection">otx.core.model.rotated_detection</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.seg_tiler.html#module-otx.core.model.seg_tiler">otx.core.model.seg_tiler</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#module-otx.core.model.segmentation">otx.core.model.segmentation</a>
 </li>
@@ -1263,8 +1269,6 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.html#module-otx.core.model">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     otx.core.model.action_classification
 
@@ -1272,6 +1276,8 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#module-otx.core.model.action_classification">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     otx.core.model.anomaly
 
@@ -1319,6 +1325,13 @@
 
       <ul>
         <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#module-otx.core.model.rotated_detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.seg_tiler
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.seg_tiler.html#module-otx.core.model.seg_tiler">module</a>
 </li>
       </ul></li>
       <li>
@@ -1627,16 +1640,20 @@
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.SegLabelInfo">SegLabelInfo (class in otx.core.types)</a>
 </li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.SegmentationTileMerge">SegmentationTileMerge (class in otx.core.utils.tile_merge)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.seg_tiler.html#otx.core.model.seg_tiler.SegTiler">SegTiler (class in otx.core.model.seg_tiler)</a>
+</li>
       <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.set_seed">set_seed() (otx.cli.cli.OTXCLI method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.setup">setup() (otx.core.data.OTXDataModule method)</a>
 
       <ul>
         <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.setup">(otx.core.model.base.OTXModel method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.setup_device">setup_device() (otx.algo.accelerators.XPUAccelerator method)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.strategies.html#otx.algo.strategies.SingleXPUStrategy.setup_optimizers">setup_optimizers() (otx.algo.strategies.SingleXPUStrategy method)</a>

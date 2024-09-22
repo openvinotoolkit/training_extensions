@@ -19,6 +19,7 @@ otx.core.utils.tile\_merge
    
       DetectionTileMerge
       InstanceSegTileMerge
+      SegmentationTileMerge
       TileMerge
    
    

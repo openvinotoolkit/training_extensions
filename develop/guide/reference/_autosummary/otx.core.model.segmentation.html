@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="otx.core.model.visual_prompting" href="otx.core.model.visual_prompting.html" />
-    <link rel="prev" title="otx.core.model.rotated_detection" href="otx.core.model.rotated_detection.html" />
+    <link rel="prev" title="otx.core.model.seg_tiler" href="otx.core.model.seg_tiler.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -407,7 +407,7 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.segmentation.OTXSegmentationModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.segmentation.</span></span><span class="sig-name descname"><span class="pre">OTXSegmentationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size:</span> <span class="pre">tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">(512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">512)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_segm_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_type:</span> <span class="pre">Literal[OTXTrainType.SUPERVISED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OTXTrainType.SEMI_SUPERVISED]</span> <span class="pre">=</span> <span class="pre">OTXTrainType.SUPERVISED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsupervised_weight:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semisl_start_epoch:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_unreliable_pixels_percent:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/segmentation.html#OTXSegmentationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.segmentation.OTXSegmentationModel" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.segmentation.</span></span><span class="sig-name descname"><span class="pre">OTXSegmentationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size:</span> <span class="pre">tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">(512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">512)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_segm_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_type:</span> <span class="pre">Literal[OTXTrainType.SUPERVISED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OTXTrainType.SEMI_SUPERVISED]</span> <span class="pre">=</span> <span class="pre">OTXTrainType.SUPERVISED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsupervised_weight:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semisl_start_epoch:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_unreliable_pixels_percent:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_config:</span> <span class="pre">TileConfig</span> <span class="pre">=</span> <span class="pre">TileConfig(enable_tiler=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_adaptive_tiling=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_size=(400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">400)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap=0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold=0.45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_instances=1500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_tile_ratio=0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_ratio=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_full_img=False)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/segmentation.html#OTXSegmentationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.segmentation.OTXSegmentationModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">SegBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SegBatchPredEntity</span></code>]</p>
 <p>Base class for the semantic segmentation models used in OTX.</p>
 <p>Base semantic segmentation model.</p>
@@ -464,6 +464,23 @@ Only for semi-supervised learning. Defaults to 20.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.segmentation.OTXSegmentationModel.forward_tiles">
+<span class="sig-name descname"><span class="pre">forward_tiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OTXTileBatchDataEntity</span><span class="p"><span class="pre">[</span></span><span class="pre">SegBatchDataEntity</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SegBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/segmentation.html#OTXSegmentationModel.forward_tiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.segmentation.OTXSegmentationModel.forward_tiles" title="Link to this definition">#</a></dt>
+<dd><p>Unpack segmentation tiles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inputs</strong> (<em>TileBatchSegDataEntity</em>) – Tile batch data entity.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Merged semantic segmentation prediction.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SegBatchPredEntity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input">
 <span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SegBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/segmentation.html#OTXSegmentationModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input" title="Link to this definition">#</a></dt>
 <dd><p>Returns a dummy input for semantic segmentation model.</p>
@@ -490,11 +507,11 @@ and create the OTX segmentation model compatible for OTX testing pipeline.</p>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.core.model.rotated_detection.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.model.seg_tiler.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.core.model.rotated_detection</p>
+          <p class="prev-next-title">otx.core.model.seg_tiler</p>
       </div>
   </a>
   <a class='right-next' id="next-link" href="otx.core.model.visual_prompting.html" title="next page">
@@ -543,6 +560,15 @@ and create the OTX segmentation model compatible for OTX testing pipeline.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXSegmentationModel.forward_for_tracing()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.segmentation.OTXSegmentationModel.forward_tiles">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXSegmentationModel.forward_tiles()
       </span>
      </code>
     </a>

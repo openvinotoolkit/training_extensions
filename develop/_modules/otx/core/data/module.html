@@ -395,6 +395,7 @@
         <span class="k">if</span> <span class="n">adaptive_input_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">input_size</span> <span class="o">=</span> <span class="n">adapt_input_size_to_dataset</span><span class="p">(</span>
                 <span class="n">dataset</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
                 <span class="n">input_size</span><span class="p">,</span>
                 <span class="n">adaptive_input_size</span> <span class="o">==</span> <span class="s2">&quot;downscale&quot;</span><span class="p">,</span>
                 <span class="n">input_size_multiplier</span><span class="p">,</span>
@@ -406,7 +407,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_adaptive_tiling</span><span class="p">:</span>
-            <span class="n">adapt_tile_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+            <span class="n">adapt_tile_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
 
         <span class="n">config_mapping</span> <span class="o">=</span> <span class="p">{</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span><span class="p">,</span>

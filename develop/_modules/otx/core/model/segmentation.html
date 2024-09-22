@@ -261,27 +261,33 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">f</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.segmentation.segmentors</span> <span class="kn">import</span> <span class="n">MeanTeacher</span>
+<span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span><span class="p">,</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.segmentation</span> <span class="kn">import</span> <span class="n">SegBatchDataEntity</span><span class="p">,</span> <span class="n">SegBatchPredEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">OTXTileBatchDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.dice</span> <span class="kn">import</span> <span class="n">SegmCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
+<span class="kn">from</span> <span class="nn">otx.core.model.seg_tiler</span> <span class="kn">import</span> <span class="n">SegTiler</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span><span class="p">,</span> <span class="n">TaskLevelExportParameters</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">LabelInfoTypes</span><span class="p">,</span> <span class="n">SegLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTrainType</span>
+<span class="kn">from</span> <span class="nn">otx.core.utils.tile_merge</span> <span class="kn">import</span> <span class="n">SegmentationTileMerge</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -298,8 +304,8 @@
 <span class="k">class</span> <span class="nc">OTXSegmentationModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">SegBatchDataEntity</span><span class="p">,</span> <span class="n">SegBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the semantic segmentation models used in OTX.&quot;&quot;&quot;</span>
 
-    <span class="n">mean</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">)</span>
-    <span class="n">scale</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">)</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">123.675</span><span class="p">,</span> <span class="mf">116.28</span><span class="p">,</span> <span class="mf">103.53</span><span class="p">)</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -314,6 +320,7 @@
         <span class="n">unsupervised_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
         <span class="n">semisl_start_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">drop_unreliable_pixels_percent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Base semantic segmentation model.</span>
 
@@ -351,6 +358,7 @@
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
             <span class="n">train_type</span><span class="o">=</span><span class="n">train_type</span><span class="p">,</span>
+            <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 
@@ -428,6 +436,7 @@
             <span class="n">return_soft_prediction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">soft_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">blur_strength</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">tile_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -473,6 +482,61 @@
             <span class="k">return</span> <span class="n">label_info</span>
 
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXSegmentationModel.forward_tiles">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.forward_tiles">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">[</span><span class="n">SegBatchDataEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SegBatchPredEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpack segmentation tiles.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (TileBatchSegDataEntity): Tile batch data entity.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SegBatchPredEntity: Merged semantic segmentation prediction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Explain mode is not supported for tiling&quot;</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SegBatchPredEntity</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tile_attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">merger</span> <span class="o">=</span> <span class="n">SegmentationTileMerge</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">batch_tile_attrs</span><span class="p">,</span> <span class="n">batch_tile_input</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">unbind</span><span class="p">():</span>
+            <span class="n">tile_size</span> <span class="o">=</span> <span class="n">batch_tile_attrs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;tile_size&quot;</span><span class="p">]</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">batch_tile_input</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
+                <span class="n">img_metas</span><span class="o">=</span><span class="n">batch_tile_input</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span><span class="p">(</span>
+                <span class="n">outputs</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">batch_tile_input</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">OTXBatchLossEntity</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Loss output is not supported for tile merging&quot;</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">tile_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+            <span class="n">tile_attrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_tile_attrs</span><span class="p">)</span>
+        <span class="n">pred_entities</span> <span class="o">=</span> <span class="n">merger</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">tile_preds</span><span class="p">,</span> <span class="n">tile_attrs</span><span class="p">)</span>
+
+        <span class="n">pred_entity</span> <span class="o">=</span> <span class="n">SegBatchPredEntity</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">images</span><span class="o">=</span><span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">image</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">],</span>
+            <span class="n">imgs_info</span><span class="o">=</span><span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">img_info</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">],</span>
+            <span class="n">masks</span><span class="o">=</span><span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">masks</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">],</span>
+            <span class="n">scores</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="n">pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">]</span>
+            <span class="n">pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">pred_entity</span></div>
+
 
 <div class="viewcode-block" id="OTXSegmentationModel.forward_for_tracing">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.forward_for_tracing">[docs]</a>
@@ -560,6 +624,17 @@
             <span class="n">use_throughput_mode</span><span class="o">=</span><span class="n">use_throughput_mode</span><span class="p">,</span>
             <span class="n">model_api_configuration</span><span class="o">=</span><span class="n">model_api_configuration</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_setup_tiler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup tiler for tile task.&quot;&quot;&quot;</span>
+        <span class="n">execution_mode</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_inference</span> <span class="k">else</span> <span class="s2">&quot;sync&quot;</span>
+        <span class="c1"># Note: Disable async_inference as tiling has its own sync/async implementation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">async_inference</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">SegTiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">execution_mode</span><span class="o">=</span><span class="n">execution_mode</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Enable tiler with tile size: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                and overlap: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tiles_overlap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>

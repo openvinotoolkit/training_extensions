@@ -1,0 +1,29 @@
+otx.core.model.seg\_tiler
+=========================
+
+.. automodule:: otx.core.model.seg_tiler
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SegTiler
+   
+   
+
+   
+   
+   
+
+
+

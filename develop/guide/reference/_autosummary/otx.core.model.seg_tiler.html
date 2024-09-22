@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.core.model.rotated_detection &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
+    <title>otx.core.model.seg_tiler &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.rotated_detection';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.seg_tiler';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.core.model.seg_tiler" href="otx.core.model.seg_tiler.html" />
-    <link rel="prev" title="otx.core.model.keypoint_detection" href="otx.core.model.keypoint_detection.html" />
+    <link rel="next" title="otx.core.model.segmentation" href="otx.core.model.segmentation.html" />
+    <link rel="prev" title="otx.core.model.rotated_detection" href="otx.core.model.rotated_detection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -391,49 +391,33 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.core.model.rotated_detection">
-<span id="otx-core-model-rotated-detection"></span><h1>otx.core.model.rotated_detection<a class="headerlink" href="#module-otx.core.model.rotated_detection" title="Link to this heading">#</a></h1>
-<p>Class definition for rotated detection model entity used in OTX.</p>
+  <section id="module-otx.core.model.seg_tiler">
+<span id="otx-core-model-seg-tiler"></span><h1>otx.core.model.seg_tiler<a class="headerlink" href="#module-otx.core.model.seg_tiler" title="Link to this heading">#</a></h1>
+<p>Module for Model API segmentation tiler.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.rotated_detection.OVRotatedDetectionModel" title="otx.core.model.rotated_detection.OVRotatedDetectionModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OVRotatedDetectionModel</span></code></a>(model_name, ...)</p></td>
-<td><p>Rotated Detection model compatible for OpenVINO IR Inference.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.model.rotated_detection.RotatedMaskRCNNModel" title="otx.core.model.rotated_detection.RotatedMaskRCNNModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RotatedMaskRCNNModel</span></code></a>(label_info, model_name, ...)</p></td>
-<td><p>Base class for the rotated detection models used in OTX.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.seg_tiler.SegTiler" title="otx.core.model.seg_tiler.SegTiler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SegTiler</span></code></a>(model[, configuration, execution_mode])</p></td>
+<td><p>Tiler for segmentation models.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.core.model.rotated_detection.OVRotatedDetectionModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.rotated_detection.</span></span><span class="sig-name descname"><span class="pre">OVRotatedDetectionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'MaskRCNN'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">async_inference:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_requests:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_throughput_mode:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_api_configuration:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Any]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_rle_mean_ap_f_measure_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/rotated_detection.html#OVRotatedDetectionModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.rotated_detection.OVRotatedDetectionModel" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OVInstanceSegmentationModel" title="otx.core.model.instance_segmentation.OVInstanceSegmentationModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OVInstanceSegmentationModel</span></code></a></p>
-<p>Rotated Detection model compatible for OpenVINO IR Inference.</p>
-<p>It can consume OpenVINO IR model path or model name from Intel OMZ repository
-and create the OTX detection model compatible for OTX testing pipeline.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.core.model.rotated_detection.RotatedMaskRCNNModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.rotated_detection.</span></span><span class="sig-name descname"><span class="pre">RotatedMaskRCNNModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_size:</span> <span class="pre">tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">(1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1024)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_rle_mean_ap_f_measure_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_config:</span> <span class="pre">TileConfig</span> <span class="pre">=</span> <span class="pre">TileConfig(enable_tiler=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_adaptive_tiling=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_size=(400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">400)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap=0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold=0.45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_instances=1500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_tile_ratio=0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_ratio=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_full_img=False)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/rotated_detection.html#RotatedMaskRCNNModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.rotated_detection.RotatedMaskRCNNModel" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskRCNN</span></code></p>
-<p>Base class for the rotated detection models used in OTX.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.rotated_detection.RotatedMaskRCNNModel.predict_step">
-<span class="sig-name descname"><span class="pre">predict_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InstanceSegBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/rotated_detection.html#RotatedMaskRCNNModel.predict_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.rotated_detection.RotatedMaskRCNNModel.predict_step" title="Link to this definition">#</a></dt>
-<dd><p>Predict step for rotated detection task.</p>
-<p>Note: This method is overridden to convert masks to rotated bounding boxes.</p>
+<dt class="sig sig-object py" id="otx.core.model.seg_tiler.SegTiler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.seg_tiler.</span></span><span class="sig-name descname"><span class="pre">SegTiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execution_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'async'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/seg_tiler.html#SegTiler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.seg_tiler.SegTiler" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Tiler</span></code></p>
+<p>Tiler for segmentation models.</p>
+<p>Base constructor for creating a tiling pipeline</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The predicted polygons (rboxes), scores, labels, masks.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>InstanceSegBatchPredEntity</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – underlying model</p></li>
+<li><p><strong>configuration</strong> – it contains values for parameters accepted by specific
+tiler (<cite>tile_size</cite>, <cite>tiles_overlap</cite> etc.) which are set as data attributes.</p></li>
+<li><p><strong>execution_mode</strong> – Controls inference mode of the tiler (<cite>async</cite> or <cite>sync</cite>).</p></li>
+</ul>
 </dd>
 </dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -446,17 +430,17 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.core.model.keypoint_detection.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.model.rotated_detection.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.core.model.keypoint_detection</p>
+          <p class="prev-next-title">otx.core.model.rotated_detection</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.core.model.seg_tiler.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.model.segmentation.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.core.model.seg_tiler</p>
+      <p class="prev-next-title">otx.core.model.segmentation</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -477,33 +461,13 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.model.rotated_detection.OVRotatedDetectionModel">
+  <a class="reference internal nav-link" href="#otx.core.model.seg_tiler.SegTiler">
    <code class="docutils literal notranslate">
     <span class="pre">
-     OVRotatedDetectionModel
+     SegTiler
     </span>
    </code>
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.model.rotated_detection.RotatedMaskRCNNModel">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     RotatedMaskRCNNModel
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.rotated_detection.RotatedMaskRCNNModel.predict_step">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       RotatedMaskRCNNModel.predict_step()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
 </ul>
 
@@ -522,7 +486,7 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.core.model.rotated_detection.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.core.model.seg_tiler.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

@@ -35,6 +35,7 @@ otx.core.model
    otx.core.model.instance_segmentation
    otx.core.model.keypoint_detection
    otx.core.model.rotated_detection
+   otx.core.model.seg_tiler
    otx.core.model.segmentation
    otx.core.model.visual_prompting
 
