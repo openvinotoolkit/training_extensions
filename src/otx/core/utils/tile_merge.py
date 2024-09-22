@@ -20,6 +20,7 @@ from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
+from otx.core.data.entity.segmentation import SegBatchPredEntity, SegPredEntity
 
 
 class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
@@ -27,9 +28,9 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
 
     Args:
         img_infos (list[ImageInfo]): Original image information before tiling.
-        iou_threshold (float, optional): IoU threshold for non-maximum suppression. Defaults to 0.45.
-        max_num_instances (int, optional): Maximum number of instances to keep. Defaults to 500.
-
+        num_classes (int): Number of classes.
+        tile_config (TileConfig): Tile configuration.
+        explain_mode (bool, optional): Whether or not tiles have explain features. Default: False.
     """
 
     def __init__(
@@ -37,6 +38,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         img_infos: list[ImageInfo],
         num_classes: int,
         tile_config: TileConfig,
+        explain_mode: bool = False,
     ) -> None:
         self.img_infos = img_infos
         self.num_classes = num_classes
@@ -44,6 +46,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         self.iou_threshold = tile_config.iou_threshold
         self.max_num_instances = tile_config.max_num_instances
         self.with_full_img = tile_config.with_full_img
+        self.explain_mode = explain_mode
 
     @abstractmethod
     def _merge_entities(
@@ -115,10 +118,10 @@ class DetectionTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
-        explain_mode = len(batch_tile_preds[0].feature_vector) > 0
+        explain_mode = self.explain_mode
 
-        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            batch_size = tile_preds.batch_size
+        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs, strict=True):
+            batch_size = len(tile_attrs)
             saliency_maps = tile_preds.saliency_map if explain_mode else [[] for _ in range(batch_size)]
             feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(batch_size)]
             for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_s_map, tile_f_vect in zip(
@@ -129,6 +132,7 @@ class DetectionTileMerge(TileMerge):
                 tile_preds.scores,
                 saliency_maps,
                 feature_vectors,
+                strict=True,
             ):
                 offset_x, offset_y, _, _ = tile_attr["roi"]
                 tile_bboxes[:, 0::2] += offset_x
@@ -154,7 +158,7 @@ class DetectionTileMerge(TileMerge):
 
         return [
             self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
-            for img_id, image_info in zip(img_ids, self.img_infos)
+            for img_id, image_info in zip(img_ids, self.img_infos, strict=True)
         ]
 
     def _merge_entities(
@@ -315,10 +319,10 @@ class InstanceSegTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
-        explain_mode = len(batch_tile_preds[0].feature_vector) > 0
+        explain_mode = self.explain_mode
 
-        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(tile_preds.batch_size)]
+        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs, strict=True):
+            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(len(tile_attrs))]
             for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks, tile_f_vect in zip(
                 tile_attrs,
                 tile_preds.imgs_info,
@@ -327,6 +331,7 @@ class InstanceSegTileMerge(TileMerge):
                 tile_preds.scores,
                 tile_preds.masks,
                 feature_vectors,
+                strict=True,
             ):
                 keep_indices = tile_masks.to_sparse().sum((1, 2)).to_dense() > 0
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
@@ -361,7 +366,7 @@ class InstanceSegTileMerge(TileMerge):
 
         return [
             self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
-            for img_id, image_info in zip(img_ids, self.img_infos)
+            for img_id, image_info in zip(img_ids, self.img_infos, strict=True)
         ]
 
     def _merge_entities(
@@ -448,3 +453,110 @@ class InstanceSegTileMerge(TileMerge):
 
         pred = {"labels": labels, "scores": scores, "masks": masks}
         return InstSegExplainAlgo.average_and_normalize(pred, num_classes)
+
+
+class SegmentationTileMerge(TileMerge):
+    """Semantic segmentation tile merge."""
+
+    def __init__(
+        self,
+        img_infos: list[ImageInfo],
+        num_classes: int,
+        tile_config: TileConfig,
+        explain_mode: bool = False,
+    ) -> None:
+        super().__init__(img_infos, num_classes, tile_config, explain_mode)
+        if explain_mode:
+            msg = "Explain mode is not supported for segmentation"
+            raise ValueError(msg)
+
+    def merge(
+        self,
+        batch_tile_preds: list[SegBatchPredEntity],
+        batch_tile_attrs: list[list[dict]],
+    ) -> list[SegPredEntity]:
+        """Merge batch tile predictions to a list of full-size prediction data entities.
+
+        Args:
+            batch_tile_preds (list[SegBatchPredEntity]): segmentation tile predictions.
+            batch_tile_attrs (list[list[dict]]): segmentation tile attributes.
+
+        Returns:
+            list[SegPredEntity]: List of full-size prediction data entities after merging.
+        """
+        entities_to_merge = defaultdict(list)
+        img_ids = []
+        explain_mode = self.explain_mode
+
+        for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
+            batch_size = tile_preds.batch_size
+            saliency_maps = tile_preds.saliency_map if explain_mode else [[] for _ in range(batch_size)]
+            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(batch_size)]
+            for tile_attr, tile_img_info, tile_masks, tile_s_map, tile_f_vect in zip(
+                tile_attrs,
+                tile_preds.imgs_info,
+                tile_preds.masks,
+                saliency_maps,
+                feature_vectors,
+            ):
+                tile_id = tile_attr["tile_id"]
+                if tile_id not in img_ids:
+                    img_ids.append(tile_id)
+                tile_img_info.padding = tile_attr["roi"]
+
+                seg_pred_entity = SegPredEntity(
+                    image=torch.empty(tile_img_info.ori_shape),
+                    img_info=tile_img_info,
+                    masks=tile_masks,
+                    score=[],
+                )
+
+                if explain_mode:
+                    seg_pred_entity.feature_vector = tile_f_vect
+                    seg_pred_entity.saliency_map = tile_s_map
+                entities_to_merge[tile_id].append(seg_pred_entity)
+
+        return [
+            self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
+            for img_id, image_info in zip(img_ids, self.img_infos)
+        ]
+
+    def _merge_entities(
+        self,
+        img_info: ImageInfo,
+        entities: list[SegPredEntity],
+        explain_mode: bool = False,
+    ) -> SegPredEntity:
+        """Merge tile predictions to one single prediction.
+
+        Args:
+            img_info (ImageInfo): Image information about the original image before tiling.
+            entities (list[SegPredEntity]): List of tile prediction entities.
+            explain_mode (bool): Whether or not tiles have explain features. Default: False.
+
+        Returns:
+            SegPredEntity: Merged prediction entity.
+        """
+        img_size = img_info.ori_shape
+        num_classes = len(entities[0].masks)
+
+        # Create a vote map for overlapping tiles
+        vote_mask = torch.zeros(img_size, dtype=torch.int, device=img_info.device)
+        full_logits_mask = torch.zeros((num_classes, *img_size), device=img_info.device)
+
+        for tile_entity in entities:
+            offset_x, offset_y, tile_w, tile_h = tile_entity.img_info.padding
+            vote_mask[offset_y : offset_y + tile_h, offset_x : offset_x + tile_w] += 1
+            full_logits_mask[:, offset_y : offset_y + tile_h, offset_x : offset_x + tile_w] += tile_entity.masks[
+                :,
+                :tile_h,
+                :tile_w,
+            ]
+        full_logits_mask = full_logits_mask / vote_mask.unsqueeze(0)
+
+        return SegPredEntity(
+            image=torch.empty(img_size),
+            img_info=img_info,
+            masks=full_logits_mask.argmax(0).unsqueeze(0),
+            score=[],
+        )
