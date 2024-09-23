@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from datumaro import Dataset as DmDataset
 from model_api.tilers import Tiler
 from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
 from otx.core.config.hpo import HpoConfig
@@ -14,6 +15,8 @@ from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_PER_TASK
+
+from tests.test_helpers import CommonSemanticSegmentationExporter
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
@@ -145,11 +148,24 @@ def test_engine_from_tile_recipe(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
 ):
-    task = OTXTaskType.DETECTION if "detection" in recipe else OTXTaskType.INSTANCE_SEGMENTATION
+    if "detection" in recipe:
+        task = OTXTaskType.DETECTION
+    elif "instance_segmentation" in recipe:
+        task = OTXTaskType.INSTANCE_SEGMENTATION
+    elif "semantic_segmentation" in recipe:
+        task = OTXTaskType.SEMANTIC_SEGMENTATION
+    else:
+        pytest.skip("Only Detection, Instance Segmentation, and Semantic Segmentation are supported for now.")
+
+    data_root = fxt_target_dataset_per_task["tiling_detection"]
+    if task is OTXTaskType.SEMANTIC_SEGMENTATION:
+        dataset = DmDataset.import_from(path=data_root, format="coco")
+        data_root = tmp_path / "tiling_detection_css"
+        dataset.export(data_root, format=CommonSemanticSegmentationExporter, save_media=True)
 
     engine = Engine.from_config(
         config_path=recipe,
-        data_root=fxt_target_dataset_per_task[task.value.lower()],
+        data_root=data_root,
         work_dir=tmp_path / task,
         device=fxt_accelerator,
     )
