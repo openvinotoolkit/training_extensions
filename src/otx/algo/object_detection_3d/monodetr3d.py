@@ -17,7 +17,7 @@ from otx.algo.object_detection_3d.depth_predictor import DepthPredictor
 from otx.algo.object_detection_3d.depthaware_transformer import DepthAwareTransformerBuilder
 from otx.algo.object_detection_3d.losses import MonoDETRCriterion
 from otx.algo.object_detection_3d.monodetr import MonoDETR
-from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy
+from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter

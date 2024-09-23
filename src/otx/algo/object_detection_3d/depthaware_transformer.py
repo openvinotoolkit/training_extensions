@@ -8,7 +8,7 @@ from torch import nn
 from torch.nn.init import constant_, normal_, xavier_uniform_
 
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention
-from otx.algo.object_detection_3d.utils.misc import inverse_sigmoid
+from otx.algo.detection.utils.utils import inverse_sigmoid
 
 
 class MLP(nn.Module):

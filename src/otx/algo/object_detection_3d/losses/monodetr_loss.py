@@ -4,8 +4,10 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from otx.algo.object_detection_3d.matcher import HungarianMatcher
-from otx.algo.object_detection_3d.utils import box_ops
+from otx.algo.object_detection_3d.matcher_3d import HungarianMatcher3D
+from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
+from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
+from torchvision.ops import box_convert
 
 from .ddn_loss import DDNLoss
 from .focal_loss import sigmoid_focal_loss
@@ -29,7 +31,7 @@ class MonoDETRCriterion(nn.Module):
         """
         super().__init__()
         self.num_classes = num_classes
-        self.matcher = HungarianMatcher(cost_class=2, cost_3dcenter=10, cost_bbox=5, cost_giou=2)
+        self.matcher = HungarianMatcher3D(cost_class=2, cost_3dcenter=10, cost_bbox=5, cost_giou=2)
         self.weight_dict = weight_dict
         self.focal_alpha = focal_alpha
         self.ddn_loss = DDNLoss()  # for depth map
@@ -104,9 +106,10 @@ class MonoDETRCriterion(nn.Module):
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes_3d"][i] for t, (_, i) in zip(targets, indices)], dim=0)
         loss_giou = 1 - torch.diag(
-            box_ops.generalized_box_iou(
-                box_ops.box_cxcylrtb_to_xyxy(src_boxes),
-                box_ops.box_cxcylrtb_to_xyxy(target_boxes),
+            bbox_overlaps(
+                box_cxcylrtb_to_xyxy(src_boxes),
+                box_cxcylrtb_to_xyxy(target_boxes),
+                mode="giou",
             ),
         )
         losses["loss_giou"] = loss_giou.sum() / num_boxes
@@ -177,7 +180,7 @@ class MonoDETRCriterion(nn.Module):
             [80, 24, 80, 24],
             device=depth_map_logits.device,
         )
-        gt_boxes2d = box_ops.box_cxcywh_to_xyxy(gt_boxes2d)
+        gt_boxes2d = box_convert(gt_boxes2d, "cxcywh", "xyxy")
         gt_center_depth = torch.cat([t["depth"] for t in targets], dim=0).squeeze(dim=1)
 
         losses = dict()

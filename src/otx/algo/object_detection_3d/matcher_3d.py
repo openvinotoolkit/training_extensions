@@ -12,7 +12,6 @@ from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 
 
-
 class HungarianMatcher3D(nn.Module):
     """This class computes an assignment between the targets and the predictions of the network
     For efficiency reasons, the targets don't include the no_object. Because of this, in general,
