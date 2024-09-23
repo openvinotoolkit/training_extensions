@@ -5,12 +5,9 @@ model:
     label_info: 80
 
     optimizer:
-      class_path: torch.optim.SGD
+      class_path: torch.optim.Adam
       init_args:
-        lr: 0.002
-        momentum: 0.937
-        weight_decay: 0.0005
-        nesterov: true
+        lr: 0.001
 
     scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
@@ -43,7 +40,7 @@ overrides:
       - 640
       - 640
     train_subset:
-      batch_size: 8
+      batch_size: 14
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
           init_args:
@@ -74,7 +71,7 @@ overrides:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 
     val_subset:
-      batch_size: 8
+      batch_size: 14
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
@@ -94,7 +91,7 @@ overrides:
             std: [255.0, 255.0, 255.0]
 
     test_subset:
-      batch_size: 8
+      batch_size: 14
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
