@@ -41,7 +41,6 @@ class MaskDINO(nn.Module):
         num_queries: int,
         object_mask_threshold: float,
         overlap_threshold: float,
-        metadata,
         size_divisibility: int,
         sem_seg_postprocess_before_inference: bool,
         pixel_mean: Tuple[float],
@@ -51,7 +50,6 @@ class MaskDINO(nn.Module):
         panoptic_on: bool,
         instance_on: bool,
         test_topk_per_image: int,
-        data_loader: str,
         pano_temp: float,
         focus_on_box: bool = False,
         transform_eval: bool = False,
@@ -90,7 +88,6 @@ class MaskDINO(nn.Module):
         self.num_queries = num_queries
         self.overlap_threshold = overlap_threshold
         self.object_mask_threshold = object_mask_threshold
-        self.metadata = metadata
         if size_divisibility < 0:
             # use backbone size_divisibility if not set
             size_divisibility = self.backbone.size_divisibility
@@ -105,7 +102,6 @@ class MaskDINO(nn.Module):
         self.panoptic_on = panoptic_on
         self.test_topk_per_image = test_topk_per_image
 
-        self.data_loader = data_loader
         self.focus_on_box = focus_on_box
         self.transform_eval = transform_eval
         self.semantic_ce_loss = semantic_ce_loss
@@ -122,20 +118,23 @@ class MaskDINO(nn.Module):
         sem_seg_head = MaskDINOHead(cfg, backbone.output_shape())
 
         # Loss parameters:
-        deep_supervision = cfg.MODEL.MaskDINO.DEEP_SUPERVISION
-        no_object_weight = cfg.MODEL.MaskDINO.NO_OBJECT_WEIGHT
+        no_object_weight = 0.1
 
         # loss weights
-        class_weight = cfg.MODEL.MaskDINO.CLASS_WEIGHT
-        cost_class_weight = cfg.MODEL.MaskDINO.COST_CLASS_WEIGHT
-        cost_dice_weight = cfg.MODEL.MaskDINO.COST_DICE_WEIGHT
-        dice_weight = cfg.MODEL.MaskDINO.DICE_WEIGHT  #
-        cost_mask_weight = cfg.MODEL.MaskDINO.COST_MASK_WEIGHT  #
-        mask_weight = cfg.MODEL.MaskDINO.MASK_WEIGHT
-        cost_box_weight = cfg.MODEL.MaskDINO.COST_BOX_WEIGHT
-        box_weight = cfg.MODEL.MaskDINO.BOX_WEIGHT  #
-        cost_giou_weight = cfg.MODEL.MaskDINO.COST_GIOU_WEIGHT
-        giou_weight = cfg.MODEL.MaskDINO.GIOU_WEIGHT  #
+        class_weight = 4.0
+        cost_class_weight = 4.0
+        cost_dice_weight = 5.0
+        dice_weight = 5.0
+        cost_mask_weight = 5.0
+        mask_weight = 5.0
+        cost_box_weight = 5.0
+        box_weight = 5.0
+        cost_giou_weight = 2.0
+        giou_weight = 2.0
+        train_num_points = 12544
+        oversample_ratio = 3.0
+        importance_sample_ratio = 0.75
+
         # building matcher
         matcher = HungarianMatcher(
             cost_class=cost_class_weight,
@@ -143,37 +142,30 @@ class MaskDINO(nn.Module):
             cost_dice=cost_dice_weight,
             cost_box=cost_box_weight,
             cost_giou=cost_giou_weight,
-            num_points=cfg.MODEL.MaskDINO.TRAIN_NUM_POINTS,
+            num_points=train_num_points,
         )
 
         weight_dict = {"loss_ce": class_weight}
         weight_dict.update({"loss_mask": mask_weight, "loss_dice": dice_weight})
         weight_dict.update({"loss_bbox": box_weight, "loss_giou": giou_weight})
+
         # two stage is the query selection scheme
-        if cfg.MODEL.MaskDINO.TWO_STAGE:
-            interm_weight_dict = {}
-            interm_weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
-            weight_dict.update(interm_weight_dict)
+        interm_weight_dict = {}
+        interm_weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
+        weight_dict.update(interm_weight_dict)
+
         # denoising training
-        dn = cfg.MODEL.MaskDINO.DN
-        if dn == "standard":
-            weight_dict.update({k + "_dn": v for k, v in weight_dict.items() if k != "loss_mask" and k != "loss_dice"})
-            dn_losses = ["labels", "boxes"]
-        elif dn == "seg":
-            weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
-            dn_losses = ["labels", "masks", "boxes"]
-        else:
-            dn_losses = []
-        if deep_supervision:
-            dec_layers = cfg.MODEL.MaskDINO.DEC_LAYERS
-            aux_weight_dict = {}
-            for i in range(dec_layers):
-                aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
-            weight_dict.update(aux_weight_dict)
-        if cfg.MODEL.MaskDINO.BOX_LOSS:
-            losses = ["labels", "masks", "boxes"]
-        else:
-            losses = ["labels", "masks"]
+        weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
+        dn_losses = ["labels", "masks", "boxes"]        
+
+        dec_layers = 9
+        aux_weight_dict = {}
+        for i in range(dec_layers):
+            aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+        weight_dict.update(aux_weight_dict)
+
+        losses = ["labels", "masks", "boxes"]
+        
         # building criterion
         criterion = SetCriterion(
             sem_seg_head.num_classes,
@@ -181,45 +173,35 @@ class MaskDINO(nn.Module):
             weight_dict=weight_dict,
             eos_coef=no_object_weight,
             losses=losses,
-            num_points=cfg.MODEL.MaskDINO.TRAIN_NUM_POINTS,
-            oversample_ratio=cfg.MODEL.MaskDINO.OVERSAMPLE_RATIO,
-            importance_sample_ratio=cfg.MODEL.MaskDINO.IMPORTANCE_SAMPLE_RATIO,
-            dn=cfg.MODEL.MaskDINO.DN,
+            num_points=train_num_points,
+            oversample_ratio=oversample_ratio,
+            importance_sample_ratio=importance_sample_ratio,
+            dn="seg",
             dn_losses=dn_losses,
-            panoptic_on=cfg.MODEL.MaskDINO.PANO_BOX_LOSS,
-            semantic_ce_loss=cfg.MODEL.MaskDINO.TEST.SEMANTIC_ON
-            and cfg.MODEL.MaskDINO.SEMANTIC_CE_LOSS
-            and not cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON,
+            panoptic_on=False,
+            semantic_ce_loss=False,
         )
 
         return {
             "backbone": backbone,
             "sem_seg_head": sem_seg_head,
             "criterion": criterion,
-            "num_queries": cfg.MODEL.MaskDINO.NUM_OBJECT_QUERIES,
-            "object_mask_threshold": cfg.MODEL.MaskDINO.TEST.OBJECT_MASK_THRESHOLD,
-            "overlap_threshold": cfg.MODEL.MaskDINO.TEST.OVERLAP_THRESHOLD,
-            "metadata": MetadataCatalog.get(cfg.DATASETS.TRAIN[0]),
-            "size_divisibility": cfg.MODEL.MaskDINO.SIZE_DIVISIBILITY,
-            "sem_seg_postprocess_before_inference": (
-                cfg.MODEL.MaskDINO.TEST.SEM_SEG_POSTPROCESSING_BEFORE_INFERENCE
-                or cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON
-                or cfg.MODEL.MaskDINO.TEST.INSTANCE_ON
-            ),
-            "pixel_mean": cfg.MODEL.PIXEL_MEAN,
-            "pixel_std": cfg.MODEL.PIXEL_STD,
+            "num_queries": 300,
+            "object_mask_threshold": 0.25,
+            "overlap_threshold": 0.8,
+            "size_divisibility": 32,
+            "sem_seg_postprocess_before_inference": True,
+            "pixel_mean": [123.675, 116.28, 103.53],
+            "pixel_std": [58.395, 57.12, 57.375],
             # inference
-            "semantic_on": cfg.MODEL.MaskDINO.TEST.SEMANTIC_ON,
-            "instance_on": cfg.MODEL.MaskDINO.TEST.INSTANCE_ON,
-            "panoptic_on": cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON,
-            "test_topk_per_image": cfg.TEST.DETECTIONS_PER_IMAGE,
-            "data_loader": cfg.INPUT.DATASET_MAPPER_NAME,
-            "focus_on_box": cfg.MODEL.MaskDINO.TEST.TEST_FOUCUS_ON_BOX,
-            "transform_eval": cfg.MODEL.MaskDINO.TEST.PANO_TRANSFORM_EVAL,
-            "pano_temp": cfg.MODEL.MaskDINO.TEST.PANO_TEMPERATURE,
-            "semantic_ce_loss": cfg.MODEL.MaskDINO.TEST.SEMANTIC_ON
-            and cfg.MODEL.MaskDINO.SEMANTIC_CE_LOSS
-            and not cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON,
+            "semantic_on": False,
+            "instance_on": True,
+            "panoptic_on": False,
+            "test_topk_per_image": 100,
+            "focus_on_box": False,
+            "transform_eval": True,
+            "pano_temp": 0.06,
+            "semantic_ce_loss": False,
         }
 
     def forward(self, entity: InstanceSegBatchDataEntity):
