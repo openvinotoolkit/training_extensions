@@ -438,6 +438,9 @@ class ConfigConverter:
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False, skip={"label_info"})
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
+        if hasattr(model, "tile_config"):
+            model.tile_config = datamodule.tile_config
+
         # Instantiate Engine
         config_work_dir = config.pop("work_dir", config["engine"].pop("work_dir", None))
         config["engine"]["work_dir"] = work_dir if work_dir is not None else config_work_dir
