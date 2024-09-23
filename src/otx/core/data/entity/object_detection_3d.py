@@ -6,10 +6,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from torchvision import tv_tensors
 
+from otx.core.data.dataset.kitti_3d.kitti_utils import Object3d
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
@@ -18,7 +19,6 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
-from otx.core.data.dataset.kitti_3d.kitti_utils import Object3d
 
 if TYPE_CHECKING:
     from torch import LongTensor, Tensor
@@ -49,6 +49,7 @@ class Det3DDataEntity(OTXDataEntity):
     labels: LongTensor
     kitti_label_object: list[Object3d]
 
+
 @dataclass
 class Det3DPredEntity(OTXPredEntity, Det3DDataEntity):
     """Data entity to represent the detection model output prediction."""
@@ -61,7 +62,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     :param bboxes: A list of bbox annotations as top-left-bottom-right
         (x1, y1, x2, y2) format with absolute coordinate values
     :param labels: A list of bbox labels as integer indices
-    """ # TODO(Kirill): UPDATE!
+    """  # TODO(Kirill): UPDATE!
 
     boxes: list[tv_tensors.BoundingBoxes]
     calib_matrix: list[Tensor]

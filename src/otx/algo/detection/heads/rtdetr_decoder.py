@@ -263,7 +263,7 @@ class MSDeformableAttention(nn.Module):
         )
 
         if reference_points.shape[-1] == 2:
-            offset_normalizer = torch.tensor(value_spatial_shapes)
+            offset_normalizer = value_spatial_shapes.clone()
             offset_normalizer = offset_normalizer.flip([1]).reshape(1, 1, 1, self.num_levels, 1, 2)
             sampling_locations = (
                 reference_points.reshape(
@@ -282,8 +282,13 @@ class MSDeformableAttention(nn.Module):
                 + sampling_offsets / self.num_points * reference_points[:, :, None, :, None, 2:] * 0.5
             )
         elif reference_points.shape[-1] == 6:
-            sampling_locations = reference_points[:, :, None, :, None, :2] \
-                                + sampling_offsets / self.num_points * (reference_points[:, :, None, :, None, 2::2] + reference_points[:, :, None, :, None, 3::2]) * 0.5
+            sampling_locations = (
+                reference_points[:, :, None, :, None, :2]
+                + sampling_offsets
+                / self.num_points
+                * (reference_points[:, :, None, :, None, 2::2] + reference_points[:, :, None, :, None, 3::2])
+                * 0.5
+            )
         else:
             msg = f"Last dim of reference_points must be 2 or 4, but get {reference_points.shape[-1]} instead."
             raise ValueError(

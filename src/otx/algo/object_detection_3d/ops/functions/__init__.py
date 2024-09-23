@@ -6,5 +6,4 @@
 # Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
 # ------------------------------------------------------------------------------------------------
 
-from .ms_deform_attn_func import MSDeformAttnFunction, deformable_attention_core_func, ms_deform_attn_core_pytorch, MSDeformableAttention
 

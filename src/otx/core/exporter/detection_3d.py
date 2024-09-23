@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import logging as log
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -41,8 +40,12 @@ class OTXObjectDetection3DExporter(OTXNativeModelExporter):
         exported_model = openvino.convert_model(
             model,
             example_input={"images": dummy_tensor, "calib_matrix": dummy_calib_matrix, "img_sizes": dummy_image_sizes},
-            input=(openvino.runtime.PartialShape(self.input_size), openvino.runtime.PartialShape([1, 3, 4]), openvino.runtime.PartialShape([1, 2])),
-            )
+            input=(
+                openvino.runtime.PartialShape(self.input_size),
+                openvino.runtime.PartialShape([1, 3, 4]),
+                openvino.runtime.PartialShape([1, 2]),
+            ),
+        )
         exported_model = self._postprocess_openvino_model(exported_model)
 
         save_path = output_dir / (base_model_name + ".xml")
@@ -74,12 +77,17 @@ class OTXObjectDetection3DExporter(OTXNativeModelExporter):
         """
         device = next(model.parameters()).device
         dummy_tensor = torch.rand(self.input_size).to(device)
-        dummy_calib_matrix = torch.rand(1,3,4).to(device)
+        dummy_calib_matrix = torch.rand(1, 3, 4).to(device)
         dummy_image_size = torch.tensor([[1350, 620]]).to(device)
 
         save_path = str(output_dir / (base_model_name + ".onnx"))
 
-        torch.onnx.export(model, {"image": dummy_tensor, "calib_matrix": dummy_calib_matrix, "img_sizes": dummy_image_size}, save_path, **self.onnx_export_configuration)
+        torch.onnx.export(
+            model,
+            {"image": dummy_tensor, "calib_matrix": dummy_calib_matrix, "img_sizes": dummy_image_size},
+            save_path,
+            **self.onnx_export_configuration,
+        )
 
         onnx_model = onnx.load(save_path)
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)

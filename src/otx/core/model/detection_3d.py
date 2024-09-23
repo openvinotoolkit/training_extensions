@@ -5,23 +5,23 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
+import numpy as np
+import torch
 from torchvision.ops import box_convert
 
-import torch
-
 from otx.algo.utils.mmengine_utils import load_checkpoint
+from otx.core.data.dataset.kitti_3d.kitti_utils import class2angle
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
-from otx.core.data.dataset.kitti_3d.kitti_utils import class2angle
-import numpy as np
 from otx.core.metrics import MetricInput
+from otx.core.metrics.ap_3d import KittiMetric
 from otx.core.model.base import OTXModel
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.metrics.ap_3d import KittiMetric
 
 if TYPE_CHECKING:
-    from torch import nn
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
 
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
@@ -36,17 +36,17 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     std: tuple[float, float, float]
     load_from: str | None
 
-    def __init__(self,
-                label_info: LabelInfoTypes,
-                model_name: str,
-                input_size: tuple[int, int],
-                optimizer: OptimizerCallable = DefaultOptimizerCallable,
-                scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-                metric: MetricCallable = KittiMetric,
-                torch_compile: bool = False,
-                score_threshold: float = 0.2,
-                ) -> None:
-
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        model_name: str,
+        input_size: tuple[int, int],
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = KittiMetric,
+        torch_compile: bool = False,
+        score_threshold: float = 0.2,
+    ) -> None:
         self.model_name = model_name
         self.score_threshold = score_threshold
         super().__init__(
@@ -55,7 +55,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
-            torch_compile=torch_compile
+            torch_compile=torch_compile,
         )
 
     def _create_model(self) -> nn.Module:
@@ -81,15 +81,14 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         inputs: Det3DBatchDataEntity,
     ) -> MetricInput:
         """Converts the prediction entity to the format required for computing metrics."""
-
         boxes = preds.boxes_3d
         # bbox 2d decoding
         xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
 
-        xs3d = boxes[:, :, 0: 1]
-        ys3d = boxes[:, :, 1: 2]
-        xs2d = xywh_2d[:, :, 0: 1]
-        ys2d = xywh_2d[:, :, 1: 2]
+        xs3d = boxes[:, :, 0:1]
+        ys3d = boxes[:, :, 1:2]
+        xs2d = xywh_2d[:, :, 0:1]
+        ys2d = xywh_2d[:, :, 1:2]
 
         batch = len(boxes)
         labels = preds.labels.view(batch, -1, 1)
@@ -99,27 +98,51 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         xs3d = xs3d.view(batch, -1, 1)
         ys3d = ys3d.view(batch, -1, 1)
 
-        detections = torch.cat([labels, scores, xs2d, ys2d, preds.size_2d, preds.depth[:,:,0:1],
-                          preds.heading_angle, preds.size_3d, xs3d, ys3d, torch.exp(-preds.depth[:,:,1:2])], dim=2).detach().cpu().numpy()
+        detections = (
+            torch.cat(
+                [
+                    labels,
+                    scores,
+                    xs2d,
+                    ys2d,
+                    preds.size_2d,
+                    preds.depth[:, :, 0:1],
+                    preds.heading_angle,
+                    preds.size_3d,
+                    xs3d,
+                    ys3d,
+                    torch.exp(-preds.depth[:, :, 1:2]),
+                ],
+                dim=2,
+            )
+            .detach()
+            .cpu()
+            .numpy()
+        )
 
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
         calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
-        result_list = self._decode_detections_for_kitti_format(detections, img_sizes, calib_matrix,
-                                                               class_names=self.label_info.label_names, threshold=self.score_threshold)
+        result_list = self._decode_detections_for_kitti_format(
+            detections,
+            img_sizes,
+            calib_matrix,
+            class_names=self.label_info.label_names,
+            threshold=self.score_threshold,
+        )
 
         return {
             "preds": result_list,
-            "target": inputs.kitti_label_object, # TODO (Kirill): change it later to pre-process gt annotations here
+            "target": inputs.kitti_label_object,  # TODO (Kirill): change it later to pre-process gt annotations here
         }
 
     @staticmethod
     def _decode_detections_for_kitti_format(dets, img_size, calib_matrix, class_names, threshold=0.2):
-        '''
-        input: dets, numpy array, shape in [batch x max_dets x dim]
+        """input: dets, numpy array, shape in [batch x max_dets x dim]
         input: img_info, dict, necessary information of input images
         input: calibs, corresponding calibs for the input batch
         output:
-        '''
+        """
+
         def get_heading_angle(heading):
             heading_bin, heading_res = heading[0:12], heading[12:24]
             cls = np.argmax(heading_bin)
@@ -127,8 +150,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             return class2angle(cls, res, to_label_format=True)
 
         def alpha2ry(calib_matrix, alpha, u):
-            """
-            Get rotation_y by alpha + theta - 180
+            """Get rotation_y by alpha + theta - 180
             alpha : Observation angle of object, ranging [-pi..pi]
             x : Object center x to the camera center (x-W/2), in pixels
             rotation_y : Rotation ry around Y-axis in camera coordinates [-pi..pi]
@@ -146,8 +168,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             return ry
 
         def img_to_rect(calib_matrix, u, v, depth_rect):
-            """
-            :param u: (N)
+            """:param u: (N)
             :param v: (N)
             :param depth_rect: (N)
             :return:
@@ -185,7 +206,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 y = dets[i, j, 3] * img_size[i][1]
                 w = dets[i, j, 4] * img_size[i][0]
                 h = dets[i, j, 5] * img_size[i][1]
-                bbox = [x-w/2, y-h/2, x+w/2, y+h/2]
+                bbox = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]
 
                 # 3d bboxs decoding
                 # depth decoding
@@ -215,15 +236,17 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 rotation_y.append(ry)
                 scores.append(score)
 
-            results.append({
-                "name": np.array(names),
-                "alpha": np.array(alphas),
-                "bbox": np.array(bboxes).reshape(-1, 4),
-                "dimensions": np.array(dimensions).reshape(-1, 3),
-                "location": np.array(locations).reshape(-1, 3),
-                "rotation_y": np.array(rotation_y),
-                "score": np.array(scores),
-            })
+            results.append(
+                {
+                    "name": np.array(names),
+                    "alpha": np.array(alphas),
+                    "bbox": np.array(bboxes).reshape(-1, 4),
+                    "dimensions": np.array(dimensions).reshape(-1, 3),
+                    "location": np.array(locations).reshape(-1, 3),
+                    "rotation_y": np.array(rotation_y),
+                    "score": np.array(scores),
+                },
+            )
 
         return results
 
@@ -244,8 +267,20 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                     ori_shape=img.shape,
                 ),
             )
-        return Det3DBatchDataEntity(batch_size, images, infos, boxes=[], labels=[], calib_matrix=calib_matrix, boxes_3d=[],
-                                    size_2d=[], size_3d=[], depth=[], heading_angle=[], kitti_label_object=[])
+        return Det3DBatchDataEntity(
+            batch_size,
+            images,
+            infos,
+            boxes=[],
+            labels=[],
+            calib_matrix=calib_matrix,
+            boxes_3d=[],
+            size_2d=[],
+            size_3d=[],
+            depth=[],
+            heading_angle=[],
+            kitti_label_object=[],
+        )
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
         """Get final classification layer information for incremental learning case."""

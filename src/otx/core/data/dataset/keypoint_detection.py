@@ -12,14 +12,13 @@ from typing import Callable, List, Union
 import numpy as np
 import torch
 from datumaro import AnnotationType, Bbox, Dataset, DatasetSubset, Image, Points
-from torchvision import tv_tensors
-
 from otx.core.data.entity.base import BboxInfo, ImageInfo
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity, KeypointDetDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo, NullLabelInfo
+from torchvision import tv_tensors
 
 from .base import OTXDataset
 

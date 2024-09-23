@@ -1,11 +1,10 @@
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class Balancer(nn.Module):
     def __init__(self, fg_weight, bg_weight, downsample_factor=1):
-        """
-        Initialize fixed foreground/background loss balancer
+        """Initialize fixed foreground/background loss balancer
         Args:
             fg_weight [float]: Foreground loss weight
             bg_weight [float]: Background loss weight
@@ -17,8 +16,7 @@ class Balancer(nn.Module):
         self.downsample_factor = downsample_factor
 
     def forward(self, loss, gt_boxes2d, num_gt_per_img):
-        """
-        Forward pass
+        """Forward pass
         Args:
             loss [torch.Tensor(B, H, W)]: Pixel-wise loss
             gt_boxes2d [torch.Tensor (B, N, 4)]: 2D box labels for foreground/background balancing
@@ -27,11 +25,13 @@ class Balancer(nn.Module):
             tb_dict [dict[float]]: All losses to log in tensorboard
         """
         # Compute masks
-        fg_mask = compute_fg_mask(gt_boxes2d=gt_boxes2d,
-                                  shape=loss.shape,
-                                  num_gt_per_img=num_gt_per_img,
-                                  downsample_factor=self.downsample_factor,
-                                  device=loss.device)
+        fg_mask = compute_fg_mask(
+            gt_boxes2d=gt_boxes2d,
+            shape=loss.shape,
+            num_gt_per_img=num_gt_per_img,
+            downsample_factor=self.downsample_factor,
+            device=loss.device,
+        )
         bg_mask = ~fg_mask
 
         # Compute balancing weights
@@ -49,8 +49,7 @@ class Balancer(nn.Module):
 
 
 def compute_fg_mask(gt_boxes2d, shape, num_gt_per_img, downsample_factor=1, device=torch.device("cpu")):
-    """
-    Compute foreground mask for images
+    """Compute foreground mask for images
     Args:
         gt_boxes2d [torch.Tensor(B, N, 4)]: 2D box labels
         shape [torch.Size or tuple]: Foreground mask desired shape
@@ -59,7 +58,7 @@ def compute_fg_mask(gt_boxes2d, shape, num_gt_per_img, downsample_factor=1, devi
     Returns:
         fg_mask [torch.Tensor(shape)]: Foreground mask
     """
-    #ipdb.set_trace()
+    # ipdb.set_trace()
     fg_mask = torch.zeros(shape, dtype=torch.bool, device=device)
 
     # Set box corners

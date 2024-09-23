@@ -1,14 +1,13 @@
+"""MonoDETR: Depth-aware Transformer for Monocular 3D Object Detection
 """
-MonoDETR: Depth-aware Transformer for Monocular 3D Object Detection
-"""
+import copy
+import math
+
 import torch
 import torch.nn.functional as F
 from torch import nn
-import math
-import copy
 
-from otx.algo.object_detection_3d.utils import box_ops
-from otx.algo.object_detection_3d.utils.misc import (NestedTensor, inverse_sigmoid)
+from otx.algo.object_detection_3d.utils.misc import NestedTensor, inverse_sigmoid
 
 
 def _get_clones(module, N):
@@ -16,10 +15,26 @@ def _get_clones(module, N):
 
 
 class MonoDETR(nn.Module):
-    """ This is the MonoDETR module that performs monocualr 3D object detection """
-    def __init__(self, backbone, depthaware_transformer, depth_predictor, criterion, num_classes, num_queries, num_feature_levels,
-                 aux_loss=True, with_box_refine=False, two_stage=False, init_box=False, use_dab=False, group_num=11, two_stage_dino=False):
-        """ Initializes the model.
+    """This is the MonoDETR module that performs monocualr 3D object detection"""
+
+    def __init__(
+        self,
+        backbone,
+        depthaware_transformer,
+        depth_predictor,
+        criterion,
+        num_classes,
+        num_queries,
+        num_feature_levels,
+        aux_loss=True,
+        with_box_refine=False,
+        two_stage=False,
+        init_box=False,
+        use_dab=False,
+        group_num=11,
+        two_stage_dino=False,
+    ):
+        """Initializes the model.
         Parameters:
             backbone: torch module of the backbone to be used. See backbone.py
             depthaware_transformer: depth-aware transformer architecture. See depth_aware_transformer.py
@@ -61,7 +76,7 @@ class MonoDETR(nn.Module):
             if two_stage_dino:
                 self.query_embed = None
             if not use_dab:
-                self.query_embed = nn.Embedding(num_queries * group_num, hidden_dim*2)
+                self.query_embed = nn.Embedding(num_queries * group_num, hidden_dim * 2)
             else:
                 self.tgt_embed = nn.Embedding(num_queries * group_num, hidden_dim)
                 self.refpoint_embed = nn.Embedding(num_queries * group_num, 6)
@@ -71,23 +86,30 @@ class MonoDETR(nn.Module):
             input_proj_list = []
             for _ in range(num_backbone_outs):
                 in_channels = backbone.num_channels[_]
-                input_proj_list.append(nn.Sequential(
-                    nn.Conv2d(in_channels, hidden_dim, kernel_size=1),
-                    nn.GroupNorm(32, hidden_dim),
-                ))
+                input_proj_list.append(
+                    nn.Sequential(
+                        nn.Conv2d(in_channels, hidden_dim, kernel_size=1),
+                        nn.GroupNorm(32, hidden_dim),
+                    ),
+                )
             for _ in range(num_feature_levels - num_backbone_outs):
-                input_proj_list.append(nn.Sequential(
-                    nn.Conv2d(in_channels, hidden_dim, kernel_size=3, stride=2, padding=1),
-                    nn.GroupNorm(32, hidden_dim),
-                ))
+                input_proj_list.append(
+                    nn.Sequential(
+                        nn.Conv2d(in_channels, hidden_dim, kernel_size=3, stride=2, padding=1),
+                        nn.GroupNorm(32, hidden_dim),
+                    ),
+                )
                 in_channels = hidden_dim
             self.input_proj = nn.ModuleList(input_proj_list)
         else:
-            self.input_proj = nn.ModuleList([
-                nn.Sequential(
-                    nn.Conv2d(backbone.num_channels[0], hidden_dim, kernel_size=1),
-                    nn.GroupNorm(32, hidden_dim),
-                )])
+            self.input_proj = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.Conv2d(backbone.num_channels[0], hidden_dim, kernel_size=1),
+                        nn.GroupNorm(32, hidden_dim),
+                    ),
+                ],
+            )
 
         self.backbone = backbone
         self.aux_loss = aux_loss
@@ -111,7 +133,9 @@ class MonoDETR(nn.Module):
             nn.init.xavier_uniform_(proj[0].weight, gain=1)
             nn.init.constant_(proj[0].bias, 0)
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
-        num_pred = (depthaware_transformer.decoder.num_layers + 1) if two_stage else depthaware_transformer.decoder.num_layers
+        num_pred = (
+            (depthaware_transformer.decoder.num_layers + 1) if two_stage else depthaware_transformer.decoder.num_layers
+        )
         if with_box_refine:
             self.class_embed = _get_clones(self.class_embed, num_pred)
             self.bbox_embed = _get_clones(self.bbox_embed, num_pred)
@@ -137,10 +161,8 @@ class MonoDETR(nn.Module):
             for box_embed in self.bbox_embed:
                 nn.init.constant_(box_embed.layers[-1].bias.data[2:], 0.0)
 
-
     def forward(self, images, calibs=None, targets=None, img_sizes=None, dn_args=None, mode="predict"):
-        """
-        Forward method of the MonoDETR model.
+        """Forward method of the MonoDETR model.
 
         Args:
             images (list[Tensor]): images for each sample
@@ -177,13 +199,13 @@ class MonoDETR(nn.Module):
             query_embeds = None
         elif self.use_dab:
             if self.training:
-                tgt_all_embed=tgt_embed = self.tgt_embed.weight           # nq, 256
-                refanchor = self.refpoint_embed.weight      # nq, 4
+                tgt_all_embed = tgt_embed = self.tgt_embed.weight  # nq, 256
+                refanchor = self.refpoint_embed.weight  # nq, 4
                 query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
 
             else:
-                tgt_all_embed=tgt_embed = self.tgt_embed.weight[:self.num_queries]
-                refanchor = self.refpoint_embed.weight[:self.num_queries]
+                tgt_all_embed = tgt_embed = self.tgt_embed.weight[: self.num_queries]
+                refanchor = self.refpoint_embed.weight[: self.num_queries]
                 query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
         elif self.two_stage_dino:
             query_embeds = None
@@ -192,12 +214,29 @@ class MonoDETR(nn.Module):
                 query_embeds = self.query_embed.weight
             else:
                 # only use one group in inference
-                query_embeds = self.query_embed.weight[:self.num_queries]
+                query_embeds = self.query_embed.weight[: self.num_queries]
 
-        pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(srcs, masks[1], pos[1])
+        pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(
+            srcs,
+            masks[1],
+            pos[1],
+        )
 
-        hs, init_reference, inter_references, inter_references_dim, enc_outputs_class, enc_outputs_coord_unact = self.depthaware_transformer(
-            srcs, masks, pos, query_embeds, depth_pos_embed, depth_pos_embed_ip)#, attn_mask)
+        (
+            hs,
+            init_reference,
+            inter_references,
+            inter_references_dim,
+            enc_outputs_class,
+            enc_outputs_coord_unact,
+        ) = self.depthaware_transformer(
+            srcs,
+            masks,
+            pos,
+            query_embeds,
+            depth_pos_embed,
+            depth_pos_embed_ip,
+        )  # , attn_mask)
 
         outputs_coords = []
         outputs_classes = []
@@ -219,7 +258,6 @@ class MonoDETR(nn.Module):
                 assert reference.shape[-1] == 2
                 tmp[..., :2] += reference
 
-
             # 3d center + 2d box
             outputs_coord = tmp.sigmoid()
             outputs_coords.append(outputs_coord)
@@ -234,7 +272,7 @@ class MonoDETR(nn.Module):
 
             # depth_geo
             box2d_height_norm = outputs_coord[:, :, 4] + outputs_coord[:, :, 5]
-            box2d_height = torch.clamp(box2d_height_norm * img_sizes[:, 1: 2], min=1.0)
+            box2d_height = torch.clamp(box2d_height_norm * img_sizes[:, 1:2], min=1.0)
             depth_geo = size3d[:, :, 0] / box2d_height * calibs[:, 0, 0].unsqueeze(1)
 
             # depth_reg
@@ -245,12 +283,18 @@ class MonoDETR(nn.Module):
             depth_map = F.grid_sample(
                 weighted_depth.unsqueeze(1),
                 outputs_center3d,
-                mode='bilinear',
-                align_corners=True).squeeze(1)
+                mode="bilinear",
+                align_corners=True,
+            ).squeeze(1)
 
             # depth average + sigma
-            depth_ave = torch.cat([((1. / (depth_reg[:, :, 0: 1].sigmoid() + 1e-6) - 1.) + depth_geo.unsqueeze(-1) + depth_map) / 3,
-                                    depth_reg[:, :, 1: 2]], -1)
+            depth_ave = torch.cat(
+                [
+                    ((1.0 / (depth_reg[:, :, 0:1].sigmoid() + 1e-6) - 1.0) + depth_geo.unsqueeze(-1) + depth_map) / 3,
+                    depth_reg[:, :, 1:2],
+                ],
+                -1,
+            )
             outputs_depths.append(depth_ave)
 
             # angles
@@ -263,19 +307,24 @@ class MonoDETR(nn.Module):
         outputs_depth = torch.stack(outputs_depths)
         outputs_angle = torch.stack(outputs_angles)
 
-        out = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}
-        out['pred_3d_dim'] = outputs_3d_dim[-1]
-        out['pred_depth'] = outputs_depth[-1]
-        out['pred_angle'] = outputs_angle[-1]
-        out['pred_depth_map_logits'] = pred_depth_map_logits
+        out = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
+        out["pred_3d_dim"] = outputs_3d_dim[-1]
+        out["pred_depth"] = outputs_depth[-1]
+        out["pred_angle"] = outputs_angle[-1]
+        out["pred_depth_map_logits"] = pred_depth_map_logits
 
         if self.aux_loss:
-            out['aux_outputs'] = self._set_aux_loss(
-                outputs_class, outputs_coord, outputs_3d_dim, outputs_angle, outputs_depth)
+            out["aux_outputs"] = self._set_aux_loss(
+                outputs_class,
+                outputs_coord,
+                outputs_3d_dim,
+                outputs_angle,
+                outputs_depth,
+            )
 
         if self.two_stage:
             enc_outputs_coord = enc_outputs_coord_unact.sigmoid()
-            out['enc_outputs'] = {'pred_logits': enc_outputs_class, 'pred_boxes': enc_outputs_coord}
+            out["enc_outputs"] = {"pred_logits": enc_outputs_class, "pred_boxes": enc_outputs_coord}
 
         if mode == "loss":
             return self.criterion(outputs=out, targets=targets)
@@ -287,14 +336,20 @@ class MonoDETR(nn.Module):
         # this is a workaround to make torchscript happy, as torchscript
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.
-        return [{'pred_logits': a, 'pred_boxes': b,
-                 'pred_3d_dim': c, 'pred_angle': d, 'pred_depth': e}
-                for a, b, c, d, e in zip(outputs_class[:-1], outputs_coord[:-1],
-                                         outputs_3d_dim[:-1], outputs_angle[:-1], outputs_depth[:-1])]
+        return [
+            {"pred_logits": a, "pred_boxes": b, "pred_3d_dim": c, "pred_angle": d, "pred_depth": e}
+            for a, b, c, d, e in zip(
+                outputs_class[:-1],
+                outputs_coord[:-1],
+                outputs_3d_dim[:-1],
+                outputs_angle[:-1],
+                outputs_depth[:-1],
+            )
+        ]
 
 
 class MLP(nn.Module):
-    """ Very simple multi-layer perceptron (also called FFN)"""
+    """Very simple multi-layer perceptron (also called FFN)"""
 
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
         super().__init__()

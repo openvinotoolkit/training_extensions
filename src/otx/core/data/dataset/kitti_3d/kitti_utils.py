@@ -1,21 +1,23 @@
-import numpy as np
-import cv2
-import types
-import torch
 import random
+import types
+
+import cv2
+import numpy as np
+import torch
 
 ################  Object3D  ##################
 
+
 def get_objects_from_label(label_file):
-    with open(label_file, 'r') as f:
+    with open(label_file) as f:
         lines = f.readlines()
     objects = [Object3d(line) for line in lines]
     return objects
 
 
-class Object3d(object):
+class Object3d:
     def __init__(self, line):
-        label = line.strip().split(' ')
+        label = line.strip().split(" ")
         self.src = line
         self.cls_type = label[0]
         self.trucation = float(label[1])
@@ -32,31 +34,28 @@ class Object3d(object):
         self.level_str = None
         self.level = self.get_obj_level()
 
-
     def get_obj_level(self):
         height = float(self.box2d[3]) - float(self.box2d[1]) + 1
 
         if self.trucation == -1:
-            self.level_str = 'DontCare'
+            self.level_str = "DontCare"
             return 0
 
         if height >= 40 and self.trucation <= 0.15 and self.occlusion <= 0:
-            self.level_str = 'Easy'
+            self.level_str = "Easy"
             return 1  # Easy
         elif height >= 25 and self.trucation <= 0.3 and self.occlusion <= 1:
-            self.level_str = 'Moderate'
+            self.level_str = "Moderate"
             return 2  # Moderate
         elif height >= 25 and self.trucation <= 0.5 and self.occlusion <= 2:
-            self.level_str = 'Hard'
+            self.level_str = "Hard"
             return 3  # Hard
         else:
-            self.level_str = 'UnKnown'
+            self.level_str = "UnKnown"
             return 4
 
-
     def generate_corners3d(self):
-        """
-        generate corners3d representation for this object
+        """Generate corners3d representation for this object
         :return corners_3d: (8, 3) corners of box3d in camera coord
         """
         l, h, w = self.l, self.h, self.w
@@ -64,18 +63,14 @@ class Object3d(object):
         y_corners = [0, 0, 0, 0, -h, -h, -h, -h]
         z_corners = [w / 2, -w / 2, -w / 2, w / 2, w / 2, -w / 2, -w / 2, w / 2]
 
-        R = np.array([[np.cos(self.ry), 0, np.sin(self.ry)],
-                      [0, 1, 0],
-                      [-np.sin(self.ry), 0, np.cos(self.ry)]])
+        R = np.array([[np.cos(self.ry), 0, np.sin(self.ry)], [0, 1, 0], [-np.sin(self.ry), 0, np.cos(self.ry)]])
         corners3d = np.vstack([x_corners, y_corners, z_corners])  # (3, 8)
         corners3d = np.dot(R, corners3d).T
         corners3d = corners3d + self.pos
         return corners3d
 
-
     def to_bev_box2d(self, oblique=True, voxel_size=0.1):
-        """
-        :param bev_shape: (2) for bev shape (h, w), => (y_max, x_max) in image
+        """:param bev_shape: (2) for bev shape (h, w), => (y_max, x_max) in image
         :param voxel_size: float, 0.1m
         :param oblique:
         :return: box2d (4, 2)/ (4) in image coordinate
@@ -85,7 +80,9 @@ class Object3d(object):
             xz_corners = corners3d[0:4, [0, 2]]
             box2d = np.zeros((4, 2), dtype=np.int32)
             box2d[:, 0] = ((xz_corners[:, 0] - Object3d.MIN_XZ[0]) / voxel_size).astype(np.int32)
-            box2d[:, 1] = Object3d.BEV_SHAPE[0] - 1 - ((xz_corners[:, 1] - Object3d.MIN_XZ[1]) / voxel_size).astype(np.int32)
+            box2d[:, 1] = (
+                Object3d.BEV_SHAPE[0] - 1 - ((xz_corners[:, 1] - Object3d.MIN_XZ[1]) / voxel_size).astype(np.int32)
+            )
             box2d[:, 0] = np.clip(box2d[:, 0], 0, Object3d.BEV_SHAPE[1])
             box2d[:, 1] = np.clip(box2d[:, 1], 0, Object3d.BEV_SHAPE[0])
         else:
@@ -99,54 +96,76 @@ class Object3d(object):
 
         return box2d
 
-
     def to_str(self):
-        print_str = '%s %.3f %.3f %.3f box2d: %s hwl: [%.3f %.3f %.3f] pos: %s ry: %.3f' \
-                     % (self.cls_type, self.trucation, self.occlusion, self.alpha, self.box2d, self.h, self.w, self.l,
-                        self.pos, self.ry)
+        print_str = "%s %.3f %.3f %.3f box2d: %s hwl: [%.3f %.3f %.3f] pos: %s ry: %.3f" % (
+            self.cls_type,
+            self.trucation,
+            self.occlusion,
+            self.alpha,
+            self.box2d,
+            self.h,
+            self.w,
+            self.l,
+            self.pos,
+            self.ry,
+        )
         return print_str
 
-
     def to_kitti_format(self):
-        kitti_str = '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' \
-                    % (self.cls_type, self.trucation, int(self.occlusion), self.alpha, self.box2d[0], self.box2d[1],
-                       self.box2d[2], self.box2d[3], self.h, self.w, self.l, self.pos[0], self.pos[1], self.pos[2],
-                       self.ry)
+        kitti_str = "%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f" % (
+            self.cls_type,
+            self.trucation,
+            int(self.occlusion),
+            self.alpha,
+            self.box2d[0],
+            self.box2d[1],
+            self.box2d[2],
+            self.box2d[3],
+            self.h,
+            self.w,
+            self.l,
+            self.pos[0],
+            self.pos[1],
+            self.pos[2],
+            self.ry,
+        )
         return kitti_str
 
 
-
 ###################  calibration  ###################
+
 
 def get_calib_from_file(calib_file):
     with open(calib_file) as f:
         lines = f.readlines()
 
-    obj = lines[2].strip().split(' ')[1:]
+    obj = lines[2].strip().split(" ")[1:]
     P2 = np.array(obj, dtype=np.float32)
-    obj = lines[3].strip().split(' ')[1:]
+    obj = lines[3].strip().split(" ")[1:]
     P3 = np.array(obj, dtype=np.float32)
-    obj = lines[4].strip().split(' ')[1:]
+    obj = lines[4].strip().split(" ")[1:]
     R0 = np.array(obj, dtype=np.float32)
-    obj = lines[5].strip().split(' ')[1:]
+    obj = lines[5].strip().split(" ")[1:]
     Tr_velo_to_cam = np.array(obj, dtype=np.float32)
 
-    return {'P2': P2.reshape(3, 4),
-            'P3': P3.reshape(3, 4),
-            'R0': R0.reshape(3, 3),
-            'Tr_velo2cam': Tr_velo_to_cam.reshape(3, 4)}
+    return {
+        "P2": P2.reshape(3, 4),
+        "P3": P3.reshape(3, 4),
+        "R0": R0.reshape(3, 3),
+        "Tr_velo2cam": Tr_velo_to_cam.reshape(3, 4),
+    }
 
 
-class Calibration(object):
+class Calibration:
     def __init__(self, calib_file):
         if isinstance(calib_file, str):
             calib = get_calib_from_file(calib_file)
         else:
             calib = calib_file
 
-        self.P2 = calib['P2']  # 3 x 4
-        self.R0 = calib['R0']  # 3 x 3
-        self.V2C = calib['Tr_velo2cam']  # 3 x 4
+        self.P2 = calib["P2"]  # 3 x 4
+        self.R0 = calib["R0"]  # 3 x 3
+        self.V2C = calib["Tr_velo2cam"]  # 3 x 4
         self.C2V = self.inverse_rigid_trans(self.V2C)
 
         # Camera intrinsics and extrinsics
@@ -158,16 +177,14 @@ class Calibration(object):
         self.ty = self.P2[1, 3] / (-self.fv)
 
     def cart_to_hom(self, pts):
-        """
-        :param pts: (N, 3 or 2)
+        """:param pts: (N, 3 or 2)
         :return pts_hom: (N, 4 or 3)
         """
         pts_hom = np.hstack((pts, np.ones((pts.shape[0], 1), dtype=np.float32)))
         return pts_hom
 
     def lidar_to_rect(self, pts_lidar):
-        """
-        :param pts_lidar: (N, 3)
+        """:param pts_lidar: (N, 3)
         :return pts_rect: (N, 3)
         """
         pts_lidar_hom = self.cart_to_hom(pts_lidar)
@@ -181,8 +198,7 @@ class Calibration(object):
         return np.dot(pts_ref, np.transpose(self.C2V))
 
     def rect_to_img(self, pts_rect):
-        """
-        :param pts_rect: (N, 3)
+        """:param pts_rect: (N, 3)
         :return pts_img: (N, 2)
         """
         pts_rect_hom = self.cart_to_hom(pts_rect)
@@ -192,8 +208,7 @@ class Calibration(object):
         return pts_img, pts_rect_depth
 
     def lidar_to_img(self, pts_lidar):
-        """
-        :param pts_lidar: (N, 3)
+        """:param pts_lidar: (N, 3)
         :return pts_img: (N, 2)
         """
         pts_rect = self.lidar_to_rect(pts_lidar)
@@ -201,8 +216,7 @@ class Calibration(object):
         return pts_img, pts_depth
 
     def img_to_rect(self, u, v, depth_rect):
-        """
-        :param u: (N)
+        """:param u: (N)
         :param v: (N)
         :param depth_rect: (N)
         :return:
@@ -213,8 +227,7 @@ class Calibration(object):
         return pts_rect
 
     def depthmap_to_rect(self, depth_map):
-        """
-        :param depth_map: (H, W), depth_map
+        """:param depth_map: (H, W), depth_map
         :return:
         """
         x_range = np.arange(0, depth_map.shape[1])
@@ -226,8 +239,7 @@ class Calibration(object):
         return pts_rect, x_idxs, y_idxs
 
     def corners3d_to_img_boxes(self, corners3d):
-        """
-        :param corners3d: (N, 8, 3) corners in rect coordinate
+        """:param corners3d: (N, 8, 3) corners in rect coordinate
         :return: boxes: (None, 4) [x1, y1, x2, y2] in rgb coordinate
         :return: boxes_corner: (None, 8) [xi, yi] in rgb coordinate
         """
@@ -246,33 +258,31 @@ class Calibration(object):
         return boxes, boxes_corner
 
     def camera_dis_to_rect(self, u, v, d):
-        """
-        Can only process valid u, v, d, which means u, v can not beyond the image shape, reprojection error 0.02
+        """Can only process valid u, v, d, which means u, v can not beyond the image shape, reprojection error 0.02
         :param u: (N)
         :param v: (N)
         :param d: (N), the distance between camera and 3d points, d^2 = x^2 + y^2 + z^2
         :return:
         """
-        assert self.fu == self.fv, '%.8f != %.8f' % (self.fu, self.fv)
-        fd = np.sqrt((u - self.cu) ** 2 + (v - self.cv) ** 2 + self.fu ** 2)
+        assert self.fu == self.fv, "%.8f != %.8f" % (self.fu, self.fv)
+        fd = np.sqrt((u - self.cu) ** 2 + (v - self.cv) ** 2 + self.fu**2)
         x = ((u - self.cu) * d) / fd + self.tx
         y = ((v - self.cv) * d) / fd + self.ty
-        z = np.sqrt(d ** 2 - x ** 2 - y ** 2)
+        z = np.sqrt(d**2 - x**2 - y**2)
         pts_rect = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1), z.reshape(-1, 1)), axis=1)
         return pts_rect
 
     def inverse_rigid_trans(self, Tr):
-        ''' Inverse a rigid body transform matrix (3x4 as [R|t])
-            [R'|-R't; 0|1]
-        '''
+        """Inverse a rigid body transform matrix (3x4 as [R|t])
+        [R'|-R't; 0|1]
+        """
         inv_Tr = np.zeros_like(Tr)  # 3x4
         inv_Tr[0:3, 0:3] = np.transpose(Tr[0:3, 0:3])
         inv_Tr[0:3, 3] = np.dot(-np.transpose(Tr[0:3, 0:3]), Tr[0:3, 3])
         return inv_Tr
 
     def alpha2ry(self, alpha, u):
-        """
-        Get rotation_y by alpha + theta - 180
+        """Get rotation_y by alpha + theta - 180
         alpha : Observation angle of object, ranging [-pi..pi]
         x : Object center x to the camera center (x-W/2), in pixels
         rotation_y : Rotation ry around Y-axis in camera coordinates [-pi..pi]
@@ -296,32 +306,39 @@ class Calibration(object):
 
         return alpha
 
-    def flip(self,img_size):
+    def flip(self, img_size):
         wsize = 4
         hsize = 2
-        p2ds = (np.concatenate([np.expand_dims(np.tile(np.expand_dims(np.linspace(0,img_size[0],wsize),0),[hsize,1]),-1),\
-                                np.expand_dims(np.tile(np.expand_dims(np.linspace(0,img_size[1],hsize),1),[1,wsize]),-1),
-                                np.linspace(2,78,wsize*hsize).reshape(hsize,wsize,1)],-1)).reshape(-1,3)
-        p3ds = self.img_to_rect(p2ds[:,0:1],p2ds[:,1:2],p2ds[:,2:3])
-        p3ds[:,0]*=-1
-        p2ds[:,0] = img_size[0] - p2ds[:,0]
+        p2ds = (
+            np.concatenate(
+                [
+                    np.expand_dims(np.tile(np.expand_dims(np.linspace(0, img_size[0], wsize), 0), [hsize, 1]), -1),
+                    np.expand_dims(np.tile(np.expand_dims(np.linspace(0, img_size[1], hsize), 1), [1, wsize]), -1),
+                    np.linspace(2, 78, wsize * hsize).reshape(hsize, wsize, 1),
+                ],
+                -1,
+            )
+        ).reshape(-1, 3)
+        p3ds = self.img_to_rect(p2ds[:, 0:1], p2ds[:, 1:2], p2ds[:, 2:3])
+        p3ds[:, 0] *= -1
+        p2ds[:, 0] = img_size[0] - p2ds[:, 0]
 
-        #self.P2[0,3] *= -1
-        cos_matrix = np.zeros([wsize*hsize,2,7])
-        cos_matrix[:,0,0] = p3ds[:,0]
-        cos_matrix[:,0,1] = cos_matrix[:,1,2] = p3ds[:,2]
-        cos_matrix[:,1,0] = p3ds[:,1]
-        cos_matrix[:,0,3] = cos_matrix[:,1,4] = 1
-        cos_matrix[:,:,-2] = -p2ds[:,:2]
-        cos_matrix[:,:,-1] = (-p2ds[:,:2]*p3ds[:,2:3])
-        new_calib = np.linalg.svd(cos_matrix.reshape(-1,7))[-1][-1]
+        # self.P2[0,3] *= -1
+        cos_matrix = np.zeros([wsize * hsize, 2, 7])
+        cos_matrix[:, 0, 0] = p3ds[:, 0]
+        cos_matrix[:, 0, 1] = cos_matrix[:, 1, 2] = p3ds[:, 2]
+        cos_matrix[:, 1, 0] = p3ds[:, 1]
+        cos_matrix[:, 0, 3] = cos_matrix[:, 1, 4] = 1
+        cos_matrix[:, :, -2] = -p2ds[:, :2]
+        cos_matrix[:, :, -1] = -p2ds[:, :2] * p3ds[:, 2:3]
+        new_calib = np.linalg.svd(cos_matrix.reshape(-1, 7))[-1][-1]
         new_calib /= new_calib[-1]
 
-        new_calib_matrix = np.zeros([4,3]).astype(np.float32)
-        new_calib_matrix[0,0] = new_calib_matrix[1,1] = new_calib[0]
-        new_calib_matrix[2,0:2] = new_calib[1:3]
-        new_calib_matrix[3,:] = new_calib[3:6]
-        new_calib_matrix[-1,-1] = self.P2[-1,-1]
+        new_calib_matrix = np.zeros([4, 3]).astype(np.float32)
+        new_calib_matrix[0, 0] = new_calib_matrix[1, 1] = new_calib[0]
+        new_calib_matrix[2, 0:2] = new_calib[1:3]
+        new_calib_matrix[3, :] = new_calib[3:6]
+        new_calib_matrix[-1, -1] = self.P2[-1, -1]
         self.P2 = new_calib_matrix.T
         self.cu = self.P2[0, 2]
         self.cv = self.P2[1, 2]
@@ -330,7 +347,9 @@ class Calibration(object):
         self.tx = self.P2[0, 3] / (-self.fu)
         self.ty = self.P2[1, 3] / (-self.fv)
 
+
 ###################  affine trainsform  ###################
+
 
 def get_dir(src_point, rot_rad):
     sn, cs = np.sin(rot_rad), np.cos(rot_rad)
@@ -347,12 +366,7 @@ def get_3rd_point(a, b):
     return b + np.array([-direct[1], direct[0]], dtype=np.float32)
 
 
-def get_affine_transform(center,
-                         scale,
-                         rot,
-                         output_size,
-                         shift=np.array([0, 0], dtype=np.float32),
-                         inv=0):
+def get_affine_transform(center, scale, rot, output_size, shift=np.array([0, 0], dtype=np.float32), inv=0):
     if not isinstance(scale, np.ndarray) and not isinstance(scale, list):
         scale = np.array([scale, scale], dtype=np.float32)
 
@@ -385,15 +399,16 @@ def get_affine_transform(center,
 
 
 def affine_transform(pt, t):
-    new_pt = np.array([pt[0], pt[1], 1.], dtype=np.float32).T
+    new_pt = np.array([pt[0], pt[1], 1.0], dtype=np.float32).T
     new_pt = np.dot(t, new_pt)
     return new_pt[:2]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from lib.datasets.kitti.kitti_dataset import KITTI_Dataset
-    cfg = {'root_dir': '../../../data'}
-    dataset = KITTI_Dataset('train', cfg)
+
+    cfg = {"root_dir": "../../../data"}
+    dataset = KITTI_Dataset("train", cfg)
 
     # calib testing
     # we project center fo 3D objects to image plane
@@ -403,14 +418,15 @@ if __name__ == '__main__':
     for object in objects:
         print(object.to_kitti_format())
         object.pos[0] *= 1
-        center_3d = object.pos + [0, -object.h/2, 0]   # real 3D center
-        center_3d = center_3d.reshape(-1, 3)   #(N, 3)
+        center_3d = object.pos + [0, -object.h / 2, 0]  # real 3D center
+        center_3d = center_3d.reshape(-1, 3)  # (N, 3)
         center_3d_projected, depth = calib.rect_to_img(center_3d)
         box2d = object.box2d
-        center_2d = [(box2d[0]+box2d[2])/2, (box2d[1]+box2d[3])/2]
-        print ('3D center/2D center/projected 3D center:', center_3d, center_2d, center_3d_projected)
-        print('alpha ---> ry ', object.alpha, calib.alpha2ry(object.alpha, center_2d[0]))
+        center_2d = [(box2d[0] + box2d[2]) / 2, (box2d[1] + box2d[3]) / 2]
+        print("3D center/2D center/projected 3D center:", center_3d, center_2d, center_3d_projected)
+        print("alpha ---> ry ", object.alpha, calib.alpha2ry(object.alpha, center_2d[0]))
         break
+
 
 def intersect(box_a, box_b):
     max_xy = np.minimum(box_a[:, 2:], box_b[2:])
@@ -424,25 +440,27 @@ def jaccard_numpy(box_a, box_b):
     is simply the intersection over union of two boxes.
     E.g.:
         A ∩ B / A ∪ B = A ∩ B / (area(A) + area(B) - A ∩ B)
+
     Args:
         box_a: Multiple bounding boxes, Shape: [num_boxes,4]
         box_b: Single bounding box, Shape: [4]
+
     Return:
         jaccard overlap: Shape: [box_a.shape[0], box_a.shape[1]]
     """
     inter = intersect(box_a, box_b)
-    area_a = ((box_a[:, 2]-box_a[:, 0]) *
-              (box_a[:, 3]-box_a[:, 1]))  # [A,B]
-    area_b = ((box_b[2]-box_b[0]) *
-              (box_b[3]-box_b[1]))  # [A,B]
+    area_a = (box_a[:, 2] - box_a[:, 0]) * (box_a[:, 3] - box_a[:, 1])  # [A,B]
+    area_b = (box_b[2] - box_b[0]) * (box_b[3] - box_b[1])  # [A,B]
     union = area_a + area_b - inter
     return inter / union  # [A,B]
 
 
 class Compose(object):
     """Composes several augmentations together.
+
     Args:
         transforms (List[Transform]): list of transforms to compose.
+
     Example:
         >>> augmentations.Compose([
         >>>     transforms.CenterCrop(10),
@@ -512,8 +530,7 @@ class Resize(object):
         self.size = size
 
     def __call__(self, image, boxes=None, labels=None):
-        image = cv2.resize(image, (self.size,
-                                 self.size))
+        image = cv2.resize(image, (self.size, self.size))
         return image, boxes, labels
 
 
@@ -546,27 +563,25 @@ class RandomHue(object):
 
 class RandomLightingNoise(object):
     def __init__(self):
-        self.perms = ((0, 1, 2), (0, 2, 1),
-                      (1, 0, 2), (1, 2, 0),
-                      (2, 0, 1), (2, 1, 0))
+        self.perms = ((0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0))
 
     def __call__(self, image, boxes=None, labels=None):
         if random.randint(0, 1):
-            swap = self.perms[random.randint(0, len(self.perms)-1)]
+            swap = self.perms[random.randint(0, len(self.perms) - 1)]
             shuffle = SwapChannels(swap)  # shuffle channels
             image = shuffle(image)
         return image
 
 
 class ConvertColor(object):
-    def __init__(self, current='BGR', transform='HSV'):
+    def __init__(self, current="BGR", transform="HSV"):
         self.transform = transform
         self.current = current
 
     def __call__(self, image, boxes=None, labels=None):
-        if self.current == 'BGR' and self.transform == 'HSV':
+        if self.current == "BGR" and self.transform == "HSV":
             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        elif self.current == 'HSV' and self.transform == 'BGR':
+        elif self.current == "HSV" and self.transform == "BGR":
             image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
         else:
             raise NotImplementedError
@@ -624,6 +639,7 @@ class RandomSampleCrop(object):
             boxes (Tensor): the adjusted bounding boxes in pt form
             labels (Tensor): the class labels for each bbox
     """
+
     def __init__(self):
         self.sample_options = (
             # using entire original input image
@@ -647,9 +663,9 @@ class RandomSampleCrop(object):
 
             min_iou, max_iou = mode
             if min_iou is None:
-                min_iou = float('-inf')
+                min_iou = float("-inf")
             if max_iou is None:
-                max_iou = float('inf')
+                max_iou = float("inf")
 
             # max trails (50)
             for _ in range(50):
@@ -666,7 +682,7 @@ class RandomSampleCrop(object):
                 top = random.uniform(height - h)
 
                 # convert to integer rect x1,y1,x2,y2
-                rect = np.array([int(left), int(top), int(left+w), int(top+h)])
+                rect = np.array([int(left), int(top), int(left + w), int(top + h)])
 
                 # calculate IoU (jaccard overlap) b/t the cropped and gt boxes
                 overlap = jaccard_numpy(boxes, rect)
@@ -676,8 +692,7 @@ class RandomSampleCrop(object):
                     continue
 
                 # cut the crop from the image
-                current_image = current_image[rect[1]:rect[3], rect[0]:rect[2],
-                                              :]
+                current_image = current_image[rect[1] : rect[3], rect[0] : rect[2], :]
 
                 # keep overlap with gt box IF center in sampled patch
                 centers = (boxes[:, :2] + boxes[:, 2:]) / 2.0
@@ -702,13 +717,11 @@ class RandomSampleCrop(object):
                 current_labels = labels[mask]
 
                 # should we use the box left and top corner or the crop's
-                current_boxes[:, :2] = np.maximum(current_boxes[:, :2],
-                                                  rect[:2])
+                current_boxes[:, :2] = np.maximum(current_boxes[:, :2], rect[:2])
                 # adjust to crop (by substracting crop's left,top)
                 current_boxes[:, :2] -= rect[:2]
 
-                current_boxes[:, 2:] = np.minimum(current_boxes[:, 2:],
-                                                  rect[2:])
+                current_boxes[:, 2:] = np.minimum(current_boxes[:, 2:], rect[2:])
                 # adjust to crop (by substracting crop's left,top)
                 current_boxes[:, 2:] -= rect[:2]
 
@@ -725,15 +738,12 @@ class Expand(object):
 
         height, width, depth = image.shape
         ratio = random.uniform(1, 4)
-        left = random.uniform(0, width*ratio - width)
-        top = random.uniform(0, height*ratio - height)
+        left = random.uniform(0, width * ratio - width)
+        top = random.uniform(0, height * ratio - height)
 
-        expand_image = np.zeros(
-            (int(height*ratio), int(width*ratio), depth),
-            dtype=image.dtype)
+        expand_image = np.zeros((int(height * ratio), int(width * ratio), depth), dtype=image.dtype)
         expand_image[:, :, :] = self.mean
-        expand_image[int(top):int(top + height),
-                     int(left):int(left + width)] = image
+        expand_image[int(top) : int(top + height), int(left) : int(left + width)] = image
         image = expand_image
 
         boxes = boxes.copy()
@@ -756,6 +766,7 @@ class RandomMirror(object):
 class SwapChannels(object):
     """Transforms a tensorized image by swapping the channels in the order
      specified in the swap tuple.
+
     Args:
         swaps (int triple): final order of channels
             eg: (2, 1, 0)
@@ -765,8 +776,7 @@ class SwapChannels(object):
         self.swaps = swaps
 
     def __call__(self, image):
-        """
-        Args:
+        """Args:
             image (Tensor): image tensor to be transformed
         Return:
             a tensor with channels swapped according to swap
@@ -783,11 +793,11 @@ class PhotometricDistort(object):
     def __init__(self):
         self.pd = [
             RandomContrast(),
-            ConvertColor(transform='HSV'),
+            ConvertColor(transform="HSV"),
             RandomSaturation(),
             RandomHue(),
-            ConvertColor(current='HSV', transform='BGR'),
-            RandomContrast()
+            ConvertColor(current="HSV", transform="BGR"),
+            RandomContrast(),
         ]
         self.rand_brightness = RandomBrightness()
         self.rand_light_noise = RandomLightingNoise()
@@ -807,17 +817,19 @@ class SSDAugmentation(object):
     def __init__(self, size=300, mean=(104, 117, 123)):
         self.mean = mean
         self.size = size
-        self.augment = Compose([
-            ConvertFromInts(),
-            ToAbsoluteCoords(),
-            PhotometricDistort(),
-            Expand(self.mean),
-            RandomSampleCrop(),
-            RandomMirror(),
-            ToPercentCoords(),
-            Resize(self.size),
-            SubtractMeans(self.mean)
-        ])
+        self.augment = Compose(
+            [
+                ConvertFromInts(),
+                ToAbsoluteCoords(),
+                PhotometricDistort(),
+                Expand(self.mean),
+                RandomSampleCrop(),
+                RandomMirror(),
+                ToPercentCoords(),
+                Resize(self.size),
+                SubtractMeans(self.mean),
+            ],
+        )
 
     def __call__(self, img, boxes, labels):
         return self.augment(img, boxes, labels)
@@ -825,10 +837,11 @@ class SSDAugmentation(object):
 
 num_heading_bin = 12  # hyper param
 
+
 def angle2class(angle):
-    ''' Convert continuous angle to discrete class and residual. '''
+    """Convert continuous angle to discrete class and residual."""
     angle = angle % (2 * np.pi)
-    assert (angle >= 0 and angle <= 2 * np.pi)
+    assert angle >= 0 and angle <= 2 * np.pi
     angle_per_class = 2 * np.pi / float(num_heading_bin)
     shifted_angle = (angle + angle_per_class / 2) % (2 * np.pi)
     class_id = int(shifted_angle / angle_per_class)
@@ -837,7 +850,7 @@ def angle2class(angle):
 
 
 def class2angle(cls, residual, to_label_format=False):
-    ''' Inverse function to angle2class. '''
+    """Inverse function to angle2class."""
     angle_per_class = 2 * np.pi / float(num_heading_bin)
     angle_center = cls * angle_per_class
     angle = angle_center + residual
@@ -849,29 +862,29 @@ def class2angle(cls, residual, to_label_format=False):
 def gaussian_radius(bbox_size, min_overlap=0.7):
     height, width = bbox_size
 
-    a1  = 1
-    b1  = (height + width)
-    c1  = width * height * (1 - min_overlap) / (1 + min_overlap)
-    sq1 = np.sqrt(b1 ** 2 - 4 * a1 * c1)
-    r1  = (b1 + sq1) / 2
+    a1 = 1
+    b1 = height + width
+    c1 = width * height * (1 - min_overlap) / (1 + min_overlap)
+    sq1 = np.sqrt(b1**2 - 4 * a1 * c1)
+    r1 = (b1 + sq1) / 2
 
-    a2  = 4
-    b2  = 2 * (height + width)
-    c2  = (1 - min_overlap) * width * height
-    sq2 = np.sqrt(b2 ** 2 - 4 * a2 * c2)
-    r2  = (b2 + sq2) / 2
+    a2 = 4
+    b2 = 2 * (height + width)
+    c2 = (1 - min_overlap) * width * height
+    sq2 = np.sqrt(b2**2 - 4 * a2 * c2)
+    r2 = (b2 + sq2) / 2
 
-    a3  = 4 * min_overlap
-    b3  = -2 * min_overlap * (height + width)
-    c3  = (min_overlap - 1) * width * height
-    sq3 = np.sqrt(b3 ** 2 - 4 * a3 * c3)
-    r3  = (b3 + sq3) / 2
+    a3 = 4 * min_overlap
+    b3 = -2 * min_overlap * (height + width)
+    c3 = (min_overlap - 1) * width * height
+    sq3 = np.sqrt(b3**2 - 4 * a3 * c3)
+    r3 = (b3 + sq3) / 2
     return min(r1, r2, r3)
 
 
 def gaussian2D(shape, sigma=1):
-    m, n = [(ss - 1.) / 2. for ss in shape]
-    y, x = np.ogrid[-m:m+1,-n:n+1]
+    m, n = ((ss - 1.0) / 2.0 for ss in shape)
+    y, x = np.ogrid[-m : m + 1, -n : n + 1]
 
     h = np.exp(-(x * x + y * y) / (2 * sigma * sigma))
     h[h < np.finfo(h.dtype).eps * h.max()] = 0
@@ -887,8 +900,8 @@ def draw_umich_gaussian(heatmap, center, radius, k=1):
     left, right = min(x, radius), min(width - x, radius + 1)
     top, bottom = min(y, radius), min(height - y, radius + 1)
 
-    masked_heatmap = heatmap[y - top:y + bottom, x - left:x + right]
-    masked_gaussian = gaussian[radius - top:radius + bottom, radius - left:radius + right]
+    masked_heatmap = heatmap[y - top : y + bottom, x - left : x + right]
+    masked_gaussian = gaussian[radius - top : radius + bottom, radius - left : radius + right]
     if min(masked_gaussian.shape) > 0 and min(masked_heatmap.shape) > 0:  # TODO debug
         np.maximum(masked_heatmap, masked_gaussian * k, out=masked_heatmap)
     return heatmap
@@ -907,19 +920,20 @@ def draw_msra_gaussian(heatmap, center, sigma):
     x = np.arange(0, size, 1, np.float32)
     y = x[:, np.newaxis]
     x0 = y0 = size // 2
-    g = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+    g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
     g_x = max(0, -ul[0]), min(br[0], h) - ul[0]
     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
     img_x = max(0, ul[0]), min(br[0], h)
     img_y = max(0, ul[1]), min(br[1], w)
-    heatmap[img_y[0]:img_y[1], img_x[0]:img_x[1]] = np.maximum(
-    heatmap[img_y[0]:img_y[1], img_x[0]:img_x[1]],
-    g[g_y[0]:g_y[1], g_x[0]:g_x[1]])
+    heatmap[img_y[0] : img_y[1], img_x[0] : img_x[1]] = np.maximum(
+        heatmap[img_y[0] : img_y[1], img_x[0] : img_x[1]],
+        g[g_y[0] : g_y[1], g_x[0] : g_x[1]],
+    )
     return heatmap
 
 
 def draw_projected_box3d(image, corners3d, color=(255, 255, 255), thickness=1):
-    ''' Draw 3d bounding box in image
+    """Draw 3d bounding box in image
     input:
         image: RGB image
         corners3d: (8,3) array of vertices (in image plane) for the 3d box in following order:
@@ -931,14 +945,34 @@ def draw_projected_box3d(image, corners3d, color=(255, 255, 255), thickness=1):
           |/         |/
           6 -------- 7
 
-    '''
-
+    """
     corners3d = corners3d.astype(np.int32)
-    for k in range(0, 4):
+    for k in range(4):
         i, j = k, (k + 1) % 4
-        cv2.line(image, (corners3d[i, 0], corners3d[i, 1]), (corners3d[j, 0], corners3d[j, 1]), color, thickness, lineType=cv2.LINE_AA)
+        cv2.line(
+            image,
+            (corners3d[i, 0], corners3d[i, 1]),
+            (corners3d[j, 0], corners3d[j, 1]),
+            color,
+            thickness,
+            lineType=cv2.LINE_AA,
+        )
         i, j = k + 4, (k + 1) % 4 + 4
-        cv2.line(image, (corners3d[i, 0], corners3d[i, 1]), (corners3d[j, 0], corners3d[j, 1]), color, thickness, lineType=cv2.LINE_AA)
+        cv2.line(
+            image,
+            (corners3d[i, 0], corners3d[i, 1]),
+            (corners3d[j, 0], corners3d[j, 1]),
+            color,
+            thickness,
+            lineType=cv2.LINE_AA,
+        )
         i, j = k, k + 4
-        cv2.line(image, (corners3d[i, 0], corners3d[i, 1]), (corners3d[j, 0], corners3d[j, 1]), color, thickness, lineType=cv2.LINE_AA)
+        cv2.line(
+            image,
+            (corners3d[i, 0], corners3d[i, 1]),
+            (corners3d[j, 0], corners3d[j, 1]),
+            color,
+            thickness,
+            lineType=cv2.LINE_AA,
+        )
     return image

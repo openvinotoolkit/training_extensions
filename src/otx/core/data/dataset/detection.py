@@ -11,10 +11,9 @@ from typing import Callable
 import numpy as np
 import torch
 from datumaro import Bbox, Image
-from torchvision import tv_tensors
-
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
+from torchvision import tv_tensors
 
 from .base import OTXDataset
 

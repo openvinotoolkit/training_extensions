@@ -1,37 +1,41 @@
 import os
+
 import numpy as np
-import torch.utils.data as data
 from PIL import Image, ImageFile
+from torch.utils import data
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-from otx.core.data.dataset.kitti_3d.kitti_utils import angle2class
-from otx.core.data.dataset.kitti_3d.kitti_utils import get_objects_from_label
-from otx.core.data.dataset.kitti_3d.kitti_utils import Calibration
-from otx.core.data.dataset.kitti_3d.kitti_utils import get_affine_transform
-from otx.core.data.dataset.kitti_3d.kitti_utils import affine_transform
-from otx.core.data.dataset.kitti_3d.kitti_eval_python.eval import get_official_eval_result
 import otx.core.data.dataset.kitti_3d.kitti_eval_python.kitti_common as kitti
-from otx.core.data.dataset.kitti_3d.kitti_utils import PhotometricDistort
+from otx.core.data.dataset.kitti_3d.kitti_utils import (
+    Calibration,
+    PhotometricDistort,
+    affine_transform,
+    angle2class,
+    get_affine_transform,
+    get_objects_from_label,
+)
 
 
 class KITTI_Dataset(data.Dataset):
-    def __init__(self,
-                 root_dir,
-                 split,
-                 use_3d_center=True,
-                 class_merging=False,
-                 use_dontcare=False,
-                 writelist=['Car'],
-                 bbox2d_type='anno',
-                 clip_2d=False,
-                 aug_pd=True,
-                 aug_crop=True,
-                 random_flip=0.5,
-                 random_crop=0.5,
-                 scale=0.05,
-                 shift=0.05,
-                 depth_scale='normal'):
-
+    def __init__(
+        self,
+        root_dir,
+        split,
+        use_3d_center=True,
+        class_merging=False,
+        use_dontcare=False,
+        writelist=["Car"],
+        bbox2d_type="anno",
+        clip_2d=False,
+        aug_pd=True,
+        aug_crop=True,
+        random_flip=0.5,
+        random_crop=0.5,
+        scale=0.05,
+        shift=0.05,
+        depth_scale="normal",
+    ):
         # basic configuration
         self.root_dir = root_dir
         if split == "test":
@@ -39,36 +43,36 @@ class KITTI_Dataset(data.Dataset):
         self.split = split
         self.num_classes = 3
         self.max_objs = 50
-        self.class_name = ['Pedestrian', 'Car', 'Cyclist']
-        self.cls2id = {'Pedestrian': 0, 'Car': 1, 'Cyclist': 2}
+        self.class_name = ["Pedestrian", "Car", "Cyclist"]
+        self.cls2id = {"Pedestrian": 0, "Car": 1, "Cyclist": 2}
         self.resolution = np.array([1280, 384])  # W * H
         self.use_3d_center = use_3d_center
         self.writelist = writelist
         # anno: use src annotations as GT, proj: use projected 2d bboxes as GT
         self.bbox2d_type = bbox2d_type
-        assert self.bbox2d_type in ['anno', 'proj']
+        assert self.bbox2d_type in ["anno", "proj"]
         self.meanshape = False
         self.class_merging = class_merging
         self.use_dontcare = use_dontcare
 
         if self.class_merging:
-            self.writelist.extend(['Van', 'Truck'])
+            self.writelist.extend(["Van", "Truck"])
         if self.use_dontcare:
-            self.writelist.extend(['DontCare'])
+            self.writelist.extend(["DontCare"])
 
         # data split loading
-        assert self.split in ['train', 'val', 'test']
-        self.split_file = os.path.join(self.root_dir, 'ImageSets', self.split + '.txt')
+        assert self.split in ["train", "val", "test"]
+        self.split_file = os.path.join(self.root_dir, "ImageSets", self.split + ".txt")
         self.idx_list = [x.strip() for x in open(self.split_file).readlines()]
 
         # path configuration
-        self.data_dir = os.path.join(self.root_dir, 'training')
-        self.image_dir = os.path.join(self.data_dir, 'image_2')
-        self.calib_dir = os.path.join(self.data_dir, 'calib')
-        self.label_dir = os.path.join(self.data_dir, 'label_2')
+        self.data_dir = os.path.join(self.root_dir, "training")
+        self.image_dir = os.path.join(self.data_dir, "image_2")
+        self.calib_dir = os.path.join(self.data_dir, "calib")
+        self.label_dir = os.path.join(self.data_dir, "label_2")
 
         # data augmentation configuration
-        self.data_augmentation = True if split in ['train'] else False
+        self.data_augmentation = True if split in ["train"] else False
 
         self.aug_pd = aug_pd
         self.aug_crop = aug_crop
@@ -84,9 +88,13 @@ class KITTI_Dataset(data.Dataset):
         # statistics
         self.mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
-        self.cls_mean_size = np.array([[1.76255119    ,0.66068622   , 0.84422524   ],
-                                       [1.52563191462 ,1.62856739989, 3.88311640418],
-                                       [1.73698127    ,0.59706367   , 1.76282397   ]])
+        self.cls_mean_size = np.array(
+            [
+                [1.76255119, 0.66068622, 0.84422524],
+                [1.52563191462, 1.62856739989, 3.88311640418],
+                [1.73698127, 0.59706367, 1.76282397],
+            ],
+        )
         if not self.meanshape:
             self.cls_mean_size = np.zeros_like(self.cls_mean_size, dtype=np.float32)
 
@@ -96,40 +104,23 @@ class KITTI_Dataset(data.Dataset):
         self.clip_2d = clip_2d
 
     def get_image(self, idx):
-        img_file = os.path.join(self.image_dir, '%06d.png' % idx)
-        assert os.path.exists(img_file), "{} does not exist!".format(img_file)
-        return Image.open(img_file)    # (H, W, 3) RGB mode
+        img_file = os.path.join(self.image_dir, "%06d.png" % idx)
+        assert os.path.exists(img_file), f"{img_file} does not exist!"
+        return Image.open(img_file)  # (H, W, 3) RGB mode
 
     def get_label(self, idx):
-        label_file = os.path.join(self.label_dir, '%06d.txt' % idx)
+        label_file = os.path.join(self.label_dir, "%06d.txt" % idx)
         assert os.path.exists(label_file)
         return get_objects_from_label(label_file)
 
     def get_calib(self, idx):
-        calib_file = os.path.join(self.calib_dir, '%06d.txt' % idx)
+        calib_file = os.path.join(self.calib_dir, "%06d.txt" % idx)
         assert os.path.exists(calib_file)
         return Calibration(calib_file)
 
     def prepare_kitti_format(self):
         img_ids = [int(self.idx_list[item]) for item in range(self.__len__())]
         return kitti.get_label_annos(self.label_dir, img_ids)
-
-    def eval(self, results_dir, logger):
-        logger.info("==> Loading detections and GTs...")
-        img_ids = [int(id) for id in self.idx_list]
-        dt_annos = kitti.get_label_annos(results_dir)
-        gt_annos = kitti.get_label_annos(self.label_dir, img_ids)
-
-        test_id = {'Car': 0, 'Pedestrian':1, 'Cyclist': 2}
-
-        logger.info('==> Evaluating (official) ...')
-        car_moderate = 0
-        for category in self.writelist:
-            results_str, results_dict, mAP3d_R40 = get_official_eval_result(gt_annos, dt_annos, test_id[category])
-            if category == 'Car':
-                car_moderate = mAP3d_R40
-            logger.info(results_str)
-        return car_moderate
 
     def __len__(self):
         return self.idx_list.__len__()
@@ -140,14 +131,13 @@ class KITTI_Dataset(data.Dataset):
         # image loading
         img = self.get_image(index)
         img_size = np.array(img.size)
-        features_size = self.resolution // self.downsample    # W * H
+        features_size = self.resolution // self.downsample  # W * H
 
         # data augmentation for image
         center = np.array(img_size) / 2
         crop_size, crop_scale = img_size, 1
         random_flip_flag = False
         if self.data_augmentation:
-
             if self.aug_pd:
                 img = np.array(img).astype(np.float32)
                 img = self.pd(img).astype(np.uint8)
@@ -166,16 +156,19 @@ class KITTI_Dataset(data.Dataset):
 
         # add affine transformation for 2d images.
         trans, trans_inv = get_affine_transform(center, crop_size, 0, self.resolution, inv=1)
-        img = img.transform(tuple(self.resolution.tolist()), method=Image.AFFINE, data=tuple(trans_inv.reshape(-1).tolist()), resample=Image.BILINEAR)
+        img = img.transform(
+            tuple(self.resolution.tolist()),
+            method=Image.AFFINE,
+            data=tuple(trans_inv.reshape(-1).tolist()),
+            resample=Image.BILINEAR,
+        )
 
         # image encoding
         img = np.array(img).astype(np.float32) / 255.0
         img = (img - self.mean) / self.std
         img = img.transpose(2, 0, 1)  # C * H * W -> (384 * 1280)
 
-        info = {'img_id': index,
-                'img_size': img_size,
-                'bbox_downsample_ratio': img_size / features_size}
+        info = {"img_id": index, "img_size": img_size, "bbox_downsample_ratio": img_size / features_size}
 
         # if self.split == 'test':
         #     calib = self.get_calib(index)
@@ -190,15 +183,19 @@ class KITTI_Dataset(data.Dataset):
                 calib.flip(img_size)
             for object in objects:
                 [x1, _, x2, _] = object.box2d
-                object.box2d[0],  object.box2d[2] = img_size[0] - x2, img_size[0] - x1
+                object.box2d[0], object.box2d[2] = img_size[0] - x2, img_size[0] - x1
                 object.alpha = np.pi - object.alpha
                 object.ry = np.pi - object.ry
                 if self.aug_calib:
                     object.pos[0] *= -1
-                if object.alpha > np.pi:  object.alpha -= 2 * np.pi  # check range
-                if object.alpha < -np.pi: object.alpha += 2 * np.pi
-                if object.ry > np.pi:  object.ry -= 2 * np.pi
-                if object.ry < -np.pi: object.ry += 2 * np.pi
+                if object.alpha > np.pi:
+                    object.alpha -= 2 * np.pi  # check range
+                if object.alpha < -np.pi:
+                    object.alpha += 2 * np.pi
+                if object.ry > np.pi:
+                    object.ry -= 2 * np.pi
+                if object.ry < -np.pi:
+                    object.ry += 2 * np.pi
 
         # labels encoding
         calibs = np.zeros((self.max_objs, 3, 4), dtype=np.float32)
@@ -223,7 +220,7 @@ class KITTI_Dataset(data.Dataset):
                 continue
 
             # filter inappropriate samples
-            if objects[i].level_str == 'UnKnown' or objects[i].pos[-1] < 2:
+            if objects[i].level_str == "UnKnown" or objects[i].pos[-1] < 2:
                 continue
 
             # ignore the samples beyond the threshold [hard encoding]
@@ -239,7 +236,10 @@ class KITTI_Dataset(data.Dataset):
             bbox_2d[2:] = affine_transform(bbox_2d[2:], trans)
 
             # process 3d center
-            center_2d = np.array([(bbox_2d[0] + bbox_2d[2]) / 2, (bbox_2d[1] + bbox_2d[3]) / 2], dtype=np.float32)  # W * H
+            center_2d = np.array(
+                [(bbox_2d[0] + bbox_2d[2]) / 2, (bbox_2d[1] + bbox_2d[3]) / 2],
+                dtype=np.float32,
+            )  # W * H
             corner_2d = bbox_2d.copy()
 
             center_3d = objects[i].pos + [0, -objects[i].h / 2, 0]  # real 3D center in 3D space
@@ -259,7 +259,7 @@ class KITTI_Dataset(data.Dataset):
                 proj_inside_img = False
 
             if proj_inside_img == False:
-                    continue
+                continue
 
             # class
             cls_id = self.cls2id[objects[i].cls_type]
@@ -267,14 +267,14 @@ class KITTI_Dataset(data.Dataset):
 
             # encoding 2d/3d boxes
             w, h = bbox_2d[2] - bbox_2d[0], bbox_2d[3] - bbox_2d[1]
-            size_2d[i] = 1. * w, 1. * h
+            size_2d[i] = 1.0 * w, 1.0 * h
 
             center_2d_norm = center_2d / self.resolution
             size_2d_norm = size_2d[i] / self.resolution
 
             corner_2d_norm = corner_2d
-            corner_2d_norm[0: 2] = corner_2d[0: 2] / self.resolution
-            corner_2d_norm[2: 4] = corner_2d[2: 4] / self.resolution
+            corner_2d_norm[0:2] = corner_2d[0:2] / self.resolution
+            corner_2d_norm[2:4] = corner_2d[2:4] / self.resolution
             center_3d_norm = center_3d / self.resolution
 
             l, r = center_3d_norm[0] - corner_2d_norm[0], corner_2d_norm[2] - center_3d_norm[0]
@@ -293,19 +293,21 @@ class KITTI_Dataset(data.Dataset):
             boxes_3d[i] = center_3d_norm[0], center_3d_norm[1], l, r, t, b
 
             # encoding depth
-            if self.depth_scale == 'normal':
+            if self.depth_scale == "normal":
                 depth[i] = objects[i].pos[-1] * crop_scale
 
-            elif self.depth_scale == 'inverse':
+            elif self.depth_scale == "inverse":
                 depth[i] = objects[i].pos[-1] / crop_scale
 
-            elif self.depth_scale == 'none':
+            elif self.depth_scale == "none":
                 depth[i] = objects[i].pos[-1]
 
             # encoding heading angle
             heading_angle = calib.ry2alpha(objects[i].ry, (objects[i].box2d[0] + objects[i].box2d[2]) / 2)
-            if heading_angle > np.pi:  heading_angle -= 2 * np.pi  # check range
-            if heading_angle < -np.pi: heading_angle += 2 * np.pi
+            if heading_angle > np.pi:
+                heading_angle -= 2 * np.pi  # check range
+            if heading_angle < -np.pi:
+                heading_angle += 2 * np.pi
             heading_bin[i], heading_res[i] = angle2class(heading_angle)
 
             # encoding size_3d
@@ -322,29 +324,36 @@ class KITTI_Dataset(data.Dataset):
         # collect return data
         inputs = img
         targets = {
-                   'labels': labels[mask_2d],
-                   'boxes': boxes[mask_2d],
-                   'boxes_3d': boxes_3d[mask_2d],
-                   'depth': depth[mask_2d],
-                   'size_2d': size_2d[mask_2d],
-                   'size_3d': size_3d[mask_2d],
-                   'heading_bin': heading_bin[mask_2d],
-                   'heading_res': heading_res[mask_2d],
-                   }
+            "labels": labels[mask_2d],
+            "boxes": boxes[mask_2d],
+            "boxes_3d": boxes_3d[mask_2d],
+            "depth": depth[mask_2d],
+            "size_2d": size_2d[mask_2d],
+            "size_3d": size_3d[mask_2d],
+            "heading_bin": heading_bin[mask_2d],
+            "heading_res": heading_res[mask_2d],
+        }
 
-        info = {'img_id': index,
-                'img_size': img_size,
-                'bbox_downsample_ratio': img_size / features_size}
+        info = {"img_id": index, "img_size": img_size, "bbox_downsample_ratio": img_size / features_size}
 
         return inputs, calib, targets, info, objects_list
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from torch.utils.data import DataLoader
-    cfg = {'root_dir': '../../../data/KITTI',
-           'random_flip': 0.0, 'random_crop': 1.0, 'scale': 0.8, 'shift': 0.1, 'use_dontcare': False,
-           'class_merging': False, 'writelist':['Pedestrian', 'Car', 'Cyclist'], 'use_3d_center':False}
-    dataset = KITTI_Dataset('train', cfg)
+
+    cfg = {
+        "root_dir": "../../../data/KITTI",
+        "random_flip": 0.0,
+        "random_crop": 1.0,
+        "scale": 0.8,
+        "shift": 0.1,
+        "use_dontcare": False,
+        "class_merging": False,
+        "writelist": ["Pedestrian", "Car", "Cyclist"],
+        "use_3d_center": False,
+    }
+    dataset = KITTI_Dataset("train", cfg)
     dataloader = DataLoader(dataset=dataset, batch_size=1)
     print(dataset.writelist)
 
@@ -357,7 +366,7 @@ if __name__ == '__main__':
         # print(targets['size_3d'][0][0])
 
         # test heatmap
-        heatmap = targets['heatmap'][0]  # image id
+        heatmap = targets["heatmap"][0]  # image id
         heatmap = Image.fromarray(heatmap[0].numpy() * 255)  # cats id
         heatmap.show()
 

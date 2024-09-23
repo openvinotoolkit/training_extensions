@@ -16,6 +16,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
 
 from otx.core.config.data import TileConfig, UnlabeledDataConfig, VisualPromptingConfig
+from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
@@ -30,7 +31,6 @@ from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
-from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict

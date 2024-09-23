@@ -1,47 +1,84 @@
-#####################
-# Based on https://github.com/hongzhenwang/RRPN-revise
-# Licensed under The MIT License
-# Author: yanyan, scrin@foxmail.com
-#####################
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Rotate IoU for KITTI3D metric."""
+
 import math
 
 import numba
 import numpy as np
-from numba import cuda
 
 
 @numba.jit(nopython=True)
-def div_up(m, n):
+def div_up(m: int, n: int) -> int:
+    """Divide m by n and round up to the nearest integer.
+
+    Args:
+        m (int): Numerator.
+        n (int): Denominator.
+
+    Returns:
+        int: Result of the division rounded up to the nearest integer.
+    """
     return m // n + (m % n > 0)
 
-@cuda.jit('(float32[:], float32[:], float32[:])', device=True, inline=True)
-def trangle_area(a, b, c):
-    return ((a[0] - c[0]) * (b[1] - c[1]) - (a[1] - c[1]) *
-            (b[0] - c[0])) / 2.0
+
+@numba.jit(nopython=True, inline="always")
+def trangle_area(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
+    """Calculate the area of a triangle given its three vertices.
+
+    Args:
+        a (ndarray): First vertex of the triangle.
+        b (ndarray): Second vertex of the triangle.
+        c (ndarray): Third vertex of the triangle.
+
+    Returns:
+        float: Area of the triangle.
+    """
+    return ((a[0] - c[0]) * (b[1] - c[1]) - (a[1] - c[1]) * (b[0] - c[0])) / 2.0
 
 
-@cuda.jit('(float32[:], int32)', device=True, inline=True)
-def area(int_pts, num_of_inter):
-    area_val = 0.0
+@numba.jit(nopython=True, inline="always")
+def area(int_pts: np.ndarray, num_of_inter: int) -> float:
+    """Calculate the area of a polygon using the given intersection points.
+
+    Args:
+        int_pts (ndarray): Array of intersection points, shape (num_of_inter * 2,).
+        num_of_inter (int): Number of intersection points.
+
+    Returns:
+        float: The calculated area of the polygon.
+    """
+    area_val: float = 0.0
     for i in range(num_of_inter - 2):
         area_val += abs(
-            trangle_area(int_pts[:2], int_pts[2 * i + 2:2 * i + 4],
-                         int_pts[2 * i + 4:2 * i + 6]))
+            trangle_area(
+                int_pts[:2],
+                int_pts[2 * i + 2 : 2 * i + 4],
+                int_pts[2 * i + 4 : 2 * i + 6],
+            ),
+        )
     return area_val
 
 
-@cuda.jit('(float32[:], int32)', device=True, inline=True)
-def sort_vertex_in_convex_polygon(int_pts, num_of_inter):
+@numba.jit(nopython=True, inline="always")
+def sort_vertex_in_convex_polygon(int_pts: np.ndarray, num_of_inter: int) -> None:
+    """Sort the vertices of a convex polygon in counterclockwise order.
+
+    Args:
+        int_pts: Array of intersection points.
+        num_of_inter: Number of intersection points.
+    """
     if num_of_inter > 0:
-        center = cuda.local.array((2, ), dtype=numba.float32)
+        center = np.empty((2,), dtype=np.float32)
         center[:] = 0.0
         for i in range(num_of_inter):
             center[0] += int_pts[2 * i]
             center[1] += int_pts[2 * i + 1]
         center[0] /= num_of_inter
         center[1] /= num_of_inter
-        v = cuda.local.array((2, ), dtype=numba.float32)
-        vs = cuda.local.array((16, ), dtype=numba.float32)
+        v = np.empty((2,), dtype=np.float32)
+        vs = np.empty((16,), dtype=np.float32)
         for i in range(num_of_inter):
             v[0] = int_pts[2 * i] - center[0]
             v[1] = int_pts[2 * i + 1] - center[1]
@@ -70,61 +107,93 @@ def sort_vertex_in_convex_polygon(int_pts, num_of_inter):
                 int_pts[j * 2 + 1] = ty
 
 
-@cuda.jit(
-    '(float32[:], float32[:], int32, int32, float32[:])',
-    device=True,
-    inline=True)
-def line_segment_intersection(pts1, pts2, i, j, temp_pts):
-    A = cuda.local.array((2, ), dtype=numba.float32)
-    B = cuda.local.array((2, ), dtype=numba.float32)
-    C = cuda.local.array((2, ), dtype=numba.float32)
-    D = cuda.local.array((2, ), dtype=numba.float32)
+@numba.jit(nopython=True, inline="always")
+def line_segment_intersection(
+    pts1: np.ndarray,  # array of points representing the first line segment
+    pts2: np.ndarray,  # array of points representing the second line segment
+    i: int,  # index of the first line segment
+    j: int,  # index of the second line segment
+    temp_pts: np.ndarray,  # array to store the intersection point
+) -> bool:
+    """Check if two line segments intersect and find the intersection point.
 
-    A[0] = pts1[2 * i]
-    A[1] = pts1[2 * i + 1]
+    Args:
+        pts1 (ndarray): Array of points representing the first line segment.
+        pts2 (ndarray): Array of points representing the second line segment.
+        i (int): Index of the first line segment.
+        j (int): Index of the second line segment.
+        temp_pts (ndarray): Array to store the intersection point.
 
-    B[0] = pts1[2 * ((i + 1) % 4)]
-    B[1] = pts1[2 * ((i + 1) % 4) + 1]
+    Returns:
+        bool: True if the line segments intersect, False otherwise.
+    """
+    a = np.empty((2,), dtype=np.float32)
+    b = np.empty((2,), dtype=np.float32)
+    c = np.empty((2,), dtype=np.float32)
+    d = np.empty((2,), dtype=np.float32)
 
-    C[0] = pts2[2 * j]
-    C[1] = pts2[2 * j + 1]
+    a[0] = pts1[2 * i]
+    a[1] = pts1[2 * i + 1]
 
-    D[0] = pts2[2 * ((j + 1) % 4)]
-    D[1] = pts2[2 * ((j + 1) % 4) + 1]
-    BA0 = B[0] - A[0]
-    BA1 = B[1] - A[1]
-    DA0 = D[0] - A[0]
-    CA0 = C[0] - A[0]
-    DA1 = D[1] - A[1]
-    CA1 = C[1] - A[1]
-    acd = DA1 * CA0 > CA1 * DA0
-    bcd = (D[1] - B[1]) * (C[0] - B[0]) > (C[1] - B[1]) * (D[0] - B[0])
+    b[0] = pts1[2 * ((i + 1) % 4)]
+    b[1] = pts1[2 * ((i + 1) % 4) + 1]
+
+    c[0] = pts2[2 * j]
+    c[1] = pts2[2 * j + 1]
+
+    d[0] = pts2[2 * ((j + 1) % 4)]
+    d[1] = pts2[2 * ((j + 1) % 4) + 1]
+
+    ba0 = b[0] - a[0]
+    ba1 = b[1] - a[1]
+    da0 = d[0] - a[0]
+    ca0 = c[0] - a[0]
+    da1 = d[1] - a[1]
+    ca1 = c[1] - a[1]
+
+    acd = da1 * ca0 > ca1 * da0
+    bcd = (d[1] - b[1]) * (c[0] - b[0]) > (c[1] - b[1]) * (d[0] - b[0])
     if acd != bcd:
-        abc = CA1 * BA0 > BA1 * CA0
-        abd = DA1 * BA0 > BA1 * DA0
+        abc = ca1 * ba0 > ba1 * ca0
+        abd = da1 * ba0 > ba1 * da0
         if abc != abd:
-            DC0 = D[0] - C[0]
-            DC1 = D[1] - C[1]
-            ABBA = A[0] * B[1] - B[0] * A[1]
-            CDDC = C[0] * D[1] - D[0] * C[1]
-            DH = BA1 * DC0 - BA0 * DC1
-            Dx = ABBA * DC0 - BA0 * CDDC
-            Dy = ABBA * DC1 - BA1 * CDDC
-            temp_pts[0] = Dx / DH
-            temp_pts[1] = Dy / DH
+            dc0 = d[0] - c[0]
+            dc1 = d[1] - c[1]
+            abba = a[0] * b[1] - b[0] * a[1]
+            cddc = c[0] * d[1] - d[0] * c[1]
+            dh = ba1 * dc0 - ba0 * dc1
+            dx = abba * dc0 - ba0 * cddc
+            dy = abba * dc1 - ba1 * cddc
+            temp_pts[0] = dx / dh
+            temp_pts[1] = dy / dh
             return True
     return False
 
 
-@cuda.jit(
-    '(float32[:], float32[:], int32, int32, float32[:])',
-    device=True,
-    inline=True)
-def line_segment_intersection_v1(pts1, pts2, i, j, temp_pts):
-    a = cuda.local.array((2, ), dtype=numba.float32)
-    b = cuda.local.array((2, ), dtype=numba.float32)
-    c = cuda.local.array((2, ), dtype=numba.float32)
-    d = cuda.local.array((2, ), dtype=numba.float32)
+@numba.jit(nopython=True, inline="always")
+def line_segment_intersection_v1(
+    pts1: np.ndarray,  # array of points representing the first line segment
+    pts2: np.ndarray,  # array of points representing the second line segment
+    i: int,  # index of the first line segment
+    j: int,  # index of the second line segment
+    temp_pts: np.ndarray,  # array to store the intersection point
+) -> bool:
+    """Check if two line segments intersect and find the intersection point using an alternative method.
+
+    Args:
+        pts1: ndarray, array of points representing the first line segment
+        pts2: ndarray, array of points representing the second line segment
+        i: int, index of the first line segment
+        j: int, index of the second line segment
+        temp_pts: ndarray, array to store the intersection point
+
+    Returns:
+        bool: True if the line segments intersect, False otherwise
+    """
+    a = np.empty((2,), dtype=np.float32)
+    b = np.empty((2,), dtype=np.float32)
+    c = np.empty((2,), dtype=np.float32)
+    d = np.empty((2,), dtype=np.float32)
 
     a[0] = pts1[2 * i]
     a[1] = pts1[2 * i + 1]
@@ -158,8 +227,22 @@ def line_segment_intersection_v1(pts1, pts2, i, j, temp_pts):
     return True
 
 
-@cuda.jit('(float32, float32, float32[:])', device=True, inline=True)
-def point_in_quadrilateral(pt_x, pt_y, corners):
+@numba.jit(nopython=True, inline="always")
+def point_in_quadrilateral(
+    pt_x: float,  # x coordinate of the point
+    pt_y: float,  # y coordinate of the point
+    corners: np.ndarray,  # corners of the quadrilateral, shape (8,)
+) -> bool:
+    """Check if a point is inside a quadrilateral.
+
+    Args:
+        pt_x: float, x coordinate of the point
+        pt_y: float, y coordinate of the point
+        corners: ndarray, shape (8,), corners of the quadrilateral
+
+    Returns:
+        bool: True if the point is inside the quadrilateral, False otherwise
+    """
     ab0 = corners[2] - corners[0]
     ab1 = corners[3] - corners[1]
 
@@ -177,8 +260,22 @@ def point_in_quadrilateral(pt_x, pt_y, corners):
     return abab >= abap and abap >= 0 and adad >= adap and adap >= 0
 
 
-@cuda.jit('(float32[:], float32[:], float32[:])', device=True, inline=True)
-def quadrilateral_intersection(pts1, pts2, int_pts):
+@numba.jit(nopython=True, inline="always")
+def quadrilateral_intersection(
+    pts1: np.ndarray,  # shape: (8,)
+    pts2: np.ndarray,  # shape: (8,)
+    int_pts: np.ndarray,  # shape: (16,)
+) -> int:
+    """Compute the intersection points between two quadrilaterals.
+
+    Args:
+        pts1: Array of points representing the first quadrilateral, shape (8,).
+        pts2: Array of points representing the second quadrilateral, shape (8,).
+        int_pts: Array to store the intersection points, shape (16,).
+
+    Returns:
+        int: Number of intersection points.
+    """
     num_of_inter = 0
     for i in range(4):
         if point_in_quadrilateral(pts1[2 * i], pts1[2 * i + 1], pts2):
@@ -189,7 +286,7 @@ def quadrilateral_intersection(pts1, pts2, int_pts):
             int_pts[num_of_inter * 2] = pts2[2 * i]
             int_pts[num_of_inter * 2 + 1] = pts2[2 * i + 1]
             num_of_inter += 1
-    temp_pts = cuda.local.array((2, ), dtype=numba.float32)
+    temp_pts = np.empty((2,), dtype=np.float32)
     for i in range(4):
         for j in range(4):
             has_pts = line_segment_intersection(pts1, pts2, i, j, temp_pts)
@@ -201,8 +298,21 @@ def quadrilateral_intersection(pts1, pts2, int_pts):
     return num_of_inter
 
 
-@cuda.jit('(float32[:], float32[:])', device=True, inline=True)
-def rbbox_to_corners(corners, rbbox):
+@numba.jit(nopython=True, inline="always")
+def rbbox_to_corners(
+    corners: np.ndarray,  # shape: (8,)
+    rbbox: np.ndarray,  # shape: (5,)
+) -> None:
+    """Convert a rotated bounding box to its corner points.
+
+    Args:
+        corners (ndarray): Array to store the corner points, shape (8,).
+        rbbox (ndarray): Array representing the rotated bounding box, shape (5,).
+            The rotated bounding box is represented by (center_x, center_y, width, height, angle).
+
+    Returns:
+        None
+    """
     # generate clockwise corners and rotate it clockwise
     angle = rbbox[4]
     a_cos = math.cos(angle)
@@ -211,8 +321,8 @@ def rbbox_to_corners(corners, rbbox):
     center_y = rbbox[1]
     x_d = rbbox[2]
     y_d = rbbox[3]
-    corners_x = cuda.local.array((4, ), dtype=numba.float32)
-    corners_y = cuda.local.array((4, ), dtype=numba.float32)
+    corners_x = np.empty((4,), dtype=np.float32)
+    corners_y = np.empty((4,), dtype=np.float32)
     corners_x[0] = -x_d / 2
     corners_x[1] = -x_d / 2
     corners_x[2] = x_d / 2
@@ -222,31 +332,60 @@ def rbbox_to_corners(corners, rbbox):
     corners_y[2] = y_d / 2
     corners_y[3] = -y_d / 2
     for i in range(4):
-        corners[2 *
-                i] = a_cos * corners_x[i] + a_sin * corners_y[i] + center_x
-        corners[2 * i
-                + 1] = -a_sin * corners_x[i] + a_cos * corners_y[i] + center_y
+        corners[2 * i] = a_cos * corners_x[i] + a_sin * corners_y[i] + center_x
+        corners[2 * i + 1] = -a_sin * corners_x[i] + a_cos * corners_y[i] + center_y
 
 
-@cuda.jit('(float32[:], float32[:])', device=True, inline=True)
-def inter(rbbox1, rbbox2):
-    corners1 = cuda.local.array((8, ), dtype=numba.float32)
-    corners2 = cuda.local.array((8, ), dtype=numba.float32)
-    intersection_corners = cuda.local.array((16, ), dtype=numba.float32)
+@numba.jit(nopython=True, inline="always")
+def inter(
+    rbbox1: np.ndarray,  # shape: (5,)
+    rbbox2: np.ndarray,  # shape: (5,)
+) -> float:  # The intersection area of the two rotated bounding boxes.
+    """Calculate the intersection area of two rotated bounding boxes.
+
+    Args:
+        rbbox1 (ndarray): Array representing the first rotated bounding box.
+            The rotated bounding box is represented by (center_x, center_y, width, height, angle).
+        rbbox2 (ndarray): Array representing the second rotated bounding box.
+            The rotated bounding box is represented by (center_x, center_y, width, height, angle).
+
+    Returns:
+        float: The intersection area of the two rotated bounding boxes.
+    """
+    corners1 = np.empty((8,), dtype=np.float32)
+    corners2 = np.empty((8,), dtype=np.float32)
+    intersection_corners = np.empty((16,), dtype=np.float32)
 
     rbbox_to_corners(corners1, rbbox1)
     rbbox_to_corners(corners2, rbbox2)
 
-    num_intersection = quadrilateral_intersection(corners1, corners2,
-                                                  intersection_corners)
+    num_intersection = quadrilateral_intersection(corners1, corners2, intersection_corners)
     sort_vertex_in_convex_polygon(intersection_corners, num_intersection)
-    # print(intersection_corners.reshape([-1, 2])[:num_intersection])
 
     return area(intersection_corners, num_intersection)
 
 
-@cuda.jit('(float32[:], float32[:], int32)', device=True, inline=True)
-def devRotateIoUEval(rbox1, rbox2, criterion=-1):
+@numba.jit(nopython=True, inline="always")
+def dev_rotate_iou_eval(
+    rbox1: np.ndarray,  # shape: (5,)
+    rbox2: np.ndarray,  # shape: (5,)
+    criterion: int = -1,  # IoU criterion to use. Defaults to -1.
+) -> float:  # The IoU of the two rotated bounding boxes.
+    """Calculate the IoU of two rotated bounding boxes.
+
+    Args:
+        rbox1 (ndarray): Array representing the first rotated bounding box.
+            The rotated bounding box is represented by (center_x, center_y, width, height, angle).
+        rbox2 (ndarray): Array representing the second rotated bounding box.
+            The rotated bounding box is represented by (center_x, center_y, width, height, angle).
+        criterion (int): The method to calculate the IoU.
+            -1: Calculate the IoU.
+            0: Calculate the IoU with first box as the reference.
+            1: Calculate the IoU with second box as the reference.
+
+    Returns:
+        float: The IoU of the two rotated bounding boxes.
+    """
     area1 = rbox1[2] * rbox1[3]
     area2 = rbox2[2] * rbox2[3]
     area_inter = inter(rbox1, rbox2)
@@ -259,72 +398,31 @@ def devRotateIoUEval(rbox1, rbox2, criterion=-1):
     else:
         return area_inter
 
-@cuda.jit('(int64, int64, float32[:], float32[:], float32[:], int32)', fastmath=False)
-def rotate_iou_kernel_eval(N, K, dev_boxes, dev_query_boxes, dev_iou, criterion=-1):
-    threadsPerBlock = 8 * 8
-    row_start = cuda.blockIdx.x
-    col_start = cuda.blockIdx.y
-    tx = cuda.threadIdx.x
-    row_size = min(N - row_start * threadsPerBlock, threadsPerBlock)
-    col_size = min(K - col_start * threadsPerBlock, threadsPerBlock)
-    block_boxes = cuda.shared.array(shape=(64 * 5, ), dtype=numba.float32)
-    block_qboxes = cuda.shared.array(shape=(64 * 5, ), dtype=numba.float32)
 
-    dev_query_box_idx = threadsPerBlock * col_start + tx
-    dev_box_idx = threadsPerBlock * row_start + tx
-    if (tx < col_size):
-        block_qboxes[tx * 5 + 0] = dev_query_boxes[dev_query_box_idx * 5 + 0]
-        block_qboxes[tx * 5 + 1] = dev_query_boxes[dev_query_box_idx * 5 + 1]
-        block_qboxes[tx * 5 + 2] = dev_query_boxes[dev_query_box_idx * 5 + 2]
-        block_qboxes[tx * 5 + 3] = dev_query_boxes[dev_query_box_idx * 5 + 3]
-        block_qboxes[tx * 5 + 4] = dev_query_boxes[dev_query_box_idx * 5 + 4]
-    if (tx < row_size):
-        block_boxes[tx * 5 + 0] = dev_boxes[dev_box_idx * 5 + 0]
-        block_boxes[tx * 5 + 1] = dev_boxes[dev_box_idx * 5 + 1]
-        block_boxes[tx * 5 + 2] = dev_boxes[dev_box_idx * 5 + 2]
-        block_boxes[tx * 5 + 3] = dev_boxes[dev_box_idx * 5 + 3]
-        block_boxes[tx * 5 + 4] = dev_boxes[dev_box_idx * 5 + 4]
-    cuda.syncthreads()
-    if tx < row_size:
-        for i in range(col_size):
-            offset = row_start * threadsPerBlock * K + col_start * threadsPerBlock + tx * K + i
-            dev_iou[offset] = devRotateIoUEval(block_qboxes[i * 5:i * 5 + 5],
-                                           block_boxes[tx * 5:tx * 5 + 5], criterion)
-
-
-def rotate_iou_gpu_eval(boxes, query_boxes, criterion=-1, device_id=0):
-    """rotated box iou running in gpu. 500x faster than cpu version
-    (take 5ms in one example with numba.cuda code).
-    convert from [this project](
-        https://github.com/hongzhenwang/RRPN-revise/tree/master/pcdet/rotation).
+@numba.jit(nopython=True, inline="always")
+def rotate_iou_eval(
+    boxes: np.ndarray,  # shape: (n, 5)
+    query_boxes: np.ndarray,  # shape: (k, 5)
+    criterion: int = -1,  # IoU criterion to use. Defaults to -1.
+) -> np.ndarray:  # shape: (n, k)
+    """Compute the rotated box IoU between two sets of boxes on CPU.
 
     Args:
-        boxes (float tensor: [N, 5]): rbboxes. format: centers, dims,
-            angles(clockwise when positive)
-        query_boxes (float tensor: [K, 5]): [description]
-        device_id (int, optional): Defaults to 0. [description]
+        boxes (ndarray): Array of shape (n, 5) representing n rotated boxes.
+            Each box is represented by (center_x, center_y, width, height, angle).
+        query_boxes (ndarray): Array of shape (k, 5) representing k query rotated boxes.
+            Each query box is represented by (center_x, center_y, width, height, angle).
+        criterion (int, optional): IoU criterion to use. Defaults to -1.
 
     Returns:
-        [type]: [description]
+        ndarray: Array of shape (n, k) representing the IoU between each pair of boxes.
     """
-    box_dtype = boxes.dtype
-    boxes = boxes.astype(np.float32)
-    query_boxes = query_boxes.astype(np.float32)
-    N = boxes.shape[0]
-    K = query_boxes.shape[0]
-    iou = np.zeros((N, K), dtype=np.float32)
-    if N == 0 or K == 0:
-        return iou
-    threadsPerBlock = 8 * 8
-    cuda.select_device(device_id)
-    blockspergrid = (div_up(N, threadsPerBlock), div_up(K, threadsPerBlock))
+    n = boxes.shape[0]
+    k = query_boxes.shape[0]
+    iou = np.zeros((n, k), dtype=np.float32)
 
-    stream = cuda.stream()
-    with stream.auto_synchronize():
-        boxes_dev = cuda.to_device(boxes.reshape([-1]), stream)
-        query_boxes_dev = cuda.to_device(query_boxes.reshape([-1]), stream)
-        iou_dev = cuda.to_device(iou.reshape([-1]), stream)
-        rotate_iou_kernel_eval[blockspergrid, threadsPerBlock, stream](
-            N, K, boxes_dev, query_boxes_dev, iou_dev, criterion)
-        iou_dev.copy_to_host(iou.reshape([-1]), stream=stream)
-    return iou.astype(boxes.dtype)
+    for i in range(n):
+        for j in range(k):
+            iou[i, j] = dev_rotate_iou_eval(boxes[i], query_boxes[j], criterion)
+
+    return iou

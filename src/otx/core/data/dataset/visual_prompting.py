@@ -16,12 +16,6 @@ from datumaro import Image as dmImage
 from datumaro import Mask as dmMask
 from datumaro import Points as dmPoints
 from datumaro import Polygon as dmPolygon
-from torchvision import tv_tensors
-from torchvision.transforms.v2.functional import convert_bounding_box_format, to_image
-from torchvision.tv_tensors import BoundingBoxes as tvBoundingBoxes
-from torchvision.tv_tensors import BoundingBoxFormat as tvBoundingBoxFormat
-from torchvision.tv_tensors import Mask as tvMask
-
 from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -32,6 +26,11 @@ from otx.core.data.entity.visual_prompting import (
 )
 from otx.core.types.label import NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
+from torchvision import tv_tensors
+from torchvision.transforms.v2.functional import convert_bounding_box_format, to_image
+from torchvision.tv_tensors import BoundingBoxes as tvBoundingBoxes
+from torchvision.tv_tensors import BoundingBoxFormat as tvBoundingBoxFormat
+from torchvision.tv_tensors import Mask as tvMask
 
 from .base import OTXDataset, Transforms
 

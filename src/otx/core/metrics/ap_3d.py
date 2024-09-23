@@ -5,13 +5,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from torch import Tensor
 from torchmetrics import Metric
-from otx.core.data.dataset.kitti_3d.kitti_eval_python.eval import get_coco_eval_result
 
+from otx.core.data.dataset.kitti_3d.kitti_eval_python.eval import get_coco_eval_result
 
 if TYPE_CHECKING:
     from otx.core.types.label import LabelInfo
@@ -67,16 +67,16 @@ class KittiMetric(Metric):
         gt_annos = self._prepare_annos_for_kitti_metric(self.targets)
         current_classes = self.label_info.label_names
 
-        mAPbbox, mAP3d = get_coco_eval_result(
+        map_bbox, map_3d = get_coco_eval_result(
             gt_annos,
             self.preds,
-            current_classes=0,
+            current_classes=[curcls.lower() for curcls in current_classes],
         )
-
-        return {"mAP_bbox_3d": Tensor([mAP3d.mean(-1)]), "mAP_bbox_2d": Tensor([mAPbbox.mean(-1)])}
+        # use moderate difficulty as final score. Average across all calsses.
+        return {"mAP_bbox_3d": Tensor([map_3d[:, 1].mean()]), "mAP_bbox_2d": Tensor([map_bbox[:, 1].mean()])}
 
     @staticmethod
-    def _prepare_annos_for_kitti_metric(targets):
+    def _prepare_annos_for_kitti_metric(targets: list[Any]) -> list[dict[str, np.array]]:
         gt_annos = []
         for images in targets:
             names = []
@@ -107,7 +107,7 @@ class KittiMetric(Metric):
                 "dimensions": np.array(dimensions).reshape(-1, 3),
                 "location": np.array(locations).reshape(-1, 3),
                 "rotation_y": np.array(rotation_y),
-                "occluded" : np.array(occlusions),
+                "occluded": np.array(occlusions),
                 "truncated": np.array(truncations),
                 "score": np.array(scores),
             }
@@ -115,6 +115,7 @@ class KittiMetric(Metric):
             gt_annos.append(annos)
 
         return gt_annos
+
 
 def _kitti_metric_measure_callable(label_info: LabelInfo) -> KittiMetric:
     return KittiMetric(label_info=label_info)
