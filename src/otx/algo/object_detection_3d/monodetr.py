@@ -7,7 +7,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from otx.algo.object_detection_3d.utils.misc import NestedTensor, inverse_sigmoid
+from otx.algo.object_detection_3d.utils.utils import NestedTensor
+from otx.algo.common.utils.utils import inverse_sigmoid
 
 
 def _get_clones(module, N):

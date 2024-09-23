@@ -8,10 +8,12 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from torch import nn
 
-from otx.algo.object_detection_3d.utils.box_ops import box_cxcylrtb_to_xyxy, generalized_box_iou
+from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
+from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 
 
-class HungarianMatcher(nn.Module):
+
+class HungarianMatcher3D(nn.Module):
     """This class computes an assignment between the targets and the predictions of the network
     For efficiency reasons, the targets don't include the no_object. Because of this, in general,
     there are more predictions than targets. In this case, we do a 1-to-1 matching of the best predictions,
@@ -80,8 +82,11 @@ class HungarianMatcher(nn.Module):
         # Compute the giou cost betwen boxes
         out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
         tgt_bbox = torch.cat([v["boxes_3d"] for v in targets])
-        cost_giou = -generalized_box_iou(box_cxcylrtb_to_xyxy(out_bbox), box_cxcylrtb_to_xyxy(tgt_bbox))
-
+        cost_giou = -bbox_overlaps(
+            box_cxcylrtb_to_xyxy(out_bbox, in_fmt="cxcywh", out_fmt="xyxy"),
+            box_cxcylrtb_to_xyxy(tgt_bbox, in_fmt="cxcywh", out_fmt="xyxy"),
+            mode="giou",
+        )
         # Final cost matrix
         C = (
             self.cost_bbox * cost_bbox

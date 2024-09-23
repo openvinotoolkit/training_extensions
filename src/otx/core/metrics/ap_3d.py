@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for OTX  metric used for classification tasks."""
+"""Module for OTX  metric used for 3D object detection tasks."""
 
 from __future__ import annotations
 
