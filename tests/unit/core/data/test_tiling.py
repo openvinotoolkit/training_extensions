@@ -20,7 +20,6 @@ from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.algo.segmentation.litehrnet import LiteHRNet
 from otx.core.config.data import (
-    SamplerConfig,
     TileConfig,
     VisualPromptingConfig,
 )
