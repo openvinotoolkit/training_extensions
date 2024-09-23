@@ -51,6 +51,12 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3952>)
 - Move templates from OTX1.X to OTX2.X
   (<https://github.com/openvinotoolkit/training_extensions/pull/3951>)
+- Include Geti arrow dataset subset names
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3962>)
+- Include full image with anno in case there's no tile in tile dataset
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3964>)
+- Add type checker in converter for callable functions (optimizer, scheduler)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3968>)
 
 ### Bug fixes
 
