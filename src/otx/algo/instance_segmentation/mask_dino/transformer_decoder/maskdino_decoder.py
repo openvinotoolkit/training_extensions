@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import torch
-from detectron2.structures import BitMasks
-from fvcore.nn import weight_init
 from torch import nn
 
 from otx.algo.instance_segmentation.mask_dino import box_ops
-from otx.algo.instance_segmentation.mask_dino.misc import Conv2d
+from otx.algo.instance_segmentation.mask_dino.misc import Conv2d, c2_xavier_fill
+from otx.algo.instance_segmentation.mask_dino.transformer_decoder.dino_decoder import (
+    DeformableTransformerDecoderLayer,
+    TransformerDecoder,
+)
 from otx.algo.instance_segmentation.mask_dino.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
-
-from .dino_decoder import DeformableTransformerDecoderLayer, TransformerDecoder
 
 
 class MaskDINODecoder(nn.Module):
@@ -102,7 +102,7 @@ class MaskDINODecoder(nn.Module):
         for _ in range(self.num_feature_levels):
             if in_channels != hidden_dim or enforce_input_project:
                 self.input_proj.append(Conv2d(in_channels, hidden_dim, kernel_size=1))
-                weight_init.c2_xavier_fill(self.input_proj[-1])
+                c2_xavier_fill(self.input_proj[-1])
             else:
                 self.input_proj.append(nn.Sequential())
         self.num_classes = num_classes
@@ -394,12 +394,7 @@ class MaskDINODecoder(nn.Module):
                 assert self.initial_pred
                 flaten_mask = outputs_mask.detach().flatten(0, 1)
                 h, w = outputs_mask.shape[-2:]
-                if self.initialize_box_type == "bitmask":  # slower, but more accurate
-                    refpoint_embed = BitMasks(flaten_mask > 0).get_bounding_boxes().tensor.to(device)
-                elif self.initialize_box_type == "mask2box":  # faster conversion
-                    refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0).to(device)
-                else:
-                    assert NotImplementedError
+                refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0).to(device)
                 refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.as_tensor(
                     [w, h, w, h],
                     dtype=torch.float,
@@ -412,7 +407,7 @@ class MaskDINODecoder(nn.Module):
 
         tgt_mask = None
         mask_dict = None
-        if self.dn != "no" and self.training:
+        if self.training:
             assert targets is not None
             input_query_label, input_query_bbox, tgt_mask, mask_dict = self.prepare_for_dn(
                 targets,
