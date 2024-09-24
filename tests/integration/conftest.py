@@ -41,7 +41,11 @@ def find_recipe_folder(base_path: Path, folder_name: str) -> Path:
 
 def get_task_list(task: str) -> list[OTXTaskType]:
     if task == "all":
-        tasks = [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
+        tasks = [
+            task_type
+            for task_type in OTXTaskType
+            if task_type not in (OTXTaskType.DETECTION_SEMI_SL, OTXTaskType.DIFFUSION)
+        ]
     elif task == "multi_cls_classification":
         tasks = [OTXTaskType.MULTI_CLASS_CLS]
     elif task == "multi_label_classification":
@@ -75,8 +79,6 @@ def get_task_list(task: str) -> list[OTXTaskType]:
         tasks = [OTXTaskType.ANOMALY_SEGMENTATION]
     elif task == "keypoint_detection":
         tasks = [OTXTaskType.KEYPOINT_DETECTION]
-    elif task == "diffusion":
-        tasks = [OTXTaskType.DIFFUSION]
     else:
         tasks = [OTXTaskType(task.upper())]
     return tasks
@@ -144,7 +146,6 @@ def fxt_target_dataset_per_task() -> dict:
         "anomaly_detection": "tests/assets/anomaly_hazelnut",
         "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
         "keypoint_detection": "tests/assets/car_tree_bug_keypoint",
-        "diffusion": "tests/assets/naruto_blip_captions",
     }
 
 
@@ -166,5 +167,4 @@ def fxt_cli_override_command_per_task() -> dict:
         "anomaly_detection": [],
         "anomaly_segmentation": [],
         "keypoint_detection": [],
-        "diffusion": [],
     }

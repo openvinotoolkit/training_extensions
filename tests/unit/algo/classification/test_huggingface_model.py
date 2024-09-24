@@ -82,7 +82,7 @@ class TestHuggingFaceModelForMulticlassCls:
         return mocker.patch.object(target_file, "AutoModelForImageClassification")
 
     def test_set_input_size(self, mock_pretrainedconfig, mock_automodel):
-        input_size = (300, 300)
+        input_size = (1, 3, 300, 300)
         HuggingFaceModelForMulticlassCls(
             model_name_or_path="facebook/deit-tiny-patch16-224",
             label_info=10,
