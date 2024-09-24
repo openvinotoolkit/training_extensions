@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import torch
 from torch import nn
 from torch.nn import functional as F
 
+
 class FrozenBatchNorm2d(nn.Module):
-    """
-    BatchNorm2d where the batch statistics and the affine parameters are fixed.
+    """BatchNorm2d where the batch statistics and the affine parameters are fixed.
 
     It contains non-trainable buffers called
     "weight" and "bias", "running_mean", "running_var",
@@ -89,12 +90,11 @@ class FrozenBatchNorm2d(nn.Module):
         )
 
     def __repr__(self):
-        return "FrozenBatchNorm2d(num_features={}, eps={})".format(self.num_features, self.eps)
+        return f"FrozenBatchNorm2d(num_features={self.num_features}, eps={self.eps})"
 
     @classmethod
     def convert_frozen_batchnorm(cls, module):
-        """
-        Convert all BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.
+        """Convert all BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.
 
         Args:
             module (torch.nn.Module):
@@ -127,8 +127,7 @@ class FrozenBatchNorm2d(nn.Module):
 
     @classmethod
     def convert_frozenbatchnorm2d_to_batchnorm2d(cls, module: nn.Module) -> nn.Module:
-        """
-        Convert all FrozenBatchNorm2d to BatchNorm2d
+        """Convert all FrozenBatchNorm2d to BatchNorm2d
 
         Args:
             module (torch.nn.Module):
@@ -140,7 +139,6 @@ class FrozenBatchNorm2d(nn.Module):
         This is needed for quantization:
             https://fb.workplace.com/groups/1043663463248667/permalink/1296330057982005/
         """
-
         res = module
         if isinstance(module, FrozenBatchNorm2d):
             res = torch.nn.BatchNorm2d(module.num_features, module.eps)
@@ -158,9 +156,9 @@ class FrozenBatchNorm2d(nn.Module):
                     res.add_module(name, new_child)
         return res
 
+
 class LayerNorm(nn.Module):
-    """
-    A LayerNorm variant, popularized by Transformers, that performs point-wise mean and
+    """A LayerNorm variant, popularized by Transformers, that performs point-wise mean and
     variance normalization over the channel dimension for inputs that have shape
     (batch_size, channels, height, width).
     https://github.com/facebookresearch/ConvNeXt/blob/d1fa8f6fef0a165b27399986cc2bdacc92777e40/models/convnext.py#L119  # noqa B950
@@ -182,8 +180,7 @@ class LayerNorm(nn.Module):
 
 
 class CNNBlockBase(nn.Module):
-    """
-    A CNN block is assumed to have input channels, output channels and a stride.
+    """A CNN block is assumed to have input channels, output channels and a stride.
     The input and output of `forward()` method must be NCHW tensors.
     The method can perform arbitrary computation but must match the given
     channels and stride specification.
@@ -195,8 +192,7 @@ class CNNBlockBase(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, stride):
-        """
-        The `__init__` method of any subclass should also contain these arguments.
+        """The `__init__` method of any subclass should also contain these arguments.
 
         Args:
             in_channels (int):
@@ -209,8 +205,7 @@ class CNNBlockBase(nn.Module):
         self.stride = stride
 
     def freeze(self):
-        """
-        Make this block not trainable.
+        """Make this block not trainable.
         This method sets all parameters to `requires_grad=False`,
         and convert all BatchNorm layers to FrozenBatchNorm
 
@@ -224,8 +219,7 @@ class CNNBlockBase(nn.Module):
 
 
 def get_norm(norm, out_channels):
-    """
-    Args:
+    """Args:
         norm (str or callable): either one of BN, SyncBN, FrozenBN, GN;
             or a callable that takes a channel number and returns
             the normalization layer as a nn.Module.
