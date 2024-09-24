@@ -1,12 +1,6 @@
-# ------------------------------------------------------------------------
-# DINO
-# Copyright (c) 2022 IDEA. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-# ------------------------------------------------------------------------
-# Modified from DINO https://github.com/IDEA-Research/DINO by Feng Li and Hao Zhang.
+"""Modules to compute the matching cost and solve the corresponding LSAP."""
+from __future__ import annotations
 
-"""Modules to compute the matching cost and solve the corresponding LSAP.
-"""
 import torch
 import torch.nn.functional as F
 from detectron2.projects.point_rend.point_features import point_sample

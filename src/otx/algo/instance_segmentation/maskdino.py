@@ -1,12 +1,12 @@
+from __future__ import annotations
+
 import copy
 import itertools
-from typing import Tuple
 
 import torch
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import CfgNode as CN
-from detectron2.config import configurable, get_cfg
-from detectron2.data import MetadataCatalog
+from detectron2.config import get_cfg
 from detectron2.modeling import build_backbone
 from detectron2.modeling.backbone import Backbone
 from detectron2.projects.deeplab import add_deeplab_config
@@ -20,6 +20,8 @@ from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.criterion import SetCriterion
 from otx.algo.instance_segmentation.mask_dino.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.mask_dino.matcher import HungarianMatcher
+from otx.algo.instance_segmentation.mask_dino.pixel_decoder.maskdino_encoder import MaskDINOEncoder
+from otx.algo.instance_segmentation.mask_dino.transformer_decoder.maskdino_decoder import MaskDINODecoder
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
@@ -31,10 +33,8 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 class MaskDINO(nn.Module):
     """Main class for mask classification semantic segmentation architectures."""
 
-    @configurable
     def __init__(
         self,
-        *,
         backbone: Backbone,
         sem_seg_head: nn.Module,
         criterion: nn.Module,
@@ -43,8 +43,8 @@ class MaskDINO(nn.Module):
         overlap_threshold: float,
         size_divisibility: int,
         sem_seg_postprocess_before_inference: bool,
-        pixel_mean: Tuple[float],
-        pixel_std: Tuple[float],
+        pixel_mean: tuple[float],
+        pixel_std: tuple[float],
         # inference
         semantic_on: bool,
         panoptic_on: bool,
@@ -112,10 +112,51 @@ class MaskDINO(nn.Module):
         print("criterion.weight_dict ", self.criterion.weight_dict)
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg, num_classes):
         backbone = build_backbone(cfg)
 
-        sem_seg_head = MaskDINOHead(cfg, backbone.output_shape())
+        sem_seg_head = MaskDINOHead(
+            input_shape={k: v for k, v in backbone.output_shape().items()},
+            ignore_value=255,
+            num_classes=num_classes,
+            pixel_decoder=MaskDINOEncoder(
+                input_shape={k: v for k, v in backbone.output_shape().items()},
+                conv_dim=256,
+                mask_dim=256,
+                norm="GN",
+                transformer_dropout=0.0,
+                transformer_nheads=8,
+                transformer_dim_feedforward=2048,
+                transformer_enc_layers=6,
+                transformer_in_features=["res3", "res4", "res5"],
+                common_stride=4,
+                total_num_feature_levels=4,
+                num_feature_levels=3,
+                feature_order="low2high",
+            ),
+            loss_weight=1.0,
+            transformer_predictor=MaskDINODecoder(
+                in_channels=256,
+                mask_classification=True,
+                num_classes=num_classes,
+                hidden_dim=256,
+                num_queries=300,
+                nheads=8,
+                dim_feedforward=2048,
+                dec_layers=9,
+                enforce_input_project=False,
+                mask_dim=256,
+                two_stage=True,
+                initialize_box_type="mask2box",
+                dn="seg",
+                noise_scale=0.4,
+                dn_num=100,
+                initial_pred=True,
+                learn_tgt=False,
+                total_num_feature_levels=4,
+                semantic_ce_loss=False,
+            ),
+        )
 
         # Loss parameters:
         no_object_weight = 0.1
@@ -156,7 +197,7 @@ class MaskDINO(nn.Module):
 
         # denoising training
         weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
-        dn_losses = ["labels", "masks", "boxes"]        
+        dn_losses = ["labels", "masks", "boxes"]
 
         dec_layers = 9
         aux_weight_dict = {}
@@ -165,7 +206,7 @@ class MaskDINO(nn.Module):
         weight_dict.update(aux_weight_dict)
 
         losses = ["labels", "masks", "boxes"]
-        
+
         # building criterion
         criterion = SetCriterion(
             sem_seg_head.num_classes,
@@ -182,27 +223,26 @@ class MaskDINO(nn.Module):
             semantic_ce_loss=False,
         )
 
-        return {
-            "backbone": backbone,
-            "sem_seg_head": sem_seg_head,
-            "criterion": criterion,
-            "num_queries": 300,
-            "object_mask_threshold": 0.25,
-            "overlap_threshold": 0.8,
-            "size_divisibility": 32,
-            "sem_seg_postprocess_before_inference": True,
-            "pixel_mean": [123.675, 116.28, 103.53],
-            "pixel_std": [58.395, 57.12, 57.375],
-            # inference
-            "semantic_on": False,
-            "instance_on": True,
-            "panoptic_on": False,
-            "test_topk_per_image": 100,
-            "focus_on_box": False,
-            "transform_eval": True,
-            "pano_temp": 0.06,
-            "semantic_ce_loss": False,
-        }
+        return MaskDINO(
+            backbone=backbone,
+            sem_seg_head=sem_seg_head,
+            criterion=criterion,
+            num_queries=300,
+            object_mask_threshold=0.25,
+            overlap_threshold=0.8,
+            size_divisibility=32,
+            sem_seg_postprocess_before_inference=True,
+            pixel_mean=[123.675, 116.28, 103.53],
+            pixel_std=[58.395, 57.12, 57.375],
+            semantic_on=False,
+            instance_on=True,
+            panoptic_on=False,
+            test_topk_per_image=100,
+            focus_on_box=False,
+            transform_eval=True,
+            pano_temp=0.06,
+            semantic_ce_loss=False,
+        )
 
     def forward(self, entity: InstanceSegBatchDataEntity):
         img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
@@ -330,6 +370,26 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def _build_model(self, num_classes: int) -> Module:
+        cfg = get_cfg()
+        # for poly lr schedule
+        add_deeplab_config(cfg)
+        MaskDINOR50.add_maskdino_config(cfg)
+        cfg.merge_from_file("src/otx/recipe/instance_segmentation/config.yaml")
+        self.cfg = cfg
+        return MaskDINO.from_config(cfg, num_classes)
+
+    def _create_model(self) -> nn.Module:
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        self.classification_layers = self.get_classification_layers("model.")
+
+        if self.load_from is not None:
+            DetectionCheckpointer(detector).resume_or_load(
+                self.load_from,
+                resume=False,
+            )
+        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -484,37 +544,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         # the original paper.
         cfg.MODEL.MaskDINO.IMPORTANCE_SAMPLE_RATIO = 0.75
 
-        # swin transformer backbone
-        cfg.MODEL.SWIN = CN()
-        cfg.MODEL.SWIN.PRETRAIN_IMG_SIZE = 224
-        cfg.MODEL.SWIN.PATCH_SIZE = 4
-        cfg.MODEL.SWIN.EMBED_DIM = 96
-        cfg.MODEL.SWIN.DEPTHS = [2, 2, 6, 2]
-        cfg.MODEL.SWIN.NUM_HEADS = [3, 6, 12, 24]
-        cfg.MODEL.SWIN.WINDOW_SIZE = 7
-        cfg.MODEL.SWIN.MLP_RATIO = 4.0
-        cfg.MODEL.SWIN.QKV_BIAS = True
-        cfg.MODEL.SWIN.QK_SCALE = None
-        cfg.MODEL.SWIN.DROP_RATE = 0.0
-        cfg.MODEL.SWIN.ATTN_DROP_RATE = 0.0
-        cfg.MODEL.SWIN.DROP_PATH_RATE = 0.3
-        cfg.MODEL.SWIN.APE = False
-        cfg.MODEL.SWIN.PATCH_NORM = True
-        cfg.MODEL.SWIN.OUT_FEATURES = ["res2", "res3", "res4", "res5"]
-        cfg.MODEL.SWIN.USE_CHECKPOINT = False
-
         cfg.Default_loading = True  # a bug in my d2. resume use this; if first time ResNet load, set it false
-
-    def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
-        self.classification_layers = self.get_classification_layers("model.")
-
-        if self.load_from is not None:
-            DetectionCheckpointer(detector).resume_or_load(
-                self.load_from,
-                resume=False,
-            )
-        return detector
 
     def configure_optimizers(self):
         optimizer = self.build_optimizer(self.cfg, self.model)
@@ -614,16 +644,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         if cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE != "full_model":
             optimizer = maybe_add_gradient_clipping(cfg, optimizer)
         return optimizer
-
-    def _build_model(self, num_classes: int) -> Module:
-        cfg = get_cfg()
-        # for poly lr schedule
-        add_deeplab_config(cfg)
-        MaskDINOR50.add_maskdino_config(cfg)
-        cfg.merge_from_file("src/otx/recipe/instance_segmentation/config.yaml")
-        cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = num_classes
-        self.cfg = cfg
-        return MaskDINO(cfg)
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity):
         if isinstance(entity.images, list):

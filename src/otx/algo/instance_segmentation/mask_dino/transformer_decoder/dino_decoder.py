@@ -1,10 +1,4 @@
-# ------------------------------------------------------------------------
-# DINO
-# Copyright (c) 2022 IDEA. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-# ------------------------------------------------------------------------
-# Modified from DINO https://github.com/IDEA-Research/DINO by Feng Li and Hao Zhang.
-# ------------------------------------------------------------------------
+from __future__ import annotations
 
 from typing import Optional
 

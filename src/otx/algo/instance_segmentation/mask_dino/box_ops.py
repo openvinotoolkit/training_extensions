@@ -1,6 +1,6 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-"""Utilities for bounding box manipulation and GIoU.
-"""
+"""Utilities for bounding box manipulation and GIoU."""
+from __future__ import annotations
+
 import torch
 from torchvision.ops.boxes import box_area
 

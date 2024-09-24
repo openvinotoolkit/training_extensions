@@ -1,16 +1,10 @@
-# ------------------------------------------------------------------------
-# DINO
-# Copyright (c) 2022 IDEA. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-# ------------------------------------------------------------------------
-# Modified by Feng Li and Hao Zhang.
-from typing import Callable, Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import Callable, Optional, Union
 
 import numpy as np
 import torch
-from detectron2.config import configurable
 from detectron2.layers import Conv2d, ShapeSpec, get_norm
-from detectron2.modeling import SEM_SEG_HEADS_REGISTRY
 from fvcore.nn import weight_init
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.instance_segmentation.mask_dino.pixel_decoder.position_encoding import PositionEmbeddingSine
@@ -21,20 +15,6 @@ from torch.nn import functional as F
 from torch.nn.init import normal_
 
 
-def build_pixel_decoder(cfg, input_shape):
-    """Build a pixel decoder from `cfg.MODEL.MaskDINO.PIXEL_DECODER_NAME`."""
-    name = cfg.MODEL.SEM_SEG_HEAD.PIXEL_DECODER_NAME
-    model = SEM_SEG_HEADS_REGISTRY.get(name)(cfg, input_shape)
-    forward_features = getattr(model, "forward_features", None)
-    if not callable(forward_features):
-        raise ValueError(
-            "Only SEM_SEG_HEADS with forward_features method can be used as pixel decoder. "
-            f"Please implement forward_features for {name} to only return mask features.",
-        )
-    return model
-
-
-# MSDeformAttn Transformer encoder in deformable detr
 class MSDeformAttnTransformerEncoderOnly(nn.Module):
     def __init__(
         self,
@@ -211,24 +191,20 @@ class MSDeformAttnTransformerEncoder(nn.Module):
         return output
 
 
-@SEM_SEG_HEADS_REGISTRY.register()
 class MaskDINOEncoder(nn.Module):
     """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models."""
 
-    @configurable
     def __init__(
         self,
-        input_shape: Dict[str, ShapeSpec],
-        *,
+        input_shape: dict[str, ShapeSpec],
         transformer_dropout: float,
         transformer_nheads: int,
         transformer_dim_feedforward: int,
         transformer_enc_layers: int,
         conv_dim: int,
         mask_dim: int,
-        norm: Optional[Union[str, Callable]] = None,
-        # deformable transformer encoder args
-        transformer_in_features: List[str],
+        norm: Optional[Union[str, Callable]],
+        transformer_in_features: list[str],
         common_stride: int,
         num_feature_levels: int,
         total_num_feature_levels: int,
@@ -368,26 +344,6 @@ class MaskDINOEncoder(nn.Module):
         # to make the top-down computation in forward clearer.
         self.lateral_convs = lateral_convs[::-1]
         self.output_convs = output_convs[::-1]
-
-    @classmethod
-    def from_config(cls, cfg, input_shape: Dict[str, ShapeSpec]):
-        ret = {}
-        ret["input_shape"] = {k: v for k, v in input_shape.items() if k in cfg.MODEL.SEM_SEG_HEAD.IN_FEATURES}
-        ret["conv_dim"] = cfg.MODEL.SEM_SEG_HEAD.CONVS_DIM
-        ret["mask_dim"] = cfg.MODEL.SEM_SEG_HEAD.MASK_DIM
-        ret["norm"] = cfg.MODEL.SEM_SEG_HEAD.NORM
-        ret["transformer_dropout"] = cfg.MODEL.MaskDINO.DROPOUT
-        ret["transformer_nheads"] = cfg.MODEL.MaskDINO.NHEADS
-        ret["transformer_dim_feedforward"] = cfg.MODEL.SEM_SEG_HEAD.DIM_FEEDFORWARD  # deformable transformer encoder
-        ret["transformer_enc_layers"] = cfg.MODEL.SEM_SEG_HEAD.TRANSFORMER_ENC_LAYERS  # a separate config
-        ret[
-            "transformer_in_features"
-        ] = cfg.MODEL.SEM_SEG_HEAD.DEFORMABLE_TRANSFORMER_ENCODER_IN_FEATURES  # ['res3', 'res4', 'res5']
-        ret["common_stride"] = cfg.MODEL.SEM_SEG_HEAD.COMMON_STRIDE
-        ret["total_num_feature_levels"] = cfg.MODEL.SEM_SEG_HEAD.TOTAL_NUM_FEATURE_LEVELS
-        ret["num_feature_levels"] = cfg.MODEL.SEM_SEG_HEAD.NUM_FEATURE_LEVELS
-        ret["feature_order"] = cfg.MODEL.SEM_SEG_HEAD.FEATURE_ORDER
-        return ret
 
     @autocast(enabled=False)
     def forward_features(self, features, masks):

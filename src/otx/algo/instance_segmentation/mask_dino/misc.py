@@ -1,10 +1,10 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by Bowen Cheng from https://github.com/facebookresearch/detr/blob/master/util/misc.py
 """Misc functions, including distributed helpers.
 
 Mostly copy-paste from torchvision references.
 """
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import Optional
 
 import torch
 import torch.distributed as dist
@@ -44,7 +44,7 @@ class NestedTensor:
         return str(self.tensors)
 
 
-def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
+def nested_tensor_from_tensor_list(tensor_list: list[Tensor]):
     # TODO make this more general
     if tensor_list[0].ndim == 3:
         if torchvision._is_tracing():
@@ -72,7 +72,7 @@ def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
 # _onnx_nested_tensor_from_tensor_list() is an implementation of
 # nested_tensor_from_tensor_list() that is supported by ONNX tracing.
 @torch.jit.unused
-def _onnx_nested_tensor_from_tensor_list(tensor_list: List[Tensor]) -> NestedTensor:
+def _onnx_nested_tensor_from_tensor_list(tensor_list: list[Tensor]) -> NestedTensor:
     max_size = []
     for i in range(tensor_list[0].dim()):
         max_size_i = torch.max(

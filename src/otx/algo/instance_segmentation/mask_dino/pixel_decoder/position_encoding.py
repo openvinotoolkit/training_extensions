@@ -1,10 +1,6 @@
-# ------------------------------------------------------------------------
-# Copyright (c) 2022 IDEA. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-# ------------------------------------------------------------------------
-# Modified from Mask2Former https://github.com/facebookresearch/Mask2Former by Feng Li and Hao Zhang.
-"""Various positional encodings for the transformer.
-"""
+"""Various positional encodings for the transformer."""
+from __future__ import annotations
+
 import math
 
 import torch

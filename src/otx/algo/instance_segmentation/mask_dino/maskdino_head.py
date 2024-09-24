@@ -4,20 +4,16 @@
 # ------------------------------------------------------------------------
 # Modified from Mask2Former https://github.com/facebookresearch/Mask2Former by Feng Li and Hao Zhang.
 # ------------------------------------------------------------------------------
-from typing import Dict
+from __future__ import annotations
 
-from detectron2.config import configurable
 from detectron2.layers import ShapeSpec
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.maskdino_encoder import build_pixel_decoder
-from otx.algo.instance_segmentation.mask_dino.transformer_decoder.maskdino_decoder import build_transformer_decoder
 from torch import nn
 
 
 class MaskDINOHead(nn.Module):
-    @configurable
     def __init__(
         self,
-        input_shape: Dict[str, ShapeSpec],
+        input_shape: dict[str, ShapeSpec],
         *,
         num_classes: int,
         pixel_decoder: nn.Module,
@@ -45,23 +41,6 @@ class MaskDINOHead(nn.Module):
         self.predictor = transformer_predictor
 
         self.num_classes = num_classes
-
-    @classmethod
-    def from_config(cls, cfg, input_shape: Dict[str, ShapeSpec]):
-        transformer_predictor_in_channels = cfg.MODEL.SEM_SEG_HEAD.CONVS_DIM
-
-        return {
-            "input_shape": {k: v for k, v in input_shape.items() if k in cfg.MODEL.SEM_SEG_HEAD.IN_FEATURES},
-            "ignore_value": cfg.MODEL.SEM_SEG_HEAD.IGNORE_VALUE,
-            "num_classes": cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES,
-            "pixel_decoder": build_pixel_decoder(cfg, input_shape),
-            "loss_weight": cfg.MODEL.SEM_SEG_HEAD.LOSS_WEIGHT,
-            "transformer_predictor": build_transformer_decoder(
-                cfg,
-                transformer_predictor_in_channels,
-                mask_classification=True,
-            ),
-        }
 
     def forward(self, features, mask=None, targets=None):
         return self.layers(features, mask, targets=targets)

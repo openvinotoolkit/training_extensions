@@ -4,11 +4,11 @@
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------
 # Modified from Mask2Former https://github.com/facebookresearch/Mask2Former by Feng Li and Hao Zhang.
+from __future__ import annotations
+
 import torch
-from detectron2.config import configurable
 from detectron2.layers import Conv2d
 from detectron2.structures import BitMasks
-from detectron2.utils.registry import Registry
 from fvcore.nn import weight_init
 from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
@@ -16,21 +16,8 @@ from torch import nn
 
 from .dino_decoder import DeformableTransformerDecoderLayer, TransformerDecoder
 
-TRANSFORMER_DECODER_REGISTRY = Registry("TRANSFORMER_MODULE")
-TRANSFORMER_DECODER_REGISTRY.__doc__ = """
-Registry for transformer module in MaskDINO.
-"""
 
-
-def build_transformer_decoder(cfg, in_channels, mask_classification=True):
-    """Build a instance embedding branch from `cfg.MODEL.INS_EMBED_HEAD.NAME`."""
-    name = cfg.MODEL.MaskDINO.TRANSFORMER_DECODER_NAME
-    return TRANSFORMER_DECODER_REGISTRY.get(name)(cfg, in_channels, mask_classification)
-
-
-@TRANSFORMER_DECODER_REGISTRY.register()
 class MaskDINODecoder(nn.Module):
-    @configurable
     def __init__(
         self,
         in_channels,
@@ -163,37 +150,6 @@ class MaskDINODecoder(nn.Module):
         box_embed_layerlist = [_bbox_embed for i in range(self.num_layers)]  # share box prediction each layer
         self.bbox_embed = nn.ModuleList(box_embed_layerlist)
         self.decoder.bbox_embed = self.bbox_embed
-
-    @classmethod
-    def from_config(cls, cfg, in_channels, mask_classification):
-        ret = {}
-        ret["in_channels"] = in_channels
-        ret["mask_classification"] = mask_classification
-
-        ret["num_classes"] = cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES
-        ret["hidden_dim"] = cfg.MODEL.MaskDINO.HIDDEN_DIM
-        ret["num_queries"] = cfg.MODEL.MaskDINO.NUM_OBJECT_QUERIES
-        # Transformer parameters:
-        ret["nheads"] = cfg.MODEL.MaskDINO.NHEADS
-        ret["dim_feedforward"] = cfg.MODEL.MaskDINO.DIM_FEEDFORWARD
-        ret["dec_layers"] = cfg.MODEL.MaskDINO.DEC_LAYERS
-        ret["enforce_input_project"] = cfg.MODEL.MaskDINO.ENFORCE_INPUT_PROJ
-        ret["mask_dim"] = cfg.MODEL.SEM_SEG_HEAD.MASK_DIM
-        ret["two_stage"] = cfg.MODEL.MaskDINO.TWO_STAGE
-        ret["initialize_box_type"] = cfg.MODEL.MaskDINO.INITIALIZE_BOX_TYPE  # ['no', 'bitmask', 'mask2box']
-        ret["dn"] = cfg.MODEL.MaskDINO.DN
-        ret["noise_scale"] = cfg.MODEL.MaskDINO.DN_NOISE_SCALE
-        ret["dn_num"] = cfg.MODEL.MaskDINO.DN_NUM
-        ret["initial_pred"] = cfg.MODEL.MaskDINO.INITIAL_PRED
-        ret["learn_tgt"] = cfg.MODEL.MaskDINO.LEARN_TGT
-        ret["total_num_feature_levels"] = cfg.MODEL.SEM_SEG_HEAD.TOTAL_NUM_FEATURE_LEVELS
-        ret["semantic_ce_loss"] = (
-            cfg.MODEL.MaskDINO.TEST.SEMANTIC_ON
-            and cfg.MODEL.MaskDINO.SEMANTIC_CE_LOSS
-            and ~cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON
-        )
-
-        return ret
 
     def prepare_for_dn(self, targets, tgt, refpoint_emb, batch_size):
         """Modified from dn-detr. You can refer to dn-detr
