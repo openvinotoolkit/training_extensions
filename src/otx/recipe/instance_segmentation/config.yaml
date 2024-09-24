@@ -3,103 +3,10 @@ GLOBAL:
   HACK: 1.0
 
 MODEL:
-  ANCHOR_GENERATOR:
-    ANGLES:
-      - - -90
-        - 0
-        - 90
-    ASPECT_RATIOS:
-      - - 0.5
-        - 1.0
-        - 2.0
-    NAME: DefaultAnchorGenerator
-    OFFSET: 0.0
-    SIZES:
-      - - 32
-        - 64
-        - 128
-        - 256
-        - 512
   BACKBONE:
     FREEZE_AT: 0
     NAME: build_resnet_backbone
-  DEVICE: cuda
-  FPN:
-    FUSE_TYPE: sum
-    IN_FEATURES: []
-    NORM: ""
-    OUT_CHANNELS: 256
-  KEYPOINT_ON: false
-  LOAD_PROPOSALS: false
-  MASK_ON: false
-  META_ARCHITECTURE: MaskDINO
-  MaskDINO:
-    BOX_LOSS: true
-    BOX_WEIGHT: 5.0
-    CLASS_WEIGHT: 4.0
-    COST_BOX_WEIGHT: 5.0
-    COST_CLASS_WEIGHT: 4.0
-    COST_DICE_WEIGHT: 5.0
-    COST_GIOU_WEIGHT: 2.0
-    COST_MASK_WEIGHT: 5.0
-    DEC_LAYERS: 9
-    DEEP_SUPERVISION: true
-    DICE_WEIGHT: 5.0
-    DIM_FEEDFORWARD: 2048
-    DN: seg
-    DN_NOISE_SCALE: 0.4
-    DN_NUM: 100
-    DROPOUT: 0.0
-    ENC_LAYERS: 0
-    ENFORCE_INPUT_PROJ: false
-    EVAL_FLAG: 1
-    GIOU_WEIGHT: 2.0
-    HIDDEN_DIM: 256
-    IMPORTANCE_SAMPLE_RATIO: 0.75
-    INITIALIZE_BOX_TYPE: mask2box
-    INITIAL_PRED: true
-    LEARN_TGT: false
-    MASK_WEIGHT: 5.0
-    NHEADS: 8
-    NO_OBJECT_WEIGHT: 0.1
-    NUM_OBJECT_QUERIES: 300
-    OVERSAMPLE_RATIO: 3.0
-    PANO_BOX_LOSS: false
-    PRED_CONV: false
-    PRE_NORM: false
-    SEMANTIC_CE_LOSS: false
-    SIZE_DIVISIBILITY: 32
-    TEST:
-      INSTANCE_ON: true
-      OBJECT_MASK_THRESHOLD: 0.25
-      OVERLAP_THRESHOLD: 0.8
-      PANOPTIC_ON: false
-      PANO_TEMPERATURE: 0.06
-      PANO_TRANSFORM_EVAL: true
-      SEMANTIC_ON: false
-      SEM_SEG_POSTPROCESSING_BEFORE_INFERENCE: false
-      TEST_FOUCUS_ON_BOX: false
-    TRAIN_NUM_POINTS: 12544
-    TRANSFORMER_DECODER_NAME: MaskDINODecoder
-    TWO_STAGE: true
-  PANOPTIC_FPN:
-    COMBINE:
-      ENABLED: true
-      INSTANCES_CONFIDENCE_THRESH: 0.5
-      OVERLAP_THRESH: 0.5
-      STUFF_AREA_LIMIT: 4096
-    INSTANCE_LOSS_WEIGHT: 1.0
-  PIXEL_MEAN:
-    - 123.675
-    - 116.28
-    - 103.53
-  PIXEL_STD:
-    - 58.395
-    - 57.12
-    - 57.375
-  PROPOSAL_GENERATOR:
-    MIN_SIZE: 0
-    NAME: RPN
+
   RESNETS:
     DEFORM_MODULATED: false
     DEFORM_NUM_GROUPS: 1
@@ -117,54 +24,10 @@ MODEL:
       - res4
       - res5
     RES2_OUT_CHANNELS: 256
-    RES4_DILATION: 1
     RES5_DILATION: 1
-    RES5_MULTI_GRID:
-      - 1
-      - 1
-      - 1
     STEM_OUT_CHANNELS: 64
-    STEM_TYPE: basic
     STRIDE_IN_1X1: false
     WIDTH_PER_GROUP: 64
-  SEM_SEG_HEAD:
-    ASPP_CHANNELS: 256
-    ASPP_DILATIONS:
-      - 6
-      - 12
-      - 18
-    ASPP_DROPOUT: 0.1
-    COMMON_STRIDE: 4
-    CONVS_DIM: 256
-    DEFORMABLE_TRANSFORMER_ENCODER_IN_FEATURES:
-      - res3
-      - res4
-      - res5
-    DEFORMABLE_TRANSFORMER_ENCODER_N_HEADS: 8
-    DEFORMABLE_TRANSFORMER_ENCODER_N_POINTS: 4
-    DIM_FEEDFORWARD: 2048
-    FEATURE_ORDER: low2high
-    IGNORE_VALUE: 255
-    IN_FEATURES:
-      - res2
-      - res3
-      - res4
-      - res5
-    LOSS_TYPE: hard_pixel_mining
-    LOSS_WEIGHT: 1.0
-    MASK_DIM: 256
-    NAME: MaskDINOHead
-    NORM: GN
-    NUM_CLASSES: 80
-    NUM_FEATURE_LEVELS: 3
-    PIXEL_DECODER_NAME: MaskDINOEncoder
-    PROJECT_CHANNELS:
-      - 48
-    PROJECT_FEATURES:
-      - res2
-    TOTAL_NUM_FEATURE_LEVELS: 4
-    TRANSFORMER_ENC_LAYERS: 6
-    USE_DEPTHWISE_SEPARABLE_CONV: false
   WEIGHTS: maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth
 
 SOLVER:
