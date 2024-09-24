@@ -1,0 +1,29 @@
+otx.algo.accelerators
+=====================
+
+.. automodule:: otx.algo.accelerators
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      XPUAccelerator
+   
+   
+
+   
+   
+   
+
+
+
