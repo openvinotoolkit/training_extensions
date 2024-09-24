@@ -204,6 +204,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Add num_devices in Engine for multi-gpu training
 - Add missing tile recipes and various tile recipe changes
 - Change categories mapping logic
+- Fix config converter for tiling
 
 ### Known issues
 
