@@ -420,6 +420,8 @@ def rotate_iou_eval(
     n = boxes.shape[0]
     k = query_boxes.shape[0]
     iou = np.zeros((n, k), dtype=np.float32)
+    if n == 0 or k == 0:
+        return iou
 
     for i in range(n):
         for j in range(k):

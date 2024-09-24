@@ -5,11 +5,11 @@ callbacks:
     init_args:
       monitor: null
       mode: max
-      patience: 170
+      patience: 10
       check_on_train_epoch_end: false
       min_delta: 0.001
       warmup_iters: 30
-      warmup_epochs: 3
+      warmup_epochs: 190
   - class_path: lightning.pytorch.callbacks.RichProgressBar
     init_args:
       refresh_rate: 1

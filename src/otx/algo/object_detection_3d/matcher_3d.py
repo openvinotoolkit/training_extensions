@@ -82,8 +82,8 @@ class HungarianMatcher3D(nn.Module):
         out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
         tgt_bbox = torch.cat([v["boxes_3d"] for v in targets])
         cost_giou = -bbox_overlaps(
-            box_cxcylrtb_to_xyxy(out_bbox, in_fmt="cxcywh", out_fmt="xyxy"),
-            box_cxcylrtb_to_xyxy(tgt_bbox, in_fmt="cxcywh", out_fmt="xyxy"),
+            box_cxcylrtb_to_xyxy(out_bbox),
+            box_cxcylrtb_to_xyxy(tgt_bbox),
             mode="giou",
         )
         # Final cost matrix

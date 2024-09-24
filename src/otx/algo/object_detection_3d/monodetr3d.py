@@ -33,7 +33,7 @@ class MonoDETR3D(OTX3DDetectionModel):
     mean: tuple[float, float, float] = [0.485, 0.456, 0.406]
     std: tuple[float, float, float] = [0.229, 0.224, 0.225]
     input_size: tuple[int, int] = (384, 1280)  # HxW
-    load_from: str | None = "/home/kprokofi/MonoDETR/checkpoint_best_2.pth"
+    load_from: str | None = None
 
     def _build_model(self, num_classes) -> DETR:
         # backbone
@@ -146,6 +146,47 @@ class MonoDETR3D(OTX3DDetectionModel):
             scores=scores,
             kitti_label_object=inputs.kitti_label_object,
         )
+
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict[str, Any]]]:
+        """Configure an optimizer and learning-rate schedulers.
+
+        Configure an optimizer and learning-rate schedulers
+        from the given optimizer and scheduler or scheduler list callable in the constructor.
+        Generally, there is two lr schedulers. One is for a linear warmup scheduler and
+        the other is the main scheduler working after the warmup period.
+
+        Returns:
+            Two list. The former is a list that contains an optimizer
+            The latter is a list of lr scheduler configs which has a dictionary format.
+        """
+        param_groups = self._apply_no_bias_decay()
+        optimizer = self.optimizer_callable(param_groups)
+        schedulers = self.scheduler_callable(optimizer)
+
+        def ensure_list(item: Any) -> list:  # noqa: ANN401
+            return item if isinstance(item, list) else [item]
+
+        lr_scheduler_configs = []
+        for scheduler in ensure_list(schedulers):
+            lr_scheduler_config = {"scheduler": scheduler}
+            if hasattr(scheduler, "interval"):
+                lr_scheduler_config["interval"] = scheduler.interval
+            if hasattr(scheduler, "monitor"):
+                lr_scheduler_config["monitor"] = scheduler.monitor
+            lr_scheduler_configs.append(lr_scheduler_config)
+
+        return [optimizer], lr_scheduler_configs
+
+    def _apply_no_bias_decay(self):
+        weights, biases = [], []
+        for name, param in self.named_parameters():
+            if 'bias' in name:
+                biases += [param]
+            else:
+                weights += [param]
+
+        return [{'params': biases, 'weight_decay': 0},
+                    {'params': weights, 'weight_decay': 0.0001}]
 
     def forward_for_tracing(
         self,
