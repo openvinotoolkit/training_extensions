@@ -10,16 +10,16 @@ from typing import Callable, List, Union
 
 import numpy as np
 import torch
-from torchvision import tv_tensors
-
-from otx.core.data.entity.base import ImageInfo
 from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
+from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo
+from torchvision import tv_tensors
+
 from .base import OTXDataset
-from otx.core.data.entity.object_detection_3d import Det3DDataEntity, Det3DBatchDataEntity
 
 Transforms = Union[Compose, Callable, List[Callable], dict[str, Compose | Callable | List[Callable]]]
 
@@ -71,7 +71,10 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
             size_2d=torch.as_tensor(targets["size_2d"], dtype=torch.float32),
             size_3d=torch.as_tensor(targets["size_3d"], dtype=torch.float32),
             depth=torch.as_tensor(targets["depth"], dtype=torch.float32),
-            heading_angle=torch.as_tensor(np.concatenate([targets["heading_bin"], targets["heading_res"]], axis=1), dtype=torch.float32),
+            heading_angle=torch.as_tensor(
+                np.concatenate([targets["heading_bin"], targets["heading_res"]], axis=1),
+                dtype=torch.float32,
+            ),
             kitti_label_object=objects,
         )
 

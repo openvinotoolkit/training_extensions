@@ -1,29 +1,19 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""depth aware transformer head for 3d object detection."""
+
 import copy
 import math
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Callable
 
 import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.nn.init import constant_, normal_, xavier_uniform_
 
-from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention
+from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention, MLP
 from otx.algo.detection.utils.utils import inverse_sigmoid
-
-
-class MLP(nn.Module):
-    """Very simple multi-layer perceptron (also called FFN)"""
-
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
-        super().__init__()
-        self.num_layers = num_layers
-        h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
-
-    def forward(self, x):
-        for i, layer in enumerate(self.layers):
-            x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
-        return x
 
 
 def gen_sineembed_for_position(pos_tensor):
@@ -74,7 +64,7 @@ class DepthAwareTransformer(nn.Module):
         num_decoder_layers=6,
         dim_feedforward=1024,
         dropout=0.1,
-        activation="relu",
+        activation: Callable[..., nn.Module] = nn.ReLU,
         return_intermediate_dec=False,
         num_feature_levels=4,
         dec_n_points=4,
@@ -230,9 +220,6 @@ class DepthAwareTransformer(nn.Module):
         depth_pos_embed_ip=None,
         attn_mask=None,
     ):
-        if not self.two_stage_dino:
-            assert self.two_stage or query_embed is not None
-
         # prepare input for encoder
         src_flatten = []
         mask_flatten = []
@@ -382,7 +369,7 @@ class DepthAwareTransformer(nn.Module):
 
 
 class VisualEncoderLayer(nn.Module):
-    def __init__(self, d_model=256, d_ffn=1024, dropout=0.1, activation="relu", n_levels=4, n_heads=8, n_points=4):
+    def __init__(self, d_model=256, d_ffn=1024, dropout=0.1, activation: Callable[..., nn.Module] = nn.ReLU, n_levels=4, n_heads=8, n_points=4):
         super().__init__()
 
         # self attention
@@ -392,7 +379,7 @@ class VisualEncoderLayer(nn.Module):
 
         # ffn
         self.linear1 = nn.Linear(d_model, d_ffn)
-        self.activation = _get_activation_fn(activation)
+        self.activation = activation()
         self.dropout2 = nn.Dropout(dropout)
         self.linear2 = nn.Linear(d_ffn, d_model)
         self.dropout3 = nn.Dropout(dropout)
@@ -468,7 +455,7 @@ class DepthAwareDecoderLayer(nn.Module):
         d_model=256,
         d_ffn=1024,
         dropout=0.1,
-        activation="relu",
+        activation: Callable[..., nn.Module] = nn.ReLU,
         n_levels=4,
         n_heads=8,
         n_points=4,
@@ -493,7 +480,7 @@ class DepthAwareDecoderLayer(nn.Module):
 
         # ffn
         self.linear1 = nn.Linear(d_model, d_ffn)
-        self.activation = _get_activation_fn(activation)
+        self.activation = activation()
         self.dropout3 = nn.Dropout(dropout)
         self.linear2 = nn.Linear(d_ffn, d_model)
         self.dropout4 = nn.Dropout(dropout)
@@ -630,22 +617,18 @@ class DepthAwareDecoder(nn.Module):
         self.use_dab = use_dab
         self.two_stgae_dino = two_stage_dino
         if use_dab:
-            self.query_scale = MLP(d_model, d_model, d_model, 2)
+            self.query_scale = MLP(d_model, d_model, d_model, 2, activation=nn.ReLU)
             self.query_scale_bbox = MLP(d_model, 2, 2, 2)
-            self.ref_point_head = MLP(3 * d_model, d_model, d_model, 2)
+            self.ref_point_head = MLP(3 * d_model, d_model, d_model, 2, activation=nn.ReLU)
         elif two_stage_dino:
-            self.ref_point_head = MLP(3 * d_model, d_model, d_model, 2)
+            self.ref_point_head = MLP(3 * d_model, d_model, d_model, 2, activation=nn.ReLU)
             # self.query_scale = None
-            self.query_scale = MLP(d_model, d_model, d_model, 2)
+            self.query_scale = MLP(d_model, d_model, d_model, 2, activation=nn.ReLU)
             self.query_pos_sine_scale = None
             self.ref_anchor_head = None
         else:
-            self.query_scale = MLP(d_model, d_model, d_model, 2)
-            self.ref_point_head = MLP(d_model, d_model, 2, 2)
-        # conditional
-        # for layer_id in range(num_layers - 1):
-        #     self.layers[layer_id + 1].ca_qpos_proj = None
-        ###
+            self.query_scale = MLP(d_model, d_model, d_model, 2, activation=nn.ReLU)
+            self.ref_point_head = MLP(d_model, d_model, 2, 2, activation=nn.ReLU)
 
     def forward(
         self,
@@ -683,7 +666,9 @@ class DepthAwareDecoder(nn.Module):
                     * torch.cat([src_valid_ratios, src_valid_ratios, src_valid_ratios], -1)[:, None]
                 )
             else:
-                assert reference_points.shape[-1] == 2
+                if reference_points.shape[-1] != 2:
+                    msg = f"Wrong reference_points shape[-1]:{reference_points.shape[-1]}"
+                    raise ValueError(msg)
 
                 reference_points_input = reference_points[:, :, None] * src_valid_ratios[:, None]
             if self.two_stgae_dino:
@@ -728,8 +713,6 @@ class DepthAwareDecoder(nn.Module):
                     new_reference_points = tmp + inverse_sigmoid(reference_points)
                     new_reference_points = new_reference_points.sigmoid()
                 else:
-                    # print(reference_points.shape)
-                    assert reference_points.shape[-1] == 2
                     new_reference_points = tmp
                     new_reference_points[..., :2] = tmp[..., :2] + inverse_sigmoid(reference_points)
                     new_reference_points = new_reference_points.sigmoid()
@@ -755,17 +738,6 @@ def _get_clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
-def _get_activation_fn(activation):
-    """Return an activation function given a string"""
-    if activation == "relu":
-        return F.relu
-    if activation == "gelu":
-        return F.gelu
-    if activation == "glu":
-        return F.glu
-    raise RuntimeError(f"activation should be relu/gelu, not {activation}.")
-
-
 class DepthAwareTransformerBuilder:
     """DepthAwareTransformerBuilder."""
 
@@ -773,7 +745,6 @@ class DepthAwareTransformerBuilder:
         "monodetr_50": {
             "d_model": 256,
             "dropout": 0.1,
-            "activation": "relu",
             "nhead": 8,
             "dim_feedforward": 256,
             "num_encoder_layers": 3,

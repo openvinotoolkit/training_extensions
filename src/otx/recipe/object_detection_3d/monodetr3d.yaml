@@ -18,7 +18,7 @@ model:
       class_path: torch.optim.lr_scheduler.MultiStepLR
       init_args:
         gamma: 0.1
-        milestones : [125, 165]
+        milestones: [125, 165]
 
 engine:
   task: OBJECT_DETECTION_3D

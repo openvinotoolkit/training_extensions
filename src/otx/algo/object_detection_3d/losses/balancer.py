@@ -1,3 +1,8 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""balancer for MonoDETR loss."""
+
 import torch
 from torch import nn
 

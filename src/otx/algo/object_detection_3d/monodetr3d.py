@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""RTDetr model implementations."""
+"""MonoDetr model implementations."""
 
 from __future__ import annotations
 
@@ -13,10 +13,10 @@ from torch import Tensor
 from torchvision.ops import box_convert
 
 from otx.algo.detection.detectors import DETR
-from otx.algo.object_detection_3d.depth_predictor import DepthPredictor
-from otx.algo.object_detection_3d.depthaware_transformer import DepthAwareTransformerBuilder
+from otx.algo.object_detection_3d.detectors.monodetr import MonoDETR
+from otx.algo.object_detection_3d.heads.depth_predictor import DepthPredictor
+from otx.algo.object_detection_3d.heads.depthaware_transformer import DepthAwareTransformerBuilder
 from otx.algo.object_detection_3d.losses import MonoDETRCriterion
-from otx.algo.object_detection_3d.monodetr import MonoDETR
 from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
@@ -24,7 +24,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.detection_3d import OTXObjectDetection3DExporter
 from otx.core.model.detection_3d import OTX3DDetectionModel
 
-from .backbone import BackboneBuilder
+from .backbones.backbone import BackboneBuilder
 
 
 class MonoDETR3D(OTX3DDetectionModel):
@@ -180,13 +180,12 @@ class MonoDETR3D(OTX3DDetectionModel):
     def _apply_no_bias_decay(self):
         weights, biases = [], []
         for name, param in self.named_parameters():
-            if 'bias' in name:
+            if "bias" in name:
                 biases += [param]
             else:
                 weights += [param]
 
-        return [{'params': biases, 'weight_decay': 0},
-                    {'params': weights, 'weight_decay': 0.0001}]
+        return [{"params": biases, "weight_decay": 0}, {"params": weights, "weight_decay": 0.0001}]
 
     def forward_for_tracing(
         self,

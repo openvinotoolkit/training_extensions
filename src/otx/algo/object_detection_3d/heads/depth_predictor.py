@@ -1,8 +1,68 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""depth predictor transformer head for 3d object detection."""
+
+from __future__ import annotations
+
 import torch
+from typing import Callable
 import torch.nn.functional as F
 from torch import nn
+import copy
 
-from .transformer import TransformerEncoder, TransformerEncoderLayer
+def _get_clones(module, N):
+    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
+
+
+class TransformerEncoder(nn.Module):
+    def __init__(self, encoder_layer, num_layers, norm=None):
+        super().__init__()
+        self.layers = _get_clones(encoder_layer, num_layers)
+        self.num_layers = num_layers
+        self.norm = norm
+
+    def forward(self, src, src_key_padding_mask, pos):
+        output = src
+
+        for layer in self.layers:
+            output = layer(output, src_key_padding_mask=src_key_padding_mask, pos=pos)
+
+        if self.norm is not None:
+            output = self.norm(output)
+
+        return output
+
+
+class TransformerEncoderLayer(nn.Module):
+    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation: Callable[..., nn.Module] = nn.ReLU,):
+        super().__init__()
+        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
+        # self.self_attn = LinearAttention(d_model, nhead, dropout=dropout)
+        # Implementation of Feedforward model
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
+
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
+
+        self.activation = activation()
+
+    def with_pos_embed(self, tensor, pos):
+        return tensor if pos is None else tensor + pos
+
+    def forward(self, src, src_key_padding_mask, pos):
+        q = k = self.with_pos_embed(src, pos)
+        src2 = self.self_attn(q, k, value=src, key_padding_mask=src_key_padding_mask)[0]
+        src = src + self.dropout1(src2)
+        src = self.norm1(src)
+        src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
+        src = src + self.dropout2(src2)
+        src = self.norm2(src)
+        return src
 
 
 class DepthPredictor(nn.Module):
@@ -47,27 +107,18 @@ class DepthPredictor(nn.Module):
         self.depth_pos_embed = nn.Embedding(int(self.depth_max) + 1, 256)
 
     def forward(self, feature, mask, pos):
-        assert len(feature) == 4
 
         # foreground depth map
-        # ipdb.set_trace()
         src_16 = self.proj(feature[1])
         src_32 = self.upsample(F.interpolate(feature[2], size=src_16.shape[-2:], mode="bilinear"))
         src_8 = self.downsample(feature[0])
-        # new_add
-        # src_8 = self.proj(feature[0])
-        # src_16 = self.upsample(F.interpolate(feature[1], size=src_8.shape[-2:], mode='bilinear'))
-        # src_32 = self.upsample(F.interpolate(feature[2], size=src_8.shape[-2:], mode='bilinear'))
-        ####
         src = (src_8 + src_16 + src_32) / 3
 
         src = self.depth_head(src)
-        # ipdb.set_trace()
         depth_logits = self.depth_classifier(src)
 
         depth_probs = F.softmax(depth_logits, dim=1)
         weighted_depth = (depth_probs * self.depth_bin_values.reshape(1, -1, 1, 1)).sum(dim=1)
-        # ipdb.set_trace()
         # depth embeddings with depth positional encodings
         B, C, H, W = src.shape
         src = src.flatten(2).permute(2, 0, 1)
@@ -76,7 +127,6 @@ class DepthPredictor(nn.Module):
 
         depth_embed = self.depth_encoder(src, mask, pos)
         depth_embed = depth_embed.permute(1, 2, 0).reshape(B, C, H, W)
-        # ipdb.set_trace()
         depth_pos_embed_ip = self.interpolate_depth_embed(weighted_depth)
         depth_embed = depth_embed + depth_pos_embed_ip
 

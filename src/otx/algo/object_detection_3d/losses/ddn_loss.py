@@ -1,10 +1,16 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""ddn loss for MonoDETR model."""
+
 import math
 
 import torch
 from torch import nn
 
+from otx.algo.common.losses.focal_loss import FocalLoss
+
 from .balancer import Balancer
-from .focal_loss import FocalLoss
 
 
 class DDNLoss(nn.Module):

@@ -1,33 +1,33 @@
-"""MonoDETR loss"""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""main loss for MonoDETR model."""
 
 import torch
 import torch.nn.functional as F
 from torch import nn
-
-from otx.algo.object_detection_3d.matcher_3d import HungarianMatcher3D
-from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
-from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from torchvision.ops import box_convert
 
+from otx.algo.common.losses.focal_loss import py_sigmoid_focal_loss
+from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
+from otx.algo.object_detection_3d.matchers.matcher_3d import HungarianMatcher3D
+from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
+
 from .ddn_loss import DDNLoss
-from .focal_loss import sigmoid_focal_loss
 
 
 class MonoDETRCriterion(nn.Module):
-    """This class computes the loss for MonoDETR.
-    The process happens in two steps:
-        1) we compute hungarian assignment between ground truth boxes and the outputs of the model
-        2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
-    """
+    """This class computes the loss for MonoDETR."""
 
-    def __init__(self, num_classes, weight_dict, focal_alpha, group_num=11):
-        """Create the criterion.
-        Parameters:
+    def __init__(self, num_classes: int, weight_dict: dict, focal_alpha: float, group_num: int = 11):
+        """MonoDETRCriterion.
+
+        Args:
             num_classes: number of object categories, omitting the special no-object category
             matcher: module able to compute a matching between targets and proposals
             weight_dict: dict containing as key the names of the losses and as values their relative weight.
-            losses: list of all the losses to be applied. See get_loss for list of available losses.
             focal_alpha: alpha in Focal Loss
+            group_num: number of groups for data parallelism
         """
         super().__init__()
         self.num_classes = num_classes
@@ -37,11 +37,8 @@ class MonoDETRCriterion(nn.Module):
         self.ddn_loss = DDNLoss()  # for depth map
         self.group_num = group_num
 
-    def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
-        """Classification loss (Binary focal loss)
-        targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
-        """
-        assert "pred_logits" in outputs
+    def loss_labels(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Classification loss."""
         src_logits = outputs["pred_logits"]
 
         idx = self._get_src_permutation_idx(indices)
@@ -59,29 +56,19 @@ class MonoDETRCriterion(nn.Module):
         target_classes_onehot.scatter_(2, target_classes.unsqueeze(-1), 1)
 
         target_classes_onehot = target_classes_onehot[:, :, :-1]
-        loss_ce = (
-            sigmoid_focal_loss(src_logits, target_classes_onehot, num_boxes, alpha=self.focal_alpha, gamma=2)
-            * src_logits.shape[1]
+        loss_ce = py_sigmoid_focal_loss(
+            pred=src_logits,
+            target=target_classes_onehot,
+            avg_factor=num_boxes,
+            alpha=self.focal_alpha,
+            reduction="mean",
         )
         losses = {"loss_ce": loss_ce}
 
         return losses
 
-    @torch.no_grad()
-    def loss_cardinality(self, outputs, targets, indices, num_boxes):
-        """Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
-        This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
-        """
-        pred_logits = outputs["pred_logits"]
-        device = pred_logits.device
-        tgt_lengths = torch.as_tensor([len(v["labels"]) for v in targets], device=device)
-        # Count the number of predictions that are NOT "no-object" (which is the last class)
-        card_pred = (pred_logits.argmax(-1) != pred_logits.shape[-1] - 1).sum(1)
-        card_err = F.l1_loss(card_pred.float(), tgt_lengths.float())
-        losses = {"cardinality_error": card_err}
-        return losses
-
-    def loss_3dcenter(self, outputs, targets, indices, num_boxes):
+    def loss_3dcenter(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Compute the loss for the 3D center prediction."""
         idx = self._get_src_permutation_idx(indices)
         src_3dcenter = outputs["pred_boxes"][:, :, 0:2][idx]
         target_3dcenter = torch.cat([t["boxes_3d"][:, 0:2][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -91,8 +78,8 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_center"] = loss_3dcenter.sum() / num_boxes
         return losses
 
-    def loss_boxes(self, outputs, targets, indices, num_boxes):
-        assert "pred_boxes" in outputs
+    def loss_boxes(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Compute the losses related to the bounding boxes, the depth, the dimensions and the angles."""
         idx = self._get_src_permutation_idx(indices)
         src_2dboxes = outputs["pred_boxes"][:, :, 2:6][idx]
         target_2dboxes = torch.cat([t["boxes_3d"][:, 2:6][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -115,7 +102,8 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_giou"] = loss_giou.sum() / num_boxes
         return losses
 
-    def loss_depths(self, outputs, targets, indices, num_boxes):
+    def loss_depths(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Compute the loss for the depth prediction."""
         idx = self._get_src_permutation_idx(indices)
 
         src_depths = outputs["pred_depth"][idx]
@@ -129,7 +117,8 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_depth"] = depth_loss.sum() / num_boxes
         return losses
 
-    def loss_dims(self, outputs, targets, indices, num_boxes):
+    def loss_dims(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Compute the loss for the dimension prediction."""
         idx = self._get_src_permutation_idx(indices)
         src_dims = outputs["pred_3d_dim"][idx]
         target_dims = torch.cat([t["size_3d"][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -144,7 +133,8 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_dim"] = dim_loss.sum() / num_boxes
         return losses
 
-    def loss_angles(self, outputs, targets, indices, num_boxes):
+    def loss_angles(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Compute the loss for the angle prediction."""
         idx = self._get_src_permutation_idx(indices)
         heading_input = outputs["pred_angle"][idx]
         target_heading_angle = torch.cat([t["heading_angle"][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -172,7 +162,8 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_angle"] = angle_loss.sum() / num_boxes
         return losses
 
-    def loss_depth_map(self, outputs, targets, indices, num_boxes):
+    def loss_depth_map(self, outputs: dict, targets: list) -> dict:
+        """Depth map loss."""
         depth_map_logits = outputs["pred_depth_map_logits"]
 
         num_gt_per_img = [len(t["boxes"]) for t in targets]
@@ -188,13 +179,19 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_depth_map"] = self.ddn_loss(depth_map_logits, gt_boxes2d, num_gt_per_img, gt_center_depth)
         return losses
 
-    def _get_src_permutation_idx(self, indices):
+    def _get_src_permutation_idx(
+        self,
+        indices: list[tuple[torch.Tensor, torch.Tensor]],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         # permute predictions following indices
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
         return batch_idx, src_idx
 
-    def _get_tgt_permutation_idx(self, indices):
+    def _get_tgt_permutation_idx(
+        self,
+        indices: list[tuple[torch.Tensor, torch.Tensor]],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         # permute targets following indices
         batch_idx = torch.cat([torch.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
         tgt_idx = torch.cat([tgt for (_, tgt) in indices])
@@ -212,9 +209,10 @@ class MonoDETRCriterion(nn.Module):
             "depth_map": self.loss_depth_map,
         }
 
-    def forward(self, outputs, targets, mask_dict=None):
+    def forward(self, outputs: dict[str, torch.Tensor], targets: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         """This performs the loss computation.
-        Parameters:
+
+        Args:
              outputs: dict of tensors, see the output specification of the model for the format
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc

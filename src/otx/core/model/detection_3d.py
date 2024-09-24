@@ -136,12 +136,15 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         }
 
     @staticmethod
-    def _decode_detections_for_kitti_format(dets, img_size, calib_matrix, class_names, threshold=0.2):
-        """input: dets, numpy array, shape in [batch x max_dets x dim]
-        input: img_info, dict, necessary information of input images
-        input: calibs, corresponding calibs for the input batch
-        output:
-        """
+    def _decode_detections_for_kitti_format(
+        self,
+        dets: np.ndarray,
+        img_size: np.ndarray,
+        calib_matrix: list[np.ndarray],
+        class_names: list[str],
+        threshold: float = 0.2,
+    ) -> list[dict[str, np.ndarray]]:
+        """Decode the detection results for KITTI format."""
 
         def get_heading_angle(heading):
             heading_bin, heading_res = heading[0:12], heading[12:24]
@@ -182,8 +185,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
             x = ((u - cu) * depth_rect) / fu + tx
             y = ((v - cv) * depth_rect) / fv + ty
-            pts_rect = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1), depth_rect.reshape(-1, 1)), axis=1)
-            return pts_rect
+            return np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1), depth_rect.reshape(-1, 1)), axis=1)
 
         results = []
         for i in range(dets.shape[0]):  # batch
