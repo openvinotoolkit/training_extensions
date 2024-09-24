@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from detectron2.layers import ShapeSpec
 from torch import nn
+
+from otx.algo.instance_segmentation.mask_dino.misc import ShapeSpec
 
 
 class MaskDINOHead(nn.Module):

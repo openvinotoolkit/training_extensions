@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import Optional
 
 import torch
+from torch import Tensor, nn
+from torch.cuda.amp import autocast
+
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.instance_segmentation.mask_dino.utils import (
     MLP,
@@ -11,8 +14,6 @@ from otx.algo.instance_segmentation.mask_dino.utils import (
     gen_sineembed_for_position,
     inverse_sigmoid,
 )
-from torch import Tensor, nn
-from torch.cuda.amp import autocast
 
 
 class TransformerDecoder(nn.Module):

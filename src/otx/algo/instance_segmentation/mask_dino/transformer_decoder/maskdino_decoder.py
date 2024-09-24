@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import torch
-from detectron2.layers import Conv2d
 from detectron2.structures import BitMasks
 from fvcore.nn import weight_init
-from otx.algo.instance_segmentation.mask_dino import box_ops
-from otx.algo.instance_segmentation.mask_dino.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
 from torch import nn
+
+from otx.algo.instance_segmentation.mask_dino import box_ops
+from otx.algo.instance_segmentation.mask_dino.misc import Conv2d
+from otx.algo.instance_segmentation.mask_dino.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
 
 from .dino_decoder import DeformableTransformerDecoderLayer, TransformerDecoder
 

@@ -5,10 +5,6 @@ import itertools
 
 import torch
 from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.config import get_cfg
-from detectron2.modeling import build_backbone
-from detectron2.modeling.backbone import Backbone
-from detectron2.solver.build import maybe_add_gradient_clipping
 from detectron2.structures import ImageList
 from torch import Tensor, nn
 from torch.nn.modules import Module
@@ -18,7 +14,9 @@ from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.criterion import SetCriterion
 from otx.algo.instance_segmentation.mask_dino.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.mask_dino.matcher import HungarianMatcher
+from otx.algo.instance_segmentation.mask_dino.misc import ShapeSpec
 from otx.algo.instance_segmentation.mask_dino.pixel_decoder.maskdino_encoder import MaskDINOEncoder
+from otx.algo.instance_segmentation.mask_dino.resnet import build_resnet_backbone
 from otx.algo.instance_segmentation.mask_dino.transformer_decoder.maskdino_decoder import MaskDINODecoder
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
@@ -33,7 +31,7 @@ class MaskDINO(nn.Module):
 
     def __init__(
         self,
-        backbone: Backbone,
+        backbone: nn.Module,
         sem_seg_head: nn.Module,
         criterion: nn.Module,
         num_queries: int,
@@ -110,8 +108,21 @@ class MaskDINO(nn.Module):
         print("criterion.weight_dict ", self.criterion.weight_dict)
 
     @classmethod
-    def from_config(cls, cfg, num_classes):
-        backbone = build_backbone(cfg)
+    def from_config(cls, num_classes):
+        backbone = build_resnet_backbone(
+            norm="FrozenBN",
+            stem_out_channels=64,
+            input_shape=ShapeSpec(channels=3),
+            freeze_at=0,
+            out_features=["res2", "res3", "res4", "res5"],
+            depth=50,
+            num_groups=1,
+            width_per_group=64,
+            in_channels=64,
+            out_channels=256,
+            stride_in_1x1=False,
+            res5_dilation=1,
+        )
 
         sem_seg_head = MaskDINOHead(
             input_shape={k: v for k, v in backbone.output_shape().items()},
@@ -370,25 +381,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> Module:
-        cfg = get_cfg()
-
-        cfg.SOLVER.POLY_LR_POWER = 0.9
-        cfg.SOLVER.POLY_LR_CONSTANT_ENDING = 0.0
-
-        cfg.INPUT.DATASET_MAPPER_NAME = "MaskDINO_semantic"
-        cfg.INPUT.COLOR_AUG_SSD = False
-        cfg.INPUT.CROP.SINGLE_CATEGORY_MAX_AREA = 1.0
-        cfg.INPUT.SIZE_DIVISIBILITY = -1
-
-        cfg.SOLVER.WEIGHT_DECAY_EMBED = 0.0
-        cfg.SOLVER.OPTIMIZER = "ADAMW"
-        cfg.SOLVER.BACKBONE_MULTIPLIER = 0.1
-
-        cfg.Default_loading = True  # a bug in my d2. resume use this; if first time ResNet load, set it false
-
-        cfg.merge_from_file("src/otx/recipe/instance_segmentation/config.yaml")
-        self.cfg = cfg
-        return MaskDINO.from_config(cfg, num_classes)
+        return MaskDINO.from_config(num_classes)
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
@@ -434,7 +427,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         )
 
     def configure_optimizers(self):
-        optimizer = self.build_optimizer(self.cfg, self.model)
+        optimizer = self.build_optimizer(self.model)
 
         schedulers = self.scheduler_callable(optimizer)
 
@@ -452,13 +445,16 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
         return [optimizer], lr_scheduler_configs
 
-    def build_optimizer(self, cfg, model):
-        weight_decay_norm = cfg.SOLVER.WEIGHT_DECAY_NORM
-        weight_decay_embed = cfg.SOLVER.WEIGHT_DECAY_EMBED
+    def build_optimizer(self, model):
+        base_lr = 0.0001
+        weight_decay_norm = 0.0
+        weight_decay_embed = 0.0
+        backbone_multiplier = 0.1
+        clip_gradients_value = 0.01
 
         defaults = {}
-        defaults["lr"] = cfg.SOLVER.BASE_LR
-        defaults["weight_decay"] = cfg.SOLVER.WEIGHT_DECAY
+        defaults["lr"] = base_lr
+        defaults["weight_decay"] = 0.05
 
         norm_module_types = (
             torch.nn.BatchNorm1d,
@@ -475,19 +471,19 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         )
 
         params = []
-        memo = set()
+        uniques = set()
         for module_name, module in model.named_modules():
             for module_param_name, value in module.named_parameters(recurse=False):
                 if not value.requires_grad:
                     continue
                 # Avoid duplicating parameters
-                if value in memo:
+                if value in uniques:
                     continue
-                memo.add(value)
+                uniques.add(value)
 
                 hyperparams = copy.copy(defaults)
                 if "backbone" in module_name:
-                    hyperparams["lr"] = hyperparams["lr"] * cfg.SOLVER.BACKBONE_MULTIPLIER
+                    hyperparams["lr"] = hyperparams["lr"] * backbone_multiplier
                 if "relative_position_bias_table" in module_param_name or "absolute_pos_embed" in module_param_name:
                     print(module_param_name)
                     hyperparams["weight_decay"] = 0.0
@@ -497,39 +493,16 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                     hyperparams["weight_decay"] = weight_decay_embed
                 params.append({"params": [value], **hyperparams})
 
-        def maybe_add_full_model_gradient_clipping(optim):
-            # detectron2 doesn't have full model gradient clipping now
-            clip_norm_val = cfg.SOLVER.CLIP_GRADIENTS.CLIP_VALUE
-            enable = (
-                cfg.SOLVER.CLIP_GRADIENTS.ENABLED
-                and cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE == "full_model"
-                and clip_norm_val > 0.0
-            )
-
+        def add_full_model_gradient_clipping(optim):
             class FullModelGradientClippingOptimizer(optim):
                 def step(self, closure=None):
                     all_params = itertools.chain(*[x["params"] for x in self.param_groups])
-                    torch.nn.utils.clip_grad_norm_(all_params, clip_norm_val)
+                    torch.nn.utils.clip_grad_norm_(all_params, clip_gradients_value)
                     super().step(closure=closure)
 
-            return FullModelGradientClippingOptimizer if enable else optim
+            return FullModelGradientClippingOptimizer
 
-        optimizer_type = cfg.SOLVER.OPTIMIZER
-        if optimizer_type == "SGD":
-            optimizer = maybe_add_full_model_gradient_clipping(torch.optim.SGD)(
-                params,
-                cfg.SOLVER.BASE_LR,
-                momentum=cfg.SOLVER.MOMENTUM,
-            )
-        elif optimizer_type == "ADAMW":
-            optimizer = maybe_add_full_model_gradient_clipping(torch.optim.AdamW)(
-                params,
-                cfg.SOLVER.BASE_LR,
-            )
-        else:
-            raise NotImplementedError(f"no optimizer type {optimizer_type}")
-        if cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE != "full_model":
-            optimizer = maybe_add_gradient_clipping(cfg, optimizer)
+        optimizer = add_full_model_gradient_clipping(torch.optim.AdamW)(params, base_lr)
         return optimizer
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity):

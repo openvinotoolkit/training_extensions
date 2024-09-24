@@ -8,9 +8,10 @@ from detectron2.projects.point_rend.point_features import (
     point_sample,
 )
 from detectron2.utils.comm import get_world_size
+from torch import nn
+
 from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.misc import is_dist_avail_and_initialized
-from torch import nn
 
 
 def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: float = 2):

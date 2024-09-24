@@ -261,7 +261,7 @@ class MSDeformableAttention(nn.Module):
         )
 
         if reference_points.shape[-1] == 2:
-            offset_normalizer = torch.tensor(value_spatial_shapes)
+            offset_normalizer = value_spatial_shapes
             offset_normalizer = offset_normalizer.flip([1]).reshape(1, 1, 1, self.num_levels, 1, 2)
             sampling_locations = (
                 reference_points.reshape(

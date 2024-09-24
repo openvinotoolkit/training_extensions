@@ -4,15 +4,16 @@ from typing import Callable, Optional, Union
 
 import numpy as np
 import torch
-from detectron2.layers import Conv2d, ShapeSpec, get_norm
-from fvcore.nn import weight_init
-from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.position_encoding import PositionEmbeddingSine
-from otx.algo.instance_segmentation.mask_dino.utils import _get_activation_fn, _get_clones
 from torch import nn
 from torch.cuda.amp import autocast
 from torch.nn import functional as F
 from torch.nn.init import normal_
+
+from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
+from otx.algo.instance_segmentation.mask_dino.batch_norm import get_norm
+from otx.algo.instance_segmentation.mask_dino.misc import Conv2d, ShapeSpec, c2_xavier_fill
+from otx.algo.instance_segmentation.mask_dino.pixel_decoder.position_encoding import PositionEmbeddingSine
+from otx.algo.instance_segmentation.mask_dino.utils import _get_activation_fn, _get_clones
 
 
 class MSDeformAttnTransformerEncoderOnly(nn.Module):
@@ -303,7 +304,7 @@ class MaskDINOEncoder(nn.Module):
             stride=1,
             padding=0,
         )
-        weight_init.c2_xavier_fill(self.mask_features)
+        c2_xavier_fill(self.mask_features)
         # extra fpn levels
         stride = min(self.transformer_feature_strides)
         self.num_fpn_levels = max(int(np.log2(stride) - np.log2(self.common_stride)), 1)
@@ -333,8 +334,8 @@ class MaskDINOEncoder(nn.Module):
                 norm=output_norm,
                 activation=F.relu,
             )
-            weight_init.c2_xavier_fill(lateral_conv)
-            weight_init.c2_xavier_fill(output_conv)
+            c2_xavier_fill(lateral_conv)
+            c2_xavier_fill(output_conv)
             self.add_module(f"adapter_{idx + 1}", lateral_conv)
             self.add_module(f"layer_{idx + 1}", output_conv)
 
