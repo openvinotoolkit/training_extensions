@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[2.3.0\]
+
+### New features
+
+- Add OV inference for keypoint detection
+  (https://github.com/openvinotoolkit/training_extensions/pull/3970)
+- Add tiling for semantic segmentation
+  (https://github.com/openvinotoolkit/training_extensions/pull/3954)
+
+### Enhancements
+
+- Upgrade OV, MAPI, and NNCF dependencies
+  (https://github.com/openvinotoolkit/training_extensions/pull/3967)
+- Instance Segmentation Model refactoring
+  (https://github.com/openvinotoolkit/training_extensions/pull/3865)
+- Bump torch and lightning to 2.4.0 versions
+  (https://github.com/openvinotoolkit/training_extensions/pull/3843)
+
+### Bug fixes
+
+- Fix a wrong HPO log
+  (https://github.com/openvinotoolkit/training_extensions/pull/3972)
+
 ## \[2.2.0\]
 
 ### New features
