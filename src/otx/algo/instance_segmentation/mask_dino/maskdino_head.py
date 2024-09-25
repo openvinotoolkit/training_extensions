@@ -9,11 +9,10 @@ class MaskDINOHead(nn.Module):
     def __init__(
         self,
         input_shape: dict[str, ShapeSpec],
-        *,
         num_classes: int,
         pixel_decoder: nn.Module,
-        loss_weight: float = 1.0,
-        ignore_value: int = -1,
+        loss_weight: float,
+        ignore_value: int,
         transformer_predictor: nn.Module,
     ):
         """Args:

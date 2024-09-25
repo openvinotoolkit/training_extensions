@@ -1,7 +1,13 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""MaskDINO Utilities."""
+
 from __future__ import annotations
 
 import copy
 import math
+from typing import Callable
 
 import torch
 import torch.nn.functional as F
@@ -11,55 +17,51 @@ from torch import Tensor, nn
 class MLP(nn.Module):
     """Very simple multi-layer perceptron (also called FFN)"""
 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
+    def __init__(self, input_dim: int, hidden_dim: int, output_dim: int, num_layers: int):
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
         self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         for i, layer in enumerate(self.layers):
             x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x
 
 
-def inverse_sigmoid(x, eps=1e-5):
+def inverse_sigmoid(x: Tensor, eps: float = 1e-5) -> Tensor:
     x = x.clamp(min=0, max=1)
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)
     return torch.log(x1 / x2)
 
 
-def gen_encoder_output_proposals(memory: Tensor, memory_padding_mask: Tensor, spatial_shapes: Tensor):
-    r"""Input:
-        - memory: bs, \sum{hw}, d_model
-        - memory_padding_mask: bs, \sum{hw}
-        - spatial_shapes: nlevel, 2
-    Output:
-        - output_memory: bs, \sum{hw}, d_model
-        - output_proposals: bs, \sum{hw}, 4
-    """
-    N_, S_, C_ = memory.shape
-    base_scale = 4.0
+def gen_encoder_output_proposals(
+    memory: Tensor,
+    memory_padding_mask: Tensor,
+    spatial_shapes: Tensor,
+) -> tuple[Tensor, Tensor]:
+    """Generate proposals for encoder output."""
+    batch_size = memory.shape[0]
     proposals = []
     _cur = 0
-    for lvl, (H_, W_) in enumerate(spatial_shapes):
-        mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H_ * W_)].view(N_, H_, W_, 1)
+    for lvl, (height, width) in enumerate(spatial_shapes):
+        mask_flatten_ = memory_padding_mask[:, _cur : (_cur + height * width)].view(batch_size, height, width, 1)
         valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
         valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
 
         grid_y, grid_x = torch.meshgrid(
-            torch.linspace(0, H_ - 1, H_, dtype=torch.float32, device=memory.device),
-            torch.linspace(0, W_ - 1, W_, dtype=torch.float32, device=memory.device),
+            torch.linspace(0, height - 1, height, dtype=torch.float32, device=memory.device),
+            torch.linspace(0, width - 1, width, dtype=torch.float32, device=memory.device),
         )
         grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
 
-        scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(N_, 1, 1, 2)
-        grid = (grid.unsqueeze(0).expand(N_, -1, -1, -1) + 0.5) / scale
+        scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(batch_size, 1, 1, 2)
+        grid = (grid.unsqueeze(0).expand(batch_size, -1, -1, -1) + 0.5) / scale
         wh = torch.ones_like(grid) * 0.05 * (2.0**lvl)
-        proposal = torch.cat((grid, wh), -1).view(N_, -1, 4)
+        proposal = torch.cat((grid, wh), -1).view(batch_size, -1, 4)
         proposals.append(proposal)
-        _cur += H_ * W_
+        _cur += height * width
     output_proposals = torch.cat(proposals, 1)
     output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(-1, keepdim=True)
     output_proposals = torch.log(output_proposals / (1 - output_proposals))
@@ -72,9 +74,8 @@ def gen_encoder_output_proposals(memory: Tensor, memory_padding_mask: Tensor, sp
     return output_memory, output_proposals
 
 
-def gen_sineembed_for_position(pos_tensor):
-    # n_query, bs, _ = pos_tensor.size()
-    # sineembed_tensor = torch.zeros(n_query, bs, 256)
+def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
+    """Generate sine embeddings for position tensor."""
     scale = 2 * math.pi
     dim_t = torch.arange(128, dtype=torch.float32, device=pos_tensor.device)
     dim_t = 10000 ** (2 * (dim_t // 2) / 128)
@@ -101,7 +102,7 @@ def gen_sineembed_for_position(pos_tensor):
     return pos
 
 
-def _get_activation_fn(activation):
+def _get_activation_fn(activation: str) -> Callable:
     """Return an activation function given a string"""
     if activation == "relu":
         return F.relu
@@ -116,7 +117,8 @@ def _get_activation_fn(activation):
     raise RuntimeError(f"activation should be relu/gelu, not {activation}.")
 
 
-def _get_clones(module, N, layer_share=False):
+def _get_clones(module, N, layer_share=False) -> nn.ModuleList:
+    """Produce N identical layers."""
     if layer_share:
         return nn.ModuleList([module for i in range(N)])
     else:

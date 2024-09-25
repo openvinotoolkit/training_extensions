@@ -1,4 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
 from __future__ import annotations
 
 import numpy as np
@@ -10,7 +9,6 @@ from otx.algo.instance_segmentation.mask_dino.batch_norm import CNNBlockBase, ge
 from otx.algo.instance_segmentation.mask_dino.misc import Conv2d, ShapeSpec, c2_msra_fill
 
 __all__ = [
-    "ResNetBlockBase",
     "BasicBlock",
     "BottleneckBlock",
     "BasicStem",
@@ -321,15 +319,6 @@ class ResNet(nn.Module):
                 outputs["linear"] = x
         return outputs
 
-    def output_shape(self):
-        return {
-            name: ShapeSpec(
-                channels=self._out_feature_channels[name],
-                stride=self._out_feature_strides[name],
-            )
-            for name in self._out_features
-        }
-
     def freeze(self, freeze_at=0):
         """Freeze the first several stages of the ResNet. Commonly used in
         fine-tuning.
@@ -457,11 +446,8 @@ class ResNet(nn.Module):
             )
         return ret
 
-    def output_shape(self):
-        """Returns:
-        dict[str->ShapeSpec]
-        """
-        # this is a backward-compatible default
+    def output_shape(self) -> dict[str, ShapeSpec]:
+        """Returns output shapes for each stage."""
         return {
             name: ShapeSpec(
                 channels=self._out_feature_channels[name],
@@ -469,9 +455,6 @@ class ResNet(nn.Module):
             )
             for name in self._out_features
         }
-
-
-ResNetBlockBase = CNNBlockBase
 
 
 def make_stage(*args, **kwargs):

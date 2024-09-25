@@ -1,6 +1,9 @@
-from __future__ import annotations
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""MaskDINO transformer decoder module."""
 
-from typing import Optional
+from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
@@ -12,80 +15,25 @@ from otx.algo.instance_segmentation.mask_dino.utils import (
     _get_activation_fn,
     _get_clones,
     gen_sineembed_for_position,
-    inverse_sigmoid,
 )
 
 
 class TransformerDecoder(nn.Module):
     def __init__(
         self,
-        decoder_layer,
-        num_layers,
-        norm=None,
-        return_intermediate=False,
-        d_model=256,
-        query_dim=4,
-        modulate_hw_attn=True,
-        num_feature_levels=1,
-        deformable_decoder=True,
-        decoder_query_perturber=None,
-        dec_layer_number=None,  # number of queries each layer in decoder
-        rm_dec_query_scale=True,
-        dec_layer_share=False,
-        dec_layer_dropout_prob=None,
+        decoder_layer: nn.Module,
+        num_layers: int,
+        norm: nn.Module,
+        d_model: int = 256,
+        query_dim: int = 4,
+        dec_layer_share: bool = False,
     ):
         super().__init__()
-        if num_layers > 0:
-            self.layers = _get_clones(decoder_layer, num_layers, layer_share=dec_layer_share)
-        else:
-            self.layers = []
-        self.num_layers = num_layers
+        self.layers = _get_clones(decoder_layer, num_layers, layer_share=dec_layer_share)
         self.norm = norm
-        self.return_intermediate = return_intermediate
-        assert return_intermediate, "support return_intermediate only"
         self.query_dim = query_dim
-        assert query_dim in [2, 4], f"query_dim should be 2/4 but {query_dim}"
-        self.num_feature_levels = num_feature_levels
-
         self.ref_point_head = MLP(query_dim // 2 * d_model, d_model, d_model, 2)
-        if not deformable_decoder:
-            self.query_pos_sine_scale = MLP(d_model, d_model, d_model, 2)
-        else:
-            self.query_pos_sine_scale = None
-
-        if rm_dec_query_scale:
-            self.query_scale = None
-        else:
-            raise NotImplementedError
-            self.query_scale = MLP(d_model, d_model, d_model, 2)
-        self.bbox_embed = None
-        self.class_embed = None
-
         self.d_model = d_model
-        self.modulate_hw_attn = modulate_hw_attn
-        self.deformable_decoder = deformable_decoder
-
-        if not deformable_decoder and modulate_hw_attn:
-            self.ref_anchor_head = MLP(d_model, d_model, 2, 2)
-        else:
-            self.ref_anchor_head = None
-
-        self.decoder_query_perturber = decoder_query_perturber
-        self.box_pred_damping = None
-
-        self.dec_layer_number = dec_layer_number
-        if dec_layer_number is not None:
-            assert isinstance(dec_layer_number, list)
-            assert len(dec_layer_number) == num_layers
-            # assert dec_layer_number[0] ==
-
-        self.dec_layer_dropout_prob = dec_layer_dropout_prob
-        if dec_layer_dropout_prob is not None:
-            assert isinstance(dec_layer_dropout_prob, list)
-            assert len(dec_layer_dropout_prob) == num_layers
-            for i in dec_layer_dropout_prob:
-                assert 0.0 <= i <= 1.0
-
         self._reset_parameters()
 
     def _reset_parameters(self):
@@ -100,16 +48,16 @@ class TransformerDecoder(nn.Module):
         self,
         tgt,
         memory,
-        tgt_mask: Optional[Tensor] = None,
-        memory_mask: Optional[Tensor] = None,
-        tgt_key_padding_mask: Optional[Tensor] = None,
-        memory_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
-        refpoints_unsigmoid: Optional[Tensor] = None,  # num_queries, bs, 2
+        tgt_mask: Tensor | None = None,
+        memory_mask: Tensor | None = None,
+        tgt_key_padding_mask: Tensor | None = None,
+        memory_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
+        refpoints_unsigmoid: Tensor | None = None,  # num_queries, bs, 2
         # for memory
-        level_start_index: Optional[Tensor] = None,  # num_levels
-        spatial_shapes: Optional[Tensor] = None,  # bs, num_levels, 2
-        valid_ratios: Optional[Tensor] = None,
+        level_start_index: Tensor | None = None,  # num_levels
+        spatial_shapes: Tensor | None = None,  # bs, num_levels, 2
+        valid_ratios: Tensor | None = None,
     ):
         """Input:
         - tgt: nq, bs, d_model
@@ -125,45 +73,22 @@ class TransformerDecoder(nn.Module):
         reference_points = refpoints_unsigmoid.sigmoid().to(device)
         ref_points = [reference_points]
 
-        for layer_id, layer in enumerate(self.layers):
-            # preprocess ref points
-            if self.training and self.decoder_query_perturber is not None and layer_id != 0:
-                reference_points = self.decoder_query_perturber(reference_points)
-
+        for layer in self.layers:
             reference_points_input = (
                 reference_points[:, :, None] * torch.cat([valid_ratios, valid_ratios], -1)[None, :]
             )  # nq, bs, nlevel, 4
             query_sine_embed = gen_sineembed_for_position(reference_points_input[:, :, 0, :])  # nq, bs, 256*2
 
             raw_query_pos = self.ref_point_head(query_sine_embed)  # nq, bs, 256
-            pos_scale = self.query_scale(output) if self.query_scale is not None else 1
-            query_pos = pos_scale * raw_query_pos
-
             output = layer(
                 tgt=output,
-                tgt_query_pos=query_pos,
-                tgt_query_sine_embed=query_sine_embed,
-                tgt_key_padding_mask=tgt_key_padding_mask,
+                tgt_query_pos=raw_query_pos,
                 tgt_reference_points=reference_points_input,
                 memory=memory,
                 memory_key_padding_mask=memory_key_padding_mask,
-                memory_level_start_index=level_start_index,
                 memory_spatial_shapes=spatial_shapes,
-                memory_pos=pos,
                 self_attn_mask=tgt_mask,
-                cross_attn_mask=memory_mask,
             )
-
-            # iter update
-            if self.bbox_embed is not None:
-                reference_before_sigmoid = inverse_sigmoid(reference_points)
-                delta_unsig = self.bbox_embed[layer_id](output).to(device)
-                outputs_unsig = delta_unsig + reference_before_sigmoid
-                new_reference_points = outputs_unsig.sigmoid()
-
-                reference_points = new_reference_points.detach()
-                # if layer_id != self.num_layers - 1:
-                ref_points.append(new_reference_points)
 
             intermediate.append(self.norm(output))
 
@@ -237,20 +162,14 @@ class DeformableTransformerDecoderLayer(nn.Module):
     def forward(
         self,
         # for tgt
-        tgt: Optional[Tensor],  # nq, bs, d_model
-        tgt_query_pos: Optional[Tensor] = None,  # pos for query. MLP(Sine(pos))
-        tgt_query_sine_embed: Optional[Tensor] = None,  # pos for query. Sine(pos)
-        tgt_key_padding_mask: Optional[Tensor] = None,
-        tgt_reference_points: Optional[Tensor] = None,  # nq, bs, 4
+        tgt: Tensor | None,  # nq, bs, d_model
+        tgt_query_pos: Tensor | None = None,  # pos for query. MLP(Sine(pos))
+        tgt_reference_points: Tensor | None = None,  # nq, bs, 4
         # for memory
-        memory: Optional[Tensor] = None,  # hw, bs, d_model
-        memory_key_padding_mask: Optional[Tensor] = None,
-        memory_level_start_index: Optional[Tensor] = None,  # num_levels
-        memory_spatial_shapes: Optional[Tensor] = None,  # bs, num_levels, 2
-        memory_pos: Optional[Tensor] = None,  # pos for memory
-        # sa
-        self_attn_mask: Optional[Tensor] = None,  # mask used for self-attention
-        cross_attn_mask: Optional[Tensor] = None,  # mask used for cross-attention
+        memory: Tensor | None = None,  # hw, bs, d_model
+        memory_key_padding_mask: Tensor | None = None,
+        memory_spatial_shapes: Tensor | None = None,  # bs, num_levels, 2
+        self_attn_mask: Tensor | None = None,  # mask used for self-attention
     ):
         """Input:
         - tgt/tgt_query_pos: nq, bs, d_model

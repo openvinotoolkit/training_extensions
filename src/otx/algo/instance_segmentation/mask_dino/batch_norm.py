@@ -1,3 +1,8 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Detectron2 batch norm modules."""
+
 from __future__ import annotations
 
 import torch
@@ -26,7 +31,7 @@ class FrozenBatchNorm2d(nn.Module):
 
     _version = 3
 
-    def __init__(self, num_features, eps=1e-5):
+    def __init__(self, num_features: int, eps: float = 1e-5) -> None:
         super().__init__()
         self.num_features = num_features
         self.eps = eps
@@ -36,7 +41,7 @@ class FrozenBatchNorm2d(nn.Module):
         self.register_buffer("running_var", torch.ones(num_features) - eps)
         self.register_buffer("num_batches_tracked", None)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         if x.requires_grad:
             # When gradients are needed, F.batch_norm will use extra memory
             # because its backward op computes gradients for weight/bias as well.
@@ -68,7 +73,7 @@ class FrozenBatchNorm2d(nn.Module):
         missing_keys,
         unexpected_keys,
         error_msgs,
-    ):
+    ) -> None:
         version = local_metadata.get("version", None)
 
         if version is None or version < 2:
@@ -89,11 +94,11 @@ class FrozenBatchNorm2d(nn.Module):
             error_msgs,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"FrozenBatchNorm2d(num_features={self.num_features}, eps={self.eps})"
 
     @classmethod
-    def convert_frozen_batchnorm(cls, module):
+    def convert_frozen_batchnorm(cls, module: nn.Module) -> nn.Module:
         """Convert all BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.
 
         Args:
@@ -164,14 +169,15 @@ class LayerNorm(nn.Module):
     https://github.com/facebookresearch/ConvNeXt/blob/d1fa8f6fef0a165b27399986cc2bdacc92777e40/models/convnext.py#L119  # noqa B950
     """
 
-    def __init__(self, normalized_shape, eps=1e-6):
+    def __init__(self, normalized_shape: int, eps: float = 1e-6) -> None:
         super().__init__()
         self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.bias = nn.Parameter(torch.zeros(normalized_shape))
         self.eps = eps
         self.normalized_shape = (normalized_shape,)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the layer norm."""
         u = x.mean(1, keepdim=True)
         s = (x - u).pow(2).mean(1, keepdim=True)
         x = (x - u) / torch.sqrt(s + self.eps)
@@ -191,20 +197,20 @@ class CNNBlockBase(nn.Module):
         stride (int):
     """
 
-    def __init__(self, in_channels, out_channels, stride):
+    def __init__(self, in_channels: int, out_channels: int, stride: int) -> None:
         """The `__init__` method of any subclass should also contain these arguments.
 
         Args:
-            in_channels (int):
-            out_channels (int):
-            stride (int):
+            in_channels (int): number of input channels
+            out_channels (int): number of output channels
+            stride (int): stride
         """
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.stride = stride
 
-    def freeze(self):
+    def freeze(self) -> nn.Module:
         """Make this block not trainable.
         This method sets all parameters to `requires_grad=False`,
         and convert all BatchNorm layers to FrozenBatchNorm
@@ -218,7 +224,7 @@ class CNNBlockBase(nn.Module):
         return self
 
 
-def get_norm(norm, out_channels):
+def get_norm(norm, out_channels) -> nn.Module:
     """Args:
         norm (str or callable): either one of BN, SyncBN, FrozenBN, GN;
             or a callable that takes a channel number and returns

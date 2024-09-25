@@ -131,10 +131,8 @@ class MaskDINODecoder(nn.Module):
             decoder_layer,
             self.num_layers,
             decoder_norm,
-            return_intermediate=return_intermediate_dec,
             d_model=hidden_dim,
             query_dim=query_dim,
-            num_feature_levels=self.num_feature_levels,
             dec_layer_share=dec_layer_share,
         )
 
