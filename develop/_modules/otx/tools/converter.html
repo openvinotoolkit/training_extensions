@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.tools.converter &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
+    <title>otx.tools.converter &#8212; OpenVINO™ Training Extensions 2.3.0rc0 documentation</title>
   
   
   
@@ -34,7 +34,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../_static/documentation_options.js?v=6e6ef3c1"></script>
+    <script src="../../../_static/documentation_options.js?v=931ecc87"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -295,6 +295,18 @@
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_CLASS_CLS</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;mobilenet_v3_large&quot;</span><span class="p">,</span>
     <span class="p">},</span>
+    <span class="s2">&quot;Custom_Image_Classification_EfficinetNet-B3&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_CLASS_CLS</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;tv_efficientnet_b3&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Custom_Image_Classification_EfficinetNet-V2-L&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_CLASS_CLS</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;tv_efficientnet_v2_l&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Custom_Image_Classification_MobileNet-V3-small&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_CLASS_CLS</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;tv_mobilenet_v3_small&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
     <span class="c1"># DETECTION</span>
     <span class="s2">&quot;Custom_Object_Detection_Gen3_ATSS&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
@@ -324,6 +336,22 @@
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;yolox_tiny&quot;</span><span class="p">,</span>
     <span class="p">},</span>
+    <span class="s2">&quot;Object_Detection_RTDetr_18&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;rtdetr_18&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Object_Detection_RTDetr_50&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;rtdetr_50&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Object_Detection_RTDetr_101&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;rtdetr_101&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Object_Detection_RTMDet_tiny&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;rtmdet_tiny&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
     <span class="c1"># INSTANCE_SEGMENTATION</span>
     <span class="s2">&quot;Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span>
@@ -336,6 +364,10 @@
     <span class="s2">&quot;Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;maskrcnn_efficientnetb2b&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;Custom_Instance_Segmentation_RTMDet_tiny&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;rtmdet_inst_tiny&quot;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># ROTATED_DETECTION</span>
     <span class="s2">&quot;Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -375,6 +407,11 @@
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
         <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;segnext_b&quot;</span><span class="p">,</span>
     <span class="p">},</span>
+    <span class="s2">&quot;Custom_Semantic_Segmentation_DINOV2_S&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">,</span>
+        <span class="s2">&quot;model_name&quot;</span><span class="p">:</span> <span class="s2">&quot;dino_v2&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="c1"># ANOMALY_CLASSIFICATION</span>
     <span class="c1"># ANOMALY</span>
     <span class="s2">&quot;ote_anomaly_padim&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY</span><span class="p">,</span>
@@ -470,6 +507,8 @@
             <span class="n">task_info</span><span class="p">[</span><span class="s2">&quot;task&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
         <span class="n">default_config</span> <span class="o">=</span> <span class="n">ConfigConverter</span><span class="o">.</span><span class="n">_get_default_config</span><span class="p">(</span><span class="n">task_info</span><span class="p">)</span>
         <span class="n">ConfigConverter</span><span class="o">.</span><span class="n">_update_params</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hpo_time_ratio</span> <span class="o">:=</span> <span class="n">template_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hpo_parameters&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hpo_time_ratio&quot;</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">default_config</span><span class="p">[</span><span class="s2">&quot;hpo_config.expected_time_ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hpo_time_ratio</span>
         <span class="n">ConfigConverter</span><span class="o">.</span><span class="n">_remove_unused_key</span><span class="p">(</span><span class="n">default_config</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">default_config</span></div>
 
@@ -508,12 +547,22 @@
             <span class="n">config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;test_subset&quot;</span><span class="p">][</span><span class="s2">&quot;batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
 
         <span class="k">def</span> <span class="nf">update_learning_rate</span><span class="p">(</span><span class="n">param_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;optimizer&quot;</span><span class="p">][</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;init_args&quot;</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="p">:</span>
+                <span class="n">optimizer</span><span class="p">[</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: learning_rate is not updated&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">update_learning_rate_warmup_iters</span><span class="p">(</span><span class="n">param_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">scheduler</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">scheduler</span><span class="p">[</span><span class="s2">&quot;class_path&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;otx.core.schedulers.LinearWarmupSchedulerCallable&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="s2">&quot;class_path&quot;</span> <span class="ow">in</span> <span class="n">scheduler</span>
+                <span class="ow">and</span> <span class="n">scheduler</span><span class="p">[</span><span class="s2">&quot;class_path&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;otx.core.schedulers.LinearWarmupSchedulerCallable&quot;</span>
+            <span class="p">):</span>
                 <span class="n">scheduler</span><span class="p">[</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;num_warmup_steps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: learning_rate_warmup_iters is not updated&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">update_num_iters</span><span class="p">(</span><span class="n">param_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_epochs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
@@ -544,6 +593,9 @@
 
         <span class="k">def</span> <span class="nf">update_auto_num_workers</span><span class="p">(</span><span class="n">param_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;auto_num_workers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
+
+        <span class="k">def</span> <span class="nf">update_auto_adapt_batch_size</span><span class="p">(</span><span class="n">param_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;adaptive_bs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
 
         <span class="k">def</span> <span class="nf">update_enable_tiling</span><span class="p">(</span><span class="n">param_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;tile_config&quot;</span><span class="p">][</span><span class="s2">&quot;enable_tiler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
@@ -581,11 +633,12 @@
             <span class="s2">&quot;use_adaptive_interval&quot;</span><span class="p">:</span> <span class="n">update_use_adaptive_interval</span><span class="p">,</span>
             <span class="s2">&quot;auto_num_workers&quot;</span><span class="p">:</span> <span class="n">update_auto_num_workers</span><span class="p">,</span>
             <span class="s2">&quot;enable_tiling&quot;</span><span class="p">:</span> <span class="n">update_enable_tiling</span><span class="p">,</span>
+            <span class="s2">&quot;auto_adapt_batch_size&quot;</span><span class="p">:</span> <span class="n">update_auto_adapt_batch_size</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">param_value</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">update_func</span> <span class="o">=</span> <span class="n">param_update_funcs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">update_func</span><span class="p">:</span>
-                <span class="n">update_func</span><span class="p">(</span><span class="n">param_value</span><span class="p">)</span>
+                <span class="n">update_func</span><span class="p">(</span><span class="n">param_value</span><span class="p">)</span>  <span class="c1"># type: ignore[operator]</span>
                 <span class="n">unused_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
 
         <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: These parameters are not updated&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -656,6 +709,9 @@
         <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
         <span class="n">model_parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;label_info&quot;</span><span class="p">})</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">model_parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="n">Namespace</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_config</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;tile_config&quot;</span><span class="p">):</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">tile_config</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">tile_config</span>
 
         <span class="c1"># Instantiate Engine</span>
         <span class="n">config_work_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;work_dir&quot;</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;engine&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;work_dir&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>

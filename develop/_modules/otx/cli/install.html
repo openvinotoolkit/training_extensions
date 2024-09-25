@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.cli.install &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
+    <title>otx.cli.install &#8212; OpenVINO™ Training Extensions 2.3.0rc0 documentation</title>
   
   
   
@@ -34,7 +34,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../_static/documentation_options.js?v=6e6ef3c1"></script>
+    <script src="../../../_static/documentation_options.js?v=931ecc87"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -306,8 +306,8 @@
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--option&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Install the mmlab library or optional-dependencies.&quot;</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Install optional-dependencies. The &#39;full&#39; option will install all dependencies.&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;base&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -383,7 +383,7 @@
     <span class="p">)</span>
 
     <span class="c1"># Parse mmX requirements if the task requires mmX packages.</span>
-    <span class="n">mmcv_install_args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;--user&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">user</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">mmcv_install_args</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">mmcv_requirements</span><span class="p">:</span>
         <span class="n">mmcv_install_args</span> <span class="o">=</span> <span class="n">get_mmcv_install_args</span><span class="p">(</span><span class="n">torch_requirement</span><span class="p">,</span> <span class="n">mmcv_requirements</span><span class="p">)</span>
         <span class="n">install_args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;openmim&quot;</span><span class="p">]</span>
@@ -406,6 +406,8 @@
 
         <span class="c1"># Install mmX requirements if the task requires mmX packages using mim.</span>
         <span class="k">if</span> <span class="n">mmcv_install_args</span> <span class="ow">and</span> <span class="n">status_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+                <span class="n">mmcv_install_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--user&quot;</span><span class="p">)</span>
             <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Installation list: [yellow]</span><span class="si">{</span><span class="n">mmcv_install_args</span><span class="si">}</span><span class="s2">[/yellow]&quot;</span><span class="p">)</span>
             <span class="n">status_code</span> <span class="o">=</span> <span class="n">mim_installation</span><span class="p">(</span><span class="n">mmcv_install_args</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">status_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>

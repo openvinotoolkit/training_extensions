@@ -28,5 +28,6 @@ otx.tools
    :recursive:
 
    otx.tools.converter
+   otx.tools.templates
    otx.tools.translate_mmrecipe
 

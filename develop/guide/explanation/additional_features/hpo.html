@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Hyperparameters Optimization &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
+    <title>Hyperparameters Optimization &#8212; OpenVINO™ Training Extensions 2.3.0rc0 documentation</title>
   
   
   
@@ -35,7 +35,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../_static/documentation_options.js?v=6e6ef3c1"></script>
+    <script src="../../../_static/documentation_options.js?v=931ecc87"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -253,7 +253,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_classification.html">Action Classification model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_detection.html">Action Detection model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/visual_prompting.html">Visual Prompting model</a></li>
 </ul>
 </li>
@@ -266,6 +265,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/semi_supervised_learning.html">Use Semi-Supervised Learning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/huggingface_model.html">Training with Hugging Face pretrained vision models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/multi_gpu.html">Multi-GPU Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/low_rank_adaptation.html">LoRA: Low Rank Adaptation for Classification Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/torch_compile.html">[BETA] Enable torch.compile</a></li>
 </ul>
 </li>
 </ul>
@@ -290,7 +291,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../algorithms/anomaly/index.html">Anomaly Detection</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../algorithms/action/action_classification.html">Action Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../algorithms/action/action_detection.html">Action Detection</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/visual_prompting/index.html">Visual Prompting</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -310,6 +310,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tiling.html">Improve Small Object Detection with Image Tiling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="class_incremental_sampler.html">Class-Incremental Sampler</a></li>
 
+<li class="toctree-l2"><a class="reference internal" href="configurable_input_size.html">Configurable Input Size</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../product_design.html">Product Design</a></li>
@@ -347,6 +348,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.tools.converter.html">otx.tools.converter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.tools.templates.html">otx.tools.templates</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.utils.html">otx.utils</a></li>
@@ -529,8 +531,11 @@ Here is explanation of all HPO configuration.</p>
 </li>
 <li><p><strong>save_path</strong> (<em>str</em>, <em>default=’None’</em>) Path to save a HPO result.</p></li>
 <li><p><strong>mode</strong> (<em>str</em>, <em>default=’max’</em>) - Optimization mode for the metric. It determines whether the metric should be maximized or minimized. The possible values are ‘max’ and ‘min’, respectively.</p></li>
-<li><p><strong>num_workers</strong> (<em>int</em>, <em>default=1</em>) How many trials will be executed in parallel.</p></li>
+<li><p><strong>num_trials</strong> (<em>int</em>, <em>default=None</em>) The number of training trials to perform during HPO. If not provided, the number of trials will be determined based on the expected time ratio. Defaults to None.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>, <em>default=None</em>) The number of trials that will be run concurrently.</p></li>
 <li><p><strong>expected_time_ratio</strong> (<em>int</em>, <em>default=4</em>) How many times to use for HPO compared to training time.</p></li>
+<li><p><strong>metric_name</strong> (<em>str</em>, <em>default=None</em>) The name of the performance metric to be optimized during HPO. If not specified, the metric will be selected based on the configured callbacks. Defaults to None.</p></li>
+<li><p><strong>adapt_bs_search_space_max_val</strong> (<em>Literal[“None”, “Safe”, “Full”]</em>, <em>default=”None”</em>) Whether to execute <cite>Auto-adapt batch size</cite> prior to HPO. This step finds the maximum batch size value, which then serves as the upper limit for the batch size search space during HPO. For further information on <cite>Auto-adapt batch size</cite>, please refer to the <cite>Auto-configuration</cite> documentation. Defaults to “None”.</p></li>
 <li><p><strong>maximum_resource</strong> (<em>int</em>, <em>default=None</em>) - Maximum number of training epochs for each trial. When the training epochs reaches this value, the trial stop to train.</p></li>
 <li><p><strong>minimum_resource</strong> (<em>int</em>, <em>default=None</em>) - Minimum number of training epochs for each trial. Each trial will run at least this epochs, even if the performance of the model is not improving.</p></li>
 <li><p><strong>prior_hyper_parameters</strong> (<em>dict | list[dict]</em>, <em>default=None</em>) Hyper parameters to try first.</p></li>

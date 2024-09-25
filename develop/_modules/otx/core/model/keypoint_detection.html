@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.core.model.keypoint_detection &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
+    <title>otx.core.model.keypoint_detection &#8212; OpenVINO™ Training Extensions 2.3.0rc0 documentation</title>
   
   
   
@@ -34,7 +34,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../../_static/documentation_options.js?v=6e6ef3c1"></script>
+    <script src="../../../../_static/documentation_options.js?v=931ecc87"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -360,6 +360,14 @@
             <span class="n">labels</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">bbox_info</span><span class="o">=</span><span class="p">[],</span>
         <span class="p">)</span>
+
+<div class="viewcode-block" id="OTXKeypointDetectionModel.configure_metric">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.keypoint_detection.html#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.configure_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the metric.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_metric</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metric</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span></div>
+
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
