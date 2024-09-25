@@ -26,7 +26,23 @@ if TYPE_CHECKING:
     from otx.core.exporter.base import OTXModelExporter
 
 
-class UNetWrapper(nn.Module):
+class DiffusionModule(nn.Module):
+    """StableDiffusion module for performing stable diffusion process."""
+
+    def forward(
+        self,
+        sample: torch.Tensor,
+        timestep: torch.Tensor,
+        encoder_hidden_states: torch.Tensor,
+        target_noise: torch.Tensor,
+    ) -> torch.Tensor:
+        """Performs the forward diffusion process."""
+        if self.training:
+            return self.loss(sample, timestep, encoder_hidden_states, target_noise)
+        return self.generate_sample(sample, timestep, encoder_hidden_states)
+
+
+class UNetWrapper(DiffusionModule):
     """StableDiffusion module for performing stable diffusion process."""
 
     def __init__(
@@ -36,15 +52,12 @@ class UNetWrapper(nn.Module):
         """Initializes the StableDiffusion module.
 
         Args:
-            text_encoder (CLIPTextModel): The text encoder model.
-            vae (AutoencoderKL): The VAE (Variational Autoencoder) model.
             unet (UNet2DConditionModel): The UNet model for conditioning.
-            noise_scheduler (DDPMScheduler): The noise scheduler.
         """
         super().__init__()
         self.unet = unet
 
-    def forward(
+    def _forward(
         self,
         sample: torch.Tensor,
         timestep: torch.Tensor,
@@ -53,8 +66,9 @@ class UNetWrapper(nn.Module):
         """Performs the forward diffusion process.
 
         Args:
-            pixel_values (torch.Tensor): The pixel values.
-            input_ids (torch.Tensor): The input IDs.
+            sample (torch.Tensor): Latent dimension tensor for denoising.
+            timestep (torch.Tensor): Noise scheduler timestep.
+            encoder_hidden_states (torch.Tensor): Encoded text conditioning.
 
         Returns:
             tuple: A tuple containing the model predictions and the target values.
@@ -66,6 +80,25 @@ class UNetWrapper(nn.Module):
             encoder_hidden_states=encoder_hidden_states,
             return_dict=False,
         )[0]
+
+    def loss(
+        self,
+        sample: torch.Tensor,
+        timestep: torch.Tensor,
+        encoder_hidden_states: torch.Tensor,
+        target_noise: torch.Tensor,
+    ) -> torch.Tensor:
+        """Calculates the loss for input batch."""
+        return F.mse_loss(self._forward(sample, timestep, encoder_hidden_states), target_noise)
+
+    def generate_sample(
+        self,
+        sample: torch.Tensor,
+        timestep: torch.Tensor,
+        encoder_hidden_states: torch.Tensor,
+    ) -> torch.Tensor:
+        """Generates a sample from the input batch."""
+        return self._forward(sample, timestep, encoder_hidden_states)
 
 
 class HuggingFaceModelForDiffusion(OTXDiffusionModel):
@@ -156,9 +189,9 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         encoder_hidden_states = self.pipe.text_encoder(input_ids, return_dict=False)[0]
 
         if self.pipe.scheduler.config.prediction_type == "epsilon":
-            self.target = noise
+            target = noise
         elif self.pipe.scheduler.config.prediction_type == "v_prediction":
-            self.target = self.pipe.scheduler.get_velocity(latents, noise, timesteps)
+            target = self.pipe.scheduler.get_velocity(latents, noise, timesteps)
         else:
             error_msg = f"Invalid prediction type: {self.pipe.scheduler.config.prediction_type}"
             raise ValueError(error_msg)
@@ -167,6 +200,7 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             "sample": noisy_latents,
             "timestep": timesteps,
             "encoder_hidden_states": encoder_hidden_states,
+            "target_noise": target,
         }
 
     def _customize_outputs(
@@ -174,13 +208,7 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         outputs: torch.Tensor,
         inputs: DiffusionBatchDataEntity,
     ) -> DiffusionBatchPredEntity | OTXBatchLossEntity:
-        if torch.isnan(outputs).any():
-            error_msg = "NaN detected in the output."
-            raise ValueError(error_msg)
-        if not self.training:
-            msg = "This should never raise since `validation_step` is overridden."
-            raise NotImplementedError(msg)
-        return OTXBatchLossEntity(mse=F.mse_loss(outputs, self.target, reduction="mean"))
+        return OTXBatchLossEntity(loss=outputs)
 
     def on_fit_start(self) -> None:
         """Called at the very beginning of fit.
@@ -201,7 +229,7 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         self.pipe.to(self.device)
         return super().on_predict_start()
 
-    def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> torch.Tensor:
+    def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
         :param batch: A batch of data (a tuple) containing the input tensor of images and target
@@ -226,7 +254,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             if isinstance(logger, TensorBoardLogger):
                 for image, caption in zip(images, batch.captions):
                     logger.experiment.add_image(f"val/images/{caption}", image.detach().cpu())
-        return images
 
     def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -235,7 +262,7 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        return self.validation_step(batch, batch_idx)
+        self.validation_step(batch, batch_idx)
 
     def predict_step(
         self,
@@ -244,8 +271,18 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         dataloader_idx: int = 0,
     ) -> DiffusionBatchPredEntity:
         """Step function called during PyTorch Lightning Trainer's predict."""
+        images = self.pipe(batch.captions, output_type="latent").images
+        images = self.pipe.vae.decode(
+            images / self.pipe.vae.config.scaling_factor,
+            return_dict=False,
+        )[0]
+        images = self.pipe.image_processor.postprocess(
+            images,
+            output_type="pt",
+            do_denormalize=[True] * len(images),
+        )
         return DiffusionBatchPredEntity(
-            images=self.validation_step(batch, batch_idx),
+            images=images,
             imgs_info=batch.imgs_info,
             batch_size=batch.batch_size,
             scores=[],

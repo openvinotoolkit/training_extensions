@@ -59,7 +59,6 @@ class DiffusionOTXModelExporter(OTXNativeModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        model_type: str = "sam",
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -85,7 +84,7 @@ class DiffusionOTXModelExporter(OTXNativeModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
-        model_type: str = "sam",
+        model_type: str = "stable_diffusion",
     ) -> Path:
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 

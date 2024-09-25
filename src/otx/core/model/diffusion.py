@@ -57,15 +57,6 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
             self.metric.update(batch.images, real=True)
         return train_loss
 
-    def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
-        """Perform a single test step on a batch of data from the test set.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
-        """
-        self.validation_step(batch, batch_idx)
-
     def on_validation_start(self) -> None:
         """Called at the beginning of validation.
 
