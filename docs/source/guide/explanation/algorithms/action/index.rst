@@ -6,4 +6,3 @@ Action Recognition
 
 
    action_classification
-   action_detection

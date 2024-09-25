@@ -73,6 +73,8 @@ def get_task_list(task: str) -> list[OTXTaskType]:
         tasks = [OTXTaskType.ANOMALY_DETECTION]
     elif task == "anomaly_segmentation":
         tasks = [OTXTaskType.ANOMALY_SEGMENTATION]
+    elif task == "keypoint_detection":
+        tasks = [OTXTaskType.KEYPOINT_DETECTION]
     else:
         tasks = [OTXTaskType(task.upper())]
     return tasks
@@ -139,6 +141,8 @@ def fxt_target_dataset_per_task() -> dict:
         "anomaly_classification": "tests/assets/anomaly_hazelnut",
         "anomaly_detection": "tests/assets/anomaly_hazelnut",
         "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
+        "keypoint_detection": "tests/assets/car_tree_bug_keypoint",
+        "tiling_detection": "tests/assets/tiling_small_objects",
     }
 
 
@@ -159,4 +163,5 @@ def fxt_cli_override_command_per_task() -> dict:
         "anomaly_classification": [],
         "anomaly_detection": [],
         "anomaly_segmentation": [],
+        "keypoint_detection": [],
     }

@@ -35,25 +35,29 @@ class RTMPose(OTXKeypointDetectionModel):
             msg = f"Exporter should have a input_size but it is given by {self.input_size}"
             raise ValueError(msg)
 
+        if self.explain_mode:
+            msg = "Export with explain is not supported for RTMPose model."
+            raise ValueError(msg)
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
-            resize_mode="fit_to_window_letterbox",
-            pad_value=114,
-            swap_rgb=True,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
             via_onnx=True,
             onnx_export_configuration={
                 "input_names": ["image"],
-                "output_names": ["points"],
                 "dynamic_axes": {
-                    "image": {0: "batch", 2: "height", 3: "width"},
-                    "points": {0: "batch", 1: "num_dets"},
+                    "image": {0: "batch"},
+                    "pred_x": {0: "batch"},
+                    "pred_y": {0: "batch"},
                 },
                 "autograd_inlining": False,
             },
-            output_names=["points", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["pred_x", "pred_y"],
         )
 
     @property
@@ -78,8 +82,6 @@ class RTMPoseTiny(RTMPose):
         metric: MetricCallable = PCKMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.mean = (0.0, 0.0, 0.0)
-        self.std = (255.0, 255.0, 255.0)
         super().__init__(
             label_info=label_info,
             input_size=input_size,

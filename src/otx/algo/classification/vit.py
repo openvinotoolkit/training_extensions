@@ -290,7 +290,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
                     in_channels=vit_backbone.embed_dim,
                 ),
                 loss=nn.CrossEntropyLoss(reduction="none"),
-                init_cfg=init_cfg,
             )
 
         return ImageClassifier(
@@ -373,10 +372,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
         vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
@@ -386,7 +381,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
                 in_channels=vit_backbone.embed_dim,
             ),
             loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-            init_cfg=init_cfg,
         )
 
 

@@ -87,7 +87,7 @@ class LiteHRNet(OTXSegmentationModel):
     @property
     def ignore_scope(self) -> dict[str, Any]:
         """Get the ignored scope for LiteHRNet."""
-        if self.model_name == "large":
+        if self.model_name == "lite_hrnet_x":
             return {
                 "ignored_scope": {
                     "patterns": ["__module.model.decode_head.aggregator/*"],
@@ -175,7 +175,7 @@ class LiteHRNet(OTXSegmentationModel):
                 "preset": "performance",
             }
 
-        if self.model_name == "medium":
+        if self.model_name == "lite_hrnet_18":
             return {
                 "ignored_scope": {
                     "patterns": ["__module.model.backbone/*"],
@@ -263,7 +263,7 @@ class LiteHRNet(OTXSegmentationModel):
                 "preset": "mixed",
             }
 
-        if self.model_name == "small":
+        if self.model_name == "lite_hrnet_s":
             return {
                 "ignored_scope": {
                     "names": [

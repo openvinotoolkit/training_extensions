@@ -47,13 +47,6 @@ Training to deployment tutorials
 
       Learn how to train an action classification model
 
-   .. grid-item-card:: Action Detection
-      :link: action_detection
-      :link-type: doc
-      :text-align: center
-
-      Learn how to train an action detection model
-
    .. grid-item-card:: Visual Prompting
       :link: visual_prompting
       :link-type: doc
@@ -71,5 +64,4 @@ Training to deployment tutorials
    semantic_segmentation
    anomaly_detection
    action_classification
-   action_detection
    visual_prompting

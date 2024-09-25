@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, Callable
 import numpy as np
 import shapely.geometry as sg
 import torch
-from datumaro import Bbox, DatasetItem, Image, Polygon
 from datumaro import Dataset as DmDataset
-from datumaro.components.annotation import AnnotationType
+from datumaro import DatasetItem, Image
+from datumaro.components.annotation import AnnotationType, Bbox, ExtractedMask, Polygon
 from datumaro.plugins.tiling import Tile
 from datumaro.plugins.tiling.tile import _apply_offset
 from datumaro.plugins.tiling.util import (
@@ -25,14 +25,18 @@ from datumaro.plugins.tiling.util import (
     x1y1x2y2_to_cxcywh,
     x1y1x2y2_to_xywh,
 )
+from otx.core.data.dataset.segmentation import _extract_class_mask
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
+from otx.core.data.entity.segmentation import SegDataEntity
 from otx.core.data.entity.tile import (
     TileBatchDetDataEntity,
     TileBatchInstSegDataEntity,
+    TileBatchSegDataEntity,
     TileDetDataEntity,
     TileInstSegDataEntity,
+    TileSegDataEntity,
 )
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.mask_util import polygon_to_bitmap
@@ -45,11 +49,16 @@ if TYPE_CHECKING:
     from otx.core.config.data import TileConfig
     from otx.core.data.dataset.detection import OTXDetectionDataset
     from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
+    from otx.core.data.dataset.segmentation import OTXSegmentationDataset
     from otx.core.data.entity.base import OTXDataEntity
 
 # ruff: noqa: SLF001
 # NOTE: Disable private-member-access (SLF001).
 # This is a workaround so we could apply the same transforms to tiles as the original dataset.
+
+# NOTE: Datumaro subset name should be standardized.
+TRAIN_SUBSET_NAMES = ("train", "TRAINING")
+VAL_SUBSET_NAMES = ("val", "VALIDATION")
 
 
 class OTXTileTransform(Tile):
@@ -85,6 +94,7 @@ class OTXTileTransform(Tile):
         )
         self._tile_size = tile_size
         self._tile_ann_func_map[AnnotationType.polygon] = OTXTileTransform._tile_polygon
+        self._tile_ann_func_map[AnnotationType.mask] = OTXTileTransform._tile_masks
         self.with_full_img = with_full_img
 
     @staticmethod
@@ -125,6 +135,30 @@ class OTXTileTransform(Tile):
             attributes=deepcopy(ann.attributes),
         )
 
+    @staticmethod
+    def _tile_masks(
+        ann: ExtractedMask,
+        roi_int: BboxIntCoords,
+        *args,  # noqa: ARG004
+        **kwargs,  # noqa: ARG004
+    ) -> ExtractedMask:
+        """Extracts a tile mask from the given annotation.
+
+        Note: Original Datumaro _tile_masks does not work with ExtractedMask.
+
+        Args:
+            ann (ExtractedMask): datumaro ExtractedMask annotation.
+            roi_int (BboxIntCoords): ROI coordinates.
+
+        Returns:
+            ExtractedMask: ExtractedMask annotation.
+        """
+        x, y, w, h = roi_int
+        return ann.wrap(
+            index_mask=ann.index_mask()[y : y + h, x : x + w],
+            attributes=deepcopy(ann.attributes),
+        )
+
     def _extract_rois(self, image: Image) -> list[BboxIntCoords]:
         """Extracts Tile ROIs from the given image.
 
@@ -142,12 +176,12 @@ class OTXTileTransform(Tile):
         tile_h, tile_w = self._tile_size
         h_ovl, w_ovl = self._overlap
 
-        rois: list[BboxIntCoords] = []
+        rois: set[BboxIntCoords] = set()
         cols = range(0, img_w, int(tile_w * (1 - w_ovl)))
         rows = range(0, img_h, int(tile_h * (1 - h_ovl)))
 
         if self.with_full_img:
-            rois += [x1y1x2y2_to_xywh(0, 0, img_w, img_h)]
+            rois.add(x1y1x2y2_to_xywh(0, 0, img_w, img_h))
         for offset_x, offset_y in product(cols, rows):
             x2 = min(offset_x + tile_w, img_w)
             y2 = min(offset_y + tile_h, img_h)
@@ -155,11 +189,11 @@ class OTXTileTransform(Tile):
             x1, y1, x2, y2 = cxcywh_to_x1y1x2y2(c_x, c_y, w, h)
             x1, y1, x2, y2 = clip_x1y1x2y2(x1, y1, x2, y2, img_w, img_h)
             x1, y1, x2, y2 = (int(v) for v in [x1, y1, x2, y2])
-            rois += [x1y1x2y2_to_xywh(x1, y1, x2, y2)]
+            rois.add(x1y1x2y2_to_xywh(x1, y1, x2, y2))
 
         log.info(f"image: {img_h}x{img_w} ~ tile_size: {self._tile_size}")
         log.info(f"{len(rows)}x{len(cols)} tiles -> {len(rois)} tiles")
-        return rois
+        return list(rois)
 
 
 class OTXTileDatasetFactory:
@@ -186,13 +220,16 @@ class OTXTileDatasetFactory:
         Returns:
             OTXTileDataset: Tile dataset.
         """
-        if dataset.dm_subset[0].subset == "train":
+        if dataset.dm_subset[0].subset in TRAIN_SUBSET_NAMES:
             return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
             return OTXTileDetTestDataset(dataset, tile_config)
         if task in [OTXTaskType.ROTATED_DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]:
             return OTXTileInstSegTestDataset(dataset, tile_config)
+        if task == OTXTaskType.SEMANTIC_SEGMENTATION:
+            return OTXTileSemanticSegTestDataset(dataset, tile_config)
+
         msg = f"Unsupported task type: {task} for tiling"
         raise NotImplementedError(msg)
 
@@ -212,9 +249,21 @@ class OTXTileDataset(OTXDataset):
             dataset.mem_cache_handler,
             dataset.mem_cache_img_max_size,
             dataset.max_refetch,
+            dataset.image_color_channel,
+            dataset.stack_images,
+            dataset.to_tv_image,
         )
         self.tile_config = tile_config
         self._dataset = dataset
+
+        # LabelInfo differs from SegLabelInfo, thus we need to update it for semantic segmentation.
+        if self.label_info != dataset.label_info:
+            msg = (
+                "Replace the label info to match the dataset's label info",
+                "as there is a mismatch between the dataset and the tile dataset.",
+            )
+            log.warning(msg)
+            self.label_info = dataset.label_info
 
     def __len__(self) -> int:
         return len(self._dataset)
@@ -228,45 +277,75 @@ class OTXTileDataset(OTXDataset):
         """Get item implementation from the original dataset."""
         return self._dataset._get_item_impl(index)
 
-    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> OTXDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> OTXDataEntity:
         """Convert a tile dataset item to OTXDataEntity."""
         msg = "Method _convert_entity is not implemented."
         raise NotImplementedError(msg)
 
-    def get_tiles(self, image: np.ndarray, item: DatasetItem) -> tuple[list[OTXDataEntity], list[dict]]:
+    def transform_item(
+        self,
+        item: DatasetItem,
+        tile_size: tuple[int, int],
+        overlap: tuple[float, float],
+        with_full_img: bool,
+    ) -> DmDataset:
+        """Transform a dataset item to tile dataset which contains multiple tiles."""
+        tile_ds = DmDataset.from_iterable([item])
+        return tile_ds.transform(
+            OTXTileTransform,
+            tile_size=tile_size,
+            overlap=overlap,
+            threshold_drop_ann=0.5,
+            with_full_img=with_full_img,
+        )
+
+    def get_tiles(
+        self,
+        image: np.ndarray,
+        item: DatasetItem,
+        parent_idx: int,
+    ) -> tuple[list[OTXDataEntity], list[dict]]:
         """Retrieves tiles from the given image and dataset item.
 
         Args:
             image (np.ndarray): The input image.
             item (DatasetItem): The dataset item.
+            parent_idx (int): The parent index. This is to keep track of the original dataset item index for merging.
 
         Returns:
             A tuple containing two lists:
             - tile_entities (list[OTXDataEntity]): List of tile entities.
             - tile_attrs (list[dict]): List of tile attributes.
         """
-        tile_ds = DmDataset.from_iterable([item])
-        tile_ds = tile_ds.transform(
-            OTXTileTransform,
+        tile_ds = self.transform_item(
+            item,
             tile_size=self.tile_config.tile_size,
             overlap=(self.tile_config.overlap, self.tile_config.overlap),
-            threshold_drop_ann=0.5,
             with_full_img=self.tile_config.with_full_img,
         )
 
-        if item.subset == "val":
+        if item.subset in VAL_SUBSET_NAMES:
             # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
             tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
+            # if tile dataset is empty it means objects are too big to fit in any tile, in this case include full image
+            if len(tile_ds) == 0:
+                tile_ds = self.transform_item(
+                    item,
+                    tile_size=self.tile_config.tile_size,
+                    overlap=(self.tile_config.overlap, self.tile_config.overlap),
+                    with_full_img=True,
+                )
 
         tile_entities: list[OTXDataEntity] = []
         tile_attrs: list[dict] = []
         for tile in tile_ds:
-            tile_entity = self._convert_entity(image, tile)
+            tile_entity = self._convert_entity(image, tile, parent_idx)
             # apply the same transforms as the original dataset
             transformed_tile = self._apply_transforms(tile_entity)
             if transformed_tile is None:
                 msg = "Transformed tile is None"
                 raise RuntimeError(msg)
+            tile.attributes.update({"tile_size": self.tile_config.tile_size})
             tile_entities.append(transformed_tile)
             tile_attrs.append(tile.attributes)
         return tile_entities, tile_attrs
@@ -344,7 +423,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
         )
         labels = torch.as_tensor([ann.label for ann in bbox_anns])
 
-        tile_entities, tile_attrs = self.get_tiles(img_data, item)
+        tile_entities, tile_attrs = self.get_tiles(img_data, item, index)
 
         return TileDetDataEntity(
             num_tiles=len(tile_entities),
@@ -363,13 +442,13 @@ class OTXTileDetTestDataset(OTXTileDataset):
             ori_labels=labels,
         )
 
-    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> DetDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> DetDataEntity:
         """Convert a tile datumaro dataset item to DetDataEntity."""
         x1, y1, w, h = dataset_item.attributes["roi"]
         tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
-            img_idx=dataset_item.attributes["id"],
+            img_idx=parent_idx,
             img_shape=tile_shape,
             ori_shape=tile_shape,
         )
@@ -446,7 +525,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
         masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)
         labels = np.array(gt_labels, dtype=np.int64)
 
-        tile_entities, tile_attrs = self.get_tiles(img_data, item)
+        tile_entities, tile_attrs = self.get_tiles(img_data, item, index)
 
         return TileInstSegDataEntity(
             num_tiles=len(tile_entities),
@@ -467,13 +546,13 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             ori_polygons=gt_polygons,
         )
 
-    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem) -> InstanceSegDataEntity:
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> InstanceSegDataEntity:
         """Convert a tile dataset item to InstanceSegDataEntity."""
         x1, y1, w, h = dataset_item.attributes["roi"]
         tile_img = image[y1 : y1 + h, x1 : x1 + w]
         tile_shape = tile_img.shape[:2]
         img_info = ImageInfo(
-            img_idx=dataset_item.attributes["id"],
+            img_idx=parent_idx,
             img_shape=tile_shape,
             ori_shape=tile_shape,
         )
@@ -489,4 +568,73 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             labels=torch.as_tensor([]),
             masks=tv_tensors.Mask(np.zeros((0, *tile_shape), dtype=bool)),
             polygons=[],
+        )
+
+
+class OTXTileSemanticSegTestDataset(OTXTileDataset):
+    """OTX tile semantic-seg test dataset.
+
+    OTXTileSemanticSegTestDataset wraps a list of tiles (SegDataEntity) into a single TileSegDataEntity
+    for testing/predicting.
+
+    Args:
+        dataset (OTXSegmentationDataset): OTX semantic-seg dataset.
+        tile_config (TilerConfig): Tile configuration.
+    """
+
+    def __init__(self, dataset: OTXSegmentationDataset, tile_config: TileConfig) -> None:
+        super().__init__(dataset, tile_config)
+        self.ignore_index = self._dataset.ignore_index
+
+    @property
+    def collate_fn(self) -> Callable:
+        """Collate function for tile detection test dataset."""
+        return TileBatchSegDataEntity.collate_fn
+
+    def _get_item_impl(self, index: int) -> TileSegDataEntity:  # type: ignore[override]
+        """Get item implementation.
+
+        Transform a single dataset item to multiple tiles using Datumaro tiling plugin, and
+        wrap tiles into a single TileSegDataEntity.
+
+        Args:
+            index (int): Index of the dataset item.
+
+        Returns:
+            TileSegDataEntity: tile semantic-seg data entity that wraps a list of semantic-seg data entities.
+        """
+        item = self.dm_subset[index]
+        img = item.media_as(Image)
+        img_data, img_shape = self._get_img_data_and_shape(img)
+
+        extracted_mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+        masks = tv_tensors.Mask(extracted_mask[None])
+        tile_entities, tile_attrs = self.get_tiles(img_data, item, index)
+
+        return TileSegDataEntity(
+            num_tiles=len(tile_entities),
+            entity_list=tile_entities,
+            tile_attr_list=tile_attrs,
+            ori_img_info=ImageInfo(
+                img_idx=index,
+                img_shape=img_shape,
+                ori_shape=img_shape,
+            ),
+            ori_masks=masks,
+        )
+
+    def _convert_entity(self, image: np.ndarray, dataset_item: DatasetItem, parent_idx: int) -> SegDataEntity:
+        """Convert a tile datumaro dataset item to SegDataEntity."""
+        x1, y1, w, h = dataset_item.attributes["roi"]
+        tile_img = image[y1 : y1 + h, x1 : x1 + w]
+        tile_shape = tile_img.shape[:2]
+        img_info = ImageInfo(
+            img_idx=parent_idx,
+            img_shape=tile_shape,
+            ori_shape=tile_shape,
+        )
+        return SegDataEntity(
+            image=tile_img,
+            img_info=img_info,
+            masks=tv_tensors.Mask(np.zeros((0, *tile_shape), dtype=bool)),
         )

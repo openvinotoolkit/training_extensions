@@ -158,15 +158,8 @@ def test_otx_e2e(
             ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
             ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
         ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
-    elif "anomaly" in task:
-        fxt_export_list = [
-            ExportCase2Test("ONNX", False, "exported_model.onnx"),
-            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
-        ]  # anomaly doesn't support exportable code
 
     overrides = fxt_cli_override_command_per_task[task]
-    if "anomaly" in task:
-        overrides = {}  # Overrides are not needed in export
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for export_case in fxt_export_list:
@@ -197,6 +190,10 @@ def test_otx_e2e(
         )
         assert latest_dir.exists()
         assert (latest_dir / export_case.expected_output).exists()
+
+    if "keypoint" in recipe:
+        print("Inference and explain are not supported for keypoint detection")
+        return
 
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
@@ -328,11 +325,11 @@ def test_otx_explain_e2e(
 
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
-
-    if "rtdetr" in recipe:
+    elif "rtdetr" in recipe:
         pytest.skip("rtdetr model is not supported yet with explain.")
-
-    if "yolov9" in recipe:
+    elif "keypoint" in recipe:
+        pytest.skip("keypoint detection models don't support explain.")
+    elif "yolov9" in recipe:
         pytest.skip("yolov9 model is not supported yet with explain.")
 
     # otx explain
@@ -591,7 +588,7 @@ def test_otx_configurable_input_size_e2e(
     if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip(f"{task} doesn't support configurable input size.")
     if task == OTXTaskType.KEYPOINT_DETECTION:
-        pytest.skip(f"{task} isn't prepared to run integration test.")
+        pytest.skip(f"{task} doesn't support configurable input size.")
 
     task = task.lower()
     tmp_path_cfg_ipt_size = tmp_path / f"otx_configurable_input_size_{task}"

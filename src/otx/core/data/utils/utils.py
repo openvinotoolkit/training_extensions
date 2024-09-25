@@ -8,8 +8,11 @@ import logging
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
+import cv2
 import numpy as np
-from datumaro.components.annotation import _Shape
+from datumaro.components.annotation import AnnotationType, Bbox, Polygon, _Shape
+
+from otx.core.types import OTXTaskType
 
 if TYPE_CHECKING:
     from datumaro import Dataset, DatasetSubset
@@ -18,6 +21,13 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+
+# Annotation type for each task
+TASK_ANNO_TYPE = {
+    OTXTaskType.INSTANCE_SEGMENTATION: Polygon,
+    OTXTaskType.SEMANTIC_SEGMENTATION: Polygon,
+    OTXTaskType.DETECTION: Bbox,
+}
 
 
 def compute_robust_statistics(values: np.array) -> dict[str, float]:
@@ -75,11 +85,16 @@ def compute_robust_scale_statistics(values: np.array) -> dict[str, float]:
     return stat
 
 
-def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int = 1000) -> dict[str, Any]:
+def compute_robust_dataset_statistics(
+    dataset: DatasetSubset,
+    task: OTXTaskType = OTXTaskType.DETECTION,
+    max_samples: int = 1000,
+) -> dict[str, Any]:
     """Computes robust statistics of image & annotation sizes.
 
     Args:
         dataset (DatasetSubset): Input dataset.
+        task (OTXTaskType, optional): Task type of the model. Defaults to OTXTaskType.DETECTION.
         max_samples (int, optional): Maximum number of dataset subsamples to analyze. Defaults to 1000.
 
     Returns:
@@ -113,6 +128,7 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
         width_arr.append(width)
     stat["image"]["height"] = compute_robust_scale_statistics(np.array(height_arr))
     stat["image"]["width"] = compute_robust_scale_statistics(np.array(width_arr))
+    label_names = dataset.as_dataset().categories()
 
     num_per_images: list[int] = []
     size_of_shapes: dict[str, list] = defaultdict(list)
@@ -120,7 +136,18 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
         data = dataset.get(id=idx, subset=dataset.name)
         annotations: dict[str, list] = defaultdict(list)
         for ann in data.annotations:
-            annotations[ann.__class__.__name__].append(ann)
+            if task is OTXTaskType.SEMANTIC_SEGMENTATION:
+                # Skip background class
+                if label_names and label_names[AnnotationType.label][ann.label].name == "background":
+                    continue
+
+                # convert foreground mask to multiple polygons
+                contours, _ = cv2.findContours(ann.image.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                annotations[Polygon].extend(
+                    [Polygon(contour.flatten()) for contour in contours if len(contour) > 2],
+                )
+            else:
+                annotations[ann.__class__].append(ann)
 
         num_per_images.append(max(len(val) for val in annotations.values()) if annotations else 0)
 
@@ -133,23 +160,17 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
             )
 
     stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
-    # The reason why polygon is used prior to others is based on assumtion that it is more accurate than other shapes.
-    # Especially, polygon can be used in the case both polygon and bbox exist like instance segmentation task.
-    # it's needed to refine this algorithm considering not only instance segmentation but also other tasks.
-    if "Polygon" in size_of_shapes:
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes["Polygon"]))
-    else:
-        max_ann_type = None
-        max_num_ann = 0
-        for ann_type, anns in size_of_shapes.items():
-            if max_num_ann < len(anns):
-                max_ann_type = ann_type
-                max_num_ann = len(anns)
-        if max_ann_type is not None:
-            stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(
-                np.array(size_of_shapes[max_ann_type]),
-            )
 
+    target_ann_type = TASK_ANNO_TYPE.get(task)
+    if not target_ann_type:
+        msg = (
+            f"Task type {task} is not supported for computing annotation statistics. "
+            "OTX will try to continue with annotation found in the dataset."
+        )
+        logger.warning(msg)
+        target_ann_type = sorted(size_of_shapes.keys(), key=lambda x: len(size_of_shapes[x]), reverse=True)[0]
+        logger.warning(f"Selected annotation type: {target_ann_type}")
+    stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes[target_ann_type]))
     return stat
 
 
@@ -160,6 +181,7 @@ _MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
 
 def adapt_input_size_to_dataset(
     dataset: Dataset,
+    task: OTXTaskType = OTXTaskType.DETECTION,
     base_input_size: int | tuple[int, int] | None = None,
     downscale_only: bool = True,
     input_size_multiplier: int | None = None,
@@ -168,6 +190,7 @@ def adapt_input_size_to_dataset(
 
     Args:
         dataset (Dataset): Datumaro dataset including all subsets.
+        task (OTXTaskType, optional): Task type of the model. Defaults to OTXTaskType.DETECTION.
         base_input_size (int | tuple[int, int] | None, optional): Base input size of the model. Defaults to None.
         downscale_only (bool, optional) : Whether to allow only smaller size than default setting. Defaults to True.
         input_size_multiplier (int | None, optional):
@@ -188,7 +211,7 @@ def adapt_input_size_to_dataset(
         return None
 
     logger.info("Adapting model input size based on dataset stat")
-    stat = compute_robust_dataset_statistics(train_dataset)
+    stat = compute_robust_dataset_statistics(train_dataset, task)
     max_image_size: list[int] = [
         stat["image"].get("height", {}).get("robust_max", 0),
         stat["image"].get("width", {}).get("robust_max", 0),
@@ -240,7 +263,7 @@ def adapt_input_size_to_dataset(
     return image_size  # type: ignore[return-value]
 
 
-def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
+def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task: OTXTaskType) -> None:
     """Config tile parameters.
 
     Adapt based on annotation statistics.
@@ -249,9 +272,10 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
     Args:
         tile_config (TileConfig): tiling parameters of the model
         dataset (Dataset): Datumaro dataset including all subsets
+        task (Task): task type of the model
     """
-    if (train_dataset := dataset.subsets().get("train")) is not None:
-        stat = compute_robust_dataset_statistics(train_dataset)
+    if (train_dataset := dataset.subsets().get("train") or dataset.subsets().get("TRAINING")) is not None:
+        stat = compute_robust_dataset_statistics(train_dataset, task=task)
         max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
         avg_size = stat["annotation"]["size_of_shape"]["avg"]
         min_size = stat["annotation"]["size_of_shape"]["robust_min"]
@@ -260,20 +284,20 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
         logger.info(f"----> [stat] scale min: {min_size}")
         logger.info(f"----> [stat] scale max: {max_size}")
 
-        logger.info("[Adaptive tiling pararms]")
+        logger.warning("[Adaptive tiling pararms]")
         object_tile_ratio = tile_config.object_tile_ratio
         tile_size = int(avg_size / object_tile_ratio)
         tile_overlap = max_size / tile_size
         logger.info(f"----> avg_object_size: {avg_size}")
         logger.info(f"----> max_object_size: {max_size}")
-        logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
-        logger.info(f"----> tile_size: {avg_size} / {object_tile_ratio} = {tile_size}")
-        logger.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
+        logger.warning(f"----> object_tile_ratio: {object_tile_ratio}")
+        logger.warning(f"----> tile_size: {avg_size} / {object_tile_ratio} = {tile_size}")
+        logger.warning(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
 
         if tile_overlap >= 0.9:
             # Use the average object area if the tile overlap is too large to prevent 0 stride.
             tile_overlap = min(avg_size / tile_size, 0.9)
-            logger.info(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = min[{tile_overlap}, 0.9]")
+            logger.warning(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = min[{tile_overlap}, 0.9]")
 
         # TODO(Eugene): how to validate lower/upper_bound? dataclass? pydantic?
         # https://github.com/openvinotoolkit/training_extensions/pull/2903
