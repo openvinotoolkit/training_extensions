@@ -1,0 +1,33 @@
+# Description.
+model_template_id: Zero_Shot_SAM_Tiny_ViT
+name: Zero_Shot_SAM_Tiny_ViT
+task_type: VISUAL_PROMPTING
+task_family: VISION
+instantiation: "CLASS"
+summary: Zero SHot Visual Prompting with TinyViT for the accurate predictions
+application: ~
+
+# Algo backend.
+framework: OTXVisualPrompting v0.1.0
+
+# Hyper Parameters
+hyper_parameters:
+  base_path: ./configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      dataset:
+        train_batch_size:
+          default_value: 1
+    algo_backend:
+      train_type:
+        default_value: Zeroshot
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Computational Complexity
+gigaflops: 38.18
+size: 25

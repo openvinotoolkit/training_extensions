@@ -14,7 +14,7 @@ model:
     scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
       init_args:
-        num_warmup_steps: 5
+        num_warmup_steps: 100
         main_scheduler_callable:
           class_path: lightning.pytorch.cli.ReduceLROnPlateau
           init_args:
@@ -89,7 +89,6 @@ overrides:
           init_args:
             scale: $(input_size)
             keep_ratio: false
-            transform_bbox: true
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
@@ -104,7 +103,6 @@ overrides:
           init_args:
             scale: $(input_size)
             keep_ratio: false
-            transform_bbox: true
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:

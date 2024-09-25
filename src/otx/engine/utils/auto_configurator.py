@@ -418,6 +418,7 @@ class AutoConfigurator:
         subset_config.to_tv_image = ov_config[f"{subset}_subset"]["to_tv_image"]
         datamodule.image_color_channel = ov_config["image_color_channel"]
         datamodule.tile_config.enable_tiler = False
+        datamodule.unlabeled_subset.data_root = None
         msg = (
             f"For OpenVINO IR models, Update the following {subset} \n"
             f"\t transforms: {subset_config.transforms} \n"

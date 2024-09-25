@@ -1,0 +1,45 @@
+# Description.
+model_template_id: Custom_Image_Classification_EfficinetNet-B0
+name: EfficientNet-B0
+task_type: CLASSIFICATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Image Classification for EfficientNet-B0
+application: ~
+
+# Algo backend.
+framework: OTXClassification v1.2.3
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 64
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.0049
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 0
+      num_iters:
+        default_value: 90
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 0.81
+size: 4.09
+
+# Model spec
+model_category: BALANCE
+is_default_for_task: true

@@ -135,6 +135,22 @@ class PCKMeasure(Metric):
         self.dist_threshold: float = dist_threshold
         self.reset()
 
+    @property
+    def input_size(self) -> tuple[int, int]:
+        """Getter for input_size."""
+        return self._input_size
+
+    @input_size.setter
+    def input_size(self, size: tuple[int, int]) -> None:
+        """Setter for input_size."""
+        if not isinstance(size, tuple) or len(size) != 2:
+            msg = "input_size must be a tuple of two integers."
+            raise ValueError(msg)
+        if not all(isinstance(dim, int) for dim in size):
+            msg = "input_size dimensions must be integers."
+            raise ValueError(msg)
+        self._input_size = size
+
     def reset(self) -> None:
         """Reset for every validation and test epoch.
 

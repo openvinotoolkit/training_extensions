@@ -1,0 +1,29 @@
+# Description.
+model_template_id: ote_anomaly_classification_padim
+name: PADIM
+task_type: ANOMALY_CLASSIFICATION
+task_family: VISION
+instantiation: "CLASS"
+summary: This model is faster and in many cases more accurate, but it requires a fixed position of the objects within the image.
+application: ~
+
+# Algo backend.
+framework: OTXAnomalyClassification v0.1.0
+
+# Hyper Parameters
+hyper_parameters:
+  base_path: ./configuration.yaml
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Computational Complexity
+gigaflops: 3.9
+size: 168.4
+
+# Model spec
+model_category: SPEED
+is_default_for_task: true
