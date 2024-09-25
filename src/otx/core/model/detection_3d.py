@@ -47,6 +47,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         torch_compile: bool = False,
         score_threshold: float = 0.2,
     ) -> None:
+        """Initialize the 3d detection model."""
         self.model_name = model_name
         self.score_threshold = score_threshold
         super().__init__(
@@ -59,6 +60,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         )
 
     def _create_model(self) -> nn.Module:
+        """Creates the model."""
         detector = self._build_model(num_classes=self.label_info.num_classes)
         if hasattr(detector, "init_weights"):
             detector.init_weights()
@@ -80,7 +82,12 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         preds: Det3DBatchPredEntity,
         inputs: Det3DBatchDataEntity,
     ) -> MetricInput:
-        """Converts the prediction entity to the format required for computing metrics."""
+        """Converts the prediction entity to the format required for computing metrics.
+
+        Args:
+            preds (Det3DBatchPredEntity): Prediction entity.
+            inputs (Det3DBatchDataEntity): Input data entity.
+        """
         boxes = preds.boxes_3d
         # bbox 2d decoding
         xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
@@ -137,7 +144,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
     @staticmethod
     def _decode_detections_for_kitti_format(
-        self,
         dets: np.ndarray,
         img_size: np.ndarray,
         calib_matrix: list[np.ndarray],
@@ -146,18 +152,15 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     ) -> list[dict[str, np.ndarray]]:
         """Decode the detection results for KITTI format."""
 
-        def get_heading_angle(heading):
+        def _get_heading_angle(heading: np.ndarray) -> np.ndarray:
+            """Get heading angle from the prediction."""
             heading_bin, heading_res = heading[0:12], heading[12:24]
             cls = np.argmax(heading_bin)
             res = heading_res[cls]
             return class2angle(cls, res, to_label_format=True)
 
-        def alpha2ry(calib_matrix, alpha, u):
-            """Get rotation_y by alpha + theta - 180
-            alpha : Observation angle of object, ranging [-pi..pi]
-            x : Object center x to the camera center (x-W/2), in pixels
-            rotation_y : Rotation ry around Y-axis in camera coordinates [-pi..pi]
-            """
+        def _alpha2ry(calib_matrix: np.ndarray, alpha: np.ndarray, u: np.ndarray) -> np.ndarray:
+            """Get rotation_y by alpha + theta - 180."""
             cu = calib_matrix[0, 2]
             fu = calib_matrix[0, 0]
 
@@ -170,12 +173,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
             return ry
 
-        def img_to_rect(calib_matrix, u, v, depth_rect):
-            """:param u: (N)
-            :param v: (N)
-            :param depth_rect: (N)
-            :return:
-            """
+        def _img_to_rect(calib_matrix: np.ndarray, u: np.ndarray, v: np.ndarray, depth_rect: np.ndarray) -> np.ndarray:
+            """Transform image coordinates to the rectangle coordinates."""
             cu = calib_matrix[0, 2]
             cv = calib_matrix[1, 2]
             fu = calib_matrix[0, 0]
@@ -220,13 +219,13 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 # positions decoding
                 x3d = dets[i, j, 34] * img_size[i][0]
                 y3d = dets[i, j, 35] * img_size[i][1]
-                location = img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
+                location = _img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
                 location[1] += dimension[0] / 2
 
                 # heading angle decoding
                 alpha = dets[i, j, 7:31]
-                alpha = get_heading_angle(dets[i, j, 7:31])
-                ry = alpha2ry(calib_matrix[i], alpha, x)
+                alpha = _get_heading_angle(dets[i, j, 7:31])
+                ry = _alpha2ry(calib_matrix[i], alpha, x)
 
                 score = score * dets[i, j, -1]
 
@@ -301,4 +300,4 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
     def forward_for_tracing(self, image: torch.Tensor, calib_matrix: torch.Tensor) -> dict[str, torch.Tensor]:
         """Model forward function used for the model tracing during model exportation."""
-        return self.model.forward(inputs=image, mode="tensor")
+        return self.model.forward(image, calib_matrix, mode="tensor")

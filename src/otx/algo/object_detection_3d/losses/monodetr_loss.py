@@ -33,6 +33,9 @@ class MonoDETRCriterion(nn.Module):
         self.num_classes = num_classes
         self.matcher = HungarianMatcher3D(cost_class=2, cost_3dcenter=10, cost_bbox=5, cost_giou=2)
         self.weight_dict = weight_dict
+        for name in self.loss_map:
+            if name not in self.weight_dict:
+                self.weight_dict[name] = 1
         self.focal_alpha = focal_alpha
         self.ddn_loss = DDNLoss()  # for depth map
         self.group_num = group_num
@@ -79,7 +82,7 @@ class MonoDETRCriterion(nn.Module):
         return losses
 
     def loss_boxes(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
-        """Compute the losses related to the bounding boxes, the depth, the dimensions and the angles."""
+        """Compute l1 loss."""
         idx = self._get_src_permutation_idx(indices)
         src_2dboxes = outputs["pred_boxes"][:, :, 2:6][idx]
         target_2dboxes = torch.cat([t["boxes_3d"][:, 2:6][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -88,8 +91,13 @@ class MonoDETRCriterion(nn.Module):
         loss_bbox = F.l1_loss(src_2dboxes, target_2dboxes, reduction="none")
         losses = {}
         losses["loss_bbox"] = loss_bbox.sum() / num_boxes
+        return losses
 
+    def loss_giou(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
+        """Compute the GIoU loss."""
         # giou
+        idx = self._get_src_permutation_idx(indices)
+        losses = {}
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes_3d"][i] for t, (_, i) in zip(targets, indices)], dim=0)
         loss_giou = 1 - torch.diag(
@@ -162,7 +170,7 @@ class MonoDETRCriterion(nn.Module):
         losses["loss_angle"] = angle_loss.sum() / num_boxes
         return losses
 
-    def loss_depth_map(self, outputs: dict, targets: list) -> dict:
+    def loss_depth_map(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict:
         """Depth map loss."""
         depth_map_logits = outputs["pred_depth_map_logits"]
 
@@ -200,13 +208,14 @@ class MonoDETRCriterion(nn.Module):
     @property
     def loss_map(self):
         return {
-            "labels": self.loss_labels,
-            "boxes": self.loss_boxes,
-            "depths": self.loss_depths,
-            "dims": self.loss_dims,
-            "angles": self.loss_angles,
-            "center": self.loss_3dcenter,
-            "depth_map": self.loss_depth_map,
+            "loss_ce": self.loss_labels,
+            "loss_bbox": self.loss_boxes,
+            "loss_giou": self.loss_giou,
+            "loss_depth": self.loss_depths,
+            "loss_dim": self.loss_dims,
+            "loss_angle": self.loss_angles,
+            "loss_center": self.loss_3dcenter,
+            "loss_depth_map": self.loss_depth_map,
         }
 
     def forward(self, outputs: dict[str, torch.Tensor], targets: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
@@ -235,22 +244,18 @@ class MonoDETRCriterion(nn.Module):
             # ipdb.set_trace()
             losses.update(loss(outputs, targets, indices, num_boxes))
 
+        losses = {k: losses[k] * self.weight_dict[k] for k in losses.keys()}
+
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets, group_num=group_num)
                 for name, loss in self.loss_map.items():
-                    if name == "depth_map":
+                    if name == "loss_depth_map":
                         # Intermediate masks losses are too costly to compute, we ignore them.
                         continue
-                    kwargs = {}
-                    if name == "labels":
-                        # Logging is enabled only for the last layer
-                        kwargs = {"log": False}
-                    l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)
-                    l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
+                    l_dict = loss(aux_outputs, targets, indices, num_boxes)
+                    l_dict = {k + f"_aux_{i}": v * self.weight_dict[k] for k, v in l_dict.items()}
                     losses.update(l_dict)
 
-        # TODO (KIRILL): refactor
-        losses_weighted = {k: losses[k] * self.weight_dict[k] for k in losses.keys() if k in self.weight_dict}
-        return losses_weighted
+        return losses

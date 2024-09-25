@@ -1,3 +1,6 @@
+# flake8: noqa
+# mypy: ignore-errors
+
 import random
 import types
 

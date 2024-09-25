@@ -5,24 +5,43 @@
 
 from __future__ import annotations
 
-import torch
+import copy
 from typing import Callable
+
+import torch
 import torch.nn.functional as F
 from torch import nn
-import copy
 
-def _get_clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
+
+def _get_clones(module: nn.Module, N: int) -> nn.ModuleList:
+    return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self, encoder_layer, num_layers, norm=None):
+    def __init__(self, encoder_layer: nn.Module, num_layers: int, norm: nn.Module = None) -> None:
+        """Initialize the TransformerEncoder.
+
+        Args:
+            encoder_layer (nn.Module): The encoder layer module.
+            num_layers (int): The number of encoder layers.
+            norm (nn.Module, optional): The normalization module. Defaults to None.
+        """
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
 
-    def forward(self, src, src_key_padding_mask, pos):
+    def forward(self, src: torch.Tensor, src_key_padding_mask: torch.Tensor, pos: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the TransformerEncoder.
+
+        Args:
+            src (torch.Tensor): The source tensor.
+            src_key_padding_mask (torch.Tensor): The mask for source key padding.
+            pos (torch.Tensor): The positional encoding tensor.
+
+        Returns:
+            torch.Tensor: The output tensor.
+        """
         output = src
 
         for layer in self.layers:
@@ -35,7 +54,23 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
-    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation: Callable[..., nn.Module] = nn.ReLU,):
+    def __init__(
+        self,
+        d_model: int,
+        nhead: int,
+        dim_feedforward: int = 2048,
+        dropout: float = 0.1,
+        activation: Callable[..., nn.Module] = nn.ReLU,
+    ) -> None:
+        """Initialize the TransformerEncoderLayer.
+
+        Args:
+            d_model (int): The dimension of the input feature.
+            nhead (int): The number of attention heads.
+            dim_feedforward (int, optional): The dimension of the feedforward network. Defaults to 2048.
+            dropout (float, optional): The dropout rate. Defaults to 0.1.
+            activation (Callable[..., nn.Module], optional): The activation function. Defaults to nn.ReLU.
+        """
         super().__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # self.self_attn = LinearAttention(d_model, nhead, dropout=dropout)
@@ -51,11 +86,30 @@ class TransformerEncoderLayer(nn.Module):
 
         self.activation = activation()
 
-    def with_pos_embed(self, tensor, pos):
+    def _with_pos_embed(self, tensor: torch.Tensor, pos: torch.Tensor) -> torch.Tensor:
         return tensor if pos is None else tensor + pos
 
-    def forward(self, src, src_key_padding_mask, pos):
-        q = k = self.with_pos_embed(src, pos)
+    def forward(
+        self,
+        src: torch.Tensor,
+        src_key_padding_mask: torch.Tensor,
+        pos: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Forward pass of the TransformerEncoderLayer.
+
+        Args:
+            src (torch.Tensor): The source tensor.
+            src_key_padding_mask (torch.Tensor): The mask for source key padding.
+            pos (torch.Tensor): The positional encoding tensor.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The output tensors.
+                - depth_logits: The depth logits tensor.
+                - depth_embed: The depth embedding tensor.
+                - weighted_depth: The weighted depth tensor.
+                - depth_pos_embed_ip: The interpolated depth positional embedding tensor.
+        """
+        q = k = self._with_pos_embed(src, pos)
         src2 = self.self_attn(q, k, value=src, key_padding_mask=src_key_padding_mask)[0]
         src = src + self.dropout1(src2)
         src = self.norm1(src)
@@ -66,10 +120,14 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class DepthPredictor(nn.Module):
-    def __init__(self, depth_num_bins, depth_min, depth_max, hidden_dim):
-        """Initialize depth predictor and depth encoder
+    def __init__(self, depth_num_bins: int, depth_min: float, depth_max: float, hidden_dim: int) -> None:
+        """Initialize depth predictor and depth encoder.
+
         Args:
-            model_cfg [EasyDict]: Depth classification network config
+            depth_num_bins (int): The number of depth bins.
+            depth_min (float): The minimum depth value.
+            depth_max (float): The maximum depth value.
+            hidden_dim (int): The dimension of the hidden layer.
         """
         super().__init__()
         self.depth_max = depth_max
@@ -106,8 +164,26 @@ class DepthPredictor(nn.Module):
 
         self.depth_pos_embed = nn.Embedding(int(self.depth_max) + 1, 256)
 
-    def forward(self, feature, mask, pos):
+    def forward(
+        self,
+        feature: list[torch.Tensor],
+        mask: torch.Tensor,
+        pos: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Forward pass of the DepthPredictor.
 
+        Args:
+            feature (List[torch.Tensor]): The list of input feature tensors.
+            mask (torch.Tensor): The mask tensor.
+            pos (torch.Tensor): The positional tensor.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The output tensors.
+                - depth_logits: The depth logits tensor.
+                - depth_embed: The depth embedding tensor.
+                - weighted_depth: The weighted depth tensor.
+                - depth_pos_embed_ip: The interpolated depth positional embedding tensor.
+        """
         # foreground depth map
         src_16 = self.proj(feature[1])
         src_32 = self.upsample(F.interpolate(feature[2], size=src_16.shape[-2:], mode="bilinear"))
@@ -132,13 +208,30 @@ class DepthPredictor(nn.Module):
 
         return depth_logits, depth_embed, weighted_depth, depth_pos_embed_ip
 
-    def interpolate_depth_embed(self, depth):
+    def interpolate_depth_embed(self, depth: torch.Tensor) -> torch.Tensor:
+        """Interpolate depth embeddings based on depth values.
+
+        Args:
+            depth (torch.Tensor): The depth tensor.
+
+        Returns:
+            torch.Tensor: The interpolated depth embeddings.
+        """
         depth = depth.clamp(min=0, max=self.depth_max)
         pos = self.interpolate_1d(depth, self.depth_pos_embed)
         pos = pos.permute(0, 3, 1, 2)
         return pos
 
-    def interpolate_1d(self, coord, embed):
+    def interpolate_1d(self, coord: torch.Tensor, embed: nn.Embedding) -> torch.Tensor:
+        """Interpolate 1D embeddings based on coordinates.
+
+        Args:
+            coord (torch.Tensor): The coordinate tensor.
+            embed (nn.Embedding): The embedding module.
+
+        Returns:
+            torch.Tensor: The interpolated embeddings.
+        """
         floor_coord = coord.floor()
         delta = (coord - floor_coord).unsqueeze(-1)
         floor_coord = floor_coord.long()

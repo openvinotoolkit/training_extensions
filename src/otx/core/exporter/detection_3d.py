@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for visual prompting model exporter used in OTX."""
+"""Class definition for object detection 3D model exporter used in OTX."""
 
 from __future__ import annotations
 
@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
 
 class OTXObjectDetection3DExporter(OTXNativeModelExporter):
+    """Class definition for object detection 3D model exporter used in OTX."""
+
     def to_openvino(
         self,
         model: OTXModel,

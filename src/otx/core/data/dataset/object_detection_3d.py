@@ -6,11 +6,10 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable, List, Union
+from typing import TYPE_CHECKING, Callable, List, Union
 
 import numpy as np
 import torch
-from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
@@ -20,6 +19,9 @@ from otx.core.types.label import LabelInfo
 from torchvision import tv_tensors
 
 from .base import OTXDataset
+
+if TYPE_CHECKING:
+    from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 
 Transforms = Union[Compose, Callable, List[Callable], dict[str, Compose | Callable | List[Callable]]]
 
@@ -50,7 +52,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
         inputs, calib_entity, targets, info, objects = self.dm_subset[index]
-        entity = Det3DDataEntity(
+        return Det3DDataEntity(
             image=torch.tensor(inputs),
             img_info=ImageInfo(
                 img_idx=index,
@@ -77,8 +79,6 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
             ),
             kitti_label_object=objects,
         )
-
-        return entity
 
     @property
     def collate_fn(self) -> Callable:

@@ -55,7 +55,7 @@ class OTXDataModule(LightningDataModule):
             a model requries multiple of specific value as input_size. Defaults to 1.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, C901
         self,
         task: OTXTaskType,
         data_format: str,

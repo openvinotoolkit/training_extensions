@@ -2,17 +2,19 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """MonoDetr core Pytorch detector."""
+from __future__ import annotations
 
 import copy
 import math
+from typing import Any
 
 import torch
 import torch.nn.functional as F
-from torch import nn
+from torch import Tensor, nn
 
-from otx.algo.object_detection_3d.utils.utils import NestedTensor
 from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MLP
+from otx.algo.object_detection_3d.utils.utils import NestedTensor
 
 
 def _get_clones(module, N):
@@ -24,31 +26,39 @@ class MonoDETR(nn.Module):
 
     def __init__(
         self,
-        backbone,
-        depthaware_transformer,
-        depth_predictor,
-        criterion,
-        num_classes,
-        num_queries,
-        num_feature_levels,
-        aux_loss=True,
-        with_box_refine=False,
-        two_stage=False,
-        init_box=False,
-        use_dab=False,
-        group_num=11,
-        two_stage_dino=False,
+        backbone: nn.Module,
+        depthaware_transformer: nn.Module,
+        depth_predictor: nn.Module,
+        criterion: nn.Module,
+        num_classes: int,
+        num_queries: int,
+        num_feature_levels: int,
+        aux_loss: bool = True,
+        with_box_refine: bool = False,
+        two_stage: bool = False,
+        init_box: bool = False,
+        use_dab: bool = False,
+        group_num: int = 11,
+        two_stage_dino: bool = False,
     ):
         """Initializes the model.
-        Parameters:
+
+        Args:
             backbone: torch module of the backbone to be used. See backbone.py
             depthaware_transformer: depth-aware transformer architecture. See depth_aware_transformer.py
+            depth_predictor: depth predictor module
+            criterion: loss criterion module
             num_classes: number of object classes
             num_queries: number of object queries, ie detection slot. This is the maximal number of objects
                          DETR can detect in a single image. For KITTI, we recommend 50 queries.
+            num_feature_levels: number of feature levels
             aux_loss: True if auxiliary decoding losses (loss at each decoder layer) are to be used.
             with_box_refine: iterative bounding box refinement
             two_stage: two-stage MonoDETR
+            init_box: True if the bounding box embedding layers should be initialized to zero
+            use_dab: True if depth-aware bounding box embedding is to be used
+            group_num: number of groups for depth-aware bounding box embedding
+            two_stage_dino: True if two-stage MonoDETR with DINO is to be used
         """
         super().__init__()
 
@@ -166,15 +176,23 @@ class MonoDETR(nn.Module):
             for box_embed in self.bbox_embed:
                 nn.init.constant_(box_embed.layers[-1].bias.data[2:], 0.0)
 
-    def forward(self, images, calibs=None, targets=None, img_sizes=None, dn_args=None, mode="predict"):
+    def forward(
+        self,
+        images: list[Tensor],
+        calibs: list[Tensor] | None = None,
+        targets: list[dict[str, Tensor]] | None = None,
+        img_sizes: list[Tensor] | None = None,
+        mode: str = "predict",
+    ) -> dict[str, Tensor] | Any:
         """Forward method of the MonoDETR model.
 
         Args:
             images (list[Tensor]): images for each sample
             calibs (list[Tensor]): camera matrices for each sample
-            targets (list[Dict[Tensor]): ground truth boxes and labels for each
+            targets (list[dict[Tensor]): ground truth boxes and labels for each
                 sample
             img_sizes (list[Tensor]): image sizes for each sample
+            mode (str): The mode of operation. Defaults to "predict".
         """
         features, pos = self.backbone(images)
 
@@ -337,7 +355,14 @@ class MonoDETR(nn.Module):
         return out
 
     @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord, outputs_3d_dim, outputs_angle, outputs_depth):
+    def _set_aux_loss(
+        self,
+        outputs_class: Tensor,
+        outputs_coord: Tensor,
+        outputs_3d_dim: Tensor,
+        outputs_angle: Tensor,
+        outputs_depth: Tensor,
+    ) -> dict[str, Tensor]:
         # this is a workaround to make torchscript happy, as torchscript
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.

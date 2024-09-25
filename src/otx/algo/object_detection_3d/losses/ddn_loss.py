@@ -14,8 +14,16 @@ from .balancer import Balancer
 
 
 class DDNLoss(nn.Module):
-    def __init__(self, alpha=0.25, gamma=2.0, fg_weight=13, bg_weight=1, downsample_factor=1):
+    def __init__(
+        self,
+        alpha: float = 0.25,
+        gamma: float = 2.0,
+        fg_weight: float = 13,
+        bg_weight: float = 1,
+        downsample_factor: int = 1,
+    ) -> None:
         """Initializes DDNLoss module
+
         Args:
             weight [float]: Loss function weight
             alpha [float]: Alpha value for Focal Loss
@@ -33,7 +41,21 @@ class DDNLoss(nn.Module):
         self.gamma = gamma
         self.loss_func = FocalLoss(alpha=self.alpha, gamma=self.gamma, reduction="none")
 
-    def build_target_depth_from_3dcenter(self, depth_logits, gt_boxes2d, gt_center_depth, num_gt_per_img):
+    def build_target_depth_from_3dcenter(
+        self,
+        depth_logits: torch.Tensor,
+        gt_boxes2d: torch.Tensor,
+        gt_center_depth: torch.Tensor,
+        num_gt_per_img: int,
+    ) -> torch.Tensor:
+        """Builds target depth map from 3D center depth
+
+        Args:
+            depth_logits: torch.Tensor(B, D+1, H, W)]: Predicted depth logits
+            gt_boxes2d [torch.Tensor (B, N, 4)]: 2D box labels for foreground/background balancing
+            gt_center_depth [torch.Tensor(B, N)]: 3D center depth
+            num_gt_per_img: [int]: Number of ground truth boxes per image
+        """
         B, _, H, W = depth_logits.shape
         depth_maps = torch.zeros((B, H, W), device=depth_logits.device, dtype=depth_logits.dtype)
 
@@ -56,8 +78,17 @@ class DDNLoss(nn.Module):
 
         return depth_maps
 
-    def bin_depths(self, depth_map, mode="LID", depth_min=1e-3, depth_max=60, num_bins=80, target=False):
-        """Converts depth map into bin indices
+    def bin_depths(
+        self,
+        depth_map: torch.Tensor,
+        mode: str = "LID",
+        depth_min: float = 1e-3,
+        depth_max: float = 60,
+        num_bins: int = 80,
+        target: bool = False,
+    ) -> torch.Tensor:
+        """Converts depth map into bin indices.
+
         Args:
             depth_map [torch.Tensor(H, W)]: Depth Map
             mode [string]: Discretiziation mode (See https://arxiv.org/pdf/2005.13423.pdf for more details)
@@ -68,6 +99,7 @@ class DDNLoss(nn.Module):
             depth_max [float]: Maximum depth value
             num_bins [int]: Number of depth bins
             target [bool]: Whether the depth bins indices will be used for a target tensor in loss comparison
+
         Returns:
             indices [torch.Tensor(H, W)]: Depth bin indices
         """
@@ -96,7 +128,13 @@ class DDNLoss(nn.Module):
 
         return indices
 
-    def forward(self, depth_logits, gt_boxes2d, num_gt_per_img, gt_center_depth):
+    def forward(
+        self,
+        depth_logits: torch.Tensor,
+        gt_boxes2d: torch.Tensor,
+        num_gt_per_img: int,
+        gt_center_depth: torch.Tensor,
+    ) -> torch.Tensor:
         """Gets depth_map loss
         Args:
             depth_logits: torch.Tensor(B, D+1, H, W)]: Predicted depth logits

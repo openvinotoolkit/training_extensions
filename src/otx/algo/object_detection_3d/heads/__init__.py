@@ -6,5 +6,4 @@
 from .depth_predictor import DepthPredictor
 from .depthaware_transformer import DepthAwareTransformerBuilder
 
-
 __all__ = ["DepthPredictor", "DepthAwareTransformerBuilder"]

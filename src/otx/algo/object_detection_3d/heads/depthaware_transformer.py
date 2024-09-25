@@ -2,23 +2,30 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """depth aware transformer head for 3d object detection."""
+from __future__ import annotations
 
-import copy
 import math
-from typing import Any, ClassVar, Callable
+from typing import Any, Callable, ClassVar
 
 import torch
-import torch.nn.functional as F
-from torch import nn
+from torch import Tensor, nn
 from torch.nn.init import constant_, normal_, xavier_uniform_
 
-from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention, MLP
+from otx.algo.detection.heads.rtdetr_decoder import MLP, MSDeformableAttention
 from otx.algo.detection.utils.utils import inverse_sigmoid
 
+from .depth_predictor import _get_clones
 
-def gen_sineembed_for_position(pos_tensor):
-    # n_query, bs, _ = pos_tensor.size()
-    # sineembed_tensor = torch.zeros(n_query, bs, 256)
+
+def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
+    """Generate sine embeddings for position tensor.
+
+    Args:
+        pos_tensor (Tensor): Position tensor of shape (n_query, bs, num_dims).
+
+    Returns:
+        Tensor: Sine embeddings for position tensor of shape (n_query, bs, embedding_dim).
+    """
     scale = 2 * math.pi
     dim_t = torch.arange(128, dtype=torch.float32, device=pos_tensor.device)
     dim_t = 10000 ** (2 * (dim_t // 2) / 128)
@@ -58,23 +65,43 @@ def gen_sineembed_for_position(pos_tensor):
 class DepthAwareTransformer(nn.Module):
     def __init__(
         self,
-        d_model=256,
-        nhead=8,
-        num_encoder_layers=6,
-        num_decoder_layers=6,
-        dim_feedforward=1024,
-        dropout=0.1,
+        d_model: int = 256,
+        nhead: int = 8,
+        num_encoder_layers: int = 6,
+        num_decoder_layers: int = 6,
+        dim_feedforward: int = 1024,
+        dropout: float = 0.1,
         activation: Callable[..., nn.Module] = nn.ReLU,
-        return_intermediate_dec=False,
-        num_feature_levels=4,
-        dec_n_points=4,
-        enc_n_points=4,
-        two_stage=False,
-        two_stage_num_proposals=50,
-        group_num=11,
-        use_dab=False,
-        two_stage_dino=False,
-    ):
+        return_intermediate_dec: bool = False,
+        num_feature_levels: int = 4,
+        dec_n_points: int = 4,
+        enc_n_points: int = 4,
+        two_stage: bool = False,
+        two_stage_num_proposals: int = 50,
+        group_num: int = 11,
+        use_dab: bool = False,
+        two_stage_dino: bool = False,
+    ) -> None:
+        """Initialize the DepthAwareTransformer module.
+
+        Args:
+            d_model (int): The dimension of the input and output feature vectors.
+            nhead (int): The number of attention heads.
+            num_encoder_layers (int): The number of encoder layers.
+            num_decoder_layers (int): The number of decoder layers.
+            dim_feedforward (int): The dimension of the feedforward network.
+            dropout (float): The dropout rate.
+            activation (Callable[..., nn.Module]): The activation function.
+            return_intermediate_dec (bool): Whether to return intermediate decoder outputs.
+            num_feature_levels (int): The number of feature levels.
+            dec_n_points (int): The number of points for the decoder attention.
+            enc_n_points (int): The number of points for the encoder attention.
+            two_stage (bool): Whether to use two-stage training.
+            two_stage_num_proposals (int): The number of proposals for the two-stage training.
+            group_num (int): The number of groups for the two-stage training.
+            use_dab (bool): Whether to use depth-aware attention.
+            two_stage_dino (bool): Whether to use two-stage training with DINO.
+        """
         super().__init__()
 
         self.d_model = d_model
@@ -137,6 +164,7 @@ class DepthAwareTransformer(nn.Module):
         self._reset_parameters()
 
     def _reset_parameters(self):
+        """Reset parameters of the model."""
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
@@ -148,47 +176,69 @@ class DepthAwareTransformer(nn.Module):
             constant_(self.reference_points.bias.data, 0.0)
         normal_(self.level_embed)
 
-    def get_proposal_pos_embed(self, proposals):
+    def get_proposal_pos_embed(self, proposals: Tensor) -> Tensor:
+        """Generate position embeddings for proposal tensor.
+
+        Args:
+            proposals (Tensor): Proposal tensor of shape (N, L, 6).
+
+        Returns:
+            Tensor: Position embeddings for proposal tensor of shape (N, L, embedding_dim).
+        """
         num_pos_feats = 128
         temperature = 10000
         scale = 2 * math.pi
 
         dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=proposals.device)
         dim_t = temperature ** (2 * (dim_t // 2) / num_pos_feats)
-        # N, L, 4
+        # N, L, 6
         proposals = proposals.sigmoid() * scale
-        # N, L, 4, 128
+        # N, L, 6, 128
         pos = proposals[:, :, :, None] / dim_t
-        # N, L, 4, 64, 2
+        # N, L, 6, 64, 2
         pos = torch.stack((pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4).flatten(2)
         return pos
 
-    def gen_encoder_output_proposals(self, memory, memory_padding_mask, spatial_shapes):
-        N_, S_, C_ = memory.shape
-        base_scale = 4.0
+    def gen_encoder_output_proposals(
+        self,
+        memory: Tensor,
+        memory_padding_mask: Tensor,
+        spatial_shapes: list[tuple[int, int]],
+    ) -> tuple[Tensor, Tensor]:
+        """Generate encoder output and proposals.
+
+        Args:
+            memory (Tensor): Memory tensor of shape (N, S, C).
+            memory_padding_mask (Tensor): Memory padding mask tensor of shape (N, S).
+            spatial_shapes (List[Tuple[int, int]]): List of spatial shapes.
+
+        Returns:
+            Tuple[Tensor, Tensor]: Encoder output tensor of shape (N, S, C) and proposals tensor of shape (N, L, 6).
+        """
+        n_, _, _ = memory.shape
         proposals = []
         _cur = 0
-        for lvl, (H_, W_) in enumerate(spatial_shapes):
-            mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H_ * W_)].view(N_, H_, W_, 1)
-            valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
-            valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
+        for lvl, (h_, w_) in enumerate(spatial_shapes):
+            mask_flatten_ = memory_padding_mask[:, _cur : (_cur + h_ * w_)].view(n_, h_, w_, 1)
+            valid_h = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
+            valid_w = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
 
             grid_y, grid_x = torch.meshgrid(
-                torch.linspace(0, H_ - 1, H_, dtype=torch.float32, device=memory.device),
-                torch.linspace(0, W_ - 1, W_, dtype=torch.float32, device=memory.device),
+                torch.linspace(0, h_ - 1, h_, dtype=torch.float32, device=memory.device),
+                torch.linspace(0, w_ - 1, w_, dtype=torch.float32, device=memory.device),
             )
             grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
 
-            scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(N_, 1, 1, 2)
-            grid = (grid.unsqueeze(0).expand(N_, -1, -1, -1) + 0.5) / scale
+            scale = torch.cat([valid_w.unsqueeze(-1), valid_h.unsqueeze(-1)], 1).view(n_, 1, 1, 2)
+            grid = (grid.unsqueeze(0).expand(n_, -1, -1, -1) + 0.5) / scale
 
             lr = torch.ones_like(grid) * 0.05 * (2.0**lvl)
             tb = torch.ones_like(grid) * 0.05 * (2.0**lvl)
             wh = torch.cat((lr, tb), -1)
 
-            proposal = torch.cat((grid, wh), -1).view(N_, -1, 6)
+            proposal = torch.cat((grid, wh), -1).view(n_, -1, 6)
             proposals.append(proposal)
-            _cur += H_ * W_
+            _cur += h_ * w_
         output_proposals = torch.cat(proposals, 1)
         output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(-1, keepdim=True)
         output_proposals = torch.log(output_proposals / (1 - output_proposals))
@@ -201,25 +251,47 @@ class DepthAwareTransformer(nn.Module):
         output_memory = self.enc_output_norm(self.enc_output(output_memory))
         return output_memory, output_proposals
 
-    def get_valid_ratio(self, mask):
-        _, H, W = mask.shape
+    def get_valid_ratio(self, mask: Tensor) -> Tensor:
+        """Calculate the valid ratio of the mask.
+
+        Args:
+            mask (Tensor): The mask tensor.
+
+        Returns:
+            Tensor: The valid ratio tensor.
+        """
+        _, h, w = mask.shape
         valid_H = torch.sum(~mask[:, :, 0], 1)
         valid_W = torch.sum(~mask[:, 0, :], 1)
-        valid_ratio_h = valid_H.float() / H
-        valid_ratio_w = valid_W.float() / W
+        valid_ratio_h = valid_H.float() / h
+        valid_ratio_w = valid_W.float() / w
         valid_ratio = torch.stack([valid_ratio_w, valid_ratio_h], -1)
         return valid_ratio
 
     def forward(
         self,
-        srcs,
-        masks,
-        pos_embeds,
-        query_embed=None,
-        depth_pos_embed=None,
-        depth_pos_embed_ip=None,
-        attn_mask=None,
-    ):
+        srcs: list[Tensor],
+        masks: list[Tensor],
+        pos_embeds: list[Tensor],
+        query_embed: Tensor | None = None,
+        depth_pos_embed: Tensor | None = None,
+        depth_pos_embed_ip: Tensor | None = None,
+        attn_mask: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor | None, Tensor | None]:
+        """Forward pass of the DepthAwareTransformer module.
+
+        Args:
+            srcs (List[Tensor]): List of source tensors.
+            masks (List[Tensor]): List of mask tensors.
+            pos_embeds (List[Tensor]): List of position embedding tensors.
+            query_embed (Tensor | None): Query embedding tensor. Defaults to None.
+            depth_pos_embed (Tensor | None): Depth position embedding tensor. Defaults to None.
+            depth_pos_embed_ip (Tensor | None): Depth position embedding IP tensor. Defaults to None.
+            attn_mask (Tensor | None): Attention mask tensor. Defaults to None.
+
+        Returns:
+            Tuple[Tensor, Tensor, Tensor, Tensor, Tensor | None, Tensor | None]: Tuple containing the output tensors.
+        """
         # prepare input for encoder
         src_flatten = []
         mask_flatten = []
@@ -265,8 +337,6 @@ class DepthAwareTransformer(nn.Module):
             # hack implementation for two-stage Deformable DETR
             enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
             enc_outputs_coord_unact = self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-            # enc_outputs_class = self.decoder.class_embed(output_memory)
-            # enc_outputs_coord_unact = self.decoder.bbox_embed(output_memory) + output_proposals
             topk = self.two_stage_num_proposals
             ####share_end
             topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
@@ -369,7 +439,27 @@ class DepthAwareTransformer(nn.Module):
 
 
 class VisualEncoderLayer(nn.Module):
-    def __init__(self, d_model=256, d_ffn=1024, dropout=0.1, activation: Callable[..., nn.Module] = nn.ReLU, n_levels=4, n_heads=8, n_points=4):
+    def __init__(
+        self,
+        d_model: int = 256,
+        d_ffn: int = 1024,
+        dropout: float = 0.1,
+        activation: Callable[..., nn.Module] = nn.ReLU,
+        n_levels: int = 4,
+        n_heads: int = 8,
+        n_points: int = 4,
+    ) -> None:
+        """Initialize the DepthAwareDecoderLayer.
+
+        Args:
+            d_model (int): The input and output dimension of the layer. Defaults to 256.
+            d_ffn (int): The hidden dimension of the feed-forward network. Defaults to 1024.
+            dropout (float): The dropout rate. Defaults to 0.1.
+            activation (Callable[..., nn.Module]): The activation function. Defaults to nn.ReLU.
+            n_levels (int): The number of feature levels. Defaults to 4.
+            n_heads (int): The number of attention heads. Defaults to 8.
+            n_points (int): The number of sampling points for the MSDeformableAttention. Defaults to 4.
+        """
         super().__init__()
 
         # self attention
@@ -386,18 +476,55 @@ class VisualEncoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(d_model)
 
     @staticmethod
-    def with_pos_embed(tensor, pos):
+    def with_pos_embed(tensor: Tensor, pos: Tensor | None) -> Tensor:
+        """Add position embedding to the input tensor.
+
+        Args:
+            tensor (Tensor): The input tensor.
+            pos (Tensor | None): The position embedding tensor. Defaults to None.
+
+        Returns:
+            Tensor: The tensor with position embedding added.
+        """
         return tensor if pos is None else tensor + pos
 
-    def forward_ffn(self, src):
+    def forward_ffn(self, src: Tensor) -> Tensor:
+        """Forward pass of the ffn.
+
+        Args:
+            src (Tensor): The input tensor.
+
+        Returns:
+            Tensor: The output tensor.
+        """
         src2 = self.linear2(self.dropout2(self.activation(self.linear1(src))))
         src = src + self.dropout3(src2)
         src = self.norm2(src)
         return src
 
-    def forward(self, src, pos, reference_points, spatial_shapes, level_start_index, padding_mask=None):
+    def forward(
+        self,
+        src: Tensor,
+        pos: Tensor,
+        reference_points: Tensor,
+        spatial_shapes: list[tuple[int, int]],
+        level_start_index: Tensor,
+        padding_mask: Tensor | None = None,
+    ) -> Tensor:
+        """Forward pass of the VisualEncoderLayer.
+
+        Args:
+            src (Tensor): The input tensor.
+            pos (Tensor): The position embedding tensor.
+            reference_points (Tensor): The reference points tensor.
+            spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            level_start_index (Tensor): The level start index tensor.
+            padding_mask (Optional[Tensor]): The padding mask tensor. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+        """
         # self attention
-        # src2 = self.self_attn(self.with_pos_embed(src, pos), reference_points, src, spatial_shapes, level_start_index, padding_mask)
         src2 = self.self_attn(self.with_pos_embed(src, pos), reference_points, src, spatial_shapes, padding_mask)
         src = src + self.dropout1(src2)
         src = self.norm1(src)
@@ -409,21 +536,41 @@ class VisualEncoderLayer(nn.Module):
 
 
 class VisualEncoder(nn.Module):
-    def __init__(self, encoder_layer, num_layers):
+    def __init__(self, encoder_layer: nn.Module, num_layers: int):
+        """Initialize the DepthAwareDecoder.
+
+        Args:
+            encoder_layer (nn.Module): The encoder layer module.
+            num_layers (int): The number of layers.
+        """
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
 
     @staticmethod
-    def get_reference_points(spatial_shapes, valid_ratios, device):
+    def get_reference_points(
+        spatial_shapes: list[tuple[int, int]],
+        valid_ratios: Tensor,
+        device: torch.device,
+    ) -> Tensor:
+        """Generate reference points for each spatial level.
+
+        Args:
+            spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            valid_ratios (Tensor): The tensor of valid ratios.
+            device (torch.device): The device to use.
+
+        Returns:
+            Tensor: The tensor of reference points.
+        """
         reference_points_list = []
-        for lvl, (H_, W_) in enumerate(spatial_shapes):
+        for lvl, (h_, w_) in enumerate(spatial_shapes):
             ref_y, ref_x = torch.meshgrid(
-                torch.linspace(0.5, H_ - 0.5, H_, dtype=torch.float32, device=device),
-                torch.linspace(0.5, W_ - 0.5, W_, dtype=torch.float32, device=device),
+                torch.linspace(0.5, h_ - 0.5, h_, dtype=torch.float32, device=device),
+                torch.linspace(0.5, w_ - 0.5, w_, dtype=torch.float32, device=device),
             )
-            ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * H_)
-            ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * W_)
+            ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * h_)
+            ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * w_)
             ref = torch.stack((ref_x, ref_y), -1)
             reference_points_list.append(ref)
         reference_points = torch.cat(reference_points_list, 1)
@@ -432,15 +579,30 @@ class VisualEncoder(nn.Module):
 
     def forward(
         self,
-        src,
-        spatial_shapes,
-        level_start_index,
-        valid_ratios,
-        pos=None,
-        padding_mask=None,
-        ref_token_index=None,
-        ref_token_coord=None,
-    ):
+        src: Tensor,
+        spatial_shapes: list[tuple[int, int]],
+        level_start_index: Tensor,
+        valid_ratios: Tensor,
+        pos: Tensor | None = None,
+        padding_mask: Tensor | None = None,
+        ref_token_index: int | None = None,
+        ref_token_coord: Tensor | None = None,
+    ) -> Tensor:
+        """Forward pass of the VisualEncoder module.
+
+        Args:
+            src (Tensor): The input tensor.
+            spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            level_start_index (Tensor): The level start index tensor.
+            valid_ratios (Tensor): The tensor of valid ratios.
+            pos (Tensor | None): The position embedding tensor. Defaults to None.
+            padding_mask (Tensor | None): The padding mask tensor. Defaults to None.
+            ref_token_index (int | None): The reference token index. Defaults to None.
+            ref_token_coord (Tensor | None): The reference token coordinates. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+        """
         output = src
         reference_points = self.get_reference_points(spatial_shapes, valid_ratios, device=src.device)
         for _, layer in enumerate(self.layers):
@@ -452,15 +614,27 @@ class VisualEncoder(nn.Module):
 class DepthAwareDecoderLayer(nn.Module):
     def __init__(
         self,
-        d_model=256,
-        d_ffn=1024,
-        dropout=0.1,
+        d_model: int = 256,
+        d_ffn: int = 1024,
+        dropout: float = 0.1,
         activation: Callable[..., nn.Module] = nn.ReLU,
-        n_levels=4,
-        n_heads=8,
-        n_points=4,
-        group_num=1,
-    ):
+        n_levels: int = 4,
+        n_heads: int = 8,
+        n_points: int = 4,
+        group_num: int = 1,
+    ) -> None:
+        """Initialize the DepthAwareDecoderLayer.
+
+        Args:
+            d_model (int): The input and output dimension of the layer. Defaults to 256.
+            d_ffn (int): The hidden dimension of the feed-forward network. Defaults to 1024.
+            dropout (float): The dropout rate. Defaults to 0.1.
+            activation (Callable[..., nn.Module]): The activation function. Defaults to nn.ReLU.
+            n_levels (int): The number of feature levels. Defaults to 4.
+            n_heads (int): The number of attention heads. Defaults to 8.
+            n_points (int): The number of sampling points for the MSDeformableAttention. Defaults to 4.
+            group_num (int): The number of groups for training. Defaults to 1.
+        """
         super().__init__()
 
         # cross attention
@@ -497,10 +671,27 @@ class DepthAwareDecoderLayer(nn.Module):
         self.nhead = n_heads
 
     @staticmethod
-    def with_pos_embed(tensor, pos):
+    def with_pos_embed(tensor: Tensor, pos: Tensor | None) -> Tensor:
+        """Add position embedding to the input tensor.
+
+        Args:
+            tensor (Tensor): The input tensor.
+            pos (Tensor | None): The position embedding tensor. Defaults to None.
+
+        Returns:
+            Tensor: The tensor with position embedding added.
+        """
         return tensor if pos is None else tensor + pos
 
-    def forward_ffn(self, tgt):
+    def forward_ffn(self, tgt: Tensor) -> Tensor:
+        """Forward pass of the ffn.
+
+        Args:
+            tgt (Tensor): The input tensor.
+
+        Returns:
+            Tensor: The output tensor.
+        """
         tgt2 = self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout4(tgt2)
         tgt = self.norm3(tgt)
@@ -508,23 +699,46 @@ class DepthAwareDecoderLayer(nn.Module):
 
     def forward(
         self,
-        tgt,
-        query_pos,
-        reference_points,
-        src,
-        src_spatial_shapes,
-        level_start_index,
-        src_padding_mask,
-        depth_pos_embed,
-        mask_depth,
-        bs,
-        query_sine_embed=None,
-        is_first=None,
-        depth_pos_embed_ip=None,
-        pos_embeds=None,
-        self_attn_mask=None,
-        query_pos_un=None,
-    ):
+        tgt: Tensor,
+        query_pos: Tensor,
+        reference_points: Tensor,
+        src: Tensor,
+        src_spatial_shapes: list[tuple[int, int]],
+        level_start_index: Tensor,
+        src_padding_mask: Tensor,
+        depth_pos_embed: Tensor,
+        mask_depth: Tensor,
+        bs: int,
+        query_sine_embed: Tensor | None = None,
+        is_first: bool | None = None,
+        depth_pos_embed_ip: Tensor | None = None,
+        pos_embeds: list[Tensor] | None = None,
+        self_attn_mask: Tensor | None = None,
+        query_pos_un: Tensor | None = None,
+    ) -> Tensor:
+        """Forward pass of the DepthAwareDecoder module.
+
+        Args:
+            tgt (Tensor): The input tensor.
+            query_pos (Tensor): The query position tensor.
+            reference_points (Tensor): The reference points tensor.
+            src (Tensor): The source tensor.
+            src_spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            level_start_index (Tensor): The level start index tensor.
+            src_padding_mask (Tensor): The source padding mask tensor.
+            depth_pos_embed (Tensor): The depth position embedding tensor.
+            mask_depth (Tensor): The depth mask tensor.
+            bs (int): The batch size.
+            query_sine_embed (Tensor | None): The query sine embedding tensor. Defaults to None.
+            is_first (bool | None): Whether it is the first iteration. Defaults to None.
+            depth_pos_embed_ip (Tensor | None): The depth position embedding tensor for the iterative process. Defaults to None.
+            pos_embeds (List[Tensor] | None): The list of position embedding tensors. Defaults to None.
+            self_attn_mask (Tensor | None): The self-attention mask tensor. Defaults to None.
+            query_pos_un (Tensor | None): The unnormalized query position tensor. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+        """
         # depth cross attention
         tgt2 = self.cross_attn_depth(
             tgt.transpose(0, 1),
@@ -577,9 +791,6 @@ class DepthAwareDecoderLayer(nn.Module):
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
 
-        # tgt2 = self.cross_attn(self.with_pos_embed(tgt, query_pos),
-        #                        reference_points,
-        #                        src, src_spatial_shapes, level_start_index, src_padding_mask)
         tgt2 = self.cross_attn(
             self.with_pos_embed(tgt, query_pos),
             reference_points,
@@ -599,13 +810,23 @@ class DepthAwareDecoderLayer(nn.Module):
 class DepthAwareDecoder(nn.Module):
     def __init__(
         self,
-        decoder_layer,
-        num_layers,
-        return_intermediate=False,
-        d_model=None,
-        use_dab=False,
-        two_stage_dino=False,
-    ):
+        decoder_layer: nn.Module,
+        num_layers: int,
+        return_intermediate: bool = False,
+        d_model: int | None = None,
+        use_dab: bool = False,
+        two_stage_dino: bool = False,
+    ) -> None:
+        """Initialize the DepthAwareDecoder.
+
+        Args:
+            decoder_layer (nn.Module): The decoder layer module.
+            num_layers (int): The number of layers.
+            return_intermediate (bool, optional): Whether to return intermediate outputs. Defaults to False.
+            d_model (int | None, optional): The input and output dimension of the layer. Defaults to None.
+            use_dab (bool, optional): Whether to use DepthAwareDecoder. Defaults to False.
+            two_stage_dino (bool, optional): Whether to use two-stage DINO. Defaults to False.
+        """
         super().__init__()
         self.layers = _get_clones(decoder_layer, num_layers)
         self.num_layers = num_layers
@@ -632,21 +853,42 @@ class DepthAwareDecoder(nn.Module):
 
     def forward(
         self,
-        tgt,
-        reference_points,
-        src,
-        src_spatial_shapes,
-        src_level_start_index,
-        src_valid_ratios,
-        query_pos=None,
-        src_padding_mask=None,
-        depth_pos_embed=None,
-        mask_depth=None,
-        bs=None,
-        depth_pos_embed_ip=None,
-        pos_embeds=None,
-        attn_mask=None,
-    ):
+        tgt: Tensor,
+        reference_points: Tensor,
+        src: Tensor,
+        src_spatial_shapes: list[tuple[int, int]],
+        src_level_start_index: Tensor,
+        src_valid_ratios: Tensor,
+        query_pos: Tensor | None = None,
+        src_padding_mask: Tensor | None = None,
+        depth_pos_embed: Tensor | None = None,
+        mask_depth: Tensor | None = None,
+        bs: int | None = None,
+        depth_pos_embed_ip: Tensor | None = None,
+        pos_embeds: list[Tensor] | None = None,
+        attn_mask: Tensor | None = None,
+    ) -> Tensor:
+        """Forward pass of the DepthAwareDecoder module.
+
+        Args:
+            tgt (Tensor): The input tensor.
+            reference_points (Tensor): The reference points tensor.
+            src (Tensor): The source tensor.
+            src_spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            src_level_start_index (Tensor): The level start index tensor.
+            src_valid_ratios (Tensor): The tensor of valid ratios.
+            query_pos (Tensor | None): The query position tensor. Defaults to None.
+            src_padding_mask (Tensor | None): The source padding mask tensor. Defaults to None.
+            depth_pos_embed (Tensor | None): The depth position embedding tensor. Defaults to None.
+            mask_depth (Tensor | None): The depth mask tensor. Defaults to None.
+            bs (int | None): The batch size. Defaults to None.
+            depth_pos_embed_ip (Tensor | None): The depth position embedding tensor for the iterative process. Defaults to None.
+            pos_embeds (List[Tensor] | None): The list of position embedding tensors. Defaults to None.
+            attn_mask (Tensor | None): The self-attention mask tensor. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+        """
         output = tgt
 
         intermediate = []
@@ -734,10 +976,6 @@ class DepthAwareDecoder(nn.Module):
         return output, reference_points
 
 
-def _get_clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
-
-
 class DepthAwareTransformerBuilder:
     """DepthAwareTransformerBuilder."""
 
@@ -760,5 +998,5 @@ class DepthAwareTransformerBuilder:
         },
     }
 
-    def __new__(cls, model_name: str):
+    def __new__(cls, model_name: str) -> DepthAwareTransformer:
         return DepthAwareTransformer(**cls.CFG[model_name])

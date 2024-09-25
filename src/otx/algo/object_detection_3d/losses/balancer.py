@@ -8,8 +8,11 @@ from torch import nn
 
 
 class Balancer(nn.Module):
-    def __init__(self, fg_weight, bg_weight, downsample_factor=1):
-        """Initialize fixed foreground/background loss balancer
+    """Fixed foreground/background loss balancer."""
+
+    def __init__(self, fg_weight: float, bg_weight: float, downsample_factor: int = 1):
+        """Initialize fixed foreground/background loss balancer.
+
         Args:
             fg_weight [float]: Foreground loss weight
             bg_weight [float]: Background loss weight
@@ -20,8 +23,14 @@ class Balancer(nn.Module):
         self.bg_weight = bg_weight
         self.downsample_factor = downsample_factor
 
-    def forward(self, loss, gt_boxes2d, num_gt_per_img):
-        """Forward pass
+    def forward(
+        self,
+        loss: torch.Tensor,
+        gt_boxes2d: torch.Tensor,
+        num_gt_per_img: int,
+    ) -> tuple[torch.Tensor, dict[float, float]]:
+        """Forward pass.
+
         Args:
             loss [torch.Tensor(B, H, W)]: Pixel-wise loss
             gt_boxes2d [torch.Tensor (B, N, 4)]: 2D box labels for foreground/background balancing
@@ -53,17 +62,23 @@ class Balancer(nn.Module):
         return loss
 
 
-def compute_fg_mask(gt_boxes2d, shape, num_gt_per_img, downsample_factor=1, device=torch.device("cpu")):
-    """Compute foreground mask for images
+def compute_fg_mask(
+    gt_boxes2d: torch.Tensor,
+    shape: tuple[int, int],
+    num_gt_per_img: int,
+    downsample_factor: int = 1,
+    device: torch.device = torch.device("cpu"),
+) -> torch.Tensor:
+    """Compute foreground mask for images.
+
     Args:
         gt_boxes2d [torch.Tensor(B, N, 4)]: 2D box labels
-        shape [torch.Size or tuple]: Foreground mask desired shape
+        shape [Tuple[int, int]]: Foreground mask desired shape
         downsample_factor [int]: Downsample factor for image
         device [torch.device]: Foreground mask desired device
     Returns:
         fg_mask [torch.Tensor(shape)]: Foreground mask
     """
-    # ipdb.set_trace()
     fg_mask = torch.zeros(shape, dtype=torch.bool, device=device)
 
     # Set box corners

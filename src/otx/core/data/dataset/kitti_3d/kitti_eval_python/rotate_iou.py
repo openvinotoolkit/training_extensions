@@ -391,12 +391,11 @@ def dev_rotate_iou_eval(
     area_inter = inter(rbox1, rbox2)
     if criterion == -1:
         return area_inter / (area1 + area2 - area_inter)
-    elif criterion == 0:
+    if criterion == 0:
         return area_inter / area1
-    elif criterion == 1:
+    if criterion == 1:
         return area_inter / area2
-    else:
-        return area_inter
+    return area_inter
 
 
 @numba.jit(nopython=True, inline="always")

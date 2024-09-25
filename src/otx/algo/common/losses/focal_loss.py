@@ -105,13 +105,16 @@ def one_hot(
                   [1.0000e+00, 1.0000e-06]]]])
     """
     if not isinstance(labels, torch.Tensor):
-        raise TypeError(f"Input labels type is not a torch.Tensor. Got {type(labels)}")
+        msg = f"Input labels type is not a torch.Tensor. Got {type(labels)}"
+        raise TypeError(msg)
 
-    if not labels.dtype == torch.int64:
-        raise ValueError(f"labels must be of the same dtype torch.int64. Got: {labels.dtype}")
+    if labels.dtype != torch.int64:
+        msg = f"labels must be of the same dtype torch.int64. Got: {labels.dtype}"
+        raise ValueError(msg)
 
     if num_classes < 1:
-        raise ValueError(f"The number of classes must be bigger than one. Got: {num_classes}")
+        msg = f"The number of classes must be bigger than one. Got: {num_classes}"
+        raise ValueError(msg)
     # ipdb.set_trace()
     shape = labels.shape
     one_hot = torch.zeros((shape[0], num_classes) + shape[1:], device=device, dtype=dtype)
@@ -120,7 +123,7 @@ def one_hot(
 
 
 def focal_loss(
-    input: torch.Tensor,
+    inputs: torch.Tensor,
     target: torch.Tensor,
     alpha: float,
     gamma: float = 2.0,
@@ -128,6 +131,7 @@ def focal_loss(
     eps: float | None = None,
 ) -> torch.Tensor:
     r"""Criterion that computes Focal loss.
+
     According to :cite:`lin2018focal`, the Focal loss is computed as follows:
     .. math::
         \text{FL}(p_t) = -\alpha_t (1 - p_t)^{\gamma} \, \text{log}(p_t)
@@ -135,8 +139,8 @@ def focal_loss(
        - :math:`p_t` is the model's estimated probability for each class.
 
     Args:
-        input: logits tensor with shape :math:`(N, C, *)` where C = number of classes.
-        target: labels tensor with shape :math:`(N, *)` where each value is :math:`0 ≤ targets[i] ≤ C−1`.
+        inputs: logits tensor with shape :math:`(N, C, *)` where C = number of classes.
+        target: labels tensor with shape :math:`(N, *)` where each value is :math:`0 ≤ targets[i] ≤ C-1`.
         alpha: Weighting factor :math:`\alpha \in [0, 1]`.
         gamma: Focusing parameter :math:`\gamma >= 0`.
         reduction: Specifies the reduction to apply to the
@@ -151,9 +155,9 @@ def focal_loss(
 
     Example:
         >>> N = 5  # num_classes
-        >>> input = torch.randn(1, N, 3, 5, requires_grad=True)
+        >>> inputs = torch.randn(1, N, 3, 5, requires_grad=True)
         >>> target = torch.empty(1, 3, 5, dtype=torch.long).random_(N)
-        >>> output = focal_loss(input, target, alpha=0.5, gamma=2.0, reduction='mean')
+        >>> output = focal_loss(inputs, target, alpha=0.5, gamma=2.0, reduction='mean')
         >>> output.backward()
     """
     if eps is not None and not torch.jit.is_scripting():
@@ -164,29 +168,39 @@ def focal_loss(
             stacklevel=2,
         )
 
-    if not isinstance(input, torch.Tensor):
-        raise TypeError(f"Input type is not a torch.Tensor. Got {type(input)}")
+    if not isinstance(inputs, torch.Tensor):
+        msg = f"inputs type is not a torch.Tensor. Got {type(inputs)}"
+        raise TypeError(msg)
 
-    if not len(input.shape) >= 2:
-        raise ValueError(f"Invalid input shape, we expect BxCx*. Got: {input.shape}")
+    if not len(inputs.shape) >= 2:
+        msg = f"Invalid inputs shape, we expect BxCx*. Got: {inputs.shape}"
+        raise ValueError(msg)
 
-    if input.size(0) != target.size(0):
-        raise ValueError(f"Expected input batch_size ({input.size(0)}) to match target batch_size ({target.size(0)}).")
+    if inputs.size(0) != target.size(0):
+        msg = f"Expected inputs batch_size ({inputs.size(0)}) to match target batch_size ({target.size(0)})."
+        raise ValueError(msg)
 
-    n = input.size(0)
-    out_size = (n,) + input.size()[2:]
-    if target.size()[1:] != input.size()[2:]:
-        raise ValueError(f"Expected target size {out_size}, got {target.size()}")
+    n = inputs.size(0)
+    out_size = (n,) + inputs.size()[2:]
+    if target.size()[1:] != inputs.size()[2:]:
+        msg = f"Expected target size {out_size}, got {target.size()}"
+        raise ValueError(msg)
 
-    if not input.device == target.device:
-        raise ValueError(f"input and target must be in the same device. Got: {input.device} and {target.device}")
+    if inputs.device != target.device:
+        msg = f"inputs and target must be in the same device. Got: {inputs.device} and {target.device}"
+        raise ValueError(msg)
 
     # compute softmax over the classes axis
-    input_soft: torch.Tensor = nn.functional.softmax(input, dim=1)
-    log_input_soft: torch.Tensor = nn.functional.log_softmax(input, dim=1)
+    input_soft: torch.Tensor = nn.functional.softmax(inputs, dim=1)
+    log_input_soft: torch.Tensor = nn.functional.log_softmax(inputs, dim=1)
     # ipdb.set_trace()
     # create the labels one hot tensor
-    target_one_hot: torch.Tensor = one_hot(target, num_classes=input.shape[1], device=input.device, dtype=input.dtype)
+    target_one_hot: torch.Tensor = one_hot(
+        target,
+        num_classes=inputs.shape[1],
+        device=inputs.device,
+        dtype=inputs.dtype,
+    )
 
     # compute the actual focal loss
     weight = torch.pow(-input_soft + 1.0, gamma)
@@ -198,29 +212,29 @@ def focal_loss(
 
 
 class FocalLoss(nn.Module):
-    r"""Criterion that computes Focal loss.
-    According to :cite:`lin2018focal`, the Focal loss is computed as follows:
-    .. math::
-        \text{FL}(p_t) = -\alpha_t (1 - p_t)^{\gamma} \, \text{log}(p_t)
-    Where:
-       - :math:`p_t` is the model's estimated probability for each class.
+    """Criterion that computes Focal loss."""
 
-    Args:
-        alpha: Weighting factor :math:`\alpha \in [0, 1]`.
-        gamma: Focusing parameter :math:`\gamma >= 0`.
+    def __init__(self, alpha: float, gamma: float = 2.0, reduction: str = "none", eps: float | None = None) -> None:
+        r"""Criterion that computes Focal loss.
+
+        According to :cite:`lin2018focal`, the Focal loss is computed as follows:
+        .. math::
+        \text{FL}(p_t) = -\alpha_t (1 - p_t)^{\\gamma} \\, \text{log}(p_t)
+        Where:
+        - :math:`p_t` is the model's estimated probability for each class.
+
+        Args:
+        alpha: Weighting factor :math:`\alpha \\in [0, 1]`.
+        gamma: Focusing parameter :math:`\\gamma >= 0`.
         reduction: Specifies the reduction to apply to the
-          output: ``'none'`` | ``'mean'`` | ``'sum'``. ``'none'``: no reduction
-          will be applied, ``'mean'``: the sum of the output will be divided by
-          the number of elements in the output, ``'sum'``: the output will be
-          summed.
+        output: ``'none'`` | ``'mean'`` | ``'sum'``. ``'none'``: no reduction
+        will be applied, ``'mean'``: the sum of the output will be divided by
+        the number of elements in the output, ``'sum'``: the output will be
+        summed.
         eps: Deprecated: scalar to enforce numerical stability. This is no longer
-          used.
-    Shape:
-        - Input: :math:`(N, C, *)` where C = number of classes.
-        - Target: :math:`(N, *)` where each value is
-          :math:`0 ≤ targets[i] ≤ C−1`.
+        used.
 
-    Example:
+        Example:
         >>> N = 5  # num_classes
         >>> kwargs = {"alpha": 0.5, "gamma": 2.0, "reduction": 'mean'}
         >>> criterion = FocalLoss(**kwargs)
@@ -228,14 +242,13 @@ class FocalLoss(nn.Module):
         >>> target = torch.empty(1, 3, 5, dtype=torch.long).random_(N)
         >>> output = criterion(input, target)
         >>> output.backward()
-    """
-
-    def __init__(self, alpha: float, gamma: float = 2.0, reduction: str = "none", eps: float | None = None) -> None:
+        """
         super().__init__()
         self.alpha: float = alpha
         self.gamma: float = gamma
         self.reduction: str = reduction
         self.eps: float = eps
 
-    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return focal_loss(input, target, self.alpha, self.gamma, self.reduction, self.eps)
+    def forward(self, inputs: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """Forward."""
+        return focal_loss(inputs, target, self.alpha, self.gamma, self.reduction, self.eps)

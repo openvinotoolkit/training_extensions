@@ -38,28 +38,17 @@ class MonoDETR3D(OTX3DDetectionModel):
     def _build_model(self, num_classes) -> DETR:
         # backbone
         backbone = BackboneBuilder(self.model_name)
+        # transformer
         depthaware_transformer = DepthAwareTransformerBuilder(self.model_name)
         # depth prediction module
-
         depth_predictor = DepthPredictor(depth_num_bins=80, depth_min=1e-3, depth_max=60.0, hidden_dim=256)
-
+        # criterion
         loss_weight_dict = {
             "loss_ce": 2,
             "loss_bbox": 5,
             "loss_giou": 2,
-            "loss_dim": 1,
-            "loss_angle": 1,
-            "loss_depth": 1,
             "loss_center": 10,
-            "loss_depth_map": 1,
         }
-
-        aux_weight_dict = {}
-        for i in range(depthaware_transformer.decoder.num_layers - 1):
-            aux_weight_dict.update({k + f"_{i}": v for k, v in loss_weight_dict.items()})
-        aux_weight_dict.update({k + "_enc": v for k, v in loss_weight_dict.items()})
-        loss_weight_dict.update(aux_weight_dict)
-
         criterion = MonoDETRCriterion(num_classes=num_classes, focal_alpha=0.25, weight_dict=loss_weight_dict)
 
         model = MonoDETR(

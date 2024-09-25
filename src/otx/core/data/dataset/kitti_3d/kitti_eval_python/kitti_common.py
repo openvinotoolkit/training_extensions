@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import pathlib
 import re
 from collections import OrderedDict
