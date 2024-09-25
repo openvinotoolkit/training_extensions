@@ -40,6 +40,18 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.MULTI_CLASS_CLS,
         "model_name": "mobilenet_v3_large",
     },
+    "Custom_Image_Classification_EfficinetNet-B3": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_efficientnet_b3",
+    },
+    "Custom_Image_Classification_EfficinetNet-V2-L": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_efficientnet_v2_l",
+    },
+    "Custom_Image_Classification_MobileNet-V3-small": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "tv_mobilenet_v3_small",
+    },
     # DETECTION
     "Custom_Object_Detection_Gen3_ATSS": {
         "task": OTXTaskType.DETECTION,
@@ -69,6 +81,22 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.DETECTION,
         "model_name": "yolox_tiny",
     },
+    "Object_Detection_RTDetr_18": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_18",
+    },
+    "Object_Detection_RTDetr_50": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_50",
+    },
+    "Object_Detection_RTDetr_101": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtdetr_101",
+    },
+    "Object_Detection_RTMDet_tiny": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "rtmdet_tiny",
+    },
     # INSTANCE_SEGMENTATION
     "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
@@ -81,6 +109,10 @@ TEMPLATE_ID_DICT = {
     "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
         "model_name": "maskrcnn_efficientnetb2b",
+    },
+    "Custom_Instance_Segmentation_RTMDet_tiny": {
+        "task": OTXTaskType.INSTANCE_SEGMENTATION,
+        "model_name": "rtmdet_inst_tiny",
     },
     # ROTATED_DETECTION
     "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50": {
@@ -120,6 +152,11 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "segnext_b",
     },
+    "Custom_Semantic_Segmentation_DINOV2_S": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "dino_v2",
+    },
+    # ANOMALY_CLASSIFICATION
     # ANOMALY
     "ote_anomaly_padim": {
         "task": OTXTaskType.ANOMALY,
@@ -211,6 +248,8 @@ class ConfigConverter:
             task_info["task"] = task
         default_config = ConfigConverter._get_default_config(task_info)
         ConfigConverter._update_params(default_config, param_dict)
+        if (hpo_time_ratio := template_config.get("hpo_parameters", {}).get("hpo_time_ratio")) is not None:
+            default_config["hpo_config.expected_time_ratio"] = hpo_time_ratio
         ConfigConverter._remove_unused_key(default_config)
         return default_config
 
@@ -248,12 +287,22 @@ class ConfigConverter:
             config["data"]["test_subset"]["batch_size"] = param_value
 
         def update_learning_rate(param_value: float) -> None:
-            config["model"]["init_args"]["optimizer"]["init_args"]["lr"] = param_value
+            optimizer = config["model"]["init_args"]["optimizer"]
+            if isinstance(optimizer, dict) and "init_args" in optimizer:
+                optimizer["init_args"]["lr"] = param_value
+            else:
+                warn("Warning: learning_rate is not updated", stacklevel=1)
 
         def update_learning_rate_warmup_iters(param_value: int) -> None:
             scheduler = config["model"]["init_args"]["scheduler"]
-            if scheduler["class_path"] == "otx.core.schedulers.LinearWarmupSchedulerCallable":
+            if (
+                isinstance(scheduler, dict)
+                and "class_path" in scheduler
+                and scheduler["class_path"] == "otx.core.schedulers.LinearWarmupSchedulerCallable"
+            ):
                 scheduler["init_args"]["num_warmup_steps"] = param_value
+            else:
+                warn("Warning: learning_rate_warmup_iters is not updated", stacklevel=1)
 
         def update_num_iters(param_value: int) -> None:
             config["max_epochs"] = param_value
@@ -284,6 +333,9 @@ class ConfigConverter:
 
         def update_auto_num_workers(param_value: bool) -> None:
             config["data"]["auto_num_workers"] = param_value
+
+        def update_auto_adapt_batch_size(param_value: str) -> None:
+            config["adaptive_bs"] = param_value
 
         def update_enable_tiling(param_value: bool) -> None:
             config["data"]["tile_config"]["enable_tiler"] = param_value
@@ -321,11 +373,12 @@ class ConfigConverter:
             "use_adaptive_interval": update_use_adaptive_interval,
             "auto_num_workers": update_auto_num_workers,
             "enable_tiling": update_enable_tiling,
+            "auto_adapt_batch_size": update_auto_adapt_batch_size,
         }
         for param_name, param_value in param_dict.items():
             update_func = param_update_funcs.get(param_name)
             if update_func:
-                update_func(param_value)
+                update_func(param_value)  # type: ignore[operator]
                 unused_params.pop(param_name)
 
         warn("Warning: These parameters are not updated", stacklevel=1)
@@ -394,6 +447,9 @@ class ConfigConverter:
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False, skip={"label_info"})
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+
+        if hasattr(model, "tile_config"):
+            model.tile_config = datamodule.tile_config
 
         # Instantiate Engine
         config_work_dir = config.pop("work_dir", config["engine"].pop("work_dir", None))

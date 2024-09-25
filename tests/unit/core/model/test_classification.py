@@ -48,6 +48,7 @@ class TestOTXMulticlassClsModel:
         assert model._export_parameters.task_type.lower() == "classification"
         assert not model._export_parameters.multilabel
         assert not model._export_parameters.hierarchical
+        assert model._export_parameters.output_raw_scores
 
         model = OTXMultilabelClsModel(
             label_info=1,

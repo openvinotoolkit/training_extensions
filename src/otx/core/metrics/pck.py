@@ -147,6 +147,22 @@ class PCKMeasure(Metric):
         self.label_info: LabelInfo = label_info
         self.reset()
 
+    @property
+    def input_size(self) -> tuple[int, int]:
+        """Getter for input_size."""
+        return self._input_size
+
+    @input_size.setter
+    def input_size(self, size: tuple[int, int]) -> None:
+        """Setter for input_size."""
+        if not isinstance(size, tuple) or len(size) != 2:
+            msg = "input_size must be a tuple of two integers."
+            raise ValueError(msg)
+        if not all(isinstance(dim, int) for dim in size):
+            msg = "input_size dimensions must be integers."
+            raise ValueError(msg)
+        self._input_size = size
+
     def reset(self) -> None:
         """Reset for every validation and test epoch.
 
@@ -177,7 +193,7 @@ class PCKMeasure(Metric):
         gt_kpts = np.stack([p[0] for p in self.targets])
         kpts_visible = np.stack([p[1] for p in self.targets])
 
-        normalize = np.tile(np.array([[256, 192]]), (pred_kpts.shape[0], 1))
+        normalize = np.tile(np.array([self.input_size]), (pred_kpts.shape[0], 1))
         _, avg_acc, _ = keypoint_pck_accuracy(
             pred_kpts,
             gt_kpts,

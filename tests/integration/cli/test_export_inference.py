@@ -89,8 +89,6 @@ def test_otx_export_infer(
         task == "instance_segmentation" and "maskrcnn_efficientnetb2b" not in recipe
     ):
         pytest.skip("To prevent memory bug from aborting integration test, test single model per task.")
-    elif "tile" in recipe or "keypoint" in recipe:
-        pytest.skip("Exporting tiling and keypoints model is not supported.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
 

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## \[unreleased\]
+## \[2.2.0\]
 
 ### New features
 
@@ -45,15 +45,31 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3769>)
 - Refactoring `ConvModule` by removing `conv_cfg`, `norm_cfg`, and `act_cfg`
   (<https://github.com/openvinotoolkit/training_extensions/pull/3783>, <https://github.com/openvinotoolkit/training_extensions/pull/3816>, <https://github.com/openvinotoolkit/training_extensions/pull/3809>)
+- Support ImageFromBytes
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3948>)
+- Enable model export
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3952>)
+- Move templates from OTX1.X to OTX2.X
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3951>)
+- Include Geti arrow dataset subset names
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3962>)
+- Include full image with anno in case there's no tile in tile dataset
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3964>)
+- Add type checker in converter for callable functions (optimizer, scheduler)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3968>)
 
 ### Bug fixes
 
 - Fix Combined Dataloader & unlabeled warmup loss in Semi-SL
-  (https://github.com/openvinotoolkit/training_extensions/pull/3723)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3723>)
 - Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
-  (https://github.com/openvinotoolkit/training_extensions/pull/3753)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3753>)
 - Add num_devices in Engine for multi-gpu training
-  (https://github.com/openvinotoolkit/training_extensions/pull/3778)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3778>)
+- Add missing tile recipes and various tile recipe changes
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3942>)
+- Change categories mapping logic
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3946>)
 
 ## \[v2.1.0\]
 
@@ -191,6 +207,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3684>)
 - Fix MaskRCNN SwinT NNCF Accuracy Drop
   (<https://github.com/openvinotoolkit/training_extensions/pull/3685>)
+- Fix MaskRCNN SwinT NNCF Accuracy Drop By Adding More PTQ Configs
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3929>)
 
 ### Known issues
 

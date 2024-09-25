@@ -256,7 +256,7 @@ class TestOTXTiling:
         dataset = DmDataset.import_from(data_root, format=dataset_format)
 
         rng = np.random.default_rng()
-        tile_size = rng.integers(low=100, high=500, size=(2,))
+        tile_size = rng.integers(low=50, high=128, size=(2,))
         overlap = rng.random(2)
         overlap = overlap.clip(0, 0.9)
         threshold_drop_ann = rng.random()

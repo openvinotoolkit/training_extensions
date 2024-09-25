@@ -20,7 +20,7 @@ model:
         main_scheduler_callable:
           class_path: torch.optim.lr_scheduler.PolynomialLR
           init_args:
-            total_iters: 100
+            total_iters: 150
             power: 0.9
             last_epoch: -1
 
