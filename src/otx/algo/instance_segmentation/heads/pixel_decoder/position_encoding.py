@@ -1,29 +1,39 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 """Various positional encodings for the transformer."""
 from __future__ import annotations
 
 import math
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 
 class PositionEmbeddingSine(nn.Module):
-    """This is a more standard version of the position embedding, very similar to the one
-    used by the Attention is all you need paper, generalized to work on images.
-    """
+    """Adds absolute position embeddings to the input tensor."""
 
-    def __init__(self, num_pos_feats=64, temperature=10000, normalize=False, scale=None):
+    def __init__(
+        self,
+        num_pos_feats: int = 64,
+        temperature: int = 10000,
+        normalize: bool = False,
+        scale: float | None = None,
+    ) -> None:
         super().__init__()
         self.num_pos_feats = num_pos_feats
         self.temperature = temperature
         self.normalize = normalize
         if scale is not None and normalize is False:
-            raise ValueError("normalize should be True if scale is passed")
+            msg = "normalize should be True if scale is passed"
+            raise ValueError(msg)
         if scale is None:
             scale = 2 * math.pi
         self.scale = scale
 
-    def forward(self, x, mask=None):
+    def forward(self, x: Tensor, mask: Tensor | None = None) -> Tensor:
+        """Forward pass."""
         if mask is None:
             mask = torch.zeros((x.size(0), x.size(2), x.size(3)), device=x.device, dtype=torch.bool)
         not_mask = ~mask
@@ -47,17 +57,4 @@ class PositionEmbeddingSine(nn.Module):
             (pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()),
             dim=4,
         ).flatten(3)
-        pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
-        return pos
-
-    def __repr__(self, _repr_indent=4):
-        head = "Positional encoding " + self.__class__.__name__
-        body = [
-            f"num_pos_feats: {self.num_pos_feats}",
-            f"temperature: {self.temperature}",
-            f"normalize: {self.normalize}",
-            f"scale: {self.scale}",
-        ]
-        # _repr_indent = 4
-        lines = [head] + [" " * _repr_indent + line for line in body]
-        return "\n".join(lines)
+        return torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)

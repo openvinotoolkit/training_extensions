@@ -1,32 +1,41 @@
-from __future__ import annotations
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
-from typing import Callable, Optional, Union
+"""MaskDINO transformer encoder module."""
+
+from __future__ import annotations
 
 import numpy as np
 import torch
-from torch import nn
+from torch import Tensor, nn
 from torch.cuda.amp import autocast
-from torch.nn import functional as F
+from torch.nn import functional as f
 from torch.nn.init import normal_
 
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
-from otx.algo.instance_segmentation.mask_dino.batch_norm import get_norm
-from otx.algo.instance_segmentation.mask_dino.misc import Conv2d, ShapeSpec, c2_xavier_fill
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.position_encoding import PositionEmbeddingSine
-from otx.algo.instance_segmentation.mask_dino.utils import _get_activation_fn, _get_clones
+from otx.algo.instance_segmentation.heads.pixel_decoder.position_encoding import PositionEmbeddingSine
+from otx.algo.instance_segmentation.layers.batch_norm import get_norm
+from otx.algo.instance_segmentation.utils.utils import (
+    Conv2d,
+    ShapeSpec,
+    _get_clones,
+    c2_xavier_fill,
+)
 
 
 class MSDeformAttnTransformerEncoderOnly(nn.Module):
+    """MSDeformAttnTransformerEncoderOnly is a transformer encoder with MSDeformable Attention."""
+
     def __init__(
         self,
-        d_model=256,
-        nhead=8,
-        num_encoder_layers=6,
-        dim_feedforward=1024,
-        dropout=0.1,
-        activation="relu",
-        num_feature_levels=4,
-        enc_n_points=4,
+        d_model: int = 256,
+        nhead: int = 8,
+        num_encoder_layers: int = 6,
+        dim_feedforward: int = 1024,
+        dropout: float = 0.1,
+        num_feature_levels: int = 4,
+        enc_n_points: int = 4,
     ):
         super().__init__()
 
@@ -37,7 +46,6 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
             d_model,
             dim_feedforward,
             dropout,
-            activation,
             num_feature_levels,
             nhead,
             enc_n_points,
@@ -49,60 +57,66 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
 
         self._reset_parameters()
 
-    def _reset_parameters(self):
+    def _reset_parameters(self) -> None:
+        """Initialize the parameters."""
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
         for m in self.modules():
             if isinstance(m, MSDeformAttn):
-                m._reset_parameters()
+                m._reset_parameters()  # noqa: SLF001
         normal_(self.level_embed)
 
-    def get_valid_ratio(self, mask):
-        _, H, W = mask.shape
-        valid_H = torch.sum(~mask[:, :, 0], 1)
-        valid_W = torch.sum(~mask[:, 0, :], 1)
-        valid_ratio_h = valid_H.float() / H
-        valid_ratio_w = valid_W.float() / W
-        valid_ratio = torch.stack([valid_ratio_w, valid_ratio_h], -1)
-        return valid_ratio
+    def get_valid_ratio(self, mask: Tensor) -> Tensor:
+        """Get the valid ratio of the mask."""
+        _, height, width = mask.shape
+        valid_height = torch.sum(~mask[:, :, 0], 1)
+        valid_width = torch.sum(~mask[:, 0, :], 1)
+        valid_ratio_h = valid_height.float() / height
+        valid_ratio_w = valid_width.float() / width
+        return torch.stack([valid_ratio_w, valid_ratio_h], -1)
 
-    def forward(self, srcs, masks, pos_embeds):
-        enable_mask = 0
-        if masks is not None:
-            for src in srcs:
-                if src.size(2) % 32 or src.size(3) % 32:
-                    enable_mask = 1
-        if enable_mask == 0:
-            masks = [torch.zeros((x.size(0), x.size(2), x.size(3)), device=x.device, dtype=torch.bool) for x in srcs]
-        # prepare input for encoder
+    def _prepare_input(
+        self,
+        srcs: list[Tensor],
+        pos_embeds: list[Tensor],
+        masks: list[Tensor],
+    ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+        """Prepare input for encoder."""
         src_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []
         spatial_shapes = []
-        for lvl, (src, mask, pos_embed) in enumerate(zip(srcs, masks, pos_embeds)):
-            bs, c, h, w = src.shape
-            spatial_shape = (h, w)
+        for lvl, (src, mask, pos_embed) in enumerate(zip(srcs, masks, pos_embeds, strict=True)):
+            _, _, h, w = src.shape
+            spatial_shape = torch.tensor((h, w), device=src.device)
             spatial_shapes.append(spatial_shape)
-            src = src.flatten(2).transpose(1, 2)
-            mask = mask.flatten(1)
-            pos_embed = pos_embed.flatten(2).transpose(1, 2)
-            lvl_pos_embed = pos_embed + self.level_embed[lvl].view(1, 1, -1)
+            lvl_pos_embed = pos_embed.flatten(2).transpose(1, 2) + self.level_embed[lvl].view(1, 1, -1)
             lvl_pos_embed_flatten.append(lvl_pos_embed)
-            src_flatten.append(src)
-            mask_flatten.append(mask)
-        src_flatten = torch.cat(src_flatten, 1)
-        mask_flatten = torch.cat(mask_flatten, 1)
-        lvl_pos_embed_flatten = torch.cat(lvl_pos_embed_flatten, 1)
-        spatial_shapes = torch.as_tensor(spatial_shapes, dtype=torch.long, device=src_flatten.device)
-        level_start_index = torch.cat((spatial_shapes.new_zeros((1,)), spatial_shapes.prod(1).cumsum(0)[:-1]))
+            src_flatten.append(src.flatten(2).transpose(1, 2))
+            mask_flatten.append(mask.flatten(1))
+        return (
+            torch.cat(src_flatten, 1),
+            torch.cat(mask_flatten, 1),
+            torch.cat(lvl_pos_embed_flatten, 1),
+            torch.stack(spatial_shapes),
+        )
+
+    def forward(self, srcs: list[Tensor], pos_embeds: list[Tensor]) -> tuple[Tensor, Tensor, Tensor]:
+        """Forward pass of the encoder."""
+        masks = [torch.zeros((x.size(0), x.size(2), x.size(3)), device=x.device, dtype=torch.bool) for x in srcs]
+
+        src_flatten, mask_flatten, lvl_pos_embed_flatten, spatial_shapes = self._prepare_input(srcs, pos_embeds, masks)
+
+        level_start_index = torch.cat(
+            (spatial_shapes.new_zeros((1,)), spatial_shapes.prod(1).cumsum(0)[:-1]),
+        )
         valid_ratios = torch.stack([self.get_valid_ratio(m) for m in masks], 1)
 
         # encoder
         memory = self.encoder(
             src_flatten,
             spatial_shapes,
-            level_start_index,
             valid_ratios,
             lvl_pos_embed_flatten,
             mask_flatten,
@@ -112,7 +126,17 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
 
 
 class MSDeformAttnTransformerEncoderLayer(nn.Module):
-    def __init__(self, d_model=256, d_ffn=1024, dropout=0.1, activation="relu", n_levels=4, n_heads=8, n_points=4):
+    """MSDeformAttnTransformerEncoderLayer is a single layer of MSDeformable Attention Transformer."""
+
+    def __init__(
+        self,
+        d_model: int = 256,
+        d_ffn: int = 1024,
+        dropout: float = 0.1,
+        n_levels: int = 4,
+        n_heads: int = 8,
+        n_points: int = 4,
+    ):
         super().__init__()
 
         # self attention
@@ -127,23 +151,32 @@ class MSDeformAttnTransformerEncoderLayer(nn.Module):
 
         # ffn
         self.linear1 = nn.Linear(d_model, d_ffn)
-        self.activation = _get_activation_fn(activation)
+        self.activation = nn.ReLU()
         self.dropout2 = nn.Dropout(dropout)
         self.linear2 = nn.Linear(d_ffn, d_model)
         self.dropout3 = nn.Dropout(dropout)
         self.norm2 = nn.LayerNorm(d_model)
 
     @staticmethod
-    def with_pos_embed(tensor, pos):
+    def with_pos_embed(tensor: Tensor, pos: Tensor | None) -> Tensor:
+        """Add position embedding to the tensor."""
         return tensor if pos is None else tensor + pos
 
-    def forward_ffn(self, src):
+    def forward_ffn(self, src: Tensor) -> Tensor:
+        """Forward pass of the feed forward network."""
         src2 = self.linear2(self.dropout2(self.activation(self.linear1(src))))
         src = src + self.dropout3(src2)
-        src = self.norm2(src)
-        return src
+        return self.norm2(src)
 
-    def forward(self, src, pos, reference_points, spatial_shapes, level_start_index, padding_mask=None):
+    def forward(
+        self,
+        src: Tensor,
+        pos: Tensor,
+        reference_points: Tensor,
+        spatial_shapes: Tensor,
+        padding_mask: Tensor,
+    ) -> Tensor:
+        """Forward pass of the encoder layer."""
         # self attention
         src2 = self.self_attn(
             self.with_pos_embed(src, pos),
@@ -156,38 +189,46 @@ class MSDeformAttnTransformerEncoderLayer(nn.Module):
         src = self.norm1(src)
 
         # ffn
-        src = self.forward_ffn(src)
-
-        return src
+        return self.forward_ffn(src)
 
 
 class MSDeformAttnTransformerEncoder(nn.Module):
-    def __init__(self, encoder_layer, num_layers):
+    """MSDeformAttnTransformerEncoder is a stack of MSDeformAttnTransformerEncoderLayer."""
+
+    def __init__(self, encoder_layer: nn.ModuleList, num_layers: int) -> None:
         super().__init__()
         self.layers = _get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
 
     @staticmethod
-    def get_reference_points(spatial_shapes, valid_ratios, device):
+    def get_reference_points(spatial_shapes: Tensor, valid_ratios: Tensor, device: torch.device) -> Tensor:
+        """Get reference points for the transformer encoder."""
         reference_points_list = []
-        for lvl, (H_, W_) in enumerate(spatial_shapes):
+        for lvl, (height, width) in enumerate(spatial_shapes):
             ref_y, ref_x = torch.meshgrid(
-                torch.linspace(0.5, H_ - 0.5, H_, dtype=torch.float32, device=device),
-                torch.linspace(0.5, W_ - 0.5, W_, dtype=torch.float32, device=device),
+                torch.linspace(0.5, height - 0.5, height, dtype=torch.float32, device=device),
+                torch.linspace(0.5, width - 0.5, width, dtype=torch.float32, device=device),
             )
-            ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * H_)
-            ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * W_)
+            ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * height)
+            ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * width)
             ref = torch.stack((ref_x, ref_y), -1)
             reference_points_list.append(ref)
         reference_points = torch.cat(reference_points_list, 1)
-        reference_points = reference_points[:, :, None] * valid_ratios[:, None]
-        return reference_points
+        return reference_points[:, :, None] * valid_ratios[:, None]
 
-    def forward(self, src, spatial_shapes, level_start_index, valid_ratios, pos=None, padding_mask=None):
+    def forward(
+        self,
+        src: Tensor,
+        spatial_shapes: Tensor,
+        valid_ratios: Tensor,
+        pos: Tensor,
+        padding_mask: Tensor,
+    ) -> Tensor:
+        """Forward pass of the encoder."""
         output = src
         reference_points = self.get_reference_points(spatial_shapes, valid_ratios, device=src.device)
-        for _, layer in enumerate(self.layers):
-            output = layer(output, pos, reference_points, spatial_shapes, level_start_index, padding_mask)
+        for layer in self.layers:
+            output = layer(output, pos, reference_points, spatial_shapes, padding_mask)
 
         return output
 
@@ -204,12 +245,11 @@ class MaskDINOEncoder(nn.Module):
         transformer_enc_layers: int,
         conv_dim: int,
         mask_dim: int,
-        norm: Optional[Union[str, Callable]],
+        norm: str,
         transformer_in_features: list[str],
         common_stride: int,
         num_feature_levels: int,
         total_num_feature_levels: int,
-        feature_order: str,
     ):
         """NOTE: this interface is experimental.
 
@@ -221,27 +261,22 @@ class MaskDINOEncoder(nn.Module):
             transformer_enc_layers: number of transformer encoder layers
             conv_dims: number of output channels for the intermediate conv layers.
             mask_dim: number of output channels for the final conv layer.
-            norm (str or callable): normalization for all conv layers
+            norm (str): normalization for all conv layers
             num_feature_levels: feature scales used
             total_num_feature_levels: total feautre scales used (include the downsampled features)
-            feature_order: 'low2high' or 'high2low', i.e., 'low2high' means low-resolution features are put in the first.
         """
         super().__init__()
-        transformer_input_shape = {k: v for k, v in input_shape.items() if k in transformer_in_features}
         # this is the input shape of pixel decoder
-        input_shape = sorted(input_shape.items(), key=lambda x: x[1].stride)
-        self.in_features = [k for k, v in input_shape]  # starting from "res2" to "res5"
-        self.feature_strides = [v.stride for k, v in input_shape]
-        self.feature_channels = [v.channels for k, v in input_shape]
-        self.feature_order = feature_order
+        input_shape_list = sorted(input_shape.items(), key=lambda x: x[1].stride)  # type: ignore  # noqa: PGH003
+        self.in_features = [k for k, v in input_shape_list]  # starting from "res2" to "res5"
+        self.feature_strides = [v.stride for k, v in input_shape_list]
+        self.feature_channels = [v.channels for k, v in input_shape_list]
 
-        if feature_order == "low2high":
-            transformer_input_shape = sorted(transformer_input_shape.items(), key=lambda x: -x[1].stride)
-        else:
-            transformer_input_shape = sorted(transformer_input_shape.items(), key=lambda x: x[1].stride)
-        self.transformer_in_features = [k for k, v in transformer_input_shape]  # starting from "res2" to "res5"
-        transformer_in_channels = [v.channels for k, v in transformer_input_shape]
-        self.transformer_feature_strides = [v.stride for k, v in transformer_input_shape]  # to decide extra FPN layers
+        transformer_input_shape = {k: v for k, v in input_shape.items() if k in transformer_in_features}
+        transformer_input_shape_list = sorted(transformer_input_shape.items(), key=lambda x: x[1].stride, reverse=True)  # type: ignore  # noqa: PGH003
+        self.transformer_in_features = [k for k, v in transformer_input_shape_list]
+        transformer_in_channels = [v.channels for k, v in transformer_input_shape_list]
+        self.transformer_feature_strides = [v.stride for k, v in transformer_input_shape_list]
 
         self.maskdino_num_feature_levels = num_feature_levels  # always use 3 scales
         self.total_num_feature_levels = total_num_feature_levels
@@ -249,16 +284,16 @@ class MaskDINOEncoder(nn.Module):
 
         self.transformer_num_feature_levels = len(self.transformer_in_features)
         self.low_resolution_index = transformer_in_channels.index(max(transformer_in_channels))
-        self.high_resolution_index = 0 if self.feature_order == "low2high" else -1
+        self.high_resolution_index = 0
         if self.transformer_num_feature_levels > 1:
-            input_proj_list = []
-            for in_channels in transformer_in_channels[::-1]:
-                input_proj_list.append(
-                    nn.Sequential(
-                        nn.Conv2d(in_channels, conv_dim, kernel_size=1),
-                        nn.GroupNorm(32, conv_dim),
-                    ),
+            input_proj_list = [
+                nn.Sequential(
+                    nn.Conv2d(in_channels, conv_dim, kernel_size=1),
+                    nn.GroupNorm(32, conv_dim),
                 )
+                for in_channels in transformer_in_channels[::-1]
+            ]
+
             # input projectino for downsample
             in_channels = max(transformer_in_channels)
             for _ in range(self.total_num_feature_levels - self.transformer_num_feature_levels):  # exclude the res2
@@ -292,8 +327,7 @@ class MaskDINOEncoder(nn.Module):
             num_encoder_layers=transformer_enc_layers,
             num_feature_levels=self.total_num_feature_levels,
         )
-        N_steps = conv_dim // 2
-        self.pe_layer = PositionEmbeddingSine(N_steps, normalize=True)
+        self.pe_layer = PositionEmbeddingSine(conv_dim // 2, normalize=True)
 
         self.mask_dim = mask_dim
         # use 1x1 conv instead
@@ -332,7 +366,7 @@ class MaskDINOEncoder(nn.Module):
                 padding=1,
                 bias=use_bias,
                 norm=output_norm,
-                activation=F.relu,
+                activation=f.relu,
             )
             c2_xavier_fill(lateral_conv)
             c2_xavier_fill(output_conv)
@@ -347,39 +381,30 @@ class MaskDINOEncoder(nn.Module):
         self.output_convs = output_convs[::-1]
 
     @autocast(enabled=False)
-    def forward_features(self, features, masks):
-        """:param features: multi-scale features from the backbone
-        :param masks: image mask
-        :return: enhanced multi-scale features and mask feature (1/4 resolution) for the decoder to produce binary mask
-        """
+    def forward_features(self, features: dict[str, Tensor]) -> tuple[Tensor, Tensor, list[Tensor]]:
+        """Forward pass of the encoder."""
         # backbone features
         srcs = []
         pos = []
         # additional downsampled features
-        srcsl = []
+        srcsl: list[Tensor] = []
         posl = []
         if self.total_num_feature_levels > self.transformer_num_feature_levels:
             smallest_feat = features[self.transformer_in_features[self.low_resolution_index]].float()
             _len_srcs = self.transformer_num_feature_levels
-            for l in range(_len_srcs, self.total_num_feature_levels):
-                if l == _len_srcs:
-                    src = self.input_proj[l](smallest_feat)
-                else:
-                    src = self.input_proj[l](srcsl[-1])
+            for lvl in range(_len_srcs, self.total_num_feature_levels):
+                src = self.input_proj[lvl](smallest_feat) if lvl == _len_srcs else self.input_proj[lvl](srcsl[-1])
                 srcsl.append(src)
                 posl.append(self.pe_layer(src))
         srcsl = srcsl[::-1]
         # Reverse feature maps
-        for idx, f in enumerate(self.transformer_in_features[::-1]):
-            x = features[f].float()  # deformable detr does not support half precision
+        for idx, feat in enumerate(self.transformer_in_features[::-1]):
+            x = features[feat].float()  # deformable detr does not support half precision
             srcs.append(self.input_proj[idx](x))
             pos.append(self.pe_layer(x))
-        srcs.extend(srcsl) if self.feature_order == "low2high" else srcsl.extend(srcs)
-        pos.extend(posl) if self.feature_order == "low2high" else posl.extend(pos)
-        if self.feature_order != "low2high":
-            srcs = srcsl
-            pos = posl
-        y, spatial_shapes, level_start_index = self.transformer(srcs, masks, pos)
+        srcs.extend(srcsl)
+        pos.extend(posl)
+        y, spatial_shapes, level_start_index = self.transformer(srcs, pos)
         bs = y.shape[0]
 
         split_size_or_sections = [None] * self.total_num_feature_levels
@@ -398,13 +423,13 @@ class MaskDINOEncoder(nn.Module):
 
         # append `out` with extra FPN levels
         # Reverse feature maps into top-down order (from low to high resolution)
-        for idx, f in enumerate(self.in_features[: self.num_fpn_levels][::-1]):
-            x = features[f].float()
+        for idx, feat in enumerate(self.in_features[: self.num_fpn_levels][::-1]):
+            x = features[feat].float()
             lateral_conv = self.lateral_convs[idx]
             output_conv = self.output_convs[idx]
             cur_fpn = lateral_conv(x)
             # Following FPN implementation, we use nearest upsampling here
-            y = cur_fpn + F.interpolate(
+            y = cur_fpn + f.interpolate(
                 out[self.high_resolution_index],
                 size=cur_fpn.shape[-2:],
                 mode="bilinear",

@@ -1,23 +1,28 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Main class for OTX MaskDINO model."""
+
 from __future__ import annotations
 
 import copy
 import itertools
+from typing import Any, Callable
 
 import torch
 from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.structures import ImageList
 from torch import Tensor, nn
-from torch.nn.modules import Module
 from torchvision import tv_tensors
+from torchvision.models.detection.image_list import ImageList
 
-from otx.algo.instance_segmentation.mask_dino import box_ops
-from otx.algo.instance_segmentation.mask_dino.criterion import SetCriterion
-from otx.algo.instance_segmentation.mask_dino.maskdino_head import MaskDINOHead
-from otx.algo.instance_segmentation.mask_dino.matcher import HungarianMatcher
-from otx.algo.instance_segmentation.mask_dino.misc import ShapeSpec
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.maskdino_encoder import MaskDINOEncoder
-from otx.algo.instance_segmentation.mask_dino.resnet import build_resnet_backbone
-from otx.algo.instance_segmentation.mask_dino.transformer_decoder.maskdino_decoder import MaskDINODecoder
+from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resnet_backbone
+from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
+from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
+from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
+from otx.algo.instance_segmentation.losses import HungarianMatcher, SetCriterion
+from otx.algo.instance_segmentation.utils import box_ops
+from otx.algo.instance_segmentation.utils.utils import ShapeSpec
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
@@ -26,7 +31,7 @@ from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 
-class MaskDINO(nn.Module):
+class _MaskDINO(nn.Module):
     """Main class for mask classification semantic segmentation architectures."""
 
     def __init__(
@@ -38,47 +43,12 @@ class MaskDINO(nn.Module):
         object_mask_threshold: float,
         overlap_threshold: float,
         size_divisibility: int,
-        sem_seg_postprocess_before_inference: bool,
-        pixel_mean: tuple[float],
-        pixel_std: tuple[float],
-        # inference
-        semantic_on: bool,
-        panoptic_on: bool,
-        instance_on: bool,
         test_topk_per_image: int,
-        pano_temp: float,
         focus_on_box: bool = False,
         transform_eval: bool = False,
-        semantic_ce_loss: bool = False,
     ):
-        """Args:
-        backbone: a backbone module, must follow detectron2's backbone interface
-        sem_seg_head: a module that predicts semantic segmentation from backbone features
-        criterion: a module that defines the loss
-        num_queries: int, number of queries
-        object_mask_threshold: float, threshold to filter query based on classification score
-        for panoptic segmentation inference
-        overlap_threshold: overlap threshold used in general inference for panoptic segmentation
-        metadata: dataset meta, get `thing` and `stuff` category names for panoptic
-        segmentation inference
-        size_divisibility: Some backbones require the input height and width to be divisible by a
-        specific integer. We can use this to override such requirement.
-        sem_seg_postprocess_before_inference: whether to resize the prediction back
-        to original input size before semantic segmentation inference or after.
-        For high-resolution dataset like Mapillary, resizing predictions before
-        inference will cause OOM error.
-        pixel_mean, pixel_std: list or tuple with #channels element, representing
-        the per-channel mean and std to be used to normalize the input image
-        semantic_on: bool, whether to output semantic segmentation prediction
-        instance_on: bool, whether to output instance segmentation prediction
-        panoptic_on: bool, whether to output panoptic segmentation prediction
-        test_topk_per_image: int, instance segmentation parameter, keep topk instances per image
-        transform_eval: transform sigmoid score into softmax score to make score sharper
-        semantic_ce_loss: whether use cross-entroy loss in classification
-        """
         super().__init__()
         self.backbone = backbone
-        self.pano_temp = pano_temp
         self.sem_seg_head = sem_seg_head
         self.criterion = criterion
         self.num_queries = num_queries
@@ -88,85 +58,16 @@ class MaskDINO(nn.Module):
             # use backbone size_divisibility if not set
             size_divisibility = self.backbone.size_divisibility
         self.size_divisibility = size_divisibility
-        self.sem_seg_postprocess_before_inference = sem_seg_postprocess_before_inference
-        self.register_buffer("pixel_mean", torch.Tensor(pixel_mean).view(-1, 1, 1), False)
-        self.register_buffer("pixel_std", torch.Tensor(pixel_std).view(-1, 1, 1), False)
 
         # additional args
-        self.semantic_on = semantic_on
-        self.instance_on = instance_on
-        self.panoptic_on = panoptic_on
         self.test_topk_per_image = test_topk_per_image
 
         self.focus_on_box = focus_on_box
         self.transform_eval = transform_eval
-        self.semantic_ce_loss = semantic_ce_loss
-
-        if not self.semantic_on:
-            assert self.sem_seg_postprocess_before_inference
-
-        print("criterion.weight_dict ", self.criterion.weight_dict)
 
     @classmethod
-    def from_config(cls, num_classes):
-        backbone = build_resnet_backbone(
-            norm="FrozenBN",
-            stem_out_channels=64,
-            input_shape=ShapeSpec(channels=3),
-            freeze_at=0,
-            out_features=["res2", "res3", "res4", "res5"],
-            depth=50,
-            num_groups=1,
-            width_per_group=64,
-            in_channels=64,
-            out_channels=256,
-            stride_in_1x1=False,
-            res5_dilation=1,
-        )
-
-        sem_seg_head = MaskDINOHead(
-            input_shape={k: v for k, v in backbone.output_shape().items()},
-            ignore_value=255,
-            num_classes=num_classes,
-            pixel_decoder=MaskDINOEncoder(
-                input_shape={k: v for k, v in backbone.output_shape().items()},
-                conv_dim=256,
-                mask_dim=256,
-                norm="GN",
-                transformer_dropout=0.0,
-                transformer_nheads=8,
-                transformer_dim_feedforward=2048,
-                transformer_enc_layers=6,
-                transformer_in_features=["res3", "res4", "res5"],
-                common_stride=4,
-                total_num_feature_levels=4,
-                num_feature_levels=3,
-                feature_order="low2high",
-            ),
-            loss_weight=1.0,
-            transformer_predictor=MaskDINODecoder(
-                in_channels=256,
-                mask_classification=True,
-                num_classes=num_classes,
-                hidden_dim=256,
-                num_queries=300,
-                nheads=8,
-                dim_feedforward=2048,
-                dec_layers=9,
-                enforce_input_project=False,
-                mask_dim=256,
-                two_stage=True,
-                initialize_box_type="mask2box",
-                dn="seg",
-                noise_scale=0.4,
-                dn_num=100,
-                initial_pred=True,
-                learn_tgt=False,
-                total_num_feature_levels=4,
-                semantic_ce_loss=False,
-            ),
-        )
-
+    def from_config(cls, num_classes: int) -> _MaskDINO:
+        """Build a MaskDINO model from a config."""
         # Loss parameters:
         no_object_weight = 0.1
 
@@ -185,6 +86,55 @@ class MaskDINO(nn.Module):
         oversample_ratio = 3.0
         importance_sample_ratio = 0.75
 
+        dec_layers = 9
+
+        backbone = build_resnet_backbone(
+            norm="FrozenBN",
+            stem_out_channels=64,
+            input_shape=ShapeSpec(channels=3),
+            freeze_at=0,
+            out_features=("res2", "res3", "res4", "res5"),
+            depth=50,
+            num_groups=1,
+            width_per_group=64,
+            in_channels=64,
+            out_channels=256,
+            stride_in_1x1=False,
+            res5_dilation=1,
+        )
+
+        sem_seg_head = MaskDINOHead(
+            ignore_value=255,
+            num_classes=num_classes,
+            pixel_decoder=MaskDINOEncoder(
+                input_shape=backbone.output_shape(),
+                conv_dim=256,
+                mask_dim=256,
+                norm="GN",
+                transformer_dropout=0.0,
+                transformer_nheads=8,
+                transformer_dim_feedforward=2048,
+                transformer_enc_layers=6,
+                transformer_in_features=["res3", "res4", "res5"],
+                common_stride=4,
+                total_num_feature_levels=4,
+                num_feature_levels=3,
+            ),
+            loss_weight=1.0,
+            transformer_predictor=MaskDINODecoder(
+                num_classes=num_classes,
+                hidden_dim=256,
+                num_queries=300,
+                nheads=8,
+                dim_feedforward=2048,
+                dec_layers=9,
+                mask_dim=256,
+                noise_scale=0.4,
+                dn_num=100,
+                total_num_feature_levels=4,
+            ),
+        )
+
         # building matcher
         matcher = HungarianMatcher(
             cost_class=cost_class_weight,
@@ -195,44 +145,37 @@ class MaskDINO(nn.Module):
             num_points=train_num_points,
         )
 
-        weight_dict = {"loss_ce": class_weight}
-        weight_dict.update({"loss_mask": mask_weight, "loss_dice": dice_weight})
-        weight_dict.update({"loss_bbox": box_weight, "loss_giou": giou_weight})
-
-        # two stage is the query selection scheme
-        interm_weight_dict = {}
-        interm_weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
-        weight_dict.update(interm_weight_dict)
+        weight_dict = {
+            "loss_ce": class_weight,
+            "loss_dice": dice_weight,
+            "loss_mask": mask_weight,
+            "loss_bbox": box_weight,
+            "loss_giou": giou_weight,
+        }
+        weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
 
         # denoising training
         weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
-        dn_losses = ["labels", "masks", "boxes"]
 
-        dec_layers = 9
         aux_weight_dict = {}
         for i in range(dec_layers):
             aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
         weight_dict.update(aux_weight_dict)
 
-        losses = ["labels", "masks", "boxes"]
-
         # building criterion
         criterion = SetCriterion(
-            sem_seg_head.num_classes,
+            num_classes=num_classes,
             matcher=matcher,
             weight_dict=weight_dict,
             eos_coef=no_object_weight,
-            losses=losses,
+            losses=["labels", "masks", "boxes"],
             num_points=train_num_points,
             oversample_ratio=oversample_ratio,
             importance_sample_ratio=importance_sample_ratio,
-            dn="seg",
-            dn_losses=dn_losses,
-            panoptic_on=False,
-            semantic_ce_loss=False,
+            dn_losses=["labels", "masks", "boxes"],
         )
 
-        return MaskDINO(
+        return _MaskDINO(
             backbone=backbone,
             sem_seg_head=sem_seg_head,
             criterion=criterion,
@@ -240,85 +183,54 @@ class MaskDINO(nn.Module):
             object_mask_threshold=0.25,
             overlap_threshold=0.8,
             size_divisibility=32,
-            sem_seg_postprocess_before_inference=True,
-            pixel_mean=[123.675, 116.28, 103.53],
-            pixel_std=[58.395, 57.12, 57.375],
-            semantic_on=False,
-            instance_on=True,
-            panoptic_on=False,
             test_topk_per_image=100,
-            focus_on_box=False,
             transform_eval=True,
-            pano_temp=0.06,
-            semantic_ce_loss=False,
         )
 
-    def forward(self, entity: InstanceSegBatchDataEntity):
+    def forward(self, entity: InstanceSegBatchDataEntity) -> dict[str, Tensor]:
+        """Forward pass."""
         img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
         images = ImageList(entity.images, img_shapes)
 
-        features = self.backbone(images.tensor)
+        features = self.backbone(images.tensors)
 
         if self.training:
             targets = []
-            for img_info, bboxes, labels, masks, polygons in zip(
+            for img_info, bboxes, labels, polygons in zip(
                 entity.imgs_info,
                 entity.bboxes,
                 entity.labels,
-                entity.masks,
                 entity.polygons,
             ):
                 masks = polygon_to_bitmap(polygons, *img_info.img_shape)
-                masks = tv_tensors.Mask(masks, device=img_info.device, dtype=torch.bool)
                 norm_shape = torch.tile(torch.tensor(img_info.img_shape, device=img_info.device), (2,))
-
                 targets.append(
                     {
                         "boxes": box_ops.box_xyxy_to_cxcywh(bboxes) / norm_shape,
                         "labels": labels,
-                        "masks": masks,
+                        "masks": tv_tensors.Mask(masks, device=img_info.device, dtype=torch.bool),
                     },
                 )
 
             outputs, mask_dict = self.sem_seg_head(features, targets=targets)
-            # bipartite matching-based loss
             losses = self.criterion(outputs, targets, mask_dict)
-
             for k in list(losses.keys()):
-                if k in self.criterion.weight_dict:
-                    losses[k] *= self.criterion.weight_dict[k]
-                else:
-                    # remove this loss if not specified in `weight_dict`
-                    losses.pop(k)
+                losses[k] *= self.criterion.weight_dict[k]
             return losses
 
         outputs, _ = self.sem_seg_head(features)
         return outputs
 
-    def prepare_targets(self, targets, images):
-        h_pad, w_pad = images.tensor.shape[-2:]
-        new_targets = []
-        for targets_per_image in targets:
-            # pad gt
-            h, w = targets_per_image.image_size
-            image_size_xyxy = torch.as_tensor([w, h, w, h], dtype=torch.float, device=self.device)
-
-            gt_masks = targets_per_image.gt_masks
-            padded_masks = torch.zeros((gt_masks.shape[0], h_pad, w_pad), dtype=gt_masks.dtype, device=gt_masks.device)
-            padded_masks[:, : gt_masks.shape[1], : gt_masks.shape[2]] = gt_masks
-            new_targets.append(
-                {
-                    "labels": targets_per_image.gt_classes,
-                    "masks": padded_masks,
-                    "boxes": box_ops.box_xyxy_to_cxcywh(targets_per_image.gt_boxes.tensor) / image_size_xyxy,
-                },
-            )
-        return new_targets
-
-    def export(self, batch_inputs: Tensor, batch_img_metas: list[dict]):
-        b, c, h, w = batch_inputs.size()
+    def export(
+        self,
+        batch_inputs: Tensor,
+        batch_img_metas: list[dict],
+    ) -> tuple[list[Tensor], list[Tensor], list[Tensor]]:
+        """Export the model."""
+        b, _, h, w = batch_inputs.size()
         if b != 1:
-            raise ValueError("Only support batch size 1 for export")
+            msg = "Only support batch size 1 for export"
+            raise ValueError(msg)
 
         features = self.backbone(batch_inputs)
         outputs, _ = self.sem_seg_head(features)
@@ -374,17 +286,21 @@ class MaskDINO(nn.Module):
 
 
 class MaskDINOR50(ExplainableOTXInstanceSegModel):
+    """OTX MaskDINO model with ResNet50 backbone."""
+
     load_from = "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
     image_size = (1, 3, 1024, 1024)
     tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
-    def _build_model(self, num_classes: int) -> Module:
-        return MaskDINO.from_config(num_classes)
+    def _build_model(self, num_classes: int) -> nn.Module:
+        """Builds the model."""
+        return _MaskDINO.from_config(num_classes)
 
     def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
+        """Create model and load weights if available."""
+        detector = _MaskDINO.from_config(num_classes=self.label_info.num_classes)
         self.classification_layers = self.get_classification_layers("model.")
 
         if self.load_from is not None:
@@ -426,12 +342,13 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             output_names=["bboxes", "labels", "masks"],
         )
 
-    def configure_optimizers(self):
-        optimizer = self.build_optimizer(self.model)
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict[str, Any]]]:
+        """Configure an optimizer and learning-rate schedulers."""
+        optimizer = self._build_optimizer(self.model)
 
         schedulers = self.scheduler_callable(optimizer)
 
-        def ensure_list(item) -> list:
+        def ensure_list(item: Any) -> list:  # noqa: ANN401
             return item if isinstance(item, list) else [item]
 
         lr_scheduler_configs = []
@@ -445,7 +362,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
         return [optimizer], lr_scheduler_configs
 
-    def build_optimizer(self, model):
+    def _build_optimizer(self, model: nn.Module) -> torch.optim.Optimizer:
         base_lr = 0.0001
         weight_decay_norm = 0.0
         weight_decay_embed = 0.0
@@ -461,7 +378,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             torch.nn.BatchNorm2d,
             torch.nn.BatchNorm3d,
             torch.nn.SyncBatchNorm,
-            # NaiveSyncBatchNorm inherits from BatchNorm2d
             torch.nn.GroupNorm,
             torch.nn.InstanceNorm1d,
             torch.nn.InstanceNorm2d,
@@ -493,28 +409,27 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                     hyperparams["weight_decay"] = weight_decay_embed
                 params.append({"params": [value], **hyperparams})
 
-        def add_full_model_gradient_clipping(optim):
+        def add_full_model_gradient_clipping(optim: torch.optim.Optimizer) -> torch.optim.Optimizer:
             class FullModelGradientClippingOptimizer(optim):
-                def step(self, closure=None):
+                def step(self, closure: Callable | None = None) -> None:
                     all_params = itertools.chain(*[x["params"] for x in self.param_groups])
                     torch.nn.utils.clip_grad_norm_(all_params, clip_gradients_value)
                     super().step(closure=closure)
 
             return FullModelGradientClippingOptimizer
 
-        optimizer = add_full_model_gradient_clipping(torch.optim.AdamW)(params, base_lr)
-        return optimizer
+        return add_full_model_gradient_clipping(torch.optim.AdamW)(params, base_lr)
 
-    def _customize_inputs(self, entity: InstanceSegBatchDataEntity):
+    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, InstanceSegBatchDataEntity]:
         if isinstance(entity.images, list):
             entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         return {"entity": entity}
 
     def _customize_outputs(
         self,
-        outputs,
+        outputs: dict[str, Tensor],  # type: ignore[override]
         inputs: InstanceSegBatchDataEntity,
-    ):
+    ) -> OTXBatchLossEntity | InstanceSegBatchPredEntity:
         if self.training:
             return sum(outputs.values())
 
@@ -540,9 +455,10 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
     def post_process_instance_segmentation(
         self,
-        outputs,
-        imgs_info,
+        outputs: dict[str, Tensor],
+        imgs_info: list[ImageInfo],
     ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+        """Post-process MaskDINO outputs."""
         class_queries_logits = outputs["pred_logits"]
         masks_queries_logits = outputs["pred_masks"]
         mask_box_results = outputs["pred_boxes"]
@@ -572,15 +488,15 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
             topk_indices = topk_indices // num_classes
 
-            mask_pred = torch.nn.functional.interpolate(
+            mask_pred = torch.nn.functional.interpolate(  # noqa: PLW2901
                 mask_pred.unsqueeze(0),
                 size=(ori_h, ori_w),
                 mode="bilinear",
                 align_corners=False,
             )[0]
 
-            mask_pred = mask_pred[topk_indices]
-            pred_boxes = pred_boxes[topk_indices]
+            mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
+            pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
             pred_masks = (mask_pred > 0).float()
 
             # Calculate average mask prob
@@ -590,7 +506,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             pred_scores = scores_per_image * mask_scores_per_image
             pred_classes = labels_per_image
 
-            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)
+            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)  # noqa: PLW2901
             pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
             pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)
 
