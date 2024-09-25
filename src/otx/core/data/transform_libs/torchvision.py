@@ -3109,6 +3109,46 @@ class Normalize3D(tvt_v2.Normalize):
         return inputs
 
 
+class GetBBoxCenterScale(tvt_v2.Transform):
+    """Convert bboxes from [x, y, w, h] to center and scale.
+
+    The center is the coordinates of the bbox center, and the scale is the
+    bbox width and height normalized by a scale factor.
+    Required Keys:
+        - bbox
+    Modified Keys:
+        - bbox_center
+        - bbox_scale
+    Args:
+        padding (float): The bbox padding scale that will be multilied to
+            `bbox_scale`. Defaults to 1.25
+    """
+
+    def __init__(self, padding: float = 1.25) -> None:
+        super().__init__()
+
+        self.padding = padding
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform function to add bbox_infos from bboxes for keypoint detection task."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        bbox = inputs.bboxes[0].numpy()
+        inputs.bbox_info.center = (bbox[2:] + bbox[:2]) * 0.5
+        inputs.bbox_info.scale = (bbox[2:] - bbox[:2]) * self.padding
+
+        return inputs
+
+    def __repr__(self) -> str:
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        return self.__class__.__name__ + f"(padding={self.padding})"
+
+
 class RandomBBoxTransform(tvt_v2.Transform):
     r"""Rnadomly shift, resize and rotate the bounding boxes.
 
@@ -3202,16 +3242,7 @@ class RandomBBoxTransform(tvt_v2.Transform):
         return offset, scale, rotate
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        """The transform function of :class:`RandomBboxTransform`.
-
-        See ``transform()`` method of :class:`BaseTransform` for details.
-
-        Args:
-            results (dict): The result dict
-
-        Returns:
-            dict: The result dict.
-        """
+        """Transform function to adjust bbox_infos randomly."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
@@ -3378,16 +3409,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         return torch.from_numpy(warped_image).permute(2, 0, 1)
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        """The transform function of :class:`TopdownAffine`.
-
-        See ``transform()`` method of :class:`BaseTransform` for details.
-
-        Args:
-            results (dict): The result dict
-
-        Returns:
-            dict: The result dict.
-        """
+        """Transform function to affine image through warp matrix."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 

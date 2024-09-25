@@ -1,0 +1,48 @@
+# Description.
+model_template_id: Object_Detection_RTDetr_101
+name: RTDetr_101
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Object Detection for RTDetr_101
+application: ~
+
+# Algo backend.
+framework: OTXDetection v2.9.1
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+        auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 8
+      learning_rate:
+        default_value: 0.0001
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 200
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 259
+size: 76
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

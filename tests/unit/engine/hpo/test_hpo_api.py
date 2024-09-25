@@ -148,6 +148,7 @@ def test_execute_hpo(
 
     # check hpo workdir exists
     assert (engine_work_dir / "hpo").exists()
+    assert (engine_work_dir / "hpo" / "best_hp.json").exists()
     # check a case where progress_update_callback exists
     mock_thread.assert_called_once()
     assert mock_thread.call_args.kwargs["target"] == _update_hpo_progress

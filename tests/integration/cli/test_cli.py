@@ -158,15 +158,8 @@ def test_otx_e2e(
             ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
             ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
         ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
-    elif "anomaly" in task:
-        fxt_export_list = [
-            ExportCase2Test("ONNX", False, "exported_model.onnx"),
-            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
-        ]  # anomaly doesn't support exportable code
 
     overrides = fxt_cli_override_command_per_task[task]
-    if "anomaly" in task:
-        overrides = {}  # Overrides are not needed in export
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for export_case in fxt_export_list:
