@@ -137,12 +137,15 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
         return inputs
 
-    def _customize_outputs(
+    def _customize_outputs(  # type: ignore[override]
         self,
-        outputs: list[InstanceData] | dict,
+        outputs: list[InstanceData] | dict | None,
         inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+    ) -> DetBatchPredEntity | OTXBatchLossEntity | None:
         if self.training:
+            if outputs is None:
+                return outputs
+
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)
 
