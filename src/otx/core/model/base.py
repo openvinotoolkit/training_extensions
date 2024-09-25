@@ -145,6 +145,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         """Step for model training."""
         train_loss = self.forward(inputs=batch)
         if train_loss is None:
+            # to skip current iteration
             # TODO (sungchul): check this in distributed training
             return None if self.trainer.world_size == 1 else torch.tensor(0.0, device=self.device)
 
