@@ -1,0 +1,42 @@
+# Description.
+model_template_id: Custom_Action_Detection_X3D_FAST_RCNN
+name: X3D_FAST_RCNN
+task_type: ACTION_DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Basic transfer learning template for Fast RCNN with 3D action backbone
+application: ~
+
+# Algo backend.
+framework: OTXAction v2.9.1
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 8
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.005
+        auto_hpo_state: POSSIBLE
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 20.6
+size: 9.1
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

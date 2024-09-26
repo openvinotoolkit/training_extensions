@@ -1,0 +1,43 @@
+# Description.
+model_template_id: Custom_Instance_Segmentation_RTMDet_tiny
+name: RTMDet_tiny
+task_type: INSTANCE_SEGMENTATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Instance Segmentation for RTMDet_tiny
+application: ~
+
+# Algo backend.
+framework: OTXDetection v2.9.1
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+        auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 1
+      learning_rate:
+        default_value: 0.001
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 20
+      num_iters:
+        default_value: 100
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 11.8
+size: 5.6

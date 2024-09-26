@@ -138,6 +138,9 @@ class YOLOX(ExplainableOTXDetModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
+        resize_mode: Literal["standard", "fit_to_window_letterbox"] = "fit_to_window_letterbox"
+        if self.tile_config.enable_tiler:
+            resize_mode = "standard"
         swap_rgb = self.model_name != "yolox_tiny"  # only YOLOX-TINY uses RGB
 
         return OTXNativeModelExporter(
@@ -145,7 +148,7 @@ class YOLOX(ExplainableOTXDetModel):
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
-            resize_mode="fit_to_window_letterbox",
+            resize_mode=resize_mode,
             pad_value=114,
             swap_rgb=swap_rgb,
             via_onnx=True,

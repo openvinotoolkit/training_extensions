@@ -98,19 +98,24 @@ class DETR(BaseModule):
         if explain_mode:
             msg = "Explain mode is not supported for DETR models yet."
             raise NotImplementedError(msg)
-        return self.postprocess(self._forward_features(batch_inputs), deploy_mode=True)
+
+        return self.postprocess(
+            self._forward_features(batch_inputs),
+            [meta["img_shape"] for meta in batch_img_metas],
+            deploy_mode=True,
+        )
 
     def postprocess(
         self,
         outputs: dict[str, Tensor],
-        original_size: tuple[int, int] | None = None,
+        original_sizes: list[tuple[int, int]],
         deploy_mode: bool = False,
     ) -> dict[str, Tensor] | tuple[list[Tensor], list[Tensor], list[Tensor]]:
         """Post-processes the model outputs.
 
         Args:
             outputs (dict[str, Tensor]): The model outputs.
-            original_size (tuple[int, int], optional): The original size of the input images. Defaults to None.
+            original_sizes (list[tuple[int, int]]): The original image sizes.
             deploy_mode (bool, optional): Whether to run in deploy mode. Defaults to False.
 
         Returns:
@@ -120,9 +125,9 @@ class DETR(BaseModule):
 
         # convert bbox to xyxy and rescale back to original size (resize in OTX)
         bbox_pred = box_convert(boxes, in_fmt="cxcywh", out_fmt="xyxy")
-        if not deploy_mode and original_size is not None:
-            original_size_tensor = torch.tensor(original_size).to(bbox_pred.device)
-            bbox_pred *= original_size_tensor.repeat(1, 2).unsqueeze(1)
+        if not deploy_mode:
+            original_size_tensor = torch.tensor(original_sizes).to(bbox_pred.device)
+            bbox_pred *= original_size_tensor.flip(1).repeat(1, 2).unsqueeze(1)
 
         # perform scores computation and gather topk results
         scores = nn.functional.sigmoid(logits)
@@ -136,7 +141,7 @@ class DETR(BaseModule):
 
         scores_list, boxes_list, labels_list = [], [], []
 
-        for sc, bb, ll in zip(scores, boxes, labels):
+        for sc, bb, ll, original_size in zip(scores, boxes, labels, original_sizes):
             scores_list.append(sc)
             boxes_list.append(
                 BoundingBoxes(bb, format="xyxy", canvas_size=original_size),

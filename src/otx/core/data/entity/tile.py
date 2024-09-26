@@ -8,17 +8,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Sequence
 
+import torch
+from torchvision import tv_tensors
+
 from otx.core.data.entity.utils import stack_batch
 from otx.core.types.task import OTXTaskType
 
 from .base import ImageInfo, T_OTXBatchDataEntity, T_OTXDataEntity
 from .detection import DetBatchDataEntity, DetDataEntity
 from .instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
+from .segmentation import SegBatchDataEntity, SegDataEntity
 
 if TYPE_CHECKING:
     from datumaro import Polygon
     from torch import LongTensor
-    from torchvision import tv_tensors
 
 
 @dataclass
@@ -125,7 +128,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
                     labels=[[] for _ in range(self.batch_size)],
                 ),
             )
-        return list(zip(batch_tile_attr_list, batch_data_entities))
+        return list(zip(batch_tile_attr_list, batch_data_entities, strict=True))
 
     @classmethod
     def collate_fn(cls, batch_entities: list[TileDetDataEntity]) -> TileBatchDetDataEntity:
@@ -218,7 +221,7 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
             )
             for i in range(0, len(tiles), self.batch_size)
         ]
-        return list(zip(batch_tile_attr_list, batch_data_entities))
+        return list(zip(batch_tile_attr_list, batch_data_entities, strict=True))
 
     @classmethod
     def collate_fn(cls, batch_entities: list[TileInstSegDataEntity]) -> TileBatchInstSegDataEntity:
@@ -251,4 +254,81 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
             labels=[tile_entity.ori_labels for tile_entity in batch_entities],
             masks=[tile_entity.ori_masks for tile_entity in batch_entities],
             polygons=[tile_entity.ori_polygons for tile_entity in batch_entities],
+        )
+
+
+@dataclass
+class TileSegDataEntity(TileDataEntity):
+    """Data entity for segmentation tile task.
+
+    Attributes:
+        ori_masks (tv_tensors.Mask): The masks of the original image.
+    """
+
+    ori_masks: tv_tensors.Mask
+
+    @property
+    def task(self) -> OTXTaskType:
+        """OTX Task type definition."""
+        return OTXTaskType.SEMANTIC_SEGMENTATION
+
+
+@dataclass
+class TileBatchSegDataEntity(OTXTileBatchDataEntity):
+    """Batch data entity for semantic segmentation tile task.
+
+    Attributes:
+        masks (list[tv_tensors.Mask]): The masks of the original image.
+    """
+
+    masks: list[tv_tensors.Mask]
+
+    def unbind(self) -> list[tuple[list[dict[str, int | str]], SegBatchDataEntity]]:
+        """Unbind batch data entity for semantic segmentation task."""
+        tiles = [tile for tiles in self.batch_tiles for tile in tiles]
+        tile_infos = [tile_info for tile_infos in self.batch_tile_img_infos for tile_info in tile_infos]
+        tile_attr_list = [tile_attr for tile_attrs in self.batch_tile_attr_list for tile_attr in tile_attrs]
+
+        batch_tile_attr_list = [
+            tile_attr_list[i : i + self.batch_size] for i in range(0, len(tile_attr_list), self.batch_size)
+        ]
+        batch_data_entities = [
+            SegBatchDataEntity(
+                batch_size=self.batch_size,
+                images=tv_tensors.wrap(torch.stack(tiles[i : i + self.batch_size]), like=tiles[0]),
+                imgs_info=tile_infos[i : i + self.batch_size],
+                masks=[[] for _ in range(self.batch_size)],
+            )
+            for i in range(0, len(tiles), self.batch_size)
+        ]
+        return list(zip(batch_tile_attr_list, batch_data_entities))
+
+    @classmethod
+    def collate_fn(cls, batch_entities: list[TileSegDataEntity]) -> TileBatchSegDataEntity:
+        """Collate function to collect TileSegDataEntity into TileBatchSegDataEntity in data loader."""
+        if (batch_size := len(batch_entities)) == 0:
+            msg = "collate_fn() input should have > 0 entities"
+            raise RuntimeError(msg)
+
+        task = batch_entities[0].task
+
+        for tile_entity in batch_entities:
+            for entity in tile_entity.entity_list:
+                if entity.task != task:
+                    msg = "collate_fn() input should include a single OTX task"
+                    raise RuntimeError(msg)
+
+                if not isinstance(entity, SegDataEntity):
+                    msg = "All entities should be SegDataEntity before collate_fn()"
+                    raise TypeError(msg)
+
+        return TileBatchSegDataEntity(
+            batch_size=batch_size,
+            batch_tiles=[[entity.image for entity in tile_entity.entity_list] for tile_entity in batch_entities],
+            batch_tile_img_infos=[
+                [entity.img_info for entity in tile_entity.entity_list] for tile_entity in batch_entities
+            ],
+            batch_tile_attr_list=[tile_entity.tile_attr_list for tile_entity in batch_entities],
+            imgs_info=[tile_entity.ori_img_info for tile_entity in batch_entities],
+            masks=[tile_entity.ori_masks for tile_entity in batch_entities],
         )

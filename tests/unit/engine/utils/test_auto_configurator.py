@@ -214,3 +214,5 @@ class TestAutoConfigurator:
         assert updated_datamodule.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]
 
         assert updated_datamodule.test_subset.transform_lib_type == TransformLibType.TORCHVISION
+        assert not updated_datamodule.tile_config.enable_tiler
+        assert updated_datamodule.unlabeled_subset.data_root is None

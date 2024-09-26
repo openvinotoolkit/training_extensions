@@ -1,7 +1,9 @@
 #!/bin/bash
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154,SC2035,SC2046
 
-OTX_VERSION=$(python -c 'import otx; print(otx.__version__)')
+if [ "$OTX_VERSION" == "" ]; then
+    OTX_VERSION=$(python -c 'import otx; print(otx.__version__)')
+fi
 THIS_DIR=$(dirname "$0")
 
 echo "Build OTX ${OTX_VERSION} CUDA Docker image..."

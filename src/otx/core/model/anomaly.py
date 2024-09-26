@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import logging as log
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import torch
@@ -39,7 +38,8 @@ if TYPE_CHECKING:
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
-from otx.core.types.label import AnomalyLabelInfo
+
+    from otx.core.types.label import LabelInfoTypes
 
 AnomalyModelInputs: TypeAlias = (
     AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch
@@ -57,8 +57,8 @@ class OTXAnomaly(OTXModel):
             Model input size in the order of height and width. Defaults to None.
     """
 
-    def __init__(self, input_size: tuple[int, int]) -> None:
-        super().__init__(label_info=AnomalyLabelInfo(), input_size=input_size)
+    def __init__(self, label_info: LabelInfoTypes, input_size: tuple[int, int]) -> None:
+        super().__init__(label_info=label_info, input_size=input_size)
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
         self.trainer: Trainer
@@ -180,18 +180,12 @@ class OTXAnomaly(OTXModel):
         inputs: AnomalyModelInputs,
     ) -> dict[str, Any]:
         """Customize inputs for the model."""
-        return_dict = {}
-        if isinstance(inputs, AnomalyClassificationDataBatch):
-            return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
-        if isinstance(inputs, AnomalySegmentationDataBatch):
-            return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
-        if isinstance(inputs, AnomalyDetectionDataBatch):
-            return_dict = {
-                "image": inputs.images,
-                "label": torch.vstack(inputs.labels).squeeze(),
-                "mask": inputs.masks,
-                "boxes": inputs.boxes,
-            }
+        return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
+        if isinstance(inputs, AnomalySegmentationDataBatch) and inputs.masks is not None:
+            return_dict["mask"] = inputs.masks
+        if isinstance(inputs, AnomalyDetectionDataBatch) and inputs.masks is not None and inputs.boxes is not None:
+            return_dict["mask"] = inputs.masks
+            return_dict["boxes"] = inputs.boxes
 
         if return_dict["label"].size() == torch.Size([]):  # when last batch size is 1
             return_dict["label"] = return_dict["label"].unsqueeze(0)
@@ -284,12 +278,6 @@ class OTXAnomaly(OTXModel):
         Returns:
             Path: path to the exported model.
         """
-        if export_format == OTXExportFormatType.OPENVINO:
-            if to_exportable_code:
-                msg = "Exportable code option is not supported yet for anomaly tasks and will be ignored."
-                log.warning(msg)
-            to_exportable_code = False
-
         return self._exporter.export(
             model=self.model,
             output_dir=output_dir,
