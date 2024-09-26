@@ -5,24 +5,21 @@ model:
     label_info: 80
 
     optimizer:
-      class_path: torch.optim.SGD
+      class_path: torch.optim.Adam
       init_args:
-        lr: 0.01
-        momentum: 0.937
-        weight_decay: 0.0005
-        nesterov: true
+        lr: 0.001
 
     scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
       init_args:
         num_warmup_steps: 3
-        warmup_interval: epoch
         main_scheduler_callable:
-          class_path: torch.optim.lr_scheduler.LinearLR
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
           init_args:
-            total_iters: 200
-            start_factor: 1
-            end_factor: 0.01
+            mode: max
+            factor: 0.1
+            patience: 4
+            monitor: val/map_50
 
 engine:
   task: DETECTION
@@ -42,23 +39,28 @@ overrides:
     input_size:
       - 640
       - 640
-    image_color_channel: BGR
     train_subset:
-      batch_size: 16
+      batch_size: 14
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
           init_args:
             random_pop: false
             max_cached_images: 20
             img_scale: $(input_size) # (H, W)
-        - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
+        - class_path: otx.core.data.transform_libs.torchvision.RandomAffine
           init_args:
-            crop_size: $(input_size) * 0.5
+            scaling_ratio_range:
+              - 0.1
+              - 2.0
+            border: $(input_size) * -0.5
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             scale: $(input_size)
             keep_ratio: true
             transform_bbox: true
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+          init_args:
+            prob: 0.5
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_to_square: true
@@ -75,7 +77,7 @@ overrides:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 
     val_subset:
-      batch_size: 16
+      batch_size: 14
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
@@ -95,7 +97,7 @@ overrides:
             std: [255.0, 255.0, 255.0]
 
     test_subset:
-      batch_size: 16
+      batch_size: 14
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
