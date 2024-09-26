@@ -11,112 +11,7 @@ import torch
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.object_detection_3d.utils.utils import get_clones
-
-
-class TransformerEncoder(nn.Module):
-    """TransformerEncoder module."""
-
-    def __init__(self, encoder_layer: nn.Module, num_layers: int, norm: nn.Module = None) -> None:
-        """Initialize the TransformerEncoder.
-
-        Args:
-            encoder_layer (nn.Module): The encoder layer module.
-            num_layers (int): The number of encoder layers.
-            norm (nn.Module, optional): The normalization module. Defaults to None.
-        """
-        super().__init__()
-        self.layers = get_clones(encoder_layer, num_layers)
-        self.num_layers = num_layers
-        self.norm = norm
-
-    def forward(self, src: torch.Tensor, src_key_padding_mask: torch.Tensor, pos: torch.Tensor) -> torch.Tensor:
-        """Forward pass of the TransformerEncoder.
-
-        Args:
-            src (torch.Tensor): The source tensor.
-            src_key_padding_mask (torch.Tensor): The mask for source key padding.
-            pos (torch.Tensor): The positional encoding tensor.
-
-        Returns:
-            torch.Tensor: The output tensor.
-        """
-        output = src
-
-        for layer in self.layers:
-            output = layer(output, src_key_padding_mask=src_key_padding_mask, pos=pos)
-
-        if self.norm is not None:
-            output = self.norm(output)
-
-        return output
-
-
-class TransformerEncoderLayer(nn.Module):
-    """TransformerEncoderLayer module."""
-
-    def __init__(
-        self,
-        d_model: int,
-        nhead: int,
-        dim_feedforward: int = 2048,
-        dropout: float = 0.1,
-        activation: Callable[..., nn.Module] = nn.ReLU,
-    ) -> None:
-        """Initialize the TransformerEncoderLayer.
-
-        Args:
-            d_model (int): The dimension of the input feature.
-            nhead (int): The number of attention heads.
-            dim_feedforward (int, optional): The dimension of the feedforward network. Defaults to 2048.
-            dropout (float, optional): The dropout rate. Defaults to 0.1.
-            activation (Callable[..., nn.Module], optional): The activation function. Defaults to nn.ReLU.
-        """
-        super().__init__()
-        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
-        # self.self_attn = LinearAttention(d_model, nhead, dropout=dropout)
-        # Implementation of Feedforward model
-        self.linear1 = nn.Linear(d_model, dim_feedforward)
-        self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(dim_feedforward, d_model)
-
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
-        self.dropout1 = nn.Dropout(dropout)
-        self.dropout2 = nn.Dropout(dropout)
-
-        self.activation = activation()
-
-    def _with_pos_embed(self, tensor: torch.Tensor, pos: torch.Tensor) -> torch.Tensor:
-        return tensor if pos is None else tensor + pos
-
-    def forward(
-        self,
-        src: torch.Tensor,
-        src_key_padding_mask: torch.Tensor,
-        pos: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Forward pass of the TransformerEncoderLayer.
-
-        Args:
-            src (torch.Tensor): The source tensor.
-            src_key_padding_mask (torch.Tensor): The mask for source key padding.
-            pos (torch.Tensor): The positional encoding tensor.
-
-        Returns:
-            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The output tensors.
-                - depth_logits: The depth logits tensor.
-                - depth_embed: The depth embedding tensor.
-                - weighted_depth: The weighted depth tensor.
-                - depth_pos_embed_ip: The interpolated depth positional embedding tensor.
-        """
-        q = k = self._with_pos_embed(src, pos)
-        src2 = self.self_attn(q, k, value=src, key_padding_mask=src_key_padding_mask)[0]
-        src = src + self.dropout1(src2)
-        src = self.norm1(src)
-        src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
-        src = src + self.dropout2(src2)
-        return self.norm2(src)
+from otx.algo.detection.necks.hybrid_encoder import TransformerEncoder, TransformerEncoderLayer
 
 
 class DepthPredictor(nn.Module):
@@ -160,7 +55,7 @@ class DepthPredictor(nn.Module):
 
         self.depth_classifier = nn.Conv2d(d_model, depth_num_bins + 1, kernel_size=(1, 1))
 
-        depth_encoder_layer = TransformerEncoderLayer(d_model, nhead=8, dim_feedforward=256, dropout=0.1)
+        depth_encoder_layer = TransformerEncoderLayer(d_model, nhead=8, dim_feedforward=256, dropout=0.1, normalize_before=True)
 
         self.depth_encoder = TransformerEncoder(depth_encoder_layer, 1)
 
