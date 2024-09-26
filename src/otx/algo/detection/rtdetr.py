@@ -135,7 +135,7 @@ class RTDETR(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: list[torch.Tensor] | dict,
+        outputs: list[torch.Tensor] | dict,  # type: ignore[override]
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         if self.training:
