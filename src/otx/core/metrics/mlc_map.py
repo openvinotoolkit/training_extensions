@@ -7,15 +7,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import torch
-from torchmetrics import Metric
 import numpy as np
-
-from otx.core.metrics.types import MetricCallable
+import torch
 from torch import Tensor
+from torchmetrics import Metric
 
 if TYPE_CHECKING:
-
     from otx.core.types.label import LabelInfo
 
 
@@ -52,16 +49,15 @@ class MultilabelmAP(Metric):
 
     def compute(self) -> Tensor | dict[str, Any]:
         """Compute the metric."""
-
-        metric_value = _mAP(torch.stack(self.targets).cpu().numpy(), torch.stack(self.preds).cpu().numpy())
+        metric_value = _map(torch.stack(self.targets).cpu().numpy(), torch.stack(self.preds).cpu().numpy())
 
         return {"mAP": Tensor([metric_value])}
 
 
-def _mAP(targs: np.ndarray, preds: np.ndarray, pos_thr: float=0.5):
-    """Computes multi-label mAP metric.
-    """
-    def average_precision(output, target) -> float:
+def _map(targs: np.ndarray, preds: np.ndarray, pos_thr: float = 0.5) -> float:
+    """Computes multi-label mAP metric."""
+
+    def average_precision(output: np.ndarray, target: np.ndarray) -> float:
         epsilon = 1e-8
 
         # sort examples
@@ -76,13 +72,12 @@ def _mAP(targs: np.ndarray, preds: np.ndarray, pos_thr: float=0.5):
         pos_count_[np.logical_not(ind)] = 0
         pp = pos_count_ / total_count_
         precision_at_i_ = np.sum(pp)
-        precision_at_i = precision_at_i_ / (total + epsilon)
 
-        return precision_at_i
+        return precision_at_i_ / (total + epsilon)
 
     if np.size(preds) == 0:
         return 0
-    ap = np.zeros((preds.shape[1]))
+    ap = np.zeros(preds.shape[1])
     # compute average precision for each class
     for k in range(preds.shape[1]):
         scores = preds[:, k]
@@ -91,8 +86,8 @@ def _mAP(targs: np.ndarray, preds: np.ndarray, pos_thr: float=0.5):
 
     tp, fp, fn, tn = [], [], [], []
     for k in range(preds.shape[0]):
-        scores = preds[k,:]
-        targets = targs[k,:]
+        scores = preds[k, :]
+        targets = targs[k, :]
         pred = (scores > pos_thr).astype(np.int32)
         tp.append(((pred + targets) == 2).sum())
         fp.append(((pred - targets) == 1).sum())
