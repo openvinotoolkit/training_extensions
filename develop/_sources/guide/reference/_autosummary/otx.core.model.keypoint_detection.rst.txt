@@ -18,6 +18,7 @@ otx.core.model.keypoint\_detection
    .. autosummary::
    
       OTXKeypointDetectionModel
+      OVKeypointDetectionModel
    
    
 
