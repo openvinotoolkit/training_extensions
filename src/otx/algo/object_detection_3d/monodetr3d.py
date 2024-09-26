@@ -32,7 +32,7 @@ class MonoDETR3D(OTX3DDetectionModel):
     mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
     std: tuple[float, float, float] = (0.229, 0.224, 0.225)
     input_size: tuple[int, int] = (384, 1280)  # HxW
-    load_from: str | None = None
+    load_from: str | None = "/home/kprokofi/MonoDETR/checkpoint_best_2.pth"
 
     def _build_model(self, num_classes: int) -> MonoDETR:
         # backbone

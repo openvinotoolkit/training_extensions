@@ -11,7 +11,7 @@ import numpy as np
 from torch import Tensor
 from torchmetrics import Metric
 
-from otx.core.data.dataset.kitti_3d.kitti_eval_python.eval import get_coco_eval_result
+from otx.core.metrics.kitti_3d_eval import get_coco_eval_result
 
 if TYPE_CHECKING:
     from otx.core.types.label import LabelInfo

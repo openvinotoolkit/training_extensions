@@ -173,10 +173,6 @@ class KITTI_Dataset(data.Dataset):
 
         info = {"img_id": index, "img_size": img_size, "bbox_downsample_ratio": img_size / features_size}
 
-        # if self.split == 'test':
-        #     calib = self.get_calib(index)
-        #     return img, calib.P2, img, info
-
         #  ============================   get labels   ==============================
         objects = self.get_label(index)
         calib = self.get_calib(index)

@@ -1,6 +1,11 @@
 # flake8: noqa
 # mypy: ignore-errors
 
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""KITTI 3D eval for OTX."""
+
 from __future__ import annotations
 
 import io as sysio
@@ -8,8 +13,12 @@ from typing import Any
 
 import numba
 import numpy as np
+import torch
 
-from .rotate_iou import rotate_iou_eval
+if torch.cuda.is_available():
+    from .rotate_gpu_iou import rotate_iou_eval_gpu as rotate_iou_eval
+else:
+    from .rotate_iou import rotate_iou_eval_cpu as rotate_iou_eval
 
 
 @numba.jit(nopython=True)
@@ -797,6 +806,6 @@ def get_coco_eval_result(
         result += print_str(f"bbox AP:{mAPbbox[j, 0]:.2f}, {mAPbbox[j, 1]:.2f}, {mAPbbox[j, 2]:.2f}")
         result += print_str(f"3d   AP:{mAP3d[j, 0]:.2f}, {mAP3d[j, 1]:.2f}, {mAP3d[j, 2]:.2f}")
 
-    print(result)
+    print("\n COCO style evaluation results: \n", result)
 
     return mAPbbox, mAP3d

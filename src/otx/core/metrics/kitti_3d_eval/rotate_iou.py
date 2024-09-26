@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Rotate IoU for KITTI3D metric."""
+"""Rotate IoU for KITTI3D metric, cpu version."""
 
 import math
 
@@ -399,7 +399,7 @@ def dev_rotate_iou_eval(
 
 
 @numba.jit(nopython=True, inline="always")
-def rotate_iou_eval(
+def rotate_iou_eval_cpu(
     boxes: np.ndarray,  # shape: (n, 5)
     query_boxes: np.ndarray,  # shape: (k, 5)
     criterion: int = -1,  # IoU criterion to use. Defaults to -1.
