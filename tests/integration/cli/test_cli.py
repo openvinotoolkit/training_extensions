@@ -195,6 +195,10 @@ def test_otx_e2e(
         print("Inference and explain are not supported for keypoint detection")
         return
 
+    if "3d" in recipe:
+        print("Inference and explain are not supported for object detection 3d")
+        return
+
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
     ov_files = list(ov_output_dir.rglob("exported*.xml"))

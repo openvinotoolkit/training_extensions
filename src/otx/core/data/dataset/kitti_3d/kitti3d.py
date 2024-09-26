@@ -48,7 +48,7 @@ class KITTI_Dataset(data.Dataset):
         self.max_objs = 50
         self.class_name = ["Pedestrian", "Car", "Cyclist"]
         self.cls2id = {"Pedestrian": 0, "Car": 1, "Cyclist": 2}
-        self.resolution = np.array([1280, 384])  # W * H
+        self.resolution = np.array([100, 30])  # W * H
         self.use_3d_center = use_3d_center
         self.writelist = writelist
         # anno: use src annotations as GT, proj: use projected 2d bboxes as GT
@@ -76,6 +76,7 @@ class KITTI_Dataset(data.Dataset):
 
         # data augmentation configuration
         self.data_augmentation = True if split in ["train"] else False
+        self.data_augmentation = False
 
         self.aug_pd = aug_pd
         self.aug_crop = aug_crop
@@ -248,7 +249,7 @@ class KITTI_Dataset(data.Dataset):
             if random_flip_flag and not self.aug_calib:  # random flip for center3d
                 center_3d[0] = img_size[0] - center_3d[0]
             center_3d = affine_transform(center_3d.reshape(-1), trans)
-
+            affine_transform(objects[i].pos, trans)
             # filter 3d center out of img
             proj_inside_img = True
 
