@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from datumaro.components.annotation import Annotation, Bbox, Polygon
 from datumaro.components.dataset import Dataset as DmDataset
+from otx.core.types.label import LabelInfo
 
 if TYPE_CHECKING:
     from datumaro.components.dataset_base import DatasetItem
@@ -21,6 +22,7 @@ def pre_filtering(
     data_format: str,
     unannotated_items_ratio: float,
     ignore_index: int | None = None,
+    correct_label_info: list[str] | None = None,
 ) -> DmDataset:
     """Pre-filtering function to filter the dataset based on certain criteria.
 
@@ -38,7 +40,7 @@ def pre_filtering(
     msg = f"There are empty annotation items in train set, Of these, only {unannotated_items_ratio*100}% are used."
     warnings.warn(msg, stacklevel=2)
     dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
-    dataset = remove_unused_labels(dataset, data_format, ignore_index)
+    dataset = remove_unused_labels(dataset, data_format, ignore_index, correct_label_info)
     if unannotated_items_ratio > 0:
         empty_items = [item.id for item in dataset if item.subset == "train" and len(item.annotations) == 0]
         used_background_items = set(sample(empty_items, int(len(empty_items) * unannotated_items_ratio)))
@@ -72,7 +74,7 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: 
     return True
 
 
-def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int | None) -> DmDataset:
+def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int | None, correct_label_info: list[str] | None = None) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
@@ -86,9 +88,16 @@ def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int
             "Please, check `dataset_meta.json` file."
         )
         raise ValueError(msg)
+    if data_format == "kitti3d" and correct_label_info is not None:
+        # TODO(Kirill): remove it when Datumaro provides an automatic subset detection
+        # Currently, val and train subsets have different label indexes
+        # Remove all labels from KITTI except for Car
+        mapping = {"Car": "Car"}
+        return dataset.transform("remap_labels", mapping=mapping, default="delete")
     if len(used_labels) == len(original_categories):
         return dataset
     msg = "There are unused labels in dataset, they will be filtered out before training."
     warnings.warn(msg, stacklevel=2)
+
     mapping = {original_categories[idx]: original_categories[idx] for idx in used_labels}
     return dataset.transform("remap_labels", mapping=mapping, default="delete")

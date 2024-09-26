@@ -146,18 +146,15 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     ) -> list[dict[str, np.ndarray]]:
         """Decode the detection results for KITTI format."""
 
-        def get_heading_angle(heading):
+        def _get_heading_angle(heading):
+            """Get heading angle."""
             heading_bin, heading_res = heading[0:12], heading[12:24]
             cls = np.argmax(heading_bin)
             res = heading_res[cls]
             return class2angle(cls, res, to_label_format=True)
 
-        def alpha2ry(calib_matrix, alpha, u):
-            """Get rotation_y by alpha + theta - 180
-            alpha : Observation angle of object, ranging [-pi..pi]
-            x : Object center x to the camera center (x-W/2), in pixels
-            rotation_y : Rotation ry around Y-axis in camera coordinates [-pi..pi]
-            """
+        def _alpha2ry(calib_matrix: np.ndarray, alpha: np.ndarray, u: np.ndarray) -> np.ndarray:
+            """Transfer alpha to ry."""
             cu = calib_matrix[0, 2]
             fu = calib_matrix[0, 0]
 
@@ -170,12 +167,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
             return ry
 
-        def img_to_rect(calib_matrix, u, v, depth_rect):
-            """:param u: (N)
-            :param v: (N)
-            :param depth_rect: (N)
-            :return:
-            """
+        def _img_to_rect(calib_matrix: np.ndarray, u: np.ndarray, v: np.ndarray, depth_rect: np.ndarray) -> np.ndarray:
+            """Transfer 2d image coordinate to 3d rect coordinate."""
             cu = calib_matrix[0, 2]
             cv = calib_matrix[1, 2]
             fu = calib_matrix[0, 0]
@@ -220,13 +213,13 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 # positions decoding
                 x3d = dets[i, j, 34] * img_size[i][0]
                 y3d = dets[i, j, 35] * img_size[i][1]
-                location = img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
+                location = _img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
                 location[1] += dimension[0] / 2
 
                 # heading angle decoding
                 alpha = dets[i, j, 7:31]
-                alpha = get_heading_angle(dets[i, j, 7:31])
-                ry = alpha2ry(calib_matrix[i], alpha, x)
+                alpha = _get_heading_angle(dets[i, j, 7:31])
+                ry = _alpha2ry(calib_matrix[i], alpha, x)
 
                 score = score * dets[i, j, -1]
 
@@ -253,7 +246,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         return results
 
     def get_dummy_input(self, batch_size: int = 1) -> Det3DBatchDataEntity:
-        """Returns a dummy input for detection model."""
+        """Returns a dummy input for 3d object detection model."""
         if self.input_size is None:
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)

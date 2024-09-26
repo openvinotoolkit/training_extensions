@@ -9,11 +9,10 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from datumaro.components.annotation import _Shape
+from datumaro.components.annotation import Shape as _Shape
 
 if TYPE_CHECKING:
     from datumaro import Dataset, DatasetSubset
-
     from otx.core.config.data import TileConfig
 
 
