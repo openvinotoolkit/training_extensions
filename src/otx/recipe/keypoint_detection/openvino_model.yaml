@@ -1,0 +1,50 @@
+model:
+  class_path: otx.core.model.keypoint_detection.OVKeypointDetectionModel
+  init_args:
+    label_info: 19
+    model_name: rtm_pose_tiny
+    model_type: "keypoint_detection"
+    async_inference: true
+    use_throughput_mode: true
+
+engine:
+  task: KEYPOINT_DETECTION
+  device: cpu
+
+callback_monitor: val/PCK
+
+data: ../_base_/data/keypoint_detection.yaml
+overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
+  data:
+    stack_images: false
+    train_subset:
+      batch_size: 1
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
+        - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
+          init_args:
+            input_size: $(input_size)
+
+    val_subset:
+      batch_size: 1
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
+        - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
+          init_args:
+            input_size: $(input_size)
+
+    test_subset:
+      batch_size: 64
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
+        - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
+          init_args:
+            input_size: $(input_size)
