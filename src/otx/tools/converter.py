@@ -157,6 +157,16 @@ TEMPLATE_ID_DICT = {
         "model_name": "dino_v2",
     },
     # ANOMALY_CLASSIFICATION
+    # ANOMALY
+    "ote_anomaly_padim": {
+        "task": OTXTaskType.ANOMALY,
+        "model_name": "padim",
+    },
+    "ote_anomaly_stfpm": {
+        "task": OTXTaskType.ANOMALY,
+        "model_name": "stfpm",
+    },
+    # ANOMALY CLASSIFICATION
     "ote_anomaly_classification_padim": {
         "task": OTXTaskType.ANOMALY_CLASSIFICATION,
         "model_name": "padim",
@@ -437,6 +447,9 @@ class ConfigConverter:
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False, skip={"label_info"})
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+
+        if hasattr(model, "tile_config"):
+            model.tile_config = datamodule.tile_config
 
         # Instantiate Engine
         config_work_dir = config.pop("work_dir", config["engine"].pop("work_dir", None))

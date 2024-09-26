@@ -1,6 +1,7 @@
 model:
-  class_path: otx.algo.detection.yolox.YOLOXL
+  class_path: otx.algo.detection.yolox.YOLOX
   init_args:
+    model_name: yolox_l
     label_info: 80
 
     optimizer:

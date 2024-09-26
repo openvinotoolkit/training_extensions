@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
+- Add YOLOv9 model for Object Detection
+  (https://github.com/openvinotoolkit/training_extensions/pull/3917)
 - Add RT-DETR model for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3741)
 - Add Multi-Label & H-label Classification with torchvision models
@@ -45,7 +47,7 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3783>, <https://github.com/openvinotoolkit/training_extensions/pull/3816>, <https://github.com/openvinotoolkit/training_extensions/pull/3809>)
 - Support ImageFromBytes
   (<https://github.com/openvinotoolkit/training_extensions/pull/3948>)
-- enable model export
+- Enable model export
   (<https://github.com/openvinotoolkit/training_extensions/pull/3952>)
 - Move templates from OTX1.X to OTX2.X
   (<https://github.com/openvinotoolkit/training_extensions/pull/3951>)

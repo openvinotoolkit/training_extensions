@@ -341,8 +341,11 @@ class HPOConfigurator:
 
         self._engine.datamodule.train_subset.batch_size = origin_bs
         self._engine.model.optimizer_callable.optimizer_kwargs["lr"] = origin_lr  # type: ignore[attr-defined]
+        logger.info(
+            "Max value of batch size search space : "
+            f"{self._hpo_config['search_space']['datamodule.train_subset.batch_size']['max']} -> {adapted_bs}",
+        )
         self._hpo_config["search_space"]["datamodule.train_subset.batch_size"]["max"] = adapted_bs
-        logger.info(f"Max value of batch size search space : {origin_bs} -> {adapted_bs}")
 
     @staticmethod
     def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:

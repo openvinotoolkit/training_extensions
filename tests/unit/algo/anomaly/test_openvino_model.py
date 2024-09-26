@@ -40,7 +40,7 @@ class TestAnomalyOpenVINO:
         model.normalization_metrics.max = torch.tensor(1.0)
         model.image_threshold = ManualThreshold(0.0)
         model.pixel_threshold = ManualThreshold(0.0)
-        model.task = OTXTaskType.ANOMALY_CLASSIFICATION
+        model.task = OTXTaskType.ANOMALY
         return model
 
     def test_label_info(self, otx_model):

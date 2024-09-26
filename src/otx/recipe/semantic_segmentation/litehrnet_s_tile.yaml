@@ -1,0 +1,39 @@
+model:
+  class_path: otx.algo.segmentation.litehrnet.LiteHRNet
+  init_args:
+    label_info: 2
+    model_name: lite_hrnet_s
+
+    optimizer:
+      class_path: torch.optim.Adam
+      init_args:
+        lr: 0.001
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.0
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 100
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 4
+            monitor: val/Dice
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
+
+callback_monitor: val/Dice
+
+data: ../_base_/data/semantic_segmentation_tile.yaml
+overrides:
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        warmup_iters: 100

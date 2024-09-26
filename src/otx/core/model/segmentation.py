@@ -6,27 +6,33 @@
 from __future__ import annotations
 
 import json
+import logging as log
 from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
+import torch.nn.functional as f
 from torch import nn
 from torchvision import tv_tensors
 
 from otx.algo.segmentation.segmentors import MeanTeacher
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.model.seg_tiler import SegTiler
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTrainType
+from otx.core.utils.tile_merge import SegmentationTileMerge
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -47,21 +53,23 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        model_name: str,
         input_size: tuple[int, int] = (512, 512),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
-        model_version: str | None = None,
         unsupervised_weight: float = 0.7,
         semisl_start_epoch: int = 2,
         drop_unreliable_pixels_percent: int = 20,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ):
         """Base semantic segmentation model.
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
+            model_name (str): The version/name/size of the model.
             input_size (tuple[int, int]): Model input size in the order of height and width.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
@@ -73,7 +81,6 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
                 Defaults to False.
             train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional):
                 The training type of the model. Defaults to OTXTrainType.SUPERVISED.
-            model_version (str | None, optional): The version of the model. Defaults to None.
             unsupervised_weight (float, optional): The weight of the unsupervised loss.
                 Only for semi-supervised learning. Defaults to 0.7.
             semisl_start_epoch (int, optional): The epoch at which the semi-supervised learning starts.
@@ -81,7 +88,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             drop_unreliable_pixels_percent (int, optional): The percentage of unreliable pixels to drop.
                 Only for semi-supervised learning. Defaults to 20.
         """
-        self.model_version = model_version
+        self.model_name = model_name
         self.unsupervised_weight = unsupervised_weight
         self.semisl_start_epoch = semisl_start_epoch
         self.drop_unreliable_pixels_percent = drop_unreliable_pixels_percent
@@ -94,6 +101,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             metric=metric,
             torch_compile=torch_compile,
             train_type=train_type,
+            tile_config=tile_config,
         )
         self.input_size: tuple[int, int]
 
@@ -171,6 +179,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             return_soft_prediction=True,
             soft_threshold=0.5,
             blur_strength=-1,
+            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
 
     @property
@@ -216,6 +225,58 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             return label_info
 
         raise TypeError(label_info)
+
+    def forward_tiles(self, inputs: OTXTileBatchDataEntity[SegBatchDataEntity]) -> SegBatchPredEntity:
+        """Unpack segmentation tiles.
+
+        Args:
+            inputs (TileBatchSegDataEntity): Tile batch data entity.
+
+        Returns:
+            SegBatchPredEntity: Merged semantic segmentation prediction.
+        """
+        if self.explain_mode:
+            msg = "Explain mode is not supported for tiling"
+            raise NotImplementedError(msg)
+
+        tile_preds: list[SegBatchPredEntity] = []
+        tile_attrs: list[list[dict[str, int | str]]] = []
+        merger = SegmentationTileMerge(
+            inputs.imgs_info,
+            self.num_classes,
+            self.tile_config,
+            self.explain_mode,
+        )
+        for batch_tile_attrs, batch_tile_input in inputs.unbind():
+            tile_size = batch_tile_attrs[0]["tile_size"]
+            output = self.model(
+                inputs=batch_tile_input.images,
+                img_metas=batch_tile_input.imgs_info,
+                mode="tensor",
+            )
+            output = self._customize_outputs(
+                outputs=f.interpolate(output, size=tile_size, mode="bilinear", align_corners=True),
+                inputs=batch_tile_input,
+            )
+            if isinstance(output, OTXBatchLossEntity):
+                msg = "Loss output is not supported for tile merging"
+                raise TypeError(msg)
+            tile_preds.append(output)
+            tile_attrs.append(batch_tile_attrs)
+        pred_entities = merger.merge(tile_preds, tile_attrs)
+
+        pred_entity = SegBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[pred_entity.image for pred_entity in pred_entities],
+            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
+            masks=[pred_entity.masks for pred_entity in pred_entities],
+            scores=[],
+        )
+        if self.explain_mode:
+            pred_entity.saliency_map = [pred_entity.saliency_map for pred_entity in pred_entities]
+            pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
+
+        return pred_entity
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
@@ -292,6 +353,17 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
             use_throughput_mode=use_throughput_mode,
             model_api_configuration=model_api_configuration,
             metric=metric,
+        )
+
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        execution_mode = "async" if self.async_inference else "sync"
+        # Note: Disable async_inference as tiling has its own sync/async implementation
+        self.async_inference = False
+        self.model = SegTiler(self.model, execution_mode=execution_mode)
+        log.info(
+            f"Enable tiler with tile size: {self.model.tile_size} \
+                and overlap: {self.model.tiles_overlap}",
         )
 
     def _customize_outputs(

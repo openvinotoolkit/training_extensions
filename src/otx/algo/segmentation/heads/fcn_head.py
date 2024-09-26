@@ -11,18 +11,17 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar
 import torch
 from torch import Tensor, nn
 
-from otx.algo.modules import Conv2dModule
-from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules import Conv2dModule, build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import IterativeAggregator
 
-from .base_segm_head import BaseSegmHead
+from .base_segm_head import BaseSegmentationHead
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
-class NNFCNHead(BaseSegmHead):
+class FCNHeadModule(BaseSegmentationHead):
     """Fully Convolution Networks for Semantic Segmentation with aggregation.
 
     This head is implemented of `FCNNet <https://arxiv.org/abs/1411.4038>`_.
@@ -218,7 +217,6 @@ class FCNHead:
             "aggregator_use_concat": False,
         },
         "dinov2_vits14": {
-            "normalization": partial(build_norm_layer, nn.SyncBatchNorm, requires_grad=True),
             "in_channels": [384, 384, 384, 384],
             "in_index": [0, 1, 2, 3],
             "input_transform": "resize_concat",
@@ -227,10 +225,16 @@ class FCNHead:
         },
     }
 
-    def __new__(cls, version: str, num_classes: int) -> NNFCNHead:
+    def __new__(cls, model_name: str, num_classes: int) -> FCNHeadModule:
         """Constructor for FCNHead."""
-        if version not in cls.FCNHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.FCNHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return NNFCNHead(**cls.FCNHEAD_CFG[version], num_classes=num_classes)
+        normalization = (
+            partial(build_norm_layer, nn.SyncBatchNorm, requires_grad=True)
+            if model_name == "dinov2_vits14"
+            else partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True)
+        )
+
+        return FCNHeadModule(**cls.FCNHEAD_CFG[model_name], num_classes=num_classes, normalization=normalization)

@@ -84,7 +84,7 @@ class AnomalyDataset(OTXDataset):
         label = self._get_label(datumaro_item)
 
         item: AnomalyClassificationDataItem | AnomalySegmentationDataItem | AnomalyDetectionDataItem
-        if self.task_type == OTXTaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type in (OTXTaskType.ANOMALY, OTXTaskType.ANOMALY_CLASSIFICATION):
             item = AnomalyClassificationDataItem(
                 image=img_data,
                 img_info=ImageInfo(
@@ -237,7 +237,7 @@ class AnomalyDataset(OTXDataset):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect SegDataEntity into SegBatchDataEntity in data loader."""
-        if self.task_type == OTXTaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type in (OTXTaskType.ANOMALY, OTXTaskType.ANOMALY_CLASSIFICATION):
             return AnomalyClassificationDataBatch.collate_fn
         if self.task_type == OTXTaskType.ANOMALY_SEGMENTATION:
             return AnomalySegmentationDataBatch.collate_fn

@@ -1,7 +1,11 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNSwinT
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
   init_args:
+    model_name: maskrcnn_swin_tiny
     label_info: 80
+    input_size:
+      - 1344
+      - 1344
 
     optimizer:
       class_path: torch.optim.AdamW

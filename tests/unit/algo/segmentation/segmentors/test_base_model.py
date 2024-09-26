@@ -3,17 +3,17 @@
 #
 import pytest
 import torch
-from otx.algo.segmentation.segmentors.base_model import BaseSegmModel
+from otx.algo.segmentation.segmentors.base_model import BaseSegmentationModel
 from otx.core.data.entity.base import ImageInfo
 
 
-class TestBaseSegmModel:
+class TestBaseSegmentationModel:
     @pytest.fixture()
     def model(self):
         backbone = torch.nn.Sequential(torch.nn.Conv2d(3, 64, kernel_size=3, padding=1))
         decode_head = torch.nn.Sequential(torch.nn.Conv2d(64, 2, kernel_size=1))
         decode_head.num_classes = 3
-        return BaseSegmModel(backbone, decode_head)
+        return BaseSegmentationModel(backbone, decode_head)
 
     @pytest.fixture()
     def inputs(self):

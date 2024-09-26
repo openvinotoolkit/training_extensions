@@ -16,7 +16,7 @@ from otx.core.types.export import TaskLevelExportParameters
 class TestSSD:
     @pytest.fixture()
     def fxt_model(self) -> SSD:
-        return SSD(label_info=3)
+        return SSD(model_name="ssd_mobilenetv2", label_info=3)
 
     @pytest.fixture()
     def fxt_checkpoint(self, fxt_model, fxt_data_module, tmpdir, monkeypatch: pytest.MonkeyPatch):
@@ -46,7 +46,7 @@ class TestSSD:
         assert loaded_model.model.bbox_head.anchor_generator.heights[0][0] == 50
 
     def test_load_state_dict_pre_hook(self, fxt_model) -> None:
-        prev_model = SSD(2)
+        prev_model = SSD(model_name="ssd_mobilenetv2", label_info=2)
         state_dict = prev_model.state_dict()
         fxt_model.model_classes = [1, 2, 3]
         fxt_model.ckpt_classes = [1, 2]

@@ -9,7 +9,6 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import copy
-from abc import abstractmethod
 
 import torch
 from torch import Tensor
@@ -24,13 +23,19 @@ from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 class BaseDenseHead(BaseModule):
-    """Base class for DenseHeads."""
+    """Base class for DenseHeads.
 
-    def __init__(self, init_cfg: dict | list[dict] | None = None) -> None:
+    Args:
+        init_cfg (dict | list[dict] | None, optional): Initialization configuration. Defaults to None.
+        use_sigmoid_cls (bool, optional): Whether to use sigmoid operation in classification. Defaults to True.
+    """
+
+    def __init__(self, init_cfg: dict | list[dict] | None = None, use_sigmoid_cls: bool = True) -> None:
         super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
+        self.use_sigmoid_cls = use_sigmoid_cls
 
     def get_positive_infos(self) -> list[InstanceData] | None:
         """Get positive information from sampling results.
@@ -55,8 +60,12 @@ class BaseDenseHead(BaseModule):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
-        """Perform forward propagation and loss calculation of the detection head.
+    def prepare_loss_inputs(
+        self,
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
             x (tuple[Tensor]): Features from the upstream network, each is
@@ -64,25 +73,11 @@ class BaseDenseHead(BaseModule):
             entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict: A dictionary of loss components.
+            dict: A dictionary of components for loss calculation.
         """
-        outs = self(x)
-
         batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas)
-        return self.loss_by_feat(*loss_inputs)
-
-    @abstractmethod
-    def loss_by_feat(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head."""
+        return *self(x), batch_gt_instances, batch_img_metas
 
     def predict(
         self,
@@ -271,19 +266,7 @@ class BaseDenseHead(BaseModule):
             if with_score_factors:
                 score_factor = score_factor.permute(1, 2, 0).reshape(-1).sigmoid()  # noqa: PLW2901
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
-
-            # the `custom_cls_channels` parameter is derived from
-            # CrossEntropyCustomLoss and FocalCustomLoss, and is currently used
-            # in v3det.
-            if getattr(self.loss_cls, "custom_cls_channels", False):
-                scores = self.loss_cls.get_activation(cls_score)
-            elif self.use_sigmoid_cls:
-                scores = cls_score.sigmoid()
-            else:
-                # remind that we set FG labels to [0, num_class-1]
-                # since mmdet v2.0
-                # BG cat_id: num_class
-                scores = cls_score.softmax(-1)[:, :-1]
+            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
 
             # After https://github.com/open-mmlab/mmdetection/pull/6268/,
             # this operation keeps fewer bboxes under the same `nms_pre`.
@@ -406,7 +389,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to False.
 
         Returns:
-            list[tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]]:
+            tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
                 Detection results of each image after the post process.
         """
         outs = self(x)
@@ -501,13 +484,7 @@ class BaseDenseHead(BaseModule):
             mlvl_priors,
         ):
             scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)
-
-            if getattr(self.loss_cls, "custom_cls_channels", False):
-                scores = self.loss_cls.get_activation(cls_score)
-            elif self.use_sigmoid_cls:
-                scores = scores.sigmoid()
-            else:
-                scores = scores.softmax(-1)[:, :, :-1]
+            scores = scores.sigmoid() if self.use_sigmoid_cls else scores.softmax(-1)[:, :, :-1]
 
             if with_score_factors:
                 score_factors = score_factors.permute(0, 2, 3, 1).reshape(batch_size, -1).sigmoid()  # type: ignore[union-attr, attr-defined] # noqa: PLW2901
@@ -522,10 +499,7 @@ class BaseDenseHead(BaseModule):
                     nms_pre_score = nms_pre_score * score_factors
 
                 # Get maximum scores for foreground classes.
-                if self.use_sigmoid_cls:
-                    max_scores, _ = nms_pre_score.max(-1)
-                else:
-                    max_scores, _ = nms_pre_score[..., :-1].max(-1)
+                max_scores, _ = nms_pre_score.max(-1) if self.use_sigmoid_cls else nms_pre_score[..., :-1].max(-1)
                 _, topk_inds = dynamic_topk(max_scores, pre_topk)
                 bbox_pred, scores, score_factors = gather_topk(  # noqa: PLW2901
                     bbox_pred,

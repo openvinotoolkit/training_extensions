@@ -13,7 +13,7 @@ import torch
 from importlib_resources import files
 from lightning.pytorch.cli import ReduceLROnPlateau
 from omegaconf import OmegaConf
-from otx.algo.detection.atss import MobileNetV2ATSS
+from otx.algo.detection.atss import ATSS
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.types.export import TaskLevelExportParameters
@@ -54,8 +54,8 @@ class TestOTXDetectionModel:
         return OmegaConf.load(cfg_path)
 
     @pytest.fixture()
-    def otx_model(self) -> MobileNetV2ATSS:
-        return MobileNetV2ATSS(label_info=1)
+    def otx_model(self) -> ATSS:
+        return ATSS(model_name="atss_mobilenetv2", label_info=1)
 
     def test_configure_metric_with_ckpt(
         self,
@@ -63,8 +63,9 @@ class TestOTXDetectionModel:
         mock_scheduler,
         mock_ckpt,
     ) -> None:
-        model = MobileNetV2ATSS(
-            label_info=1,
+        model = ATSS(
+            model_name="atss_mobilenetv2",
+            label_info=2,
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -133,7 +134,7 @@ class TestOTXDetectionModel:
         assert isinstance(parameters, TaskLevelExportParameters)
         assert parameters.task_type == "detection"
 
-    def test_dummy_input(self, otx_model: MobileNetV2ATSS):
+    def test_dummy_input(self, otx_model: ATSS):
         batch_size = 2
         batch = otx_model.get_dummy_input(batch_size)
         assert batch.batch_size == batch_size

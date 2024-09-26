@@ -18,8 +18,8 @@ class TestPerfAnomalyClassification(PerfTestBase):
     """Benchmark anomaly classification."""
 
     MODEL_TEST_CASES: ClassVar[list[Benchmark.Model]] = [
-        Benchmark.Model(task="anomaly_classification", name="padim", category="speed"),
-        Benchmark.Model(task="anomaly_classification", name="stfpm", category="accuracy"),
+        Benchmark.Model(task="anomaly", name="padim", category="speed"),
+        Benchmark.Model(task="anomaly", name="stfpm", category="accuracy"),
     ]
 
     DATASET_TEST_CASES: ClassVar[list[Benchmark.Dataset]] = [

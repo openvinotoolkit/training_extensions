@@ -57,7 +57,6 @@ ACTIVATION_LIST_NOT_SUPPORTING_INPLACE: list[nn.Module] = [
     nn.Sigmoid,
     Swish,
     nn.GELU,
-    nn.SiLU,
 ]
 
 
@@ -81,7 +80,7 @@ def build_activation_layer(
     """Build activation layer.
 
     Args:
-        activation (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module] | nn.Module | None): Activation layer module.
             If None or pre-instanstiated module is given, return it as is.
             If callable is given, create the layer.
         inplace (bool): Whether to use inplace mode for activation.

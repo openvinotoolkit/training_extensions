@@ -9,7 +9,7 @@ Original papers:
 from __future__ import annotations
 
 import math
-from pathlib import Path
+from typing import Any, ClassVar, Literal
 
 import torch
 from torch import nn
@@ -269,12 +269,20 @@ class MobileNetV3Base(ModelInterface):
 
 
 class MobileNetV3(MobileNetV3Base):
-    """MobileNetV3."""
+    """MobileNetV3 constructor.
 
-    def __init__(self, cfgs: list, mode: str, instance_norm_conv1: bool = False, **kwargs):
+    Args:
+        layer_cfgs (list): List of layer configurations.
+        instance_norm_conv1 (bool, optional): Whether to use instance normalization in the first convolutional layer.
+            Defaults to False.
+        **kwargs: Additional keyword arguments.
+
+    """
+
+    def __init__(self, layer_cfgs: list, instance_norm_conv1: bool = False, **kwargs):
         super().__init__(**kwargs)
         # setting of inverted residual blocks
-        self.cfgs = cfgs
+        self.cfgs = layer_cfgs
         # building first layer
         input_channel = make_divisible(16 * self.width_mult, 8)
         stride = 1 if self.in_size[0] < 100 else 2
@@ -282,7 +290,7 @@ class MobileNetV3(MobileNetV3Base):
         # building inverted residual blocks
         block = InvertedResidual
         flag = True
-        output_channel: int | dict[str, int]
+        output_channel: int
         for k, t, c, use_se, use_hs, s in self.cfgs:
             _s = s
             if (self.in_size[0] < 100) and (s == 2) and flag:
@@ -295,23 +303,12 @@ class MobileNetV3(MobileNetV3Base):
         self.features = nn.Sequential(*layers)
         # building last several layers
         self.conv = conv_1x1_bn(input_channel, exp_size, self.loss)
-        output_channel = {"large": 1280, "small": 1024}
-        output_channel = (
-            make_divisible(output_channel[mode] * self.width_mult, 8) if self.width_mult > 1.0 else output_channel[mode]
-        )
         self._initialize_weights()
 
     def extract_features(self, x: torch.Tensor) -> tuple[torch.Tensor]:
         """Extract features."""
         y = self.conv(self.features(x))
         return (y,)
-
-    def infer_head(self, x: torch.Tensor, skip_pool: bool = False) -> tuple[torch.Tensor, torch.Tensor]:
-        """Inference head."""
-        glob_features = self._glob_feature_vector(x, self.pooling_type, reduce_dims=False) if not skip_pool else x
-
-        logits = self.classifier(glob_features.view(x.shape[0], -1))
-        return glob_features, logits
 
     def _initialize_weights(self) -> None:
         """Initialize weights."""
@@ -330,59 +327,95 @@ class MobileNetV3(MobileNetV3Base):
                 m.bias.data.zero_()
 
 
-class OTXMobileNetV3(MobileNetV3):
-    """MobileNetV3 model for OTX."""
+class MobileNetV3Backbone:
+    """MobileNetV3Backbone class represents the backbone architecture of MobileNetV3.
 
-    backbone_configs = {  # noqa: RUF012
-        "small": [
-            # k, t, c, SE, HS, s
-            [3, 1, 16, 1, 0, 2],
-            [3, 4.5, 24, 0, 0, 2],
-            [3, 3.67, 24, 0, 0, 1],
-            [5, 4, 40, 1, 1, 2],
-            [5, 6, 40, 1, 1, 1],
-            [5, 6, 40, 1, 1, 1],
-            [5, 3, 48, 1, 1, 1],
-            [5, 3, 48, 1, 1, 1],
-            [5, 6, 96, 1, 1, 2],
-            [5, 6, 96, 1, 1, 1],
-            [5, 6, 96, 1, 1, 1],
-        ],
-        "large": [
-            # k, t, c, SE, HS, s
-            [3, 1, 16, 0, 0, 1],
-            [3, 4, 24, 0, 0, 2],
-            [3, 3, 24, 0, 0, 1],
-            [5, 3, 40, 1, 0, 2],
-            [5, 3, 40, 1, 0, 1],
-            [5, 3, 40, 1, 0, 1],
-            [3, 6, 80, 0, 1, 2],
-            [3, 2.5, 80, 0, 1, 1],
-            [3, 2.3, 80, 0, 1, 1],
-            [3, 2.3, 80, 0, 1, 1],
-            [3, 6, 112, 1, 1, 1],
-            [3, 6, 112, 1, 1, 1],
-            [5, 6, 160, 1, 1, 2],
-            [5, 6, 160, 1, 1, 1],
-            [5, 6, 160, 1, 1, 1],
-        ],
+    Args:
+        mode (Literal["small", "large"], optional): The mode of the backbone architecture. Defaults to "large".
+        width_mult (float, optional): Width multiplier for the backbone architecture. Defaults to 1.0.
+        pretrained (bool, optional): Whether to load pretrained weights. Defaults to True.
+        **kwargs: Additional keyword arguments to be passed to the MobileNetV3 model.
+
+    Returns:
+        MobileNetV3: An instance of the MobileNetV3 model.
+
+    Examples:
+        # Create a MobileNetV3Backbone instance
+        backbone = MobileNetV3Backbone(mode="small", width_mult=0.75, pretrained=False)
+
+        # Create a MobileNetV3 model with the specified backbone
+        model = MobileNetV3(backbone=backbone)
+    """
+
+    MV3_CFG: ClassVar[dict[str, Any]] = {
+        "small": {
+            "layer_cfgs": [
+                # k, t, c, SE, HS, s
+                [3, 1, 16, 1, 0, 2],
+                [3, 4.5, 24, 0, 0, 2],
+                [3, 3.67, 24, 0, 0, 1],
+                [5, 4, 40, 1, 1, 2],
+                [5, 6, 40, 1, 1, 1],
+                [5, 6, 40, 1, 1, 1],
+                [5, 3, 48, 1, 1, 1],
+                [5, 3, 48, 1, 1, 1],
+                [5, 6, 96, 1, 1, 2],
+                [5, 6, 96, 1, 1, 1],
+                [5, 6, 96, 1, 1, 1],
+            ],
+            "out_channels": 576,
+            "hid_channels": 1024,
+        },
+        "large": {
+            "layer_cfgs": [
+                # k, t, c, SE, HS, s
+                [3, 1, 16, 0, 0, 1],
+                [3, 4, 24, 0, 0, 2],
+                [3, 3, 24, 0, 0, 1],
+                [5, 3, 40, 1, 0, 2],
+                [5, 3, 40, 1, 0, 1],
+                [5, 3, 40, 1, 0, 1],
+                [3, 6, 80, 0, 1, 2],
+                [3, 2.5, 80, 0, 1, 1],
+                [3, 2.3, 80, 0, 1, 1],
+                [3, 2.3, 80, 0, 1, 1],
+                [3, 6, 112, 1, 1, 1],
+                [3, 6, 112, 1, 1, 1],
+                [5, 6, 160, 1, 1, 2],
+                [5, 6, 160, 1, 1, 1],
+                [5, 6, 160, 1, 1, 1],
+            ],
+            "out_channels": 960,
+            "hid_channels": 1280,
+        },
     }
 
-    def __init__(self, mode: str = "large", width_mult: float = 1.0, **kwargs):
-        super().__init__(self.backbone_configs[mode], mode=mode, width_mult=width_mult, **kwargs)
-        self.key = "mobilenetv3_" + mode
-        if width_mult != 1.0:
-            self.key = self.key + f"_{int(width_mult * 100):03d}"  # pylint: disable=consider-using-f-string
-        self.init_weights(self.pretrained)
+    def __new__(
+        cls,
+        mode: Literal["small", "large"] = "large",
+        width_mult: float = 1.0,
+        pretrained: bool = True,
+        **kwargs,
+    ) -> MobileNetV3:
+        """Create a new instance of the MobileNetV3 class.
 
-    def init_weights(self, pretrained: str | bool | None = None) -> None:
-        """Initialize weights."""
-        checkpoint = None
-        if isinstance(pretrained, str) and Path(pretrained).exists():
-            checkpoint = torch.load(pretrained, None)
-            print(f"init weight - {pretrained}")
-        elif pretrained is not None:
-            checkpoint = load_from_http(pretrained_urls[self.key])
-            print(f"init weight - {pretrained_urls[self.key]}")
-        if checkpoint is not None:
-            load_checkpoint_to_model(self, checkpoint)
+        Args:
+            mode (Literal["small", "large"], optional): The mode of the MobileNetV3 model. Defaults to "large".
+            width_mult (float, optional): Width multiplier for the MobileNetV3 model. Defaults to 1.0.
+            pretrained (bool, optional): Whether to load pretrained weights for the MobileNetV3 model. Defaults to True.
+            **kwargs: Additional keyword arguments to be passed to the MobileNetV3 constructor.
+
+        Returns:
+            MobileNetV3: A new instance of the MobileNetV3 class.
+        """
+        model = MobileNetV3(
+            layer_cfgs=cls.MV3_CFG[mode]["layer_cfgs"],
+            width_mult=width_mult,
+            **kwargs,
+        )
+        if pretrained:
+            key = f"mobilenetv3_{mode}" if width_mult == 1.0 else f"mobilenetv3_{mode}_{int(width_mult * 100):03d}"
+            checkpoint = load_from_http(pretrained_urls[key])
+            print(f"init weight - {pretrained_urls[key]}")
+            load_checkpoint_to_model(model, checkpoint)
+        return model

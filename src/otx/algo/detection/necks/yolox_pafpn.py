@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import math
 from functools import partial
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -22,7 +22,7 @@ from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvMod
 from otx.algo.modules.norm import build_norm_layer
 
 
-class YOLOXPAFPN(BaseModule):
+class YOLOXPAFPNModule(BaseModule):
     """Path Aggregation Network used in YOLOX.
 
     Args:
@@ -172,3 +172,37 @@ class YOLOXPAFPN(BaseModule):
             outs[idx] = conv(outs[idx])
 
         return tuple(outs)
+
+
+class YOLOXPAFPN:
+    """YOLOXPAFPN factory for detection."""
+
+    YOLOXPAFPN_CFG: ClassVar[dict[str, Any]] = {
+        "yolox_tiny": {
+            "in_channels": [96, 192, 384],
+            "out_channels": 96,
+            "num_csp_blocks": 1,
+        },
+        "yolox_s": {
+            "in_channels": [128, 256, 512],
+            "out_channels": 128,
+            "num_csp_blocks": 1,
+        },
+        "yolox_l": {
+            "in_channels": [256, 512, 1024],
+            "out_channels": 256,
+        },
+        "yolox_x": {
+            "in_channels": [320, 640, 1280],
+            "out_channels": 320,
+            "num_csp_blocks": 4,
+        },
+    }
+
+    def __new__(cls, model_name: str) -> YOLOXPAFPNModule:
+        """Constructor for YOLOXPAFPN."""
+        if model_name not in cls.YOLOXPAFPN_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return YOLOXPAFPNModule(**cls.YOLOXPAFPN_CFG[model_name])

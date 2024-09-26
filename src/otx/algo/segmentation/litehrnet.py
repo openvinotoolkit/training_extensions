@@ -12,7 +12,7 @@ from torch.onnx import OperatorExportTypes
 from otx.algo.segmentation.backbones import LiteHRNetBackbone
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
-from otx.algo.segmentation.segmentors import BaseSegmModel
+from otx.algo.segmentation.segmentors import BaseSegmentationModel
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -32,14 +32,14 @@ class LiteHRNet(OTXSegmentationModel):
     ]
 
     def _build_model(self) -> nn.Module:
-        if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        backbone = LiteHRNetBackbone(self.model_version)
-        decode_head = FCNHead(self.model_version, num_classes=self.num_classes)
+        backbone = LiteHRNetBackbone(self.model_name)
+        decode_head = FCNHead(self.model_name, num_classes=self.num_classes)
         criterion = CrossEntropyLossWithIgnore(ignore_index=self.label_info.ignore_index)  # type: ignore[attr-defined]
-        return BaseSegmModel(
+        return BaseSegmentationModel(
             backbone=backbone,
             decode_head=decode_head,
             criterion=criterion,
@@ -87,7 +87,7 @@ class LiteHRNet(OTXSegmentationModel):
     @property
     def ignore_scope(self) -> dict[str, Any]:
         """Get the ignored scope for LiteHRNet."""
-        if self.model_version == "lite_hrnet_x":
+        if self.model_name == "lite_hrnet_x":
             return {
                 "ignored_scope": {
                     "patterns": ["__module.model.decode_head.aggregator/*"],
@@ -175,7 +175,7 @@ class LiteHRNet(OTXSegmentationModel):
                 "preset": "performance",
             }
 
-        if self.model_version == "lite_hrnet_18":
+        if self.model_name == "lite_hrnet_18":
             return {
                 "ignored_scope": {
                     "patterns": ["__module.model.backbone/*"],
@@ -263,7 +263,7 @@ class LiteHRNet(OTXSegmentationModel):
                 "preset": "mixed",
             }
 
-        if self.model_version == "lite_hrnet_s":
+        if self.model_name == "lite_hrnet_s":
             return {
                 "ignored_scope": {
                     "names": [

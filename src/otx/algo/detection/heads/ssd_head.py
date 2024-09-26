@@ -8,21 +8,19 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, ClassVar
 
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.losses import CrossEntropyLoss, smooth_l1_loss
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.anchor_head import AnchorHead
-
-if TYPE_CHECKING:
-    from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 
-class SSDHead(AnchorHead):
+class SSDHeadModule(AnchorHead):
     """Implementation of `SSD head <https://arxiv.org/abs/1512.02325>`_.
 
     Args:
@@ -44,6 +42,8 @@ class SSDHead(AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         test_cfg (dict, Optional): Testing config of anchor head.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function for
+            classification prediction. Defaults to False.
     """
 
     def __init__(
@@ -59,8 +59,9 @@ class SSDHead(AnchorHead):
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
         test_cfg: dict | None = None,
+        use_sigmoid_cls: bool = False,
     ) -> None:
-        super(AnchorHead, self).__init__(init_cfg=init_cfg)
+        super(AnchorHead, self).__init__(init_cfg=init_cfg, use_sigmoid_cls=use_sigmoid_cls)
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.stacked_convs = stacked_convs
@@ -75,14 +76,10 @@ class SSDHead(AnchorHead):
         # heads but a list of int in SSDHead
         self.num_base_priors = self.prior_generator.num_base_priors
 
-        self.loss_cls = CrossEntropyLoss(use_sigmoid=False, reduction="none", loss_weight=1.0)
-
         self._init_layers()
 
         self.bbox_coder = bbox_coder
         self.reg_decoded_bbox = reg_decoded_bbox
-        self.use_sigmoid_cls = False
-        self.cls_focal_loss = False
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
@@ -113,96 +110,22 @@ class SSDHead(AnchorHead):
             bbox_preds.append(reg_conv(feat))
         return cls_scores, bbox_preds
 
-    def loss_by_feat_single(
+    def prepare_loss_inputs(
         self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        anchor: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        bbox_weights: Tensor,
-        avg_factor: int,
-    ) -> tuple[Tensor, Tensor]:
-        """Compute loss of a single image.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_score (Tensor): Box scores for each image has shape (num_total_anchors, num_classes).
-            bbox_pred (Tensor): Box energies / deltas for each image level with shape (num_total_anchors, 4).
-            anchors (Tensor): Box reference for each scale level with shape (num_total_anchors, 4).
-            labels (Tensor): Labels of each anchors with shape (num_total_anchors,).
-            label_weights (Tensor): Label weights of each anchor with shape (num_total_anchors,)
-            bbox_targets (Tensor): BBox regression targets of each anchor with shape (num_total_anchors, 4).
-            bbox_weights (Tensor): BBox regression loss weights of each anchor with shape (num_total_anchors, 4).
-            avg_factor (int): Average factor that is used to average
-                the loss. When using sampling method, avg_factor is usually
-                the sum of positive and negative priors. When using
-                `PseudoSampler`, `avg_factor` is usually equal to the number
-                of positive priors.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            tuple[Tensor, Tensor]: A tuple of cls loss and bbox loss of one
-            feature map.
+            dict: A dictionary of components for loss calculation.
         """
-        loss_cls_all = nn.functional.cross_entropy(cls_score, labels, reduction="none") * label_weights
-        # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-        pos_inds = ((labels >= 0) & (labels < self.num_classes)).nonzero(as_tuple=False).reshape(-1)
-        neg_inds = (labels == self.num_classes).nonzero(as_tuple=False).view(-1)
-
-        num_pos_samples = pos_inds.size(0)
-        num_neg_samples = self.train_cfg["neg_pos_ratio"] * num_pos_samples
-        if num_neg_samples > neg_inds.size(0):
-            num_neg_samples = neg_inds.size(0)
-        topk_loss_cls_neg, _ = loss_cls_all[neg_inds].topk(num_neg_samples)
-        loss_cls_pos = loss_cls_all[pos_inds].sum()
-        loss_cls_neg = topk_loss_cls_neg.sum()
-        loss_cls = (loss_cls_pos + loss_cls_neg) / avg_factor
-
-        if self.reg_decoded_bbox:
-            # When the regression loss (e.g. `IouLoss`, `GIouLoss`)
-            # is applied directly on the decoded bounding boxes, it
-            # decodes the already encoded coordinates to absolute format.
-            bbox_pred = self.bbox_coder.decode(anchor, bbox_pred)
-
-        loss_bbox = smooth_l1_loss(
-            bbox_pred,
-            bbox_targets,
-            bbox_weights,
-            beta=self.train_cfg["smoothl1_beta"],
-            avg_factor=avg_factor,
-        )
-        return loss_cls[None], loss_bbox
-
-    def loss_by_feat(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, list[Tensor]]:
-        """Compute losses of the head.
-
-        Args:
-            cls_scores (list[Tensor]): Box scores for each scale level has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Box energies deltas for each scale level with shape (N, num_anchors * 4, H, W)
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional): Batch of gt_instances_ignore.
-                It includes ``bboxes`` attribute data that is ignored during training and testing.
-                Defaults to None.
-
-        Returns:
-            dict[str, list[Tensor]]: A dictionary of loss components. the dict
-            has components below:
-
-            - loss_cls (list[Tensor]): A list containing each feature map \
-            classification loss.
-            - loss_bbox (list[Tensor]): A list containing each feature map \
-            regression loss.
-        """
+        cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(x, entity)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 
         device = cls_scores[0].device
@@ -213,7 +136,6 @@ class SSDHead(AnchorHead):
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
             unmap_outputs=True,
         )
         (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor) = cls_reg_targets
@@ -232,18 +154,16 @@ class SSDHead(AnchorHead):
         # concat all level anchors to a single tensor
         all_anchors = [torch.cat(anchor) for anchor in anchor_list]
 
-        losses_cls, losses_bbox = multi_apply(
-            self.loss_by_feat_single,
-            all_cls_scores,
-            all_bbox_preds,
-            all_anchors,
-            all_labels,
-            all_label_weights,
-            all_bbox_targets,
-            all_bbox_weights,
-            avg_factor=avg_factor,
-        )
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
+        return {
+            "cls_score": all_cls_scores,
+            "bbox_pred": all_bbox_preds,
+            "anchor": all_anchors,
+            "labels": all_labels,
+            "label_weights": all_label_weights,
+            "bbox_targets": all_bbox_targets,
+            "bbox_weights": all_bbox_weights,
+            "avg_factor": avg_factor,
+        }
 
     def _init_layers(self) -> None:
         """Initialize layers of the head.
@@ -283,3 +203,40 @@ class SSDHead(AnchorHead):
                 self.cls_convs.append(
                     nn.Conv2d(in_channel, num_base_priors * self.cls_out_channels, kernel_size=3, padding=1),
                 )
+
+
+class SSDHead:
+    """SSDHead factory for detection."""
+
+    SSDHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "ssd_mobilenetv2": {
+            "in_channels": (96, 320),
+            "use_depthwise": True,
+        },
+    }
+
+    def __new__(
+        cls,
+        model_name: str,
+        num_classes: int,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
+        init_cfg: dict,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> SSDHeadModule:
+        """Constructor for SSDHead."""
+        if model_name not in cls.SSDHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return SSDHeadModule(
+            **cls.SSDHEAD_CFG[model_name],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            init_cfg=init_cfg,  # TODO (sungchul, kirill): remove
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+            use_sigmoid_cls=False,  # use softmax cls
+        )

@@ -636,6 +636,8 @@ class FMeasure(Metric):
     IoU > threshold are reduced to one. This threshold can be determined automatically by setting `vary_nms_threshold`
     to True.
 
+    # TODO(someone): need to update for distriubted training. refer https://lightning.ai/docs/torchmetrics/stable/pages/implement.html
+
     Args:
         label_info (int): Dataclass including label information.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
