@@ -18,6 +18,8 @@ from torchmetrics.collections import MetricCollection
 
 from otx.core.metrics.types import MetricCallable
 
+from .mlc_map import MultilabelmAP
+
 if TYPE_CHECKING:
     from torch import Tensor
 
@@ -360,6 +362,7 @@ def _multi_label_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
     return MetricCollection(
         {
             "accuracy": MultilabelAccuracywithLabelGroup(label_info=label_info),
+            "mAP": MultilabelmAP(label_info=label_info),
         },
     )
 
