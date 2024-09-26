@@ -280,7 +280,8 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
-        return self.model(inputs=image, mode="tensor")
+        raw_outputs = self.model(inputs=image, mode="tensor")
+        return torch.softmax(raw_outputs, dim=1)
 
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
         """Returns a dummy input for semantic segmentation model."""

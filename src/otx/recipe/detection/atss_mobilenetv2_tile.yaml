@@ -29,14 +29,10 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/detection.yaml
+data: ../_base_/data/detection_tile.yaml
 overrides:
   gradient_clip_val: 35.0
   data:
-    tile_config:
-      enable_tiler: true
-      enable_adaptive_tiling: true
-
     train_subset:
       batch_size: 8
       sampler:

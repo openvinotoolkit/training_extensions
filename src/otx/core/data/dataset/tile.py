@@ -58,6 +58,10 @@ if TYPE_CHECKING:
 # NOTE: Disable private-member-access (SLF001).
 # This is a workaround so we could apply the same transforms to tiles as the original dataset.
 
+# NOTE: Datumaro subset name should be standardized.
+TRAIN_SUBSET_NAMES = ("train", "TRAINING")
+VAL_SUBSET_NAMES = ("val", "VALIDATION")
+
 
 class OTXTileTransform(Tile):
     """OTX tile transform.
@@ -174,12 +178,12 @@ class OTXTileTransform(Tile):
         tile_h, tile_w = self._tile_size
         h_ovl, w_ovl = self._overlap
 
-        rois: list[BboxIntCoords] = []
+        rois: set[BboxIntCoords] = set()
         cols = range(0, img_w, int(tile_w * (1 - w_ovl)))
         rows = range(0, img_h, int(tile_h * (1 - h_ovl)))
 
         if self.with_full_img:
-            rois += [x1y1x2y2_to_xywh(0, 0, img_w, img_h)]
+            rois.add(x1y1x2y2_to_xywh(0, 0, img_w, img_h))
         for offset_x, offset_y in product(cols, rows):
             x2 = min(offset_x + tile_w, img_w)
             y2 = min(offset_y + tile_h, img_h)
@@ -187,11 +191,11 @@ class OTXTileTransform(Tile):
             x1, y1, x2, y2 = cxcywh_to_x1y1x2y2(c_x, c_y, w, h)
             x1, y1, x2, y2 = clip_x1y1x2y2(x1, y1, x2, y2, img_w, img_h)
             x1, y1, x2, y2 = (int(v) for v in [x1, y1, x2, y2])
-            rois += [x1y1x2y2_to_xywh(x1, y1, x2, y2)]
+            rois.add(x1y1x2y2_to_xywh(x1, y1, x2, y2))
 
         log.info(f"image: {img_h}x{img_w} ~ tile_size: {self._tile_size}")
         log.info(f"{len(rows)}x{len(cols)} tiles -> {len(rois)} tiles")
-        return rois
+        return list(rois)
 
 
 class OTXTileDatasetFactory:
@@ -218,7 +222,7 @@ class OTXTileDatasetFactory:
         Returns:
             OTXTileDataset: Tile dataset.
         """
-        if dataset.dm_subset[0].subset == "train":
+        if dataset.dm_subset[0].subset in TRAIN_SUBSET_NAMES:
             return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
@@ -247,6 +251,9 @@ class OTXTileDataset(OTXDataset):
             dataset.mem_cache_handler,
             dataset.mem_cache_img_max_size,
             dataset.max_refetch,
+            dataset.image_color_channel,
+            dataset.stack_images,
+            dataset.to_tv_image,
         )
         self.tile_config = tile_config
         self._dataset = dataset
@@ -277,6 +284,23 @@ class OTXTileDataset(OTXDataset):
         msg = "Method _convert_entity is not implemented."
         raise NotImplementedError(msg)
 
+    def transform_item(
+        self,
+        item: DatasetItem,
+        tile_size: tuple[int, int],
+        overlap: tuple[float, float],
+        with_full_img: bool,
+    ) -> DmDataset:
+        """Transform a dataset item to tile dataset which contains multiple tiles."""
+        tile_ds = DmDataset.from_iterable([item])
+        return tile_ds.transform(
+            OTXTileTransform,
+            tile_size=tile_size,
+            overlap=overlap,
+            threshold_drop_ann=0.5,
+            with_full_img=with_full_img,
+        )
+
     def get_tiles(
         self,
         image: np.ndarray,
@@ -295,18 +319,24 @@ class OTXTileDataset(OTXDataset):
             - tile_entities (list[OTXDataEntity]): List of tile entities.
             - tile_attrs (list[dict]): List of tile attributes.
         """
-        tile_ds = DmDataset.from_iterable([item])
-        tile_ds = tile_ds.transform(
-            OTXTileTransform,
+        tile_ds = self.transform_item(
+            item,
             tile_size=self.tile_config.tile_size,
             overlap=(self.tile_config.overlap, self.tile_config.overlap),
-            threshold_drop_ann=0.5,
             with_full_img=self.tile_config.with_full_img,
         )
 
-        if item.subset == "val":
+        if item.subset in VAL_SUBSET_NAMES:
             # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
             tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
+            # if tile dataset is empty it means objects are too big to fit in any tile, in this case include full image
+            if len(tile_ds) == 0:
+                tile_ds = self.transform_item(
+                    item,
+                    tile_size=self.tile_config.tile_size,
+                    overlap=(self.tile_config.overlap, self.tile_config.overlap),
+                    with_full_img=True,
+                )
 
         tile_entities: list[OTXDataEntity] = []
         tile_attrs: list[dict] = []

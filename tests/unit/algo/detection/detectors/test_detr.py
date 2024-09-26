@@ -73,15 +73,15 @@ class TestDETR:
             "pred_logits": torch.randn(2, 100, 10),
             "pred_boxes": torch.randn(2, 100, 4),
         }
-        original_size = [640, 640]
-        result = rt_detr_model.postprocess(outputs, original_size)
+        original_sizes = [[640, 640], [640, 640]]
+        result = rt_detr_model.postprocess(outputs, original_sizes)
         assert isinstance(result, tuple)
         assert len(result) == 3
         scores, boxes, labels = result
         assert isinstance(scores, list)
         assert isinstance(boxes, list)
         assert isinstance(boxes[0], torchvision.tv_tensors.BoundingBoxes)
-        assert boxes[0].canvas_size == original_size
+        assert boxes[0].canvas_size == original_sizes[0]
         assert isinstance(labels, list)
         assert len(scores) == 2
         assert len(boxes) == 2
@@ -90,7 +90,7 @@ class TestDETR:
     def test_rt_detr_export(self, rt_detr_model, images):
         rt_detr_model.eval()
         rt_detr_model.num_top_queries = 10
-        batch_img_metas = {"img_shape": (740, 740), "scale_factor": 1.0}
+        batch_img_metas = [{"img_shape": (740, 740), "scale_factor": 1.0}]
         result = rt_detr_model.export(images, batch_img_metas)
         assert isinstance(result, dict)
         assert "bboxes" in result

@@ -346,8 +346,10 @@ class MixedHLabelAccuracy(Metric):
 
 
 def _multi_class_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
+    num_classes = label_info.num_classes
+    task = "binary" if num_classes == 1 else "multiclass"
     return MetricCollection(
-        {"accuracy": TorchmetricAcc(task="multiclass", num_classes=label_info.num_classes)},
+        {"accuracy": TorchmetricAcc(task=task, num_classes=num_classes)},
     )
 
 
