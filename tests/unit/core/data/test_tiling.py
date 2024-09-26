@@ -516,7 +516,7 @@ class TestOTXTiling:
     def test_seg_tiler(self, mocker):
         rng = np.random.default_rng()
         rnd_tile_size = rng.integers(low=100, high=500)
-        rnd_tile_overlap = rng.random()
+        rnd_tile_overlap = min(rng.random(), 0.99)
         image_size = rng.integers(low=1000, high=5000)
         np_image = np.zeros((image_size, image_size, 3), dtype=np.uint8)
 
