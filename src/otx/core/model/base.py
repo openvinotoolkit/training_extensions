@@ -141,9 +141,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         # so that it can retrieve it from the checkpoint
         self.save_hyperparameters(logger=False, ignore=["optimizer", "scheduler", "metric"])
 
-    def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
+    def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor | None:
         """Step for model training."""
         train_loss = self.forward(inputs=batch)
+        if train_loss is None:
+            # to skip current iteration
+            # TODO (sungchul): check this in distributed training
+            return None if self.trainer.world_size == 1 else torch.tensor(0.0, device=self.device)
 
         if isinstance(train_loss, Tensor):
             self.log(
