@@ -213,7 +213,7 @@ class MSDeformableAttention(nn.Module):
         query: torch.Tensor,
         reference_points: torch.Tensor,
         value: torch.Tensor,
-        value_spatial_shapes: list[tuple[int, int]],
+        value_spatial_shapes: torch.Tensor,
         value_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Forward function of MSDeformableAttention.

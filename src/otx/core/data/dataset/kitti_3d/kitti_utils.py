@@ -852,7 +852,7 @@ def angle2class(angle):
     return class_id, residual_angle
 
 
-def class2angle(cls, residual, to_label_format=False):
+def class2angle(cls: int, residual: float, to_label_format: bool = False) -> float:
     """Inverse function to angle2class."""
     angle_per_class = 2 * np.pi / float(num_heading_bin)
     angle_center = cls * angle_per_class

@@ -64,8 +64,7 @@ class PositionEmbeddingSine(nn.Module):
         pos_y = y_embed[:, :, :, None] / dim_t
         pos_x = torch.stack((pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4).flatten(3)
         pos_y = torch.stack((pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4).flatten(3)
-        pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
-        return pos
+        return torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
 
 
 class PositionEmbeddingLearned(nn.Module):
@@ -135,19 +134,21 @@ def build_position_encoding(
     Returns:
         Union[PositionEmbeddingSine, PositionEmbeddingLearned]: The position encoding module.
     """
-    N_steps = hidden_dim // 2
+    n_steps = hidden_dim // 2
     if position_embedding in ("v2", "sine"):
-        # TODO find a better way of exposing other arguments
-        position_embedding = PositionEmbeddingSine(N_steps, normalize=True)
+        position_embedding = PositionEmbeddingSine(n_steps, normalize=True)
     elif position_embedding in ("v3", "learned"):
-        position_embedding = PositionEmbeddingLearned(N_steps)
+        position_embedding = PositionEmbeddingLearned(n_steps)
     else:
-        raise ValueError(f"not supported {position_embedding}")
+        msg = f"not supported {position_embedding}"
+        raise ValueError(msg)
 
     return position_embedding
 
 
 class BackboneBase(nn.Module):
+    """BackboneBase module."""
+
     def __init__(self, backbone: nn.Module, train_backbone: bool, return_interm_layers: bool):
         """Initializes BackboneBase module."""
         super().__init__()
@@ -198,6 +199,8 @@ class Backbone(BackboneBase):
 
 
 class Joiner(nn.Sequential):
+    """Joiner module."""
+
     def __init__(
         self,
         backbone: nn.Module,
@@ -222,17 +225,8 @@ class Joiner(nn.Sequential):
         Returns:
             tuple[List[NestedTensor], List[torch.Tensor]]: Output tensors and position embeddings.
         """
-        xs = self[0](images)
-        out: list[NestedTensor] = []
-        pos: list[torch.Tensor] = []
-        for _, x in sorted(xs.items()):
-            out.append(x)
-
-        # position encoding
-        for x in out:
-            pos.append(self[1](x).to(x.tensors.dtype))
-
-        return out, pos
+        out: list[NestedTensor] = [x for _, x in sorted(self[0](images).items())]
+        return out, [self[1](x).to(x.tensors.dtype) for x in out]
 
 
 class BackboneBuilder:
@@ -252,6 +246,7 @@ class BackboneBuilder:
     }
 
     def __new__(cls, model_name: str) -> Joiner:
+        """Constructor for Backbone MonoDetr."""
         backbone = Backbone(**cls.CFG[model_name])
         position_embedding = build_position_encoding(**cls.CFG[model_name]["positional_encoding"])
         return Joiner(backbone, position_embedding)

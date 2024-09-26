@@ -139,7 +139,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         return {
             "preds": result_list,
-            "target": inputs.kitti_label_object,  # TODO (Kirill): change it later to pre-process gt annotations here
+            # TODO (Kirill): change it later to pre-process gt annotations here
+            "target": inputs.kitti_label_object,  # type: ignore[dict-item]
         }
 
     @staticmethod
@@ -297,7 +298,3 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
                 classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
         return classification_layers
-
-    def forward_for_tracing(self, image: torch.Tensor, calib_matrix: torch.Tensor) -> dict[str, torch.Tensor]:
-        """Model forward function used for the model tracing during model exportation."""
-        return self.model.forward(image, calib_matrix, mode="tensor")

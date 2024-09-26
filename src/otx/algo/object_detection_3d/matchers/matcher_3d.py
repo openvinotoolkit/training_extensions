@@ -27,15 +27,14 @@ class HungarianMatcher3D(nn.Module):
         Args:
             cost_class (float): This is the relative weight of the classification error in the matching cost.
             cost_3dcenter (float): This is the relative weight of the L1 error of the 3d center in the matching cost.
-            cost_bbox (float): This is the relative weight of the L1 error of the bounding box coordinates in the matching cost.
-            cost_giou (float): This is the relative weight of the giou loss of the bounding box in the matching cost.
+            cost_bbox (float): This is the relative weight of the L1 error of the bbox coordinates in the matching cost.
+            cost_giou (float): This is the relative weight of the giou loss of the bbox in the matching cost.
         """
         super().__init__()
         self.cost_class = cost_class
         self.cost_3dcenter = cost_3dcenter
         self.cost_bbox = cost_bbox
         self.cost_giou = cost_giou
-        assert cost_class != 0 or cost_bbox != 0 or cost_giou != 0, "all costs cant be 0"
 
     @torch.no_grad()
     def forward(self, outputs: dict, targets: list, group_num: int = 11) -> list:
@@ -92,22 +91,22 @@ class HungarianMatcher3D(nn.Module):
             mode="giou",
         )
         # Final cost matrix
-        C = (
+        c = (
             self.cost_bbox * cost_bbox
             + self.cost_3dcenter * cost_3dcenter
             + self.cost_class * cost_class
             + self.cost_giou * cost_giou
         )
-        C = C.view(bs, num_queries, -1).cpu()
+        c = c.view(bs, num_queries, -1).cpu()
 
         sizes = [len(v["boxes"]) for v in targets]
         # indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
         indices = []
         g_num_queries = num_queries // group_num
-        C_list = C.split(g_num_queries, dim=1)
+        c_list = c.split(g_num_queries, dim=1)
         for g_i in range(group_num):
-            C_g = C_list[g_i]
-            indices_g = [linear_sum_assignment(c[i]) for i, c in enumerate(C_g.split(sizes, -1))]
+            c_g = c_list[g_i]
+            indices_g = [linear_sum_assignment(c[i]) for i, c in enumerate(c_g.split(sizes, -1))]
             if g_i == 0:
                 indices = indices_g
             else:

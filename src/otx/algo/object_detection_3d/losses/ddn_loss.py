@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """ddn loss for MonoDETR model."""
+from __future__ import annotations
 
 import math
 
@@ -10,10 +11,104 @@ from torch import nn
 
 from otx.algo.common.losses.focal_loss import FocalLoss
 
-from .balancer import Balancer
+
+def compute_fg_mask(
+    gt_boxes2d: torch.Tensor,
+    shape: tuple[int, int],
+    num_gt_per_img: int,
+    downsample_factor: int = 1,
+    device: torch.device | None = None,
+) -> torch.Tensor:
+    """Compute foreground mask for images.
+
+    Args:
+        gt_boxes2d [torch.Tensor(B, N, 4)]: 2D box labels
+        shape [Tuple[int, int]]: Foreground mask desired shape
+        downsample_factor [int]: Downsample factor for image
+        device [torch.device]: Foreground mask desired device
+
+    Returns:
+        fg_mask [torch.Tensor(shape)]: Foreground mask
+    """
+    if device is None:
+        device = torch.device("cpu")
+    fg_mask = torch.zeros(shape, dtype=torch.bool, device=device)
+
+    # Set box corners
+    gt_boxes2d /= downsample_factor
+    gt_boxes2d[:, :2] = torch.floor(gt_boxes2d[:, :2])
+    gt_boxes2d[:, 2:] = torch.ceil(gt_boxes2d[:, 2:])
+    gt_boxes2d = gt_boxes2d.long()
+
+    # Set all values within each box to True
+    gt_boxes2d = gt_boxes2d.split(num_gt_per_img, dim=0)
+    b = len(gt_boxes2d)
+    for i in range(b):
+        for n in range(gt_boxes2d[i].shape[0]):
+            u1, v1, u2, v2 = gt_boxes2d[i][n]
+            fg_mask[i, v1:v2, u1:u2] = True
+
+    return fg_mask
+
+
+class Balancer(nn.Module):
+    """Fixed foreground/background loss balancer."""
+
+    def __init__(self, fg_weight: float, bg_weight: float, downsample_factor: int = 1):
+        """Initialize fixed foreground/background loss balancer.
+
+        Args:
+            fg_weight [float]: Foreground loss weight
+            bg_weight [float]: Background loss weight
+            downsample_factor [int]: Depth map downsample factor
+        """
+        super().__init__()
+        self.fg_weight = fg_weight
+        self.bg_weight = bg_weight
+        self.downsample_factor = downsample_factor
+
+    def forward(
+        self,
+        loss: torch.Tensor,
+        gt_boxes2d: torch.Tensor,
+        num_gt_per_img: int,
+    ) -> tuple[torch.Tensor, dict[float, float]]:
+        """Forward pass.
+
+        Args:
+            loss [torch.Tensor(B, H, W)]: Pixel-wise loss
+            gt_boxes2d [torch.Tensor (B, N, 4)]: 2D box labels for foreground/background balancing
+
+        Returns:
+            loss [torch.Tensor(1)]: Total loss after foreground/background balancing
+            tb_dict [dict[float]]: All losses to log in tensorboard
+        """
+        # Compute masks
+        fg_mask = compute_fg_mask(
+            gt_boxes2d=gt_boxes2d,
+            shape=loss.shape,
+            num_gt_per_img=num_gt_per_img,
+            downsample_factor=self.downsample_factor,
+            device=loss.device,
+        )
+        bg_mask = ~fg_mask
+
+        # Compute balancing weights
+        weights = self.fg_weight * fg_mask + self.bg_weight * bg_mask
+        num_pixels = fg_mask.sum() + bg_mask.sum()
+
+        # Compute losses
+        loss *= weights
+        fg_loss = loss[fg_mask].sum() / num_pixels
+        bg_loss = loss[bg_mask].sum() / num_pixels
+
+        # return total loss
+        return fg_loss + bg_loss
 
 
 class DDNLoss(nn.Module):
+    """DDNLoss module for computing the loss for MonoDETR model."""
+
     def __init__(
         self,
         alpha: float = 0.25,
@@ -22,7 +117,7 @@ class DDNLoss(nn.Module):
         bg_weight: float = 1,
         downsample_factor: int = 1,
     ) -> None:
-        """Initializes DDNLoss module
+        """Initializes DDNLoss module.
 
         Args:
             weight [float]: Loss function weight
@@ -48,7 +143,7 @@ class DDNLoss(nn.Module):
         gt_center_depth: torch.Tensor,
         num_gt_per_img: int,
     ) -> torch.Tensor:
-        """Builds target depth map from 3D center depth
+        """Builds target depth map from 3D center depth.
 
         Args:
             depth_logits: torch.Tensor(B, D+1, H, W)]: Predicted depth logits
@@ -56,8 +151,8 @@ class DDNLoss(nn.Module):
             gt_center_depth [torch.Tensor(B, N)]: 3D center depth
             num_gt_per_img: [int]: Number of ground truth boxes per image
         """
-        B, _, H, W = depth_logits.shape
-        depth_maps = torch.zeros((B, H, W), device=depth_logits.device, dtype=depth_logits.dtype)
+        b, _, h, w = depth_logits.shape
+        depth_maps = torch.zeros((b, h, w), device=depth_logits.device, dtype=depth_logits.dtype)
 
         # Set box corners
         gt_boxes2d[:, :2] = torch.floor(gt_boxes2d[:, :2])
@@ -67,14 +162,14 @@ class DDNLoss(nn.Module):
         # Set all values within each box to True
         gt_boxes2d = gt_boxes2d.split(num_gt_per_img, dim=0)
         gt_center_depth = gt_center_depth.split(num_gt_per_img, dim=0)
-        B = len(gt_boxes2d)
-        for b in range(B):
-            center_depth_per_batch = gt_center_depth[b]
+        b = len(gt_boxes2d)
+        for i in range(b):
+            center_depth_per_batch = gt_center_depth[i]
             center_depth_per_batch, sorted_idx = torch.sort(center_depth_per_batch, dim=0, descending=True)
-            gt_boxes_per_batch = gt_boxes2d[b][sorted_idx]
+            gt_boxes_per_batch = gt_boxes2d[i][sorted_idx]
             for n in range(gt_boxes_per_batch.shape[0]):
                 u1, v1, u2, v2 = gt_boxes_per_batch[n]
-                depth_maps[b, v1:v2, u1:u2] = center_depth_per_batch[n]
+                depth_maps[i, v1:v2, u1:u2] = center_depth_per_batch[n]
 
         return depth_maps
 
@@ -135,24 +230,22 @@ class DDNLoss(nn.Module):
         num_gt_per_img: int,
         gt_center_depth: torch.Tensor,
     ) -> torch.Tensor:
-        """Gets depth_map loss
+        """Gets depth_map loss.
+
         Args:
             depth_logits: torch.Tensor(B, D+1, H, W)]: Predicted depth logits
             gt_boxes2d [torch.Tensor (B, N, 4)]: 2D box labels for foreground/background balancing
-            num_gt_per_img:
-            gt_center_depth:
+            num_gt_per_img: [int]: Number of ground truth boxes per image
+            gt_center_depth: [torch.Tensor(B, N)]: 3D center depth
+
         Returns:
             loss [torch.Tensor(1)]: Depth classification network loss
         """
         # Bin depth map to create target
         depth_maps = self.build_target_depth_from_3dcenter(depth_logits, gt_boxes2d, gt_center_depth, num_gt_per_img)
-        # ipdb.set_trace()
         depth_target = self.bin_depths(depth_maps, target=True)
-        # ipdb.set_trace()
         # Compute loss
         loss = self.loss_func(depth_logits, depth_target)
-        # ipdb.set_trace()
         # Compute foreground/background balancing
-        loss = self.balancer(loss=loss, gt_boxes2d=gt_boxes2d, num_gt_per_img=num_gt_per_img)
 
-        return loss
+        return self.balancer(loss=loss, gt_boxes2d=gt_boxes2d, num_gt_per_img=num_gt_per_img)

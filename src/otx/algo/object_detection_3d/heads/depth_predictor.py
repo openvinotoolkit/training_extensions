@@ -5,19 +5,18 @@
 
 from __future__ import annotations
 
-import copy
 from typing import Callable
 
 import torch
-import torch.nn.functional as F
 from torch import nn
+from torch.nn import functional
 
-
-def _get_clones(module: nn.Module, N: int) -> nn.ModuleList:
-    return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+from otx.algo.object_detection_3d.utils.utils import get_clones
 
 
 class TransformerEncoder(nn.Module):
+    """TransformerEncoder module."""
+
     def __init__(self, encoder_layer: nn.Module, num_layers: int, norm: nn.Module = None) -> None:
         """Initialize the TransformerEncoder.
 
@@ -27,7 +26,7 @@ class TransformerEncoder(nn.Module):
             norm (nn.Module, optional): The normalization module. Defaults to None.
         """
         super().__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
+        self.layers = get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
         self.norm = norm
 
@@ -54,6 +53,8 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
+    """TransformerEncoderLayer module."""
+
     def __init__(
         self,
         d_model: int,
@@ -115,11 +116,12 @@ class TransformerEncoderLayer(nn.Module):
         src = self.norm1(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
         src = src + self.dropout2(src2)
-        src = self.norm2(src)
-        return src
+        return self.norm2(src)
 
 
 class DepthPredictor(nn.Module):
+    """Depth predictor and depth encoder."""
+
     def __init__(self, depth_num_bins: int, depth_min: float, depth_max: float, hidden_dim: int) -> None:
         """Initialize depth predictor and depth encoder.
 
@@ -186,23 +188,23 @@ class DepthPredictor(nn.Module):
         """
         # foreground depth map
         src_16 = self.proj(feature[1])
-        src_32 = self.upsample(F.interpolate(feature[2], size=src_16.shape[-2:], mode="bilinear"))
+        src_32 = self.upsample(functional.interpolate(feature[2], size=src_16.shape[-2:], mode="bilinear"))
         src_8 = self.downsample(feature[0])
         src = (src_8 + src_16 + src_32) / 3
 
         src = self.depth_head(src)
         depth_logits = self.depth_classifier(src)
 
-        depth_probs = F.softmax(depth_logits, dim=1)
+        depth_probs = functional.softmax(depth_logits, dim=1)
         weighted_depth = (depth_probs * self.depth_bin_values.reshape(1, -1, 1, 1)).sum(dim=1)
         # depth embeddings with depth positional encodings
-        B, C, H, W = src.shape
+        b, c, h, w = src.shape
         src = src.flatten(2).permute(2, 0, 1)
         mask = mask.flatten(1)
         pos = pos.flatten(2).permute(2, 0, 1)
 
         depth_embed = self.depth_encoder(src, mask, pos)
-        depth_embed = depth_embed.permute(1, 2, 0).reshape(B, C, H, W)
+        depth_embed = depth_embed.permute(1, 2, 0).reshape(b, c, h, w)
         depth_pos_embed_ip = self.interpolate_depth_embed(weighted_depth)
         depth_embed = depth_embed + depth_pos_embed_ip
 
@@ -219,8 +221,7 @@ class DepthPredictor(nn.Module):
         """
         depth = depth.clamp(min=0, max=self.depth_max)
         pos = self.interpolate_1d(depth, self.depth_pos_embed)
-        pos = pos.permute(0, 3, 1, 2)
-        return pos
+        return pos.permute(0, 3, 1, 2)
 
     def interpolate_1d(self, coord: torch.Tensor, embed: nn.Embedding) -> torch.Tensor:
         """Interpolate 1D embeddings based on coordinates.

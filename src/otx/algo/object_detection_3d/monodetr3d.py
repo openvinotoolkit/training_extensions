@@ -12,7 +12,6 @@ import torch
 from torch import Tensor
 from torchvision.ops import box_convert
 
-from otx.algo.detection.detectors import DETR
 from otx.algo.object_detection_3d.detectors.monodetr import MonoDETR
 from otx.algo.object_detection_3d.heads.depth_predictor import DepthPredictor
 from otx.algo.object_detection_3d.heads.depthaware_transformer import DepthAwareTransformerBuilder
@@ -30,12 +29,12 @@ from .backbones.backbone import BackboneBuilder
 class MonoDETR3D(OTX3DDetectionModel):
     """OTX Detection model class for MonoDETR3D."""
 
-    mean: tuple[float, float, float] = [0.485, 0.456, 0.406]
-    std: tuple[float, float, float] = [0.229, 0.224, 0.225]
+    mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
+    std: tuple[float, float, float] = (0.229, 0.224, 0.225)
     input_size: tuple[int, int] = (384, 1280)  # HxW
     load_from: str | None = None
 
-    def _build_model(self, num_classes) -> DETR:
+    def _build_model(self, num_classes: int) -> MonoDETR:
         # backbone
         backbone = BackboneBuilder(self.model_name)
         # transformer
@@ -51,7 +50,7 @@ class MonoDETR3D(OTX3DDetectionModel):
         }
         criterion = MonoDETRCriterion(num_classes=num_classes, focal_alpha=0.25, weight_dict=loss_weight_dict)
 
-        model = MonoDETR(
+        return MonoDETR(
             backbone,
             depthaware_transformer,
             depth_predictor,
@@ -61,13 +60,8 @@ class MonoDETR3D(OTX3DDetectionModel):
             aux_loss=True,
             num_feature_levels=4,
             with_box_refine=True,
-            two_stage=False,
             init_box=False,
-            use_dab=False,
-            two_stage_dino=False,
         )
-
-        return model
 
     def _customize_inputs(
         self,
@@ -95,7 +89,7 @@ class MonoDETR3D(OTX3DDetectionModel):
 
     def _customize_outputs(
         self,
-        outputs: list[torch.Tensor] | dict,
+        outputs: dict[str, torch.Tensor],
         inputs: Det3DBatchDataEntity,
     ) -> Det3DBatchPredEntity | OTXBatchLossEntity:
         if self.training:
@@ -166,7 +160,8 @@ class MonoDETR3D(OTX3DDetectionModel):
 
         return [optimizer], lr_scheduler_configs
 
-    def _apply_no_bias_decay(self):
+    def _apply_no_bias_decay(self) -> list[dict[str, Any]]:
+        """Apply no bias decay to bias parameters."""
         weights, biases = [], []
         for name, param in self.named_parameters():
             if "bias" in name:
@@ -194,9 +189,8 @@ class MonoDETR3D(OTX3DDetectionModel):
         }
 
     @staticmethod
-    def extract_dets_from_outputs(outputs, topk=50):
-        # get src outputs
-
+    def extract_dets_from_outputs(outputs: dict[str, torch.Tensor], topk: int = 50) -> tuple[torch.Tensor, ...]:
+        """Extract detection results from model outputs."""
         # b, q, c
         out_logits = outputs["pred_logits"]
         out_bbox = outputs["pred_boxes"]

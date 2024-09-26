@@ -114,9 +114,7 @@ class OTXDataModule(LightningDataModule):
         from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
 
         VIDEO_EXTENSIONS.append(".mp4")
-        if self.task == "OBJECT_DETECTION_3D":
-            dataset = None
-        else:
+        if self.task != "OBJECT_DETECTION_3D":
             dataset = DmDataset.import_from(self.data_root, format=self.data_format)
             if self.task != "H_LABEL_CLS":
                 dataset = pre_filtering(
@@ -190,7 +188,7 @@ class OTXDataModule(LightningDataModule):
 
         if self.task == "OBJECT_DETECTION_3D":
             for name in config_mapping:
-                dm_subset = KITTI_Dataset(self.data_root, split=name)
+                dm_subset = KITTI_Dataset(self.data_root, split=name)  # type: ignore[no-untyped-call]
                 dataset = OTXDatasetFactory.create(
                     task=self.task,
                     dm_subset=dm_subset,

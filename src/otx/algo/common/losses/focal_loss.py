@@ -247,7 +247,7 @@ class FocalLoss(nn.Module):
         self.alpha: float = alpha
         self.gamma: float = gamma
         self.reduction: str = reduction
-        self.eps: float = eps
+        self.eps: float | None = eps
 
     def forward(self, inputs: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Forward."""

@@ -13,8 +13,7 @@ from torch.nn.init import constant_, normal_, xavier_uniform_
 
 from otx.algo.detection.heads.rtdetr_decoder import MLP, MSDeformableAttention
 from otx.algo.detection.utils.utils import inverse_sigmoid
-
-from .depth_predictor import _get_clones
+from otx.algo.object_detection_3d.utils.utils import get_clones
 
 
 def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
@@ -52,17 +51,17 @@ def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
             embed = pos_tensor[:, :, i] * scale
             pos_embed = embed[:, :, None] / dim_t
             pos_embed = torch.stack((pos_embed[:, :, 0::2].sin(), pos_embed[:, :, 1::2].cos()), dim=3).flatten(2)
-            if i == 2:  # Initialize pos for the case of size(-1)=6
-                pos = pos_embed
-            else:  # Concatenate embeds for l, r, t, b
-                pos = torch.cat((pos, pos_embed), dim=2)
+            pos = pos_embed if i == 2 else torch.cat((pos, pos_embed), dim=2)
         pos = torch.cat((pos_y, pos_x, pos), dim=2)
     else:
-        raise ValueError(f"Unknown pos_tensor shape(-1):{pos_tensor.size(-1)}")
+        msg = f"Unknown pos_tensor shape(-1):{pos_tensor.size(-1)}"
+        raise ValueError(msg)
     return pos
 
 
 class DepthAwareTransformer(nn.Module):
+    """DepthAwareTransformer module."""
+
     def __init__(
         self,
         d_model: int = 256,
@@ -76,11 +75,7 @@ class DepthAwareTransformer(nn.Module):
         num_feature_levels: int = 4,
         dec_n_points: int = 4,
         enc_n_points: int = 4,
-        two_stage: bool = False,
-        two_stage_num_proposals: int = 50,
         group_num: int = 11,
-        use_dab: bool = False,
-        two_stage_dino: bool = False,
     ) -> None:
         """Initialize the DepthAwareTransformer module.
 
@@ -96,20 +91,12 @@ class DepthAwareTransformer(nn.Module):
             num_feature_levels (int): The number of feature levels.
             dec_n_points (int): The number of points for the decoder attention.
             enc_n_points (int): The number of points for the encoder attention.
-            two_stage (bool): Whether to use two-stage training.
-            two_stage_num_proposals (int): The number of proposals for the two-stage training.
             group_num (int): The number of groups for the two-stage training.
-            use_dab (bool): Whether to use depth-aware attention.
-            two_stage_dino (bool): Whether to use two-stage training with DINO.
         """
         super().__init__()
 
         self.d_model = d_model
         self.nhead = nhead
-        self.two_stage = two_stage
-        self.two_stage_num_proposals = two_stage_num_proposals
-        self.use_dab = use_dab
-        self.two_stage_dino = two_stage_dino
         self.group_num = group_num
 
         encoder_layer = VisualEncoderLayer(
@@ -138,42 +125,24 @@ class DepthAwareTransformer(nn.Module):
             num_decoder_layers,
             return_intermediate_dec,
             d_model,
-            use_dab=use_dab,
-            two_stage_dino=two_stage_dino,
+            activation,
         )
 
         self.level_embed = nn.Parameter(torch.Tensor(num_feature_levels, d_model))
-
-        if two_stage:
-            self.enc_output = nn.Linear(d_model, d_model)
-            self.enc_output_norm = nn.LayerNorm(d_model)
-            self.pos_trans = nn.Linear(d_model * 2, d_model * 2)
-            self.pos_trans_norm = nn.LayerNorm(d_model * 2)
-        elif two_stage_dino:
-            self.enc_output = nn.Linear(d_model, d_model)
-            self.enc_output_norm = nn.LayerNorm(d_model)
-            self.tgt_embed = nn.Embedding(self.two_stage_num_proposals * group_num, d_model)
-            nn.init.normal_(self.tgt_embed.weight.data)
-            self.two_stage_wh_embedding = None
-            self.enc_out_class_embed = None
-            self.enc_out_bbox_embed = None
-        else:
-            if not self.use_dab:
-                self.reference_points = nn.Linear(d_model, 2)
+        self.reference_points = nn.Linear(d_model, 2)
 
         self._reset_parameters()
 
-    def _reset_parameters(self):
+    def _reset_parameters(self) -> None:
         """Reset parameters of the model."""
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
         for m in self.modules():
             if isinstance(m, MSDeformableAttention):
-                m._reset_parameters()
-        if not self.two_stage and not self.use_dab and not self.two_stage_dino:
-            xavier_uniform_(self.reference_points.weight.data, gain=1.0)
-            constant_(self.reference_points.bias.data, 0.0)
+                m._reset_parameters()  # noqa: SLF001
+        xavier_uniform_(self.reference_points.weight.data, gain=1.0)
+        constant_(self.reference_points.bias.data, 0.0)
         normal_(self.level_embed)
 
     def get_proposal_pos_embed(self, proposals: Tensor) -> Tensor:
@@ -196,8 +165,7 @@ class DepthAwareTransformer(nn.Module):
         # N, L, 6, 128
         pos = proposals[:, :, :, None] / dim_t
         # N, L, 6, 64, 2
-        pos = torch.stack((pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4).flatten(2)
-        return pos
+        return torch.stack((pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4).flatten(2)
 
     def gen_encoder_output_proposals(
         self,
@@ -261,21 +229,20 @@ class DepthAwareTransformer(nn.Module):
             Tensor: The valid ratio tensor.
         """
         _, h, w = mask.shape
-        valid_H = torch.sum(~mask[:, :, 0], 1)
-        valid_W = torch.sum(~mask[:, 0, :], 1)
-        valid_ratio_h = valid_H.float() / h
-        valid_ratio_w = valid_W.float() / w
-        valid_ratio = torch.stack([valid_ratio_w, valid_ratio_h], -1)
-        return valid_ratio
+        valid_h = torch.sum(~mask[:, :, 0], 1)
+        valid_w = torch.sum(~mask[:, 0, :], 1)
+        valid_ratio_h = valid_h.float() / h
+        valid_ratio_w = valid_w.float() / w
+        return torch.stack([valid_ratio_w, valid_ratio_h], -1)
 
     def forward(
         self,
         srcs: list[Tensor],
         masks: list[Tensor],
         pos_embeds: list[Tensor],
-        query_embed: Tensor | None = None,
-        depth_pos_embed: Tensor | None = None,
-        depth_pos_embed_ip: Tensor | None = None,
+        query_embed: Tensor,
+        depth_pos_embed: Tensor,
+        depth_pos_embed_ip: Tensor,
         attn_mask: Tensor | None = None,
     ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor | None, Tensor | None]:
         """Forward pass of the DepthAwareTransformer module.
@@ -296,24 +263,24 @@ class DepthAwareTransformer(nn.Module):
         src_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []
-        spatial_shapes = []
+        spatial_shapes_list = []
         for lvl, (src, mask, pos_embed) in enumerate(zip(srcs, masks, pos_embeds)):
             bs, c, h, w = src.shape
             spatial_shape = (h, w)
-            spatial_shapes.append(spatial_shape)
-            src = src.flatten(2).transpose(1, 2)
-            pos_embed = pos_embed.flatten(2).transpose(1, 2)
-            lvl_pos_embed = pos_embed + self.level_embed[lvl].view(1, 1, -1)
+            spatial_shapes_list.append(spatial_shape)
+            src_ = src.flatten(2).transpose(1, 2)
+            pos_embed_ = pos_embed.flatten(2).transpose(1, 2)
+            lvl_pos_embed = pos_embed_ + self.level_embed[lvl].view(1, 1, -1)
 
-            mask = mask.flatten(1)
+            mask_ = mask.flatten(1)
             lvl_pos_embed_flatten.append(lvl_pos_embed)
-            src_flatten.append(src)
-            mask_flatten.append(mask)
+            src_flatten.append(src_)
+            mask_flatten.append(mask_)
 
         src_flatten = torch.cat(src_flatten, 1)
         lvl_pos_embed_flatten = torch.cat(lvl_pos_embed_flatten, 1)
         mask_flatten = torch.cat(mask_flatten, 1)
-        spatial_shapes = torch.as_tensor(spatial_shapes, dtype=torch.long, device=srcs[0].device)
+        spatial_shapes = torch.as_tensor(spatial_shapes_list, dtype=torch.long, device=srcs[0].device)
         level_start_index = torch.cat((spatial_shapes.new_zeros((1,)), spatial_shapes.prod(1).cumsum(0)[:-1]))
         valid_ratios = torch.stack([self.get_valid_ratio(m) for m in masks], 1)
 
@@ -329,76 +296,11 @@ class DepthAwareTransformer(nn.Module):
         # enc_intermediate_output, enc_intermediate_refpoints = None
         # prepare input for decoder
         bs, _, c = memory.shape
-        ####DINO_pos
-        if self.two_stage:
-            ###share
-            output_memory, output_proposals = self.gen_encoder_output_proposals(memory, mask_flatten, spatial_shapes)
-            output_memory = self.enc_output_norm(self.enc_output(output_memory))
-            # hack implementation for two-stage Deformable DETR
-            enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
-            enc_outputs_coord_unact = self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-            topk = self.two_stage_num_proposals
-            ####share_end
-            topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
-            topk_coords_unact = torch.gather(enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 6))
-            topk_coords_unact = topk_coords_unact.detach()
-            reference_points = topk_coords_unact.sigmoid()
-            init_reference_out = reference_points
-
-            topk_coords_unact_input = torch.cat(
-                (topk_coords_unact[..., 0:2], topk_coords_unact[..., 2::2] + topk_coords_unact[..., 3::2]),
-                dim=-1,
-            )
-
-            pos_trans_out = self.pos_trans_norm(self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact_input)))
-            query_embed, tgt = torch.split(pos_trans_out, c, dim=2)
-        elif self.use_dab:
-            reference_points = query_embed[..., self.d_model :].sigmoid()
-            tgt = query_embed[..., : self.d_model]
-            tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
-            ##for dn
-            init_reference_out = reference_points
-        elif self.two_stage_dino:
-            output_memory, output_proposals = self.gen_encoder_output_proposals(memory, mask_flatten, spatial_shapes)
-            output_memory = self.enc_output_norm(self.enc_output(output_memory))
-            enc_outputs_class_unselected = self.enc_out_class_embed(output_memory)
-            enc_outputs_coord_unselected = (
-                self.enc_out_bbox_embed(output_memory) + output_proposals
-            )  # (bs, \sum{hw}, 4) unsigmoid
-            if self.training:
-                topk = self.two_stage_num_proposals * self.group_num
-            else:
-                topk = self.two_stage_num_proposals
-            topk_proposals = torch.topk(enc_outputs_class_unselected.max(-1)[0], topk, dim=1)[1]  # bs, nq
-
-            # gather boxes
-            refpoint_embed_undetach = torch.gather(
-                enc_outputs_coord_unselected,
-                1,
-                topk_proposals.unsqueeze(-1).repeat(1, 1, 6),
-            )  # unsigmoid
-            refpoint_embed_ = refpoint_embed_undetach.detach()
-            init_box_proposal = torch.gather(
-                output_proposals,
-                1,
-                topk_proposals.unsqueeze(-1).repeat(1, 1, 6),
-            ).sigmoid()  # sigmoid
-            if self.training:
-                tgt_ = self.tgt_embed.weight[:, None, :].repeat(1, bs, 1)  # nq, bs, d_model
-            else:
-                tgt_ = self.tgt_embed.weight[: self.two_stage_num_proposals, None, :].repeat(
-                    1,
-                    bs,
-                    1,
-                )  # nq, bs, d_model
-            reference_points, tgt = refpoint_embed_, tgt_
-            init_reference_out = reference_points
-        else:
-            query_embed, tgt = torch.split(query_embed, c, dim=1)
-            query_embed = query_embed.unsqueeze(0).expand(bs, -1, -1)
-            tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
-            reference_points = self.reference_points(query_embed).sigmoid()
-            init_reference_out = reference_points
+        query_embed, tgt = torch.split(query_embed, c, dim=1)
+        query_embed = query_embed.unsqueeze(0).expand(bs, -1, -1)
+        tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
+        reference_points = self.reference_points(query_embed).sigmoid()
+        init_reference_out = reference_points
 
         depth_pos_embed = depth_pos_embed.flatten(2).permute(2, 0, 1)
         depth_pos_embed_ip = depth_pos_embed_ip.flatten(2).permute(2, 0, 1)
@@ -413,7 +315,7 @@ class DepthAwareTransformer(nn.Module):
             spatial_shapes,
             level_start_index,
             valid_ratios,
-            query_embed if (not self.use_dab and not self.two_stage_dino) else None,  # ,INFo
+            query_embed,  # ,INFo
             mask_flatten,
             depth_pos_embed,
             mask_depth,
@@ -425,20 +327,12 @@ class DepthAwareTransformer(nn.Module):
 
         inter_references_out = inter_references
         inter_references_out_dim = inter_references_dim
-
-        if self.two_stage:
-            return (
-                hs,
-                init_reference_out,
-                inter_references_out,
-                inter_references_out_dim,
-                enc_outputs_class,
-                enc_outputs_coord_unact,
-            )
         return hs, init_reference_out, inter_references_out, inter_references_out_dim, None, None
 
 
 class VisualEncoderLayer(nn.Module):
+    """VisualEncoderLayer module."""
+
     def __init__(
         self,
         d_model: int = 256,
@@ -499,8 +393,7 @@ class VisualEncoderLayer(nn.Module):
         """
         src2 = self.linear2(self.dropout2(self.activation(self.linear1(src))))
         src = src + self.dropout3(src2)
-        src = self.norm2(src)
-        return src
+        return self.norm2(src)
 
     def forward(
         self,
@@ -530,12 +423,12 @@ class VisualEncoderLayer(nn.Module):
         src = self.norm1(src)
 
         # ffn
-        src = self.forward_ffn(src)
-
-        return src
+        return self.forward_ffn(src)
 
 
 class VisualEncoder(nn.Module):
+    """VisualEncoder module."""
+
     def __init__(self, encoder_layer: nn.Module, num_layers: int):
         """Initialize the DepthAwareDecoder.
 
@@ -544,7 +437,7 @@ class VisualEncoder(nn.Module):
             num_layers (int): The number of layers.
         """
         super().__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
+        self.layers = get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
 
     @staticmethod
@@ -574,8 +467,7 @@ class VisualEncoder(nn.Module):
             ref = torch.stack((ref_x, ref_y), -1)
             reference_points_list.append(ref)
         reference_points = torch.cat(reference_points_list, 1)
-        reference_points = reference_points[:, :, None] * valid_ratios[:, None]
-        return reference_points
+        return reference_points[:, :, None] * valid_ratios[:, None]
 
     def forward(
         self,
@@ -612,6 +504,8 @@ class VisualEncoder(nn.Module):
 
 
 class DepthAwareDecoderLayer(nn.Module):
+    """DepthAwareDecoderLayer module."""
+
     def __init__(
         self,
         d_model: int = 256,
@@ -694,8 +588,7 @@ class DepthAwareDecoderLayer(nn.Module):
         """
         tgt2 = self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout4(tgt2)
-        tgt = self.norm3(tgt)
-        return tgt
+        return self.norm3(tgt)
 
     def forward(
         self,
@@ -731,7 +624,8 @@ class DepthAwareDecoderLayer(nn.Module):
             bs (int): The batch size.
             query_sine_embed (Tensor | None): The query sine embedding tensor. Defaults to None.
             is_first (bool | None): Whether it is the first iteration. Defaults to None.
-            depth_pos_embed_ip (Tensor | None): The depth position embedding tensor for the iterative process. Defaults to None.
+            depth_pos_embed_ip (Tensor | None): The depth position embedding tensor for the iterative process.
+                Defaults to None.
             pos_embeds (List[Tensor] | None): The list of position embedding tensors. Defaults to None.
             self_attn_mask (Tensor | None): The self-attention mask tensor. Defaults to None.
             query_pos_un (Tensor | None): The unnormalized query position tensor. Defaults to None.
@@ -783,11 +677,7 @@ class DepthAwareDecoderLayer(nn.Module):
             v = torch.cat([v_noise, v], dim=0)
 
         tgt2 = self.self_attn(q, k, v)[0]
-        if self.training:
-            tgt2 = torch.cat(tgt2.split(bs, dim=1), dim=0).transpose(0, 1)
-
-        else:
-            tgt2 = tgt2.transpose(0, 1)
+        tgt2 = torch.cat(tgt2.split(bs, dim=1), dim=0).transpose(0, 1) if self.training else tgt2.transpose(0, 1)
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
 
@@ -801,21 +691,19 @@ class DepthAwareDecoderLayer(nn.Module):
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 
-        # ffn
-        tgt = self.forward_ffn(tgt)
-
-        return tgt
+        return self.forward_ffn(tgt)
 
 
 class DepthAwareDecoder(nn.Module):
+    """DepthAwareDecoder module."""
+
     def __init__(
         self,
         decoder_layer: nn.Module,
         num_layers: int,
-        return_intermediate: bool = False,
-        d_model: int | None = None,
-        use_dab: bool = False,
-        two_stage_dino: bool = False,
+        return_intermediate: bool,
+        d_model: int,
+        activation: Callable[..., nn.Module] = nn.ReLU,
     ) -> None:
         """Initialize the DepthAwareDecoder.
 
@@ -824,32 +712,18 @@ class DepthAwareDecoder(nn.Module):
             num_layers (int): The number of layers.
             return_intermediate (bool, optional): Whether to return intermediate outputs. Defaults to False.
             d_model (int | None, optional): The input and output dimension of the layer. Defaults to None.
-            use_dab (bool, optional): Whether to use DepthAwareDecoder. Defaults to False.
-            two_stage_dino (bool, optional): Whether to use two-stage DINO. Defaults to False.
         """
         super().__init__()
-        self.layers = _get_clones(decoder_layer, num_layers)
+        self.layers = get_clones(decoder_layer, num_layers)
         self.num_layers = num_layers
         self.return_intermediate = return_intermediate
-        # hack implementation for iterative bounding box refinement and two-stage Deformable DETR
+
         self.bbox_embed = None
         self.dim_embed = None
         self.class_embed = None
-        self.use_dab = use_dab
-        self.two_stgae_dino = two_stage_dino
-        if use_dab:
-            self.query_scale = MLP(d_model, d_model, d_model, 2, activation=nn.ReLU)
-            self.query_scale_bbox = MLP(d_model, 2, 2, 2)
-            self.ref_point_head = MLP(3 * d_model, d_model, d_model, 2, activation=nn.ReLU)
-        elif two_stage_dino:
-            self.ref_point_head = MLP(3 * d_model, d_model, d_model, 2, activation=nn.ReLU)
-            # self.query_scale = None
-            self.query_scale = MLP(d_model, d_model, d_model, 2, activation=nn.ReLU)
-            self.query_pos_sine_scale = None
-            self.ref_anchor_head = None
-        else:
-            self.query_scale = MLP(d_model, d_model, d_model, 2, activation=nn.ReLU)
-            self.ref_point_head = MLP(d_model, d_model, 2, 2, activation=nn.ReLU)
+
+        self.query_scale = MLP(d_model, d_model, d_model, 2, activation=activation)
+        self.ref_point_head = MLP(d_model, d_model, 2, 2, activation=activation)
 
     def forward(
         self,
@@ -882,7 +756,8 @@ class DepthAwareDecoder(nn.Module):
             depth_pos_embed (Tensor | None): The depth position embedding tensor. Defaults to None.
             mask_depth (Tensor | None): The depth mask tensor. Defaults to None.
             bs (int | None): The batch size. Defaults to None.
-            depth_pos_embed_ip (Tensor | None): The depth position embedding tensor for the iterative process. Defaults to None.
+            depth_pos_embed_ip (Tensor | None): The depth position embedding tensor for the iterative process.
+                Defaults to None.
             pos_embeds (List[Tensor] | None): The list of position embedding tensors. Defaults to None.
             attn_mask (Tensor | None): The self-attention mask tensor. Defaults to None.
 
@@ -895,11 +770,6 @@ class DepthAwareDecoder(nn.Module):
         intermediate_reference_points = []
         intermediate_reference_dims = []
         bs = src.shape[0]
-        ###for dn
-        if self.use_dab:
-            reference_points = reference_points[None].repeat(bs, 1, 1)
-        elif self.two_stgae_dino:
-            reference_points = reference_points.sigmoid()
 
         for lid, layer in enumerate(self.layers):
             if reference_points.shape[-1] == 6:
@@ -913,22 +783,8 @@ class DepthAwareDecoder(nn.Module):
                     raise ValueError(msg)
 
                 reference_points_input = reference_points[:, :, None] * src_valid_ratios[:, None]
-            if self.two_stgae_dino:
-                query_sine_embed = gen_sineembed_for_position(reference_points_input[:, :, 0, :])
-                raw_query_pos = self.ref_point_head(query_sine_embed)  # nq, bs, 256
 
-                pos_scale = self.query_scale(output) if lid != 0 else 1
-                query_pos = pos_scale * raw_query_pos
             ###conditional
-            # ipdb.set_trace()
-            query_pos_un = None
-            if self.use_dab:
-                query_sine_embed = gen_sineembed_for_position(reference_points_input[:, :, 0, :])  # bs, nq, 256*2
-                raw_query_pos = self.ref_point_head(query_sine_embed)  # bs, nq, 256
-                pos_scale = self.query_scale(output) if lid != 0 else 1
-                # pos_scale  = 1
-                query_pos = pos_scale * raw_query_pos
-
             output = layer(
                 output,
                 query_pos,
@@ -945,10 +801,10 @@ class DepthAwareDecoder(nn.Module):
                 depth_pos_embed_ip=depth_pos_embed_ip,
                 pos_embeds=pos_embeds,
                 self_attn_mask=attn_mask,
-                query_pos_un=query_pos_un,
+                query_pos_un=None,
             )
 
-            # hack implementation for iterative bounding box refinement
+            # implementation for iterative bounding box refinement
             if self.bbox_embed is not None:
                 tmp = self.bbox_embed[lid](output)
                 if reference_points.shape[-1] == 6:
@@ -960,6 +816,7 @@ class DepthAwareDecoder(nn.Module):
                     new_reference_points = new_reference_points.sigmoid()
                 reference_points = new_reference_points.detach()
 
+            reference_dims: Tensor
             if self.dim_embed is not None:
                 reference_dims = self.dim_embed[lid](output)
 
@@ -991,12 +848,9 @@ class DepthAwareTransformerBuilder:
             "num_feature_levels": 4,
             "dec_n_points": 4,
             "enc_n_points": 4,
-            "two_stage": False,
-            "two_stage_num_proposals": 50,
-            "use_dab": False,
-            "two_stage_dino": False,
         },
     }
 
     def __new__(cls, model_name: str) -> DepthAwareTransformer:
+        """Create the DepthAwareTransformer."""
         return DepthAwareTransformer(**cls.CFG[model_name])

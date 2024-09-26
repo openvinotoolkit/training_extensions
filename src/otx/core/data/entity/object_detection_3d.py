@@ -64,6 +64,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     :param labels: A list of bbox labels as integer indices
     """  # TODO(Kirill): UPDATE!
 
+    images: Tensor
     boxes: list[tv_tensors.BoundingBoxes]
     calib_matrix: list[Tensor]
     boxes_3d: list[Tensor]
@@ -136,3 +137,14 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
 @dataclass
 class Det3DBatchPredEntity(OTXBatchPredEntity, Det3DBatchDataEntity):
     """Data entity to represent model output predictions for detection task."""
+
+    boxes: tv_tensors.BoundingBoxes
+    scores: Tensor
+    calib_matrix: Tensor
+    boxes_3d: Tensor
+    size_2d: Tensor
+    size_3d: Tensor
+    depth: Tensor
+    heading_angle: Tensor
+    labels: Tensor
+    kitti_label_object: list[list[Object3d]]
