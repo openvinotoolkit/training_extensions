@@ -115,10 +115,8 @@ def one_hot(
     if num_classes < 1:
         msg = f"The number of classes must be bigger than one. Got: {num_classes}"
         raise ValueError(msg)
-    # ipdb.set_trace()
     shape = labels.shape
     one_hot = torch.zeros((shape[0], num_classes) + shape[1:], device=device, dtype=dtype)
-    # ipdb.set_trace()
     return one_hot.scatter_(1, labels.unsqueeze(1), 1.0) + eps
 
 
@@ -193,7 +191,6 @@ def focal_loss(
     # compute softmax over the classes axis
     input_soft: torch.Tensor = nn.functional.softmax(inputs, dim=1)
     log_input_soft: torch.Tensor = nn.functional.log_softmax(inputs, dim=1)
-    # ipdb.set_trace()
     # create the labels one hot tensor
     target_one_hot: torch.Tensor = one_hot(
         target,
@@ -207,7 +204,6 @@ def focal_loss(
 
     focal = -alpha * weight * log_input_soft
     loss_tmp = torch.einsum("bc...,bc...->b...", (target_one_hot, focal))
-    # ipdb.set_trace()
     return weight_reduce_loss(loss_tmp, reduction=reduction, avg_factor=None)
 
 

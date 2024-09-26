@@ -48,7 +48,7 @@ class KITTI_Dataset(data.Dataset):
         self.max_objs = 50
         self.class_name = ["Pedestrian", "Car", "Cyclist"]
         self.cls2id = {"Pedestrian": 0, "Car": 1, "Cyclist": 2}
-        self.resolution = np.array([100, 30])  # W * H
+        self.resolution = np.array([1280, 384])  # W * H
         self.use_3d_center = use_3d_center
         self.writelist = writelist
         # anno: use src annotations as GT, proj: use projected 2d bboxes as GT

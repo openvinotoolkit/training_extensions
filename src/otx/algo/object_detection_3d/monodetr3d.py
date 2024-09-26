@@ -12,6 +12,7 @@ import torch
 from torch import Tensor
 from torchvision.ops import box_convert
 
+from otx.algo.object_detection_3d.backbones.monodetr_resnet import BackboneBuilder
 from otx.algo.object_detection_3d.detectors.monodetr import MonoDETR
 from otx.algo.object_detection_3d.heads.depth_predictor import DepthPredictor
 from otx.algo.object_detection_3d.heads.depthaware_transformer import DepthAwareTransformerBuilder
@@ -23,8 +24,6 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.detection_3d import OTXObjectDetection3DExporter
 from otx.core.model.detection_3d import OTX3DDetectionModel
 
-from .backbones.backbone import BackboneBuilder
-
 
 class MonoDETR3D(OTX3DDetectionModel):
     """OTX Detection model class for MonoDETR3D."""
@@ -32,7 +31,7 @@ class MonoDETR3D(OTX3DDetectionModel):
     mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
     std: tuple[float, float, float] = (0.229, 0.224, 0.225)
     input_size: tuple[int, int] = (384, 1280)  # HxW
-    load_from: str | None = "/home/kprokofi/MonoDETR/checkpoint_best_2.pth"
+    load_from: str | None = None
 
     def _build_model(self, num_classes: int) -> MonoDETR:
         # backbone

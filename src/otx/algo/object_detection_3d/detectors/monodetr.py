@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import math
+from typing import Callable
 
 import torch
 from torch import Tensor, nn
@@ -31,22 +32,24 @@ class MonoDETR(nn.Module):
         with_box_refine: bool = False,
         init_box: bool = False,
         group_num: int = 11,
+        activation: Callable[..., nn.Module] = nn.ReLU,
     ):
         """Initializes the model.
 
         Args:
-            backbone: torch module of the backbone to be used. See backbone.py
-            depthaware_transformer: depth-aware transformer architecture. See depth_aware_transformer.py
-            depth_predictor: depth predictor module
-            criterion: loss criterion module
-            num_classes: number of object classes
-            num_queries: number of object queries, ie detection slot. This is the maximal number of objects
-                         DETR can detect in a single image. For KITTI, we recommend 50 queries.
-            num_feature_levels: number of feature levels
-            aux_loss: True if auxiliary decoding losses (loss at each decoder layer) are to be used.
-            with_box_refine: iterative bounding box refinement
-            init_box: True if the bounding box embedding layers should be initialized to zero
-            group_num: number of groups for depth-aware bounding box embedding
+            backbone (nn.Module): torch module of the backbone to be used. See backbone.py
+            depthaware_transformer (nn.Module): depth-aware transformer architecture. See depth_aware_transformer.py
+            depth_predictor (nn.Module): depth predictor module
+            criterion (nn.Module): loss criterion module
+            num_classes (int): number of object classes
+            num_queries (int): number of object queries, ie detection slot. This is the maximal number of objects
+                       DETR can detect in a single image. For KITTI, we recommend 50 queries.
+            num_feature_levels (int): number of feature levels
+            aux_loss (bool): True if auxiliary decoding losses (loss at each decoder layer) are to be used.
+            with_box_refine (bool): iterative bounding box refinement
+            init_box (bool): True if the bounding box embedding layers should be initialized to zero
+            group_num (int): number of groups for depth-aware bounding box embedding
+            activation (Callable[..., nn.Module]): activation function to be applied to the output of the transformer
         """
         super().__init__()
 
@@ -64,10 +67,10 @@ class MonoDETR(nn.Module):
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(num_classes) * bias_value
 
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 6, 3, activation=nn.ReLU)
-        self.dim_embed_3d = MLP(hidden_dim, hidden_dim, 3, 2, activation=nn.ReLU)
-        self.angle_embed = MLP(hidden_dim, hidden_dim, 24, 2, activation=nn.ReLU)
-        self.depth_embed = MLP(hidden_dim, hidden_dim, 2, 2, activation=nn.ReLU)  # depth and deviation
+        self.bbox_embed = MLP(hidden_dim, hidden_dim, 6, 3, activation=activation)
+        self.dim_embed_3d = MLP(hidden_dim, hidden_dim, 3, 2, activation=activation)
+        self.angle_embed = MLP(hidden_dim, hidden_dim, 24, 2, activation=activation)
+        self.depth_embed = MLP(hidden_dim, hidden_dim, 2, 2, activation=activation)  # depth and deviation
 
         if init_box:
             nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
