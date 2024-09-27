@@ -10,7 +10,6 @@ import itertools
 from typing import Any, Callable
 
 import torch
-from detectron2.checkpoint import DetectionCheckpointer
 from torch import Tensor, nn
 from torchvision import tv_tensors
 from torchvision.models.detection.image_list import ImageList
@@ -37,7 +36,7 @@ class _MaskDINO(nn.Module):
     def __init__(
         self,
         backbone: nn.Module,
-        sem_seg_head: nn.Module,
+        sem_seg_head: MaskDINOHead,
         criterion: nn.Module,
         num_queries: int,
         object_mask_threshold: float,
@@ -297,18 +296,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     def _build_model(self, num_classes: int) -> nn.Module:
         """Builds the model."""
         return _MaskDINO.from_config(num_classes)
-
-    def _create_model(self) -> nn.Module:
-        """Create model and load weights if available."""
-        detector = _MaskDINO.from_config(num_classes=self.label_info.num_classes)
-        self.classification_layers = self.get_classification_layers("model.")
-
-        if self.load_from is not None:
-            DetectionCheckpointer(detector).resume_or_load(
-                self.load_from,
-                resume=False,
-            )
-        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:
