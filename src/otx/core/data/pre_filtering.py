@@ -72,7 +72,11 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: 
     return True
 
 
-def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int | None) -> DmDataset:
+def remove_unused_labels(
+    dataset: DmDataset,
+    data_format: str,
+    ignore_index: int | None,
+) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
@@ -99,4 +103,5 @@ def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int
         mapping = {original_categories[idx]: original_categories[idx] for idx in used_labels}
     msg = "There are unused labels in dataset, they will be filtered out before training."
     warnings.warn(msg, stacklevel=2)
+
     return dataset.transform("remap_labels", mapping=mapping, default="delete")

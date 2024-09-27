@@ -16,7 +16,7 @@ from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.ap_3d import KittiMetric
-from otx.core.model.base import OTXModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:
@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.types.label import LabelInfoTypes
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 
 
 class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
@@ -253,7 +252,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         return results
 
     def get_dummy_input(self, batch_size: int = 1) -> Det3DBatchDataEntity:
-        """Returns a dummy input for detection model."""
+        """Returns a dummy input for 3d object detection model."""
         if self.input_size is None:
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
