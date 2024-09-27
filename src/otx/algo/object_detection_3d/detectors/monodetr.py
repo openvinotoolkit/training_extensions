@@ -77,8 +77,6 @@ class MonoDETR(nn.Module):
             nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
         self.query_embed = nn.Embedding(num_queries * group_num, hidden_dim * 2)
-        self.tgt_embed = nn.Embedding(num_queries * group_num, hidden_dim)
-        self.refpoint_embed = nn.Embedding(num_queries * group_num, 6)
 
         if num_feature_levels > 1:
             num_backbone_outs = len(backbone.strides)
@@ -266,7 +264,7 @@ class MonoDETR(nn.Module):
         outputs_depth = torch.stack(outputs_depths)
         outputs_angle = torch.stack(outputs_angles)
 
-        out = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
+        out = {"pred_logits": outputs_class[-1].sigmoid(), "pred_boxes": outputs_coord[-1]}
         out["pred_3d_dim"] = outputs_3d_dim[-1]
         out["pred_depth"] = outputs_depth[-1]
         out["pred_angle"] = outputs_angle[-1]

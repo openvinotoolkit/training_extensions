@@ -11,7 +11,7 @@ import torch
 from torchvision.ops import box_convert
 
 from otx.algo.utils.mmengine_utils import load_checkpoint
-from otx.core.data.dataset.kitti_3d.kitti_utils import class2angle
+from otx.core.data.dataset.utils.kitti_utils import class2angle
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
@@ -138,8 +138,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         return {
             "preds": result_list,
-            # TODO (Kirill): change it later to pre-process gt annotations here
-            "target": inputs.kitti_label_object,  # type: ignore[dict-item]
+            "target": inputs.original_kitti_format,  # type: ignore[dict-item]
         }
 
     @staticmethod
@@ -280,7 +279,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             size_3d=[],
             depth=[],
             heading_angle=[],
-            kitti_label_object=[],
+            original_kitti_format=[],
         )
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:

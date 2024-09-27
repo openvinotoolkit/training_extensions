@@ -68,7 +68,7 @@ class DepthPredictor(nn.Module):
             dim_feedforward=256,
             dropout=0.1,
             activation=activation,
-            normalize_before=True,
+            normalize_before=False,
             batch_first=False,
             key_mask=True,
         )

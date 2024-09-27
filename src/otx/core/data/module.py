@@ -113,15 +113,15 @@ class OTXDataModule(LightningDataModule):
         from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
 
         VIDEO_EXTENSIONS.append(".mp4")
-        if self.task != "OBJECT_DETECTION_3D":
-            dataset = DmDataset.import_from(self.data_root, format=self.data_format)
-            if self.task != "H_LABEL_CLS":
-                dataset = pre_filtering(
-                    dataset,
-                    self.data_format,
-                    self.unannotated_items_ratio,
-                    ignore_index=self.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None,
-                )
+
+        dataset = DmDataset.import_from(self.data_root, format=self.data_format)
+        if self.task != "H_LABEL_CLS":
+            dataset = pre_filtering(
+                dataset,
+                self.data_format,
+                self.unannotated_items_ratio,
+                ignore_index=self.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None,
+            )
 
         unlabeled_dataset = None
         if self.unlabeled_subset.data_root is not None:

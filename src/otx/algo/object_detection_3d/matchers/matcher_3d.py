@@ -78,7 +78,6 @@ class HungarianMatcher3D(nn.Module):
 
         out_2dbbox = outputs["pred_boxes"][:, :, 2:6].flatten(0, 1)  # [batch_size * num_queries, 4]
         tgt_2dbbox = torch.cat([v["boxes_3d"][:, 2:6] for v in targets])
-
         # Compute the L1 cost between boxes
         cost_bbox = torch.cdist(out_2dbbox, tgt_2dbbox, p=1)
 

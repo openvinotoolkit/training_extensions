@@ -12,25 +12,14 @@ train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
   batch_size: 8
-  num_workers: 0
+  num_workers: 4
   to_tv_image: false
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.MinIoURandomCrop
-    - class_path: otx.core.data.transform_libs.torchvision.Resize
-      init_args:
-        scale: $(input_size)
-        transform_bbox: true
-    - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-      init_args:
-        prob: 0.5
-        is_numpy_to_tvtensor: true
-    - class_path: torchvision.transforms.v2.ToDtype
-      init_args:
-        dtype: ${as_torch_dtype:torch.float32}
     - class_path: torchvision.transforms.v2.Normalize
       init_args:
-        mean: [0.0, 0.0, 0.0]
-        std: [255.0, 255.0, 255.0]
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+
   sampler:
     class_path: torch.utils.data.RandomSampler
 
@@ -38,20 +27,13 @@ val_subset:
   subset_name: val
   transform_lib_type: TORCHVISION
   batch_size: 16
-  num_workers: 0
+  num_workers: 4
   to_tv_image: false
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.Resize
-      init_args:
-        scale: $(input_size)
-        is_numpy_to_tvtensor: true
-    - class_path: torchvision.transforms.v2.ToDtype
-      init_args:
-        dtype: ${as_torch_dtype:torch.float32}
     - class_path: torchvision.transforms.v2.Normalize
       init_args:
-        mean: [0.0, 0.0, 0.0]
-        std: [255.0, 255.0, 255.0]
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
   sampler:
     class_path: torch.utils.data.RandomSampler
 
@@ -59,19 +41,12 @@ test_subset:
   subset_name: test
   transform_lib_type: TORCHVISION
   batch_size: 16
-  num_workers: 0
+  num_workers: 4
   to_tv_image: false
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.Resize
-      init_args:
-        scale: $(input_size)
-        is_numpy_to_tvtensor: true
-    - class_path: torchvision.transforms.v2.ToDtype
-      init_args:
-        dtype: ${as_torch_dtype:torch.float32}
     - class_path: torchvision.transforms.v2.Normalize
       init_args:
-        mean: [0.0, 0.0, 0.0]
-        std: [255.0, 255.0, 255.0]
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
   sampler:
     class_path: torch.utils.data.RandomSampler
