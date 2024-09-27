@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""EfficientNetV2 model.
+"""Timm Backbone Class for OTX classification.
 
 Original papers:
 - 'EfficientNetV2: Smaller Models and Faster Training,' https://arxiv.org/abs/2104.00298,
@@ -9,49 +9,39 @@ Original papers:
 """
 from __future__ import annotations
 
-from typing import Literal
-
 import timm
 import torch
 from torch import nn
 
-TimmModelType = Literal[
-    "mobilenetv3_large_100_miil_in21k",
-    "mobilenetv3_large_100_miil",
-    "tresnet_m",
-    "tf_efficientnetv2_s.in21k",
-    "tf_efficientnetv2_s.in21ft1k",
-    "tf_efficientnetv2_m.in21k",
-    "tf_efficientnetv2_m.in21ft1k",
-    "tf_efficientnetv2_b0",
-]
-
 
 class TimmBackbone(nn.Module):
-    """Timm backbone model."""
+    """Timm backbone model.
+
+    Args:
+        model_name (str): The name of the model.
+            You can find available models at timm.list_models() or timm.list_pretrained().
+        pretrained (bool, optional): Whether to load pretrained weights. Defaults to False.
+    """
 
     def __init__(
         self,
-        backbone: TimmModelType,
+        model_name: str,
         pretrained: bool = False,
-        pooling_type: str = "avg",
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.backbone = backbone
+        self.model_name = model_name
         self.pretrained: bool | dict = pretrained
-        self.is_mobilenet = backbone.startswith("mobilenet")
 
         self.model = timm.create_model(
-            self.backbone,
+            self.model_name,
             pretrained=pretrained,
             num_classes=1000,
         )
 
         self.model.classifier = None  # Detach classifier. Only use 'backbone' part in otx.
         self.num_head_features = self.model.num_features
-        self.num_features = self.model.conv_head.in_channels if self.is_mobilenet else self.model.num_features
-        self.pooling_type = pooling_type
+        self.num_features = self.model.num_features
 
     def forward(self, x: torch.Tensor, **kwargs) -> tuple[torch.Tensor]:
         """Forward."""
@@ -60,11 +50,6 @@ class TimmBackbone(nn.Module):
 
     def extract_features(self, x: torch.Tensor) -> torch.Tensor:
         """Extract features."""
-        if self.is_mobilenet:
-            x = self.model.conv_stem(x)
-            x = self.model.bn1(x)
-            x = self.model.act1(x)
-            return self.model.blocks(x)
         return self.model.forward_features(x)
 
     def get_config_optim(self, lrs: list[float] | float) -> list[dict[str, float]]:
