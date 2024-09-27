@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3865)
 - Bump torch and lightning to 2.4.0 versions
   (https://github.com/openvinotoolkit/training_extensions/pull/3843)
+- Add mAP metric to evaluate multilabel classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3985)
 
 ### Bug fixes
 
