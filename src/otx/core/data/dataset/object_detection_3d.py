@@ -60,14 +60,11 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         self.resolution = np.array(resolution)
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
-        breakpoint()
         entity = self.dm_subset[index]
         inputs = entity.media_as(Image)
-        breakpoint()
         inputs, img_shape = self._get_img_data_and_shape(inputs)
         calib = Calibration(entity.attributes["calib_path"])
         original_kitti_format, targets, calib_matrix, resized_img_shape = self._decode_item(inputs, img_shape, annotations, calib)
-        breakpoint()
         entity = Det3DDataEntity(
             image=torch.tensor(inputs),
             img_info=ImageInfo(
