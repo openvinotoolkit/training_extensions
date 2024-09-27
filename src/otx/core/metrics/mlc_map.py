@@ -84,14 +84,4 @@ def _map(targs: np.ndarray, preds: np.ndarray, pos_thr: float = 0.5) -> float:
         targets = targs[:, k]
         ap[k] = average_precision(scores, targets)
 
-    tp, fp, fn, tn = [], [], [], []
-    for k in range(preds.shape[0]):
-        scores = preds[k, :]
-        targets = targs[k, :]
-        pred = (scores > pos_thr).astype(np.int32)
-        tp.append(((pred + targets) == 2).sum())
-        fp.append(((pred - targets) == 1).sum())
-        fn.append(((pred - targets) == -1).sum())
-        tn.append(((pred + targets) == 0).sum())
-
     return ap.mean()
