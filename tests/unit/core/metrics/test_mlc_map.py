@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Unit tests for PCK metric."""
+"""Unit tests for multilabel mAP metric."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from otx.core.metrics.mlc_map import MultilabelmAP
 from otx.core.types.label import LabelInfo
 
 
-class TestPCK:
+class TestMAP:
     @pytest.fixture()
     def fxt_preds(self) -> list[torch.Tensor]:
         return [torch.Tensor([0.7, 0.6, 0.1]), torch.Tensor([0.1, 0.6, 0.1])]
