@@ -268,6 +268,7 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">f</span>
+<span class="kn">from</span> <span class="nn">model_api.tilers</span> <span class="kn">import</span> <span class="n">SemanticSegmentationTiler</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
@@ -281,7 +282,6 @@
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.dice</span> <span class="kn">import</span> <span class="n">SegmCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
-<span class="kn">from</span> <span class="nn">otx.core.model.seg_tiler</span> <span class="kn">import</span> <span class="n">SegTiler</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span><span class="p">,</span> <span class="n">TaskLevelExportParameters</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">LabelInfoTypes</span><span class="p">,</span> <span class="n">SegLabelInfo</span>
@@ -632,7 +632,7 @@
         <span class="n">execution_mode</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_inference</span> <span class="k">else</span> <span class="s2">&quot;sync&quot;</span>
         <span class="c1"># Note: Disable async_inference as tiling has its own sync/async implementation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">async_inference</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">SegTiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">execution_mode</span><span class="o">=</span><span class="n">execution_mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">SemanticSegmentationTiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">execution_mode</span><span class="o">=</span><span class="n">execution_mode</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Enable tiler with tile size: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
 <span class="s2">                and overlap: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tiles_overlap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
