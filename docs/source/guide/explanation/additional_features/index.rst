@@ -14,3 +14,4 @@ Additional Features
    fast_data_loading
    tiling
    class_incremental_sampler
+   configurable_input_size

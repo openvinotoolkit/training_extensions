@@ -1,0 +1,705 @@
+description: Configuration for an rotated detection task
+header: Configuration for an rotated detection task
+learning_parameters:
+  batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 5
+    description:
+      The number of training samples seen in each iteration of training.
+      Increasing this value improves training time and may make the training more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 5
+    visible_in_ui: true
+    warning:
+      Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
+  inference_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 1
+    description: The number of samples seen in each iteration of inference.
+      Increasing this value improves inference time and may make the inference more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Inference batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1
+    visible_in_ui: true
+    warning:
+      Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
+  description: Learning Parameters
+  header: Learning Parameters
+  learning_rate:
+    affects_outcome_of: TRAINING
+    default_value: 0.01
+    description:
+      Increasing this value will speed up training convergence but might
+      make it unstable.
+    editable: true
+    header: Learning rate
+    max_value: 0.1
+    min_value: 1.0e-07
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.01
+    visible_in_ui: true
+    warning: null
+    auto_hpo_state: NOT_POSSIBLE
+  learning_rate_warmup_iters:
+    affects_outcome_of: TRAINING
+    default_value: 100
+    description:
+      In this periods of initial training iterations, the model will be trained in low learning rate,
+      which will be increased incrementally up to the expected learning rate setting.
+      This warm-up phase is known to be helpful to stabilize training, thus result in better performance.
+    editable: true
+    header: Number of iterations for learning rate warmup
+    max_value: 10000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 100
+    visible_in_ui: true
+    warning: null
+  num_iters:
+    affects_outcome_of: TRAINING
+    default_value: 200
+    description:
+      Increasing this value causes the results to be more robust but training
+      time will be longer.
+    editable: true
+    header: Number of training iterations
+    max_value: 1000
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 200
+    visible_in_ui: true
+    warning: null
+  num_workers:
+    affects_outcome_of: NONE
+    default_value: 2
+    description:
+      Increasing this value might improve training speed however it might
+      cause out of memory errors. If the number of workers is set to zero, data loading
+      will happen in the main training thread.
+    editable: true
+    header: Number of cpu threads to use during batch generation
+    max_value: 8
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 2
+    visible_in_ui: true
+    warning: null
+  enable_early_stopping:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Early exit from training when validation accuracy isn't changed or decreased for several epochs.
+    editable: true
+    header: Enable early stopping of the training
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  early_stop_start:
+    affects_outcome_of: TRAINING
+    default_value: 3
+    editable: true
+    header: Start epoch for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 3
+    visible_in_ui: false
+  early_stop_patience:
+    affects_outcome_of: TRAINING
+    default_value: 10
+    description: Training will stop if the model does not improve within the number of epochs of patience.
+    editable: true
+    header: Patience for early stopping
+    max_value: 50
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 10
+    visible_in_ui: true
+    warning: This is applied exclusively when early stopping is enabled.
+  early_stop_iteration_patience:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description:
+      Training will stop if the model does not improve within the number of iterations of patience.
+      This ensures the model is trained enough with the number of iterations of patience before early stopping.
+    editable: true
+    header: Iteration patience for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: This is applied exclusively when early stopping is enabled.
+  use_adaptive_interval:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
+    editable: true
+    header: Use adaptive validation interval
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: This will automatically control the patience and interval when early stopping is enabled.
+  auto_adapt_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: Safe
+    description: Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
+    editable: true
+    enum_name: BatchSizeAdaptType
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    options:
+      NONE: "None"
+      SAFE: "Safe"
+      FULL: "Full"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Safe
+    visible_in_ui: true
+    warning:
+      Enabling this could change the actual batch size depending on the current GPU status.
+      The learning rate also could be adjusted according to the adapted batch size. This process might change
+      a model performance and take some extra computation time to try a few batch size candidates.
+  auto_num_workers:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Adapt num_workers according to current hardware status automatically.
+    editable: true
+    header: Enable auto adaptive num_workers
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  input_size:
+    affects_outcome_of: INFERENCE
+    default_value: Default
+    description:
+      The input size of the given model could be configured to one of the predefined resolutions.
+      Reduced training and inference time could be expected by using smaller input size.
+      In Auto mode, the input size is automatically determined based on dataset statistics.
+      Defaults to per-model default resolution.
+    editable: true
+    enum_name: InputSizePreset
+    header: Configure model input size.
+    options:
+      DEFAULT: "Default"
+      AUTO: "Auto"
+      _256x256: "256x256"
+      _384x384: "384x384"
+      _512x512: "512x512"
+      _768x768: "768x768"
+      _1024x1024: "1024x1024"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Default
+    visible_in_ui: false
+    warning: Modifying input size may decrease model performance.
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+postprocessing:
+  confidence_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: 0.35
+    description:
+      This threshold only takes effect if the threshold is not set based
+      on the result.
+    editable: true
+    header: Confidence threshold
+    max_value: 1
+    min_value: 0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    # value: 0.35
+    value: 0.01
+    visible_in_ui: true
+    warning: null
+  nms_iou_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: 0.5
+    description:
+      IoU Threshold for NMS Postprocessing. Intersection over Union (IoU) threshold is set to remove overlapping predictions.
+      If the IoU between two predictions is greater than or equal to the IoU threshold, they are considered overlapping and will be discarded.
+    editable: true
+    header: NMS IoU Threshold
+    max_value: 1
+    min_value: 0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.01
+    visible_in_ui: true
+    warning: If you want to chage the value of IoU Threshold of model, then you need to re-train model with new IoU threshold.
+  description: Postprocessing
+  header: Postprocessing
+  result_based_confidence_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: true
+    description: Confidence threshold is derived from the results
+    editable: true
+    header: Result based confidence threshold
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+  max_num_detections:
+    affects_outcome_of: INFERENCE
+    default_value: 0
+    description:
+      Extra detection outputs will be discared in non-maximum suppression process.
+      Defaults to 0, which means per-model default values.
+    editable: true
+    header: Maximum number of detections per image
+    max_value: 10000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: null
+algo_backend:
+  description: parameters for algo backend
+  header: Algo backend parameters
+  train_type:
+    affects_outcome_of: TRAINING
+    default_value: Incremental
+    description: Training scheme option that determines how to train the model
+    editable: True
+    enum_name: TrainType
+    header: Train type
+    options:
+      Incremental: "Incremental"
+      Semisupervised: "Semisupervised"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Incremental
+    visible_in_ui: false
+    warning: null
+  mem_cache_size:
+    affects_outcome_of: TRAINING
+    default_value: 100000000
+    description: Size of memory pool for caching decoded data to load data faster (bytes).
+    editable: true
+    header: Size of memory pool
+    max_value: 10000000000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme for storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: false
+type: CONFIGURABLE_PARAMETERS
+visible_in_ui: true
+pot_parameters:
+  description: POT Parameters
+  header: POT Parameters
+  preset:
+    affects_outcome_of: NONE
+    default_value: Performance
+    description: Quantization preset that defines quantization scheme
+    editable: True
+    enum_name: POTQuantizationPreset
+    header: Preset
+    options:
+      MIXED: Mixed
+      PERFORMANCE: Performance
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Performance
+    visible_in_ui: True
+    warning: null
+  stat_subset_size:
+    affects_outcome_of: NONE
+    default_value: 300
+    description: Number of data samples used for post-training optimization
+    editable: True
+    header: Number of data samples
+    max_value: 1000
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 300
+    visible_in_ui: True
+    warning: null
+  stat_requests_number:
+    affects_outcome_of: NONE
+    default_value: 0
+    description: Number of requests during statistics collection
+    editable: true
+    header: Number of requests
+    max_value: 200
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: false
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+nncf_optimization:
+  description: Optimization by NNCF
+  header: Optimization by NNCF
+  enable_quantization:
+    affects_outcome_of: INFERENCE
+    default_value: True
+    description: Enable quantization algorithm
+    editable: false
+    header: Enable quantization algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: false
+    warning: null
+  enable_pruning:
+    affects_outcome_of: INFERENCE
+    default_value: false
+    description: Enable filter pruning algorithm
+    editable: true
+    header: Enable filter pruning algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: false
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: false
+    warning: null
+  maximal_accuracy_degradation:
+    affects_outcome_of: NONE
+    default_value: 1.0
+    description: The maximal allowed accuracy metric drop in absolute values
+    editable: True
+    header: Maximum accuracy degradation
+    max_value: 100.0
+    min_value: 0.0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: True
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: True
+
+tiling_parameters:
+  header: Tiling
+  description: Crop dataset to tiles
+
+  enable_tiling:
+    header: Enable tiling
+    description: Set to True to allow tiny objects to be better detected.
+    default_value: false
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: "Tiling trades off speed for accuracy as it increases the number of images to be processed. In turn, it's memory efficient as smaller resolution patches are handled at onces so that the possibility of OOM issues could be reduced. Important: In the current version, depending on the dataset size and the available hardware resources, a model may not train successfully when tiling is enabled."
+
+  enable_tile_classifier:
+    header: Enable tile classifier
+    description: Enabling tile classifier enhances the speed of tiling inference by incorporating a tile classifier into the instance segmentation model. This feature prevents the detector from making predictions on tiles that do not contain any objects, thus optimizing its speed performance.
+    default_value: false
+    editable: false
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: false
+    warning: The tile classifier prioritizes inference speed over training speed, it requires more training in order to achieve its optimized performance.
+
+  enable_adaptive_params:
+    header: Enable adaptive tiling parameters
+    description: Config tile size and tile overlap adaptively based on annotated dataset statistic. Manual settings well be ignored if it's turned on. Please turn off this option in order to tune tiling parameters manually.
+    default_value: true
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+
+  tile_size:
+    header: Tile Image Size
+    description: Tile image size. (tile_size x tile_size) sub images will be the unit of computation.
+    affects_outcome_of: TRAINING
+    default_value: 400
+    min_value: 100
+    max_value: 4096
+    type: INTEGER
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 400
+    visible_in_ui: true
+    warning: null
+
+  tile_overlap:
+    header: Tile Overlap
+    description: Overlap ratio between each two neighboring tiles. Recommend to set as large_object_size / tile_size.
+    affects_outcome_of: TRAINING
+    default_value: 0.2
+    min_value: 0.0
+    max_value: 0.9
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.2
+    visible_in_ui: true
+    warning: null
+
+  tile_max_number:
+    header: Max object per tile
+    description: Maximum number of objects per tile. If set to 1500, the tile adaptor will automatically determine the value. Otherwise, the manually set value will be used.
+    affects_outcome_of: TRAINING
+    default_value: 1500
+    min_value: 1
+    max_value: 5000
+    type: INTEGER
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1500
+    visible_in_ui: true
+    warning: null
+
+  tile_ir_scale_factor:
+    header: OpenVINO IR Scale Factor
+    description: The purpose of the scale parameter is to optimize the performance and efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and input size, the scale parameter allows for more efficient parallelization of the workload and improve the overall performance and efficiency of the inference process on OpenVINO.
+    affects_outcome_of: TRAINING
+    default_value: 1.0
+    min_value: 1.0
+    max_value: 4.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+
+  tile_sampling_ratio:
+    header: Sampling Ratio for entire tiling
+    description: Since tiling train and validation to all tile from large image, usually it takes lots of time than normal training. The tile_sampling_ratio is ratio for sampling entire tile dataset. Sampling tile dataset would save lots of time for training and validation time. Note that sampling will be applied to training and validation dataset, not test dataset.
+    affects_outcome_of: TRAINING
+    default_value: 1.0
+    min_value: 0.000001
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+
+  object_tile_ratio:
+    header: Object tile ratio
+    description: The desired ratio of min object size and tile size.
+    affects_outcome_of: TRAINING
+    default_value: 0.03
+    min_value: 0.00
+    max_value: 1.00
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.03
+    visible_in_ui: false
+    warning: null
+
+  type: PARAMETER_GROUP
+  visible_in_ui: true

@@ -29,7 +29,7 @@ class TestYOLOv9:
         otx_yolov9_s = YOLOv9(model_name="yolov9_s", label_info=3)
         otx_yolov9_s_exporter = otx_yolov9_s._exporter
         assert isinstance(otx_yolov9_s_exporter, OTXNativeModelExporter)
-        assert otx_yolov9_s_exporter.swap_rgb is True
+        assert otx_yolov9_s_exporter.swap_rgb is False
 
     def test_to(self) -> None:
         model = YOLOv9(model_name="yolov9_s", label_info=3)

@@ -118,13 +118,14 @@ class RTDETR(ExplainableOTXDetModel):
         # prepare bboxes for the model
         for bb, ll in zip(entity.bboxes, entity.labels):
             # convert to cxcywh if needed
-            converted_bboxes = (
-                box_convert(bb, in_fmt="xyxy", out_fmt="cxcywh") if bb.format == BoundingBoxFormat.XYXY else bb
-            )
-            # normalize the bboxes
-            scaled_bboxes = converted_bboxes / torch.tensor(bb.canvas_size[::-1]).tile(2)[None].to(
-                converted_bboxes.device,
-            )
+            if len(scaled_bboxes := bb):
+                converted_bboxes = (
+                    box_convert(bb, in_fmt="xyxy", out_fmt="cxcywh") if bb.format == BoundingBoxFormat.XYXY else bb
+                )
+                # normalize the bboxes
+                scaled_bboxes = converted_bboxes / torch.tensor(bb.canvas_size[::-1]).tile(2)[None].to(
+                    converted_bboxes.device,
+                )
             targets.append({"boxes": scaled_bboxes, "labels": ll})
 
         return {
@@ -134,7 +135,7 @@ class RTDETR(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: list[torch.Tensor] | dict,
+        outputs: list[torch.Tensor] | dict,  # type: ignore[override]
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         if self.training:
@@ -152,7 +153,8 @@ class RTDETR(ExplainableOTXDetModel):
                     raise TypeError(msg)
             return losses
 
-        scores, bboxes, labels = self.model.postprocess(outputs, [img_info.img_shape for img_info in inputs.imgs_info])
+        original_sizes = [img_info.ori_shape for img_info in inputs.imgs_info]
+        scores, bboxes, labels = self.model.postprocess(outputs, original_sizes)
 
         return DetBatchPredEntity(
             batch_size=len(outputs),

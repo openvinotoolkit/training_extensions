@@ -339,11 +339,11 @@ The results will be saved in ``./otx-workspace/`` folder by default. The output 
 
             (otx) ...$ otx train --model <model-class-path-or-name> --task <task-type> --data_root <dataset-root>
 
-        For example, if you want to use the ``otx.algo.detection.atss.ATSS`` model class, you can train it as shown below.
+        For example, if you want to use the ``otx.algo.classification.torchvision_model.TVModelForMulticlassCls`` model class, you can train it as shown below.
 
         .. code-block:: shell
 
-            (otx) ...$ otx train --model otx.algo.detection.atss.ATSS --model.variant mobilenetv2 --task DETECTION ...
+            (otx) ...$ otx train --model otx.algo.classification.torchvision_model.TVModelForMulticlassCls --model.backbone mobilenet_v3_small ...
 
 .. note::
     You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tensorboard``.

@@ -192,7 +192,7 @@ class RTMCCHead(BaseModule):
             mask=mask,
         )
 
-        loss_pose = torch.tensor(avg_acc, device=device)
+        loss_pose = -1 * torch.tensor(avg_acc, device=device)
         losses.update(loss_pose=loss_pose)
 
         return losses
@@ -208,6 +208,8 @@ class RTMCCHead(BaseModule):
             np.ndarray | tuple: return a tuple of converted numpy array(s)
         """
         if isinstance(x, Tensor):
+            if x.dtype == torch.bfloat16:
+                x = x.float()
             return x.detach().cpu().numpy()
         if isinstance(x, tuple) and all(isinstance(i, Tensor) for i in x):
             return tuple([self.to_numpy(i) for i in x])

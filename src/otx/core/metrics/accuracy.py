@@ -18,6 +18,8 @@ from torchmetrics.collections import MetricCollection
 
 from otx.core.metrics.types import MetricCallable
 
+from .mlc_map import MultilabelmAP
+
 if TYPE_CHECKING:
     from torch import Tensor
 
@@ -346,8 +348,10 @@ class MixedHLabelAccuracy(Metric):
 
 
 def _multi_class_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
+    num_classes = label_info.num_classes
+    task = "binary" if num_classes == 1 else "multiclass"
     return MetricCollection(
-        {"accuracy": TorchmetricAcc(task="multiclass", num_classes=label_info.num_classes)},
+        {"accuracy": TorchmetricAcc(task=task, num_classes=num_classes)},
     )
 
 
@@ -358,6 +362,7 @@ def _multi_label_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
     return MetricCollection(
         {
             "accuracy": MultilabelAccuracywithLabelGroup(label_info=label_info),
+            "mAP": MultilabelmAP(label_info=label_info),
         },
     )
 

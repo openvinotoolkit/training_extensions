@@ -1,0 +1,44 @@
+# Description.
+model_template_id: Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR
+name: Lite-HRNet-x-mod3
+task_type: SEGMENTATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Semantic Segmentation with heavy-size architecture which based on the Lite-HRNet backbone for the accurate predictions but long training.
+application: ~
+
+# Algo backend.
+framework: OTXSegmentation v0.14.0
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 8
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.001
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 200
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 13.97
+size: 6.4
+
+# Model spec
+model_category: ACCURACY

@@ -1,17 +1,18 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""EfficientNetV2 model implementation."""
+"""TIMM wrapper model class for OTX."""
 
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
+from math import ceil
 from typing import TYPE_CHECKING, Literal
 
 import torch
 from torch import nn
 
-from otx.algo.classification.backbones.timm import TimmBackbone, TimmModelType
+from otx.algo.classification.backbones.timm import TimmBackbone
 from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalCBAMClsHead,
@@ -49,12 +50,38 @@ if TYPE_CHECKING:
 
 
 class TimmModelForMulticlassCls(OTXMulticlassClsModel):
-    """TimmModel for multi-class classification task."""
+    """TimmModel for multi-class classification task.
+
+    Args:
+        label_info (LabelInfoTypes): The label information for the classification task.
+        model_name (str): The name of the model.
+            You can find available models at timm.list_models() or timm.list_pretrained().
+        input_size (tuple[int, int], optional): Model input size in the order of height and width.
+            Defaults to (224, 224).
+        pretrained (bool, optional): Whether to load pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
+        metric (MetricCallable, optional): The metric callable for evaluating the model.
+            Defaults to MultiClassClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The training type.
+
+    Example:
+        1. API
+            >>> model = TimmModelForMulticlassCls(
+            ...     model_name="tf_efficientnetv2_s.in21k",
+            ...     label_info=<Number-of-classes>,
+            ... )
+        2. CLI
+            >>> otx train \
+            ... --model otx.algo.classification.timm_model.TimmModelForMulticlassCls \
+            ... --model.model_name tf_efficientnetv2_s.in21k
+    """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        backbone: TimmModelType,
+        model_name: str,
         input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -63,7 +90,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
-        self.backbone = backbone
+        self.model_name = model_name
         self.pretrained = pretrained
 
         super().__init__(
@@ -91,7 +118,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        backbone = TimmBackbone(model_name=self.model_name, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
@@ -141,12 +168,37 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
 
 
 class TimmModelForMultilabelCls(OTXMultilabelClsModel):
-    """TimmModel for multi-label classification task."""
+    """TimmModel for multi-label classification task.
+
+    Args:
+        label_info (LabelInfoTypes): The label information for the classification task.
+        model_name (str): The name of the model.
+            You can find available models at timm.list_models() or timm.list_pretrained().
+        input_size (tuple[int, int], optional): Model input size in the order of height and width.
+            Defaults to (224, 224).
+        pretrained (bool, optional): Whether to load pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
+        metric (MetricCallable, optional): The metric callable for evaluating the model.
+            Defaults to MultiLabelClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+
+    Example:
+        1. API
+            >>> model = TimmModelForMultilabelCls(
+            ...     model_name="tf_efficientnetv2_s.in21k",
+            ...     label_info=<Number-of-classes>,
+            ... )
+        2. CLI
+            >>> otx train \
+            ... --model otx.algo.classification.timm_model.TimmModelForMultilabelCls \
+            ... --model.model_name tf_efficientnetv2_s.in21k
+    """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        backbone: TimmModelType,
+        model_name: str,
         input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -154,7 +206,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.backbone = backbone
+        self.model_name = model_name
         self.pretrained = pretrained
 
         super().__init__(
@@ -181,7 +233,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        backbone = TimmBackbone(model_name=self.model_name, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
@@ -221,14 +273,39 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
 
 
 class TimmModelForHLabelCls(OTXHlabelClsModel):
-    """EfficientNetV2 Model for hierarchical label classification task."""
+    """Timm Model for hierarchical label classification task.
+
+    Args:
+        label_info (HLabelInfo): The label information for the classification task.
+        model_name (str): The name of the model.
+            You can find available models at timm.list_models() or timm.list_pretrained().
+        input_size (tuple[int, int], optional): Model input size in the order of height and width.
+            Defaults to (224, 224).
+        pretrained (bool, optional): Whether to load pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
+        metric (MetricCallable, optional): The metric callable for evaluating the model.
+            Defaults to HLabelClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+
+    Example:
+        1. API
+            >>> model = TimmModelForHLabelCls(
+            ...     model_name="tf_efficientnetv2_s.in21k",
+            ...     label_info=<h-label-info>,
+            ... )
+        2. CLI
+            >>> otx train \
+            ... --model otx.algo.classification.timm_model.TimmModelForHLabelCls \
+            ... --model.model_name tf_efficientnetv2_s.in21k
+    """
 
     label_info: HLabelInfo
 
     def __init__(
         self,
         label_info: HLabelInfo,
-        backbone: TimmModelType,
+        model_name: str,
         input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -236,7 +313,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.backbone = backbone
+        self.model_name = model_name
         self.pretrained = pretrained
 
         super().__init__(
@@ -266,13 +343,15 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
-        backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        backbone = TimmBackbone(model_name=self.model_name, pretrained=self.pretrained)
+        copied_head_config = copy(head_config)
+        copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
         return HLabelClassifier(
             backbone=backbone,
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                **head_config,
+                **copied_head_config,
             ),
             multiclass_loss=nn.CrossEntropyLoss(),
             multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),

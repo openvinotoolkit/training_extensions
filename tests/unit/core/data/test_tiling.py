@@ -15,6 +15,7 @@ from datumaro import Dataset as DmDataset
 from datumaro import Polygon
 from model_api.models import Model
 from model_api.models.utils import ImageResultWithSoftPrediction
+from model_api.tilers import SemanticSegmentationTiler
 from omegaconf import OmegaConf
 from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
@@ -31,7 +32,6 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDataEntity, TileBatchSegDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
-from otx.core.model.seg_tiler import SegTiler
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 from torchvision import tv_tensors
@@ -256,7 +256,7 @@ class TestOTXTiling:
         dataset = DmDataset.import_from(data_root, format=dataset_format)
 
         rng = np.random.default_rng()
-        tile_size = rng.integers(low=100, high=500, size=(2,))
+        tile_size = rng.integers(low=50, high=128, size=(2,))
         overlap = rng.random(2)
         overlap = overlap.clip(0, 0.9)
         threshold_drop_ann = rng.random()
@@ -516,17 +516,17 @@ class TestOTXTiling:
     def test_seg_tiler(self, mocker):
         rng = np.random.default_rng()
         rnd_tile_size = rng.integers(low=100, high=500)
-        rnd_tile_overlap = rng.random()
+        rnd_tile_overlap = min(rng.random(), 0.99)
         image_size = rng.integers(low=1000, high=5000)
         np_image = np.zeros((image_size, image_size, 3), dtype=np.uint8)
 
         mock_model = MagicMock(spec=Model)
         mocker.patch("model_api.tilers.tiler.Tiler.__init__", return_value=None)
-        mocker.patch.multiple(SegTiler, __abstractmethods__=set())
+        mocker.patch.multiple(SemanticSegmentationTiler, __abstractmethods__=set())
 
         num_labels = rng.integers(low=1, high=10)
 
-        tiler = SegTiler(model=mock_model)
+        tiler = SemanticSegmentationTiler(model=mock_model)
         tiler.model = mock_model
         tiler.model.labels = [f"label{i}" for i in range(num_labels)]
         tiler.tile_with_full_img = True

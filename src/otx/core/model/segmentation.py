@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
 import torch.nn.functional as f
+from model_api.tilers import SemanticSegmentationTiler
 from torch import nn
 from torchvision import tv_tensors
 
@@ -26,7 +27,6 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
-from otx.core.model.seg_tiler import SegTiler
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
@@ -280,7 +280,8 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
-        return self.model(inputs=image, mode="tensor")
+        raw_outputs = self.model(inputs=image, mode="tensor")
+        return torch.softmax(raw_outputs, dim=1)
 
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
         """Returns a dummy input for semantic segmentation model."""
@@ -359,7 +360,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         execution_mode = "async" if self.async_inference else "sync"
         # Note: Disable async_inference as tiling has its own sync/async implementation
         self.async_inference = False
-        self.model = SegTiler(self.model, execution_mode=execution_mode)
+        self.model = SemanticSegmentationTiler(self.model, execution_mode=execution_mode)
         log.info(
             f"Enable tiler with tile size: {self.model.tile_size} \
                 and overlap: {self.model.tiles_overlap}",

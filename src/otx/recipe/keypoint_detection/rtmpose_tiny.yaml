@@ -6,7 +6,7 @@ model:
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
-        lr: 0.004
+        lr: 0.001
         weight_decay: 0.0001
 
     scheduler:
@@ -19,13 +19,13 @@ model:
             mode: max
             factor: 0.1
             patience: 9
-            monitor: val/accuracy
+            monitor: val/PCK
 
 engine:
   task: KEYPOINT_DETECTION
   device: auto
 
-callback_monitor: val/accuracy
+callback_monitor: val/PCK
 
 data: ../_base_/data/keypoint_detection.yaml
 

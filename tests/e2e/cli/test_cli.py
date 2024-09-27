@@ -133,13 +133,16 @@ def test_otx_e2e_cli(
     assert (latest_dir / "csv").exists()
 
     # 3) otx export
-    fxt_export_list = []
-    if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"))
-        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"))
-    elif "anomaly" in task or "keypoint_detection" in task:
-        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model.onnx"))
-        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model.xml"))
+    if task in (OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING):
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
+        ]
+    elif "ANOMALY" in task or OTXTaskType.KEYPOINT_DETECTION in task:
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ]
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -182,7 +185,7 @@ def test_otx_e2e_cli(
         msg = "There is no OV IR."
         raise RuntimeError(msg)
     exported_model_path = str(ov_files[0])
-    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+    if task in (OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING):
         recipe = str(Path(recipe).parents[0] / "openvino_model.yaml")
 
     overrides = fxt_cli_override_command_per_task[task]
