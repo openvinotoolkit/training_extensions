@@ -48,6 +48,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.KEYPOINT_DETECTION: RECIPE_PATH / "keypoint_detection" / "rtmpose_tiny.yaml",
+    OTXTaskType.OBJECT_DETECTION_3D: RECIPE_PATH / "object_detection_3d" / "monodetr3d.yaml"
 }
 
 TASK_PER_DATA_FORMAT = {
@@ -90,6 +91,7 @@ OVMODEL_PER_TASK = {
     OTXTaskType.ANOMALY_CLASSIFICATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
     OTXTaskType.ANOMALY_DETECTION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
     OTXTaskType.ANOMALY_SEGMENTATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
+    OTXTaskType.OBJECT_DETECTION_3D: "otx.core.model.detection_3d.OV3DDetectionModel",
 }
 
 

@@ -236,7 +236,6 @@ class MonoDETR3D(OTX3DDetectionModel):
             via_onnx=False,
             onnx_export_configuration={
                 "input_names": ["images", "calib_matrix", "img_sizes"],
-                "output_names": ["scores", "size_3d", "heading_angle", "boxes_3d", "depth"],
                 "dynamic_axes": {
                     "images": {0: "batch"},
                     "boxes_3d": {0: "batch", 1: "num_dets"},
