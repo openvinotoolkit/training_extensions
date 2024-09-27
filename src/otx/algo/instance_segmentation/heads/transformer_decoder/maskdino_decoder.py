@@ -113,7 +113,7 @@ class MaskDINODecoder(nn.Module):
         if self.training:
             scalar, noise_scale = self.dn_num, self.noise_scale
 
-            known = [(torch.ones_like(t["labels"])).cuda() for t in targets]
+            known = [(torch.ones_like(t["labels"])) for t in targets]
             know_idx = [torch.nonzero(t) for t in known]
             known_num = [sum(k) for k in known]
 
@@ -147,25 +147,23 @@ class MaskDINODecoder(nn.Module):
                 diff = torch.zeros_like(known_bbox_expand)
                 diff[:, :2] = known_bbox_expand[:, 2:] / 2
                 diff[:, 2:] = known_bbox_expand[:, 2:]
-                known_bbox_expand += (
-                    torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0), diff).cuda() * noise_scale
-                )
+                known_bbox_expand += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0), diff) * noise_scale
                 known_bbox_expand = known_bbox_expand.clamp(min=0.0, max=1.0)
 
-            m = known_labels_expaned.long().to("cuda")
+            m = known_labels_expaned.long()
             input_label_embed = self.label_enc(m)
             input_bbox_embed = inverse_sigmoid(known_bbox_expand)
             single_pad = int(max(known_num))
             pad_size = int(single_pad * scalar)
 
-            padding_label = torch.zeros(pad_size, self.hidden_dim).cuda()
-            padding_bbox = torch.zeros(pad_size, 4).cuda()
+            padding_label = torch.zeros(pad_size, self.hidden_dim, device=m.device)
+            padding_bbox = torch.zeros(pad_size, 4, device=m.device)
 
             input_query_label = padding_label.repeat(batch_size, 1, 1)
             input_query_bbox = padding_bbox.repeat(batch_size, 1, 1)
 
             # map
-            map_known_indice = torch.tensor([]).to("cuda")
+            map_known_indice = torch.tensor([], device=m.device)
             if len(known_num):
                 map_known_indice = torch.cat([torch.tensor(range(num)) for num in known_num])  # [1,2, 1,2,3]
                 map_known_indice = torch.cat([map_known_indice + single_pad * i for i in range(scalar)]).long()
@@ -174,7 +172,7 @@ class MaskDINODecoder(nn.Module):
                 input_query_bbox[(known_bid.long(), map_known_indice)] = input_bbox_embed
 
             tgt_size = pad_size + self.num_queries
-            attn_mask = torch.ones(tgt_size, tgt_size).to("cuda") < 0
+            attn_mask = torch.ones(tgt_size, tgt_size, device=m.device) < 0
             # match query cannot see the reconstruct
             attn_mask[pad_size:, :pad_size] = True
             # reconstruct cannot see each other

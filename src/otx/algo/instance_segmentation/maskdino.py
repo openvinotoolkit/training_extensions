@@ -195,13 +195,14 @@ class _MaskDINO(nn.Module):
 
         if self.training:
             targets = []
-            for img_info, bboxes, labels, polygons in zip(
+            for img_info, bboxes, labels, polygons, gt_masks in zip(
                 entity.imgs_info,
                 entity.bboxes,
                 entity.labels,
                 entity.polygons,
+                entity.masks,
             ):
-                masks = polygon_to_bitmap(polygons, *img_info.img_shape)
+                masks = polygon_to_bitmap(polygons, *img_info.img_shape) if len(polygons) else gt_masks
                 norm_shape = torch.tile(torch.tensor(img_info.img_shape, device=img_info.device), (2,))
                 targets.append(
                     {

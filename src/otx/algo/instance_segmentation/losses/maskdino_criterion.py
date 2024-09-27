@@ -341,14 +341,15 @@ class SetCriterion(nn.Module):
         output_known_lbs_bboxes, _, single_pad, scalar = self.prep_for_dn(mask_dict)
         exc_idx = []
         for target in targets:
+            device = target["labels"].device
             if len(target["labels"]) > 0:
-                t = torch.arange(0, len(target["labels"])).long().cuda()
+                t = torch.arange(0, len(target["labels"]), device=device).long()
                 t = t.unsqueeze(0).repeat(scalar, 1)
                 tgt_idx = t.flatten()
-                output_idx = (torch.tensor(range(scalar)) * single_pad).long().cuda().unsqueeze(1) + t
+                output_idx = (torch.tensor(range(scalar), device=device) * single_pad).long().unsqueeze(1) + t
                 output_idx = output_idx.flatten()
             else:
-                output_idx = tgt_idx = torch.tensor([]).long().cuda()
+                output_idx = tgt_idx = torch.tensor([], device=device).long()
             exc_idx.append((output_idx, tgt_idx))
 
         indices = self.matcher(outputs_without_aux, targets)
