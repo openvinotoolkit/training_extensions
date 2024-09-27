@@ -11,13 +11,20 @@ import torch
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.detection.necks.hybrid_encoder import TransformerEncoder, TransformerEncoderLayer
+from otx.algo.common.layers.transformer_layers import TransformerEncoder, TransformerEncoderLayer
 
 
 class DepthPredictor(nn.Module):
     """Depth predictor and depth encoder."""
 
-    def __init__(self, depth_num_bins: int, depth_min: float, depth_max: float, hidden_dim: int) -> None:
+    def __init__(
+        self,
+        depth_num_bins: int,
+        depth_min: float,
+        depth_max: float,
+        hidden_dim: int,
+        activation: Callable[..., nn.Module] = nn.ReLU,
+    ) -> None:
         """Initialize depth predictor and depth encoder.
 
         Args:
@@ -47,15 +54,24 @@ class DepthPredictor(nn.Module):
         self.depth_head = nn.Sequential(
             nn.Conv2d(d_model, d_model, kernel_size=(3, 3), padding=1),
             nn.GroupNorm(32, num_channels=d_model),
-            nn.ReLU(),
+            activation(),
             nn.Conv2d(d_model, d_model, kernel_size=(3, 3), padding=1),
             nn.GroupNorm(32, num_channels=d_model),
-            nn.ReLU(),
+            activation(),
         )
 
         self.depth_classifier = nn.Conv2d(d_model, depth_num_bins + 1, kernel_size=(1, 1))
 
-        depth_encoder_layer = TransformerEncoderLayer(d_model, nhead=8, dim_feedforward=256, dropout=0.1, normalize_before=True)
+        depth_encoder_layer = TransformerEncoderLayer(
+            d_model,
+            nhead=8,
+            dim_feedforward=256,
+            dropout=0.1,
+            activation=activation,
+            normalize_before=True,
+            batch_first=False,
+            key_mask=True,
+        )
 
         self.depth_encoder = TransformerEncoder(depth_encoder_layer, 1)
 
