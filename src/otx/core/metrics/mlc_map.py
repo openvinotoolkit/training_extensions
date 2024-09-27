@@ -54,7 +54,7 @@ class MultilabelmAP(Metric):
         return {"mAP": Tensor([metric_value])}
 
 
-def _map(targs: np.ndarray, preds: np.ndarray, pos_thr: float = 0.5) -> float:
+def _map(targs: np.ndarray, preds: np.ndarray) -> float:
     """Computes multi-label mAP metric."""
 
     def average_precision(output: np.ndarray, target: np.ndarray) -> float:
