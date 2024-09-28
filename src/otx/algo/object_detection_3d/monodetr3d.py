@@ -191,17 +191,18 @@ class MonoDETR3D(OTX3DDetectionModel):
     def extract_dets_from_outputs(outputs: dict[str, torch.Tensor], topk: int = 50) -> tuple[torch.Tensor, ...]:
         """Extract detection results from model outputs."""
         # b, q, c
-        prob = outputs["pred_logits"]
+        out_logits = outputs["pred_logits"]
         out_bbox = outputs["pred_boxes"]
 
-        topk_values, topk_indexes = torch.topk(prob.view(prob.shape[0], -1), topk, dim=1)
+        prob = out_logits.sigmoid()
+        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), topk, dim=1)
 
         # final scores
         scores = topk_values
         # final indexes
-        topk_boxes = (topk_indexes // prob.shape[2]).unsqueeze(-1)
+        topk_boxes = (topk_indexes // out_logits.shape[2]).unsqueeze(-1)
         # final labels
-        labels = topk_indexes % prob.shape[2]
+        labels = topk_indexes % out_logits.shape[2]
 
         heading = outputs["pred_angle"]
         size_3d = outputs["pred_3d_dim"]

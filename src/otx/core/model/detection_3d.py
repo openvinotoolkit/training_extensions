@@ -44,7 +44,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = KittiMetric,
         torch_compile: bool = False,
-        score_threshold: float = 0.2,
+        score_threshold: float = 0.1,
     ) -> None:
         """Initialize the 3d detection model."""
         self.model_name = model_name
@@ -225,8 +225,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 alpha = dets[i, j, 7:31]
                 alpha = _get_heading_angle(dets[i, j, 7:31])
                 ry = _alpha2ry(calib_matrix[i], alpha, x)
-
-                score = score * dets[i, j, -1]
 
                 names.append(class_names[cls_id])
                 alphas.append(alpha)

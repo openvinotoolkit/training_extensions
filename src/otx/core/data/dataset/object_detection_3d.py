@@ -22,6 +22,7 @@ from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
 from PIL import Image as PILImage
 from torchvision import tv_tensors
+from otx.core.types.label import LabelInfo, NullLabelInfo
 
 from .base import OTXDataset
 
@@ -188,7 +189,6 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         boxes_3d = np.zeros((self.max_objects, 6), dtype=np.float32)
 
         object_num = len(annotations) if len(annotations) < self.max_objects else self.max_objects
-
         for i in range(object_num):
             cur_obj = annotations_list[i]
             # ignore the samples beyond the threshold [hard encoding]
@@ -232,7 +232,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
             if center_3d[1] < 0 or center_3d[1] >= self.resolution[1]:
                 proj_inside_img = False
 
-            if proj_inside_img:
+            if not proj_inside_img:
                 continue
 
             # class

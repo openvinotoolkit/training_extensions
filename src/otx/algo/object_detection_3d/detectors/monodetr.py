@@ -264,7 +264,7 @@ class MonoDETR(nn.Module):
         outputs_depth = torch.stack(outputs_depths)
         outputs_angle = torch.stack(outputs_angles)
 
-        out = {"pred_logits": outputs_class[-1].sigmoid(), "pred_boxes": outputs_coord[-1]}
+        out = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         out["pred_3d_dim"] = outputs_3d_dim[-1]
         out["pred_depth"] = outputs_depth[-1]
         out["pred_angle"] = outputs_angle[-1]
