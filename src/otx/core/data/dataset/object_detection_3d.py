@@ -22,7 +22,6 @@ from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
 from PIL import Image as PILImage
 from torchvision import tv_tensors
-from otx.core.types.label import LabelInfo, NullLabelInfo
 
 from .base import OTXDataset
 
