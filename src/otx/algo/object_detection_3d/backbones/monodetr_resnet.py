@@ -247,6 +247,7 @@ class BackboneBuilder:
 
     def __new__(cls, model_name: str) -> Joiner:
         """Constructor for Backbone MonoDetr."""
+        # TODO (Kirill): change backbone to already implemented in OTX
         backbone = Backbone(**cls.CFG[model_name])
         position_embedding = build_position_encoding(**cls.CFG[model_name]["positional_encoding"])
         return Joiner(backbone, position_embedding)

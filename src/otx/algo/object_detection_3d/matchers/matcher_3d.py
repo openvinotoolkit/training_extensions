@@ -42,8 +42,8 @@ class HungarianMatcher3D(nn.Module):
 
         Args:
             outputs: This is a dict that contains at least these entries:
-                 "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
-                 "pred_boxes": Tensor of dim [batch_size, num_queries, 4] with the predicted box coordinates
+                 "scores": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
+                 "boxes_3d": Tensor of dim [batch_size, num_queries, 4] with the predicted 3d box coordinates
             targets: This is a list of targets (len(targets) = batch_size), where each target is a dict containing:
                  "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
                            objects in the target) containing the class labels
@@ -55,11 +55,11 @@ class HungarianMatcher3D(nn.Module):
             For each batch element, it holds:
                 len(index_i) = len(index_j) = min(num_queries, num_target_boxes)
         """
-        bs, num_queries = outputs["pred_boxes"].shape[:2]
+        bs, num_queries = outputs["boxes_3d"].shape[:2]
 
         # We flatten to compute the cost matrices in a batch
 
-        out_prob = outputs["pred_logits"].flatten(0, 1).sigmoid()  # [batch_size * num_queries, num_classes]
+        out_prob = outputs["scores"].flatten(0, 1).sigmoid()  # [batch_size * num_queries, num_classes]
         # Also concat the target labels and boxes
         tgt_ids = torch.cat([v["labels"] for v in targets]).long()
 
@@ -70,19 +70,19 @@ class HungarianMatcher3D(nn.Module):
         pos_cost_class = alpha * ((1 - out_prob) ** gamma) * (-(out_prob + 1e-8).log())
         cost_class = pos_cost_class[:, tgt_ids] - neg_cost_class[:, tgt_ids]
 
-        out_3dcenter = outputs["pred_boxes"][:, :, 0:2].flatten(0, 1)  # [batch_size * num_queries, 4]
+        out_3dcenter = outputs["boxes_3d"][:, :, 0:2].flatten(0, 1)  # [batch_size * num_queries, 4]
         tgt_3dcenter = torch.cat([v["boxes_3d"][:, 0:2] for v in targets])
 
         # Compute the 3dcenter cost between boxes
         cost_3dcenter = torch.cdist(out_3dcenter, tgt_3dcenter, p=1)
 
-        out_2dbbox = outputs["pred_boxes"][:, :, 2:6].flatten(0, 1)  # [batch_size * num_queries, 4]
+        out_2dbbox = outputs["boxes_3d"][:, :, 2:6].flatten(0, 1)  # [batch_size * num_queries, 4]
         tgt_2dbbox = torch.cat([v["boxes_3d"][:, 2:6] for v in targets])
         # Compute the L1 cost between boxes
         cost_bbox = torch.cdist(out_2dbbox, tgt_2dbbox, p=1)
 
         # Compute the giou cost betwen boxes
-        out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
+        out_bbox = outputs["boxes_3d"].flatten(0, 1)  # [batch_size * num_queries, 4]
         tgt_bbox = torch.cat([v["boxes_3d"] for v in targets])
         cost_giou = -bbox_overlaps(
             box_cxcylrtb_to_xyxy(out_bbox),

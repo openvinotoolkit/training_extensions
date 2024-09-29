@@ -114,7 +114,7 @@ class MonoDETR3D(OTX3DDetectionModel):
         size_2d = xywh_2d[:, :, 2:4]
 
         return Det3DBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=inputs.batch_size,
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             calib_matrix=inputs.calib_matrix,
@@ -177,36 +177,27 @@ class MonoDETR3D(OTX3DDetectionModel):
         img_sizes: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
         """Model forward function used for the model tracing during model exportation."""
-        outputs = self.model(images=images, calibs=calib_matrix, img_sizes=img_sizes, mode="export")
+        return self.model(images=images, calibs=calib_matrix, img_sizes=img_sizes, mode="export")
 
-        return {
-            "scores": outputs["pred_logits"],
-            "boxes_3d": outputs["pred_boxes"],
-            "size_3d": outputs["pred_3d_dim"],
-            "heading_angle": outputs["pred_angle"],
-            "depth": outputs["pred_depth"],  # depth + deviation
-        }
 
     @staticmethod
     def extract_dets_from_outputs(outputs: dict[str, torch.Tensor], topk: int = 50) -> tuple[torch.Tensor, ...]:
         """Extract detection results from model outputs."""
-        # b, q, c
-        out_logits = outputs["pred_logits"]
-        out_bbox = outputs["pred_boxes"]
+        out_bbox = outputs["boxes_3d"]
 
-        prob = out_logits.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), topk, dim=1)
+        prob = outputs["scores"]
+        topk_values, topk_indexes = torch.topk(prob.view(prob.shape[0], -1), topk, dim=1)
 
         # final scores
         scores = topk_values
         # final indexes
-        topk_boxes = (topk_indexes // out_logits.shape[2]).unsqueeze(-1)
+        topk_boxes = (topk_indexes // prob.shape[2]).unsqueeze(-1)
         # final labels
-        labels = topk_indexes % out_logits.shape[2]
+        labels = topk_indexes % prob.shape[2]
 
-        heading = outputs["pred_angle"]
-        size_3d = outputs["pred_3d_dim"]
-        depth = outputs["pred_depth"]
+        heading = outputs["heading_angle"]
+        size_3d = outputs["size_3d"]
+        depth = outputs["depth"]
         # decode boxes
         boxes_3d = torch.gather(out_bbox, 1, topk_boxes.repeat(1, 1, 6))  # b, q', 4
         # heading angle decoding
@@ -236,7 +227,6 @@ class MonoDETR3D(OTX3DDetectionModel):
             via_onnx=False,
             onnx_export_configuration={
                 "input_names": ["images", "calib_matrix", "img_sizes"],
-                "output_names": ["scores", "size_3d", "heading_angle", "boxes_3d", "depth"],
                 "dynamic_axes": {
                     "images": {0: "batch"},
                     "boxes_3d": {0: "batch", 1: "num_dets"},

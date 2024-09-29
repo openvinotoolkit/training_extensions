@@ -19,7 +19,7 @@ model:
       init_args:
         mode: max
         factor: 0.1
-        patience: 15
+        patience: 13
         monitor: val/mAP_bbox_2d
 
 engine:
@@ -40,5 +40,5 @@ overrides:
         patience: 15
         check_on_train_epoch_end: false
         min_delta: 0.001
-        warmup_iters: 100
+        warmup_iters: 30
         warmup_epochs: 30

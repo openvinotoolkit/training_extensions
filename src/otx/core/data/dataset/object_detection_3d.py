@@ -71,6 +71,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         calib = Calibration(entity.attributes["calib_path"])
         original_kitti_format = None  # don't use for training
         if self.subset_type != "train":
+            # TODO (Kirill): remove this or duplication of the inputs
             annotations_copy = deepcopy(entity.annotations)
             original_kitti_format = [obj.attributes for obj in annotations_copy]
             # decode original kitti format for metric calculation

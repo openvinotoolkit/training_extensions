@@ -9,7 +9,7 @@ import copy
 import torch
 from torch import Tensor, nn
 
-
+# TODO(Kirill): try to remove this class
 class NestedTensor:
     """Nested tensor class for object detection 3D models."""
 
