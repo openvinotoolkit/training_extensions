@@ -11,7 +11,6 @@ import torch
 import torch.nn.functional as F  # noqa: N812
 from diffusers import StableDiffusionPipeline
 from lightning.fabric.loggers.tensorboard import TensorBoardLogger
-from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.diffusion import DiffusionBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.diffusion import DiffusionOTXModelExporter
@@ -203,13 +202,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             "target_noise": target,
         }
 
-    def _customize_outputs(
-        self,
-        outputs: torch.Tensor,
-        inputs: DiffusionBatchDataEntity,
-    ) -> DiffusionBatchPredEntity | OTXBatchLossEntity:
-        return OTXBatchLossEntity(loss=outputs)
-
     def on_fit_start(self) -> None:
         """Called at the very beginning of fit.
 
@@ -254,15 +246,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             if isinstance(logger, TensorBoardLogger):
                 for image, caption in zip(images, batch.captions):
                     logger.experiment.add_image(f"val/images/{caption}", image.detach().cpu())
-
-    def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
-        """Perform a single test step on a batch of data from the test set.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
-        """
-        self.validation_step(batch, batch_idx)
 
     def predict_step(
         self,

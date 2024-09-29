@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.diffusion import DiffusionBatchDataEntity, DiffusionBatchPredEntity
 from otx.core.metrics.diffusion import DiffusionMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
@@ -57,6 +58,13 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
             self.metric.update(batch.images, real=True)
         return train_loss
 
+    def _customize_outputs(
+        self,
+        outputs: torch.Tensor,
+        inputs: DiffusionBatchDataEntity,
+    ) -> DiffusionBatchPredEntity | OTXBatchLossEntity:
+        return OTXBatchLossEntity(loss=outputs)
+
     def on_validation_start(self) -> None:
         """Called at the beginning of validation.
 
@@ -68,6 +76,15 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
 
         Don't configure the metric here. Do it in constructor.
         """
+
+    def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        :param batch: A batch of data (a tuple) containing the input tensor of images and target
+            labels.
+        :param batch_idx: The index of the current batch.
+        """
+        self.validation_step(batch, batch_idx)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
