@@ -14,14 +14,15 @@ from typing import TYPE_CHECKING, Any, Callable, List, Union
 import numpy as np
 import torch
 from datumaro import Image
+from PIL import Image as PILImage
+from torchvision import tv_tensors
+
 from otx.core.data.dataset.utils.kitti_utils import Calibration, affine_transform, angle2class, get_affine_transform
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
-from PIL import Image as PILImage
-from torchvision import tv_tensors
 
 from .base import OTXDataset
 

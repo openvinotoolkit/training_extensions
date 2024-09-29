@@ -12,18 +12,20 @@ import cv2
 import numpy as np
 import torch
 from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import SegLabelInfo
-from torchvision import tv_tensors
 
 from .base import OTXDataset
 
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
     from datumaro import DatasetItem
+
     from otx.core.data.dataset.base import Transforms
 
 

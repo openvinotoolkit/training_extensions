@@ -11,6 +11,8 @@ from typing import Callable
 import torch
 from datumaro import Image, Label
 from datumaro.components.annotation import AnnotationType
+from torch.nn import functional
+
 from otx.core.data.dataset.base import OTXDataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
@@ -22,7 +24,6 @@ from otx.core.data.entity.classification import (
     MultilabelClsDataEntity,
 )
 from otx.core.types.label import HLabelInfo
-from torch.nn import functional
 
 
 class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):

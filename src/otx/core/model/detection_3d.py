@@ -1,5 +1,6 @@
-# Copyright (C) 2023-2024 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
 """Class definition for 3d object detection model entity used in OTX."""
 
 from __future__ import annotations

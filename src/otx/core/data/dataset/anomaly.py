@@ -17,6 +17,9 @@ from datumaro import Dataset as DmDataset
 from datumaro import DatasetItem, Image
 from datumaro.components.annotation import AnnotationType, Bbox, Ellipse, Polygon
 from datumaro.components.media import ImageFromBytes, ImageFromFile
+from torchvision import io
+from torchvision.tv_tensors import BoundingBoxes, BoundingBoxFormat, Mask
+
 from otx.core.data.dataset.base import OTXDataset, Transforms
 from otx.core.data.entity.anomaly import (
     AnomalyClassificationDataBatch,
@@ -31,8 +34,6 @@ from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
-from torchvision import io
-from torchvision.tv_tensors import BoundingBoxes, BoundingBoxFormat, Mask
 
 
 class AnomalyLabel(Enum):

@@ -25,6 +25,8 @@ from datumaro.plugins.tiling.util import (
     x1y1x2y2_to_cxcywh,
     x1y1x2y2_to_xywh,
 )
+from torchvision import tv_tensors
+
 from otx.core.data.dataset.segmentation import _extract_class_mask
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
@@ -40,12 +42,12 @@ from otx.core.data.entity.tile import (
 )
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.mask_util import polygon_to_bitmap
-from torchvision import tv_tensors
 
 from .base import OTXDataset
 
 if TYPE_CHECKING:
     from datumaro.components.media import BboxIntCoords
+
     from otx.core.config.data import TileConfig
     from otx.core.data.dataset.detection import OTXDetectionDataset
     from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
