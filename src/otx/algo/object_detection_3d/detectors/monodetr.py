@@ -15,6 +15,7 @@ from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MLP
 from otx.algo.object_detection_3d.utils.utils import NestedTensor, get_clones
 
+
 # TODO (Kirill): make MonoDETR as a more general class
 class MonoDETR(nn.Module):
     """This is the MonoDETR module that performs monocualr 3D object detection."""
@@ -264,11 +265,14 @@ class MonoDETR(nn.Module):
         outputs_depth = torch.stack(outputs_depths)
         outputs_angle = torch.stack(outputs_angles)
 
-        out_logits = outputs_class[-1].sigmoid() if mode != "train" else outputs_class[-1]
-        out = {"scores": out_logits, "boxes_3d": outputs_coord[-1]}
+        out = {"scores": outputs_class[-1], "boxes_3d": outputs_coord[-1]}
         out["size_3d"] = outputs_3d_dim[-1]
         out["depth"] = outputs_depth[-1]
         out["heading_angle"] = outputs_angle[-1]
+        if mode == "export":
+            out["scores"] = out["scores"].sigmoid()
+            return out
+
         out["pred_depth_map_logits"] = pred_depth_map_logits
 
         if self.aux_loss:

@@ -179,21 +179,22 @@ class MonoDETR3D(OTX3DDetectionModel):
         """Model forward function used for the model tracing during model exportation."""
         return self.model(images=images, calibs=calib_matrix, img_sizes=img_sizes, mode="export")
 
-
     @staticmethod
     def extract_dets_from_outputs(outputs: dict[str, torch.Tensor], topk: int = 50) -> tuple[torch.Tensor, ...]:
         """Extract detection results from model outputs."""
+        # b, q, c
+        out_logits = outputs["scores"]
         out_bbox = outputs["boxes_3d"]
 
-        prob = outputs["scores"]
-        topk_values, topk_indexes = torch.topk(prob.view(prob.shape[0], -1), topk, dim=1)
+        prob = out_logits.sigmoid()
+        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), topk, dim=1)
 
         # final scores
         scores = topk_values
         # final indexes
-        topk_boxes = (topk_indexes // prob.shape[2]).unsqueeze(-1)
+        topk_boxes = (topk_indexes // out_logits.shape[2]).unsqueeze(-1)
         # final labels
-        labels = topk_indexes % prob.shape[2]
+        labels = topk_indexes % out_logits.shape[2]
 
         heading = outputs["heading_angle"]
         size_3d = outputs["size_3d"]
