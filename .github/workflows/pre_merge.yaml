@@ -110,6 +110,7 @@ jobs:
           - task: "anomaly_detection"
           - task: "anomaly_segmentation"
           - task: "keypoint_detection"
+          - task: "object_detection_3d"
     name: Integration-Test-${{ matrix.task }}-py310
     steps:
       - name: Checkout repository
