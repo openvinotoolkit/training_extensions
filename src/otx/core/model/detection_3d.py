@@ -18,7 +18,7 @@ from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.average_precision_3d import KittiMetric
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:

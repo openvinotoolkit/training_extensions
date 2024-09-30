@@ -28,8 +28,8 @@ from otx.core.model.detection_3d import OTX3DDetectionModel
 class MonoDETR3D(OTX3DDetectionModel):
     """OTX Detection model class for MonoDETR3D."""
 
-    mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
-    std: tuple[float, float, float] = (0.229, 0.224, 0.225)
+    mean: tuple[float, float, float] = (123.675, 116.28, 103.53)
+    std: tuple[float, float, float] = (58.395, 57.12, 57.375)
     input_size: tuple[int, int] = (384, 1280)  # HxW
     load_from: str | None = None
 
