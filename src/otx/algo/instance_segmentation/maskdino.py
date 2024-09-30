@@ -331,9 +331,14 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
     def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict[str, Any]]]:
         """Configure an optimizer and learning-rate schedulers."""
-        optimizer = self._build_optimizer(self.model)
+        param_groups = self._get_optim_params(self.model)
+        optimizer = self.optimizer_callable(param_groups)
+        optimizer_with_grad_clip = MaskDINOR50._add_grad_clipping(optimizer, clip_gradient_value=0.01)(
+            param_groups,
+            optimizer.defaults["lr"],
+        )
 
-        schedulers = self.scheduler_callable(optimizer)
+        schedulers = self.scheduler_callable(optimizer_with_grad_clip)
 
         def ensure_list(item: Any) -> list:  # noqa: ANN401
             return item if isinstance(item, list) else [item]
@@ -347,10 +352,10 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                 lr_scheduler_config["monitor"] = scheduler.monitor
             lr_scheduler_configs.append(lr_scheduler_config)
 
-        return [optimizer], lr_scheduler_configs
+        return [optimizer_with_grad_clip], lr_scheduler_configs
 
-    def _build_optimizer(self, model: nn.Module) -> torch.optim.Optimizer:
-        """Builds an optimizer for MaskDINO model."""
+    def _get_optim_params(self, model: nn.Module) -> list[dict[str, Any]]:
+        """Get optimizer parameters."""
         _optimizer = self.optimizer_callable(self.parameters())
 
         # Configurable from MaskDINO recipe
@@ -365,7 +370,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         weight_decay_norm = 0.0
         weight_decay_embed = 0.0
         backbone_multiplier = 0.1
-        clip_gradients_value = 0.01
 
         norm_module_types = (
             torch.nn.BatchNorm1d,
@@ -395,24 +399,28 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                 if "backbone" in module_name:
                     hyperparams["lr"] = hyperparams["lr"] * backbone_multiplier
                 if "relative_position_bias_table" in module_param_name or "absolute_pos_embed" in module_param_name:
-                    print(module_param_name)
                     hyperparams["weight_decay"] = 0.0
                 if isinstance(module, norm_module_types):
                     hyperparams["weight_decay"] = weight_decay_norm
                 if isinstance(module, torch.nn.Embedding):
                     hyperparams["weight_decay"] = weight_decay_embed
                 params.append({"params": [value], **hyperparams})
+        return params
 
-        def add_full_model_gradient_clipping(optim: torch.optim.Optimizer) -> torch.optim.Optimizer:
-            class FullModelGradientClippingOptimizer(optim):
-                def step(self, closure: Callable | None = None) -> None:
-                    all_params = itertools.chain(*[x["params"] for x in self.param_groups])
-                    torch.nn.utils.clip_grad_norm_(all_params, clip_gradients_value)
-                    super().step(closure=closure)
+    @staticmethod
+    def _add_grad_clipping(
+        optim: torch.optim.Optimizer,
+        clip_gradient_value: float = 0.01,
+    ) -> torch.optim.Optimizer:
+        """Add gradient clipping to the optimizer."""
 
-            return FullModelGradientClippingOptimizer
+        class GradientClippingOptimizer(optim.__class__):
+            def step(self, closure: Callable | None = None) -> None:
+                all_params = itertools.chain(*[x["params"] for x in self.param_groups])
+                torch.nn.utils.clip_grad_norm_(all_params, clip_gradient_value)
+                super().step(closure=closure)
 
-        return add_full_model_gradient_clipping(torch.optim.AdamW)(params, base_lr)
+        return GradientClippingOptimizer
 
     def _customize_outputs(
         self,
