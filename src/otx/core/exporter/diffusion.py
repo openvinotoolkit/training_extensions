@@ -28,7 +28,7 @@ class DiffusionOTXModelExporter(OTXNativeModelExporter):
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         to_exportable_code: bool = False,
-    ) -> dict[str, Path]:
+    ) -> Path:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
         Args:
@@ -41,7 +41,7 @@ class DiffusionOTXModelExporter(OTXNativeModelExporter):
                 Currently not supported by Diffusion task.
 
         Returns:
-            dict[str, Path]: paths to the exported models
+            Path: path to the exported model
         """
         if export_format == OTXExportFormatType.OPENVINO:
             if to_exportable_code:
@@ -51,7 +51,7 @@ class DiffusionOTXModelExporter(OTXNativeModelExporter):
         else:
             fn = self.to_onnx  # type: ignore[assignment]
 
-        return {"model": fn(model, output_dir, base_model_name, precision)}
+        return fn(model, output_dir, base_model_name, precision)
 
     def to_openvino(
         self,
