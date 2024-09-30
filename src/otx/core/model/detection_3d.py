@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
-from torchvision.ops import box_convert
 from model_api.models import ImageModel
+from torchvision.ops import box_convert
 
+from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.data.dataset.utils.kitti_utils import class2angle
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
@@ -299,15 +300,12 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
 
 class MonoDETRModel(ImageModel):
-    """
-    A wrapper for MonoDETR 3d object detection model.
-    """
+    """A wrapper for MonoDETR 3d object detection model."""
 
     __model__ = "mono_3d_det"
 
-    def __init__(self, inference_adapter, configuration=dict(), preload=False):
-        """
-        Initializes a 3d detection model.
+    def __init__(self, inference_adapter, configuration={}, preload=False):
+        """Initializes a 3d detection model.
 
         Args:
             inference_adapter (InferenceAdapter): inference adapter containing the underlying model.
@@ -319,7 +317,11 @@ class MonoDETRModel(ImageModel):
         self._check_io_number(3, 5)
 
     def preprocess(self, inputs):
-        return {self.image_blob_name: inputs["image"][None], "calib_matrix": inputs["calib"], "img_sizes": inputs["img_size"][None]}, {
+        return {
+            self.image_blob_name: inputs["image"][None],
+            "calib_matrix": inputs["calib"],
+            "img_sizes": inputs["img_size"][None],
+        }, {
             "original_shape": inputs["image"].shape,
             "resized_shape": (self.w, self.h, self.c),
         }
@@ -343,15 +345,16 @@ class MonoDETRModel(ImageModel):
 
         if not image_blob_names:
             self.raise_error(
-                "Failed to identify the input for the image: no 4D input layer found"
+                "Failed to identify the input for the image: no 4D input layer found",
             )
         return image_blob_names, image_info_blob_names
 
     def postprocess(
-        self, outputs: dict[str, np.ndarray], meta: dict[str, Any]
+        self,
+        outputs: dict[str, np.ndarray],
+        meta: dict[str, Any],
     ) -> dict[str, Any]:
-        """
-        Applies SCC decoded to the model outputs.
+        """Applies SCC decoded to the model outputs.
 
         Args:
             outputs (dict[str, np.ndarray]): raw outputs of the model
@@ -368,6 +371,7 @@ class MonoDETRModel(ImageModel):
 
 class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     """3d detection model compatible for OpenVINO IR inference.
+
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
     and create the OTX 3d detection model compatible for OTX testing pipeline.
     """
@@ -459,17 +463,17 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         if self.async_inference:
             output_dict: dict[int, NamedTuple] = {}
             self.model.set_callback(_callback)
-            id = 0
+            img_id = 0
             for image, calib, img_size in zip(all_inputs["images"], all_inputs["calibs"], all_inputs["img_sizes"]):
                 if not self.model.is_ready():
                     self.model.await_any()
                 model_input = {
                     "image": image,
-                    "calib":  calib,
+                    "calib": calib,
                     "img_size": img_size,
                 }
-                self.model.infer_async(model_input, user_data=id)
-                id += 1
+                self.model.infer_async(model_input, user_data=img_id)
+                img_id += 1
             self.model.await_all()
             outputs = [out[1] for out in sorted(output_dict.items())]
         else:
@@ -477,7 +481,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             for image, calib, img_size in zip(all_inputs["images"], all_inputs["calibs"], all_inputs["img_sizes"]):
                 model_input = {
                     "image": image,
-                    "calib":  calib,
+                    "calib": calib,
                     "img_size": img_size,
                 }
                 outputs.append(self.model(model_input))
@@ -492,7 +496,6 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     @staticmethod
     def extract_dets_from_outputs(outputs: dict[str, torch.Tensor], topk: int = 50) -> tuple[torch.Tensor, ...]:
         """Extract detection results from model outputs."""
-
         # b, q, c
         out_logits = outputs["scores"]
         out_bbox = outputs["boxes_3d"]
