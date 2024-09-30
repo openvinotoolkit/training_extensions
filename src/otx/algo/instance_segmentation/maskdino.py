@@ -23,7 +23,6 @@ from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
@@ -186,7 +185,11 @@ class _MaskDINO(nn.Module):
             transform_eval=True,
         )
 
-    def forward(self, entity: InstanceSegBatchDataEntity) -> dict[str, Tensor]:
+    def forward(
+        self,
+        entity: InstanceSegBatchDataEntity,
+        mode: str = "tensor",
+    ) -> dict[str, Tensor]:
         """Forward pass."""
         img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
         images = ImageList(entity.images, img_shapes)
@@ -289,8 +292,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     """OTX MaskDINO model with ResNet50 backbone."""
 
     load_from = "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
-    image_size = (1, 3, 1024, 1024)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
@@ -301,15 +302,13 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
-
-        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=input_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -351,15 +350,22 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         return [optimizer], lr_scheduler_configs
 
     def _build_optimizer(self, model: nn.Module) -> torch.optim.Optimizer:
-        base_lr = 0.0001
+        """Builds an optimizer for MaskDINO model."""
+        _optimizer = self.optimizer_callable(self.parameters())
+
+        # Configurable from MaskDINO recipe
+        base_lr = _optimizer.defaults["lr"]
+        weight_decay = _optimizer.defaults["weight_decay"]
+        defaults = {
+            "lr": base_lr,
+            "weight_decay": weight_decay,
+        }
+
+        # Static optimizer params
         weight_decay_norm = 0.0
         weight_decay_embed = 0.0
         backbone_multiplier = 0.1
         clip_gradients_value = 0.01
-
-        defaults = {}
-        defaults["lr"] = base_lr
-        defaults["weight_decay"] = 0.05
 
         norm_module_types = (
             torch.nn.BatchNorm1d,
@@ -407,11 +413,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             return FullModelGradientClippingOptimizer
 
         return add_full_model_gradient_clipping(torch.optim.AdamW)(params, base_lr)
-
-    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, InstanceSegBatchDataEntity]:
-        if isinstance(entity.images, list):
-            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
-        return {"entity": entity}
 
     def _customize_outputs(
         self,

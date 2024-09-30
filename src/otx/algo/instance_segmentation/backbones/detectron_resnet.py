@@ -2,7 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""Detectron2 ResNet."""
+"""Implementation modified from Detectron2 ResNet.
+
+Reference: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/resnet.py
+"""
+
 
 from __future__ import annotations
 

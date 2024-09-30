@@ -16,8 +16,6 @@ from torch import Tensor, nn
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
-TORCH_VERSION = tuple(int(x) for x in torch.__version__.split(".")[:2])
-
 
 def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
     """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
@@ -266,11 +264,9 @@ def c2_msra_fill(module: nn.Module) -> None:
 
 def check_if_dynamo_compiling() -> bool:
     """Check if the current code is being compiled by TorchScript."""
-    if TORCH_VERSION >= (2, 1):
-        from torch._dynamo import is_compiling
+    from torch._dynamo import is_compiling
 
-        return is_compiling()
-    return False
+    return is_compiling()
 
 
 @dataclass

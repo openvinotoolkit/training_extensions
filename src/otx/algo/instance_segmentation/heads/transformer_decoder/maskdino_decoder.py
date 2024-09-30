@@ -20,7 +20,24 @@ from otx.algo.instance_segmentation.utils.utils import (
 
 
 class MaskDINODecoder(nn.Module):
-    """MaskDINODecoder module."""
+    """MaskDINODecoder module.
+
+    Args:
+        num_classes: number of classes
+        hidden_dim: Transformer feature dimension
+        num_queries: number of queries
+        nheads: number of heads
+        dim_feedforward: feature dimension in feedforward network
+        dec_layers: number of Transformer decoder layers
+        mask_dim: mask feature dimension
+        noise_scale: noise scale
+        dn_num: number of denoising queries
+        total_num_feature_levels: total number of feature levels
+        dropout: dropout rate
+        nhead: num heads in multi-head attention
+        dec_n_points: number of sampling points in decoder
+        query_dim: 4 -> (x, y, w, h)
+    """
 
     def __init__(
         self,
@@ -39,22 +56,6 @@ class MaskDINODecoder(nn.Module):
         dec_n_points: int = 4,
         query_dim: int = 4,
     ) -> None:
-        """NOTE: this interface is experimental.
-
-        Args:
-            in_channels: channels of the input features
-            num_classes: number of classes
-            hidden_dim: Transformer feature dimension
-            num_queries: number of queries
-            nheads: number of heads
-            dim_feedforward: feature dimension in feedforward network
-            dec_layers: number of Transformer decoder layers
-            mask_dim: mask feature dimension
-            dropout: dropout rate
-            nhead: num heads in multi-head attention
-            dec_n_points: number of sampling points in decoder
-            query_dim: 4 -> (x, y, w, h)
-        """
         super().__init__()
         self.num_feature_levels = total_num_feature_levels
 

@@ -234,7 +234,20 @@ class MSDeformAttnTransformerEncoder(nn.Module):
 
 
 class MaskDINOEncoder(nn.Module):
-    """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models."""
+    """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models.
+
+    Args:
+        input_shape: shapes (channels and stride) of the input features
+        transformer_dropout: dropout probability in transformer
+        transformer_nheads: number of heads in transformer
+        transformer_dim_feedforward: dimension of feedforward network
+        transformer_enc_layers: number of transformer encoder layers
+        conv_dim: number of output channels for the intermediate conv layers.
+        mask_dim: number of output channels for the final conv layer.
+        norm (str): normalization for all conv layers
+        num_feature_levels: feature scales used
+        total_num_feature_levels: total feautre scales used (include the downsampled features)
+    """
 
     def __init__(
         self,
@@ -251,20 +264,6 @@ class MaskDINOEncoder(nn.Module):
         num_feature_levels: int,
         total_num_feature_levels: int,
     ):
-        """NOTE: this interface is experimental.
-
-        Args:
-            input_shape: shapes (channels and stride) of the input features
-            transformer_dropout: dropout probability in transformer
-            transformer_nheads: number of heads in transformer
-            transformer_dim_feedforward: dimension of feedforward network
-            transformer_enc_layers: number of transformer encoder layers
-            conv_dims: number of output channels for the intermediate conv layers.
-            mask_dim: number of output channels for the final conv layer.
-            norm (str): normalization for all conv layers
-            num_feature_levels: feature scales used
-            total_num_feature_levels: total feautre scales used (include the downsampled features)
-        """
         super().__init__()
         # this is the input shape of pixel decoder
         input_shape_list = sorted(input_shape.items(), key=lambda x: x[1].stride)  # type: ignore  # noqa: PGH003
