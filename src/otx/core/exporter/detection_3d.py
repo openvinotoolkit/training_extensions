@@ -77,17 +77,17 @@ class OTXObjectDetection3DExporter(OTXNativeModelExporter):
         Returns:
             Path: The path to the saved ONNX model.
         """
-        device = next(model.parameters()).device
-        dummy_tensor = torch.rand(self.input_size).to(device)
-        dummy_calib_matrix = torch.rand(1, 3, 4).to(device)
-        dummy_image_size = torch.tensor([[1350, 620]]).to(device)
+        dummy_tensor = torch.rand(self.input_size)
+        dummy_calib_matrix = torch.rand(1, 3, 4)
+        dummy_image_sizes = torch.tensor([self.input_size[::-1][:2]])
+        dummy_inputs = {"images": dummy_tensor, "calib_matrix": dummy_calib_matrix, "img_sizes": dummy_image_sizes}
 
         save_path = str(output_dir / (base_model_name + ".onnx"))
 
         torch.onnx.export(
             model,
-            {"image": dummy_tensor, "calib_matrix": dummy_calib_matrix, "img_sizes": dummy_image_size},
-            save_path,
+            args=tuple(dummy_inputs.values()),
+            f=save_path,
             **self.onnx_export_configuration,
         )
 

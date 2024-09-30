@@ -12,10 +12,11 @@ import numpy as np
 import torch
 from datumaro import Dataset as DmDataset
 from datumaro import Image, Polygon
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
-from torchvision import tv_tensors
 
 from .base import OTXDataset, Transforms
 

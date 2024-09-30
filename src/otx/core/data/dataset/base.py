@@ -16,15 +16,17 @@ from datumaro.components.annotation import AnnotationType
 from datumaro.components.media import ImageFromFile
 from datumaro.util.image import IMAGE_BACKEND, IMAGE_COLOR_CHANNEL, ImageBackend
 from datumaro.util.image import ImageColorChannel as DatumaroImageColorChannel
+from torch.utils.data import Dataset
+
 from otx.core.data.entity.base import T_OTXDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo, NullLabelInfo
-from torch.utils.data import Dataset
 
 if TYPE_CHECKING:
     from datumaro import DatasetSubset, Image
+
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
 Transforms = Union[Compose, Callable, List[Callable], dict[str, Compose | Callable | List[Callable]]]

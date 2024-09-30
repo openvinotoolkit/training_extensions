@@ -22,13 +22,13 @@ model:
             mode: max
             factor: 0.1
             patience: 9
-            monitor: val/accuracy
+            monitor: val/PCK
 
 engine:
   task: KEYPOINT_DETECTION
   device: auto
 
-callback_monitor: val/accuracy
+callback_monitor: val/PCK
 
 data: ../_base_/data/keypoint_detection.yaml
 

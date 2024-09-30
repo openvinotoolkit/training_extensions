@@ -1,10 +1,10 @@
-# flake8: noqa
-# mypy: ignore-errors
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """KITTI 3D eval for OTX."""
+
+# flake8: noqa
+# mypy: ignore-errors
 
 from __future__ import annotations
 

@@ -296,8 +296,8 @@ class YOLOHeadModule(BaseDenseHead):
         csp_args (dict[str, Any], optional): Arguments for CSP blocks. Defaults to None.
         aux_cfg (dict[str, Any], optional): Configuration for auxiliary head. Defaults to None.
         with_nms (bool, optional): Whether to use NMS. Defaults to True.
-        min_confidence (float, optional): Minimum confidence for NMS. Defaults to 0.05.
-        min_iou (float, optional): Minimum IoU for NMS. Defaults to 0.9.
+        min_confidence (float, optional): Minimum confidence for NMS. Defaults to 0.1.
+        min_iou (float, optional): Minimum IoU for NMS. Defaults to 0.65.
     """
 
     def __init__(
@@ -311,8 +311,8 @@ class YOLOHeadModule(BaseDenseHead):
         csp_args: dict[str, Any] | None = None,
         aux_cfg: dict[str, Any] | None = None,
         with_nms: bool = True,
-        min_confidence: float = 0.05,
-        min_iou: float = 0.9,
+        min_confidence: float = 0.1,
+        min_iou: float = 0.65,
     ) -> None:
         if len(csp_channels) - 1 != len(concat_sources):
             msg = (

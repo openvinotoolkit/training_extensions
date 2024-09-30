@@ -16,6 +16,7 @@ from otx.algo.detection.heads.rtdetr_decoder import MLP
 from otx.algo.object_detection_3d.utils.utils import NestedTensor, get_clones
 
 
+# TODO (Kirill): make MonoDETR as a more general class
 class MonoDETR(nn.Module):
     """This is the MonoDETR module that performs monocualr 3D object detection."""
 
@@ -77,8 +78,6 @@ class MonoDETR(nn.Module):
             nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
         self.query_embed = nn.Embedding(num_queries * group_num, hidden_dim * 2)
-        self.tgt_embed = nn.Embedding(num_queries * group_num, hidden_dim)
-        self.refpoint_embed = nn.Embedding(num_queries * group_num, 6)
 
         if num_feature_levels > 1:
             num_backbone_outs = len(backbone.strides)
@@ -266,10 +265,14 @@ class MonoDETR(nn.Module):
         outputs_depth = torch.stack(outputs_depths)
         outputs_angle = torch.stack(outputs_angles)
 
-        out = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
-        out["pred_3d_dim"] = outputs_3d_dim[-1]
-        out["pred_depth"] = outputs_depth[-1]
-        out["pred_angle"] = outputs_angle[-1]
+        out = {"scores": outputs_class[-1], "boxes_3d": outputs_coord[-1]}
+        out["size_3d"] = outputs_3d_dim[-1]
+        out["depth"] = outputs_depth[-1]
+        out["heading_angle"] = outputs_angle[-1]
+        if mode == "export":
+            out["scores"] = out["scores"].sigmoid()
+            return out
+
         out["pred_depth_map_logits"] = pred_depth_map_logits
 
         if self.aux_loss:
@@ -299,7 +302,7 @@ class MonoDETR(nn.Module):
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.
         return [
-            {"pred_logits": a, "pred_boxes": b, "pred_3d_dim": c, "pred_angle": d, "pred_depth": e}
+            {"scores": a, "boxes_3d": b, "size_3d": c, "heading_angle": d, "depth": e}
             for a, b, c, d, e in zip(
                 outputs_class[:-1],
                 outputs_coord[:-1],

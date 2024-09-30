@@ -16,7 +16,6 @@ from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
 
 from otx.core.config.data import TileConfig, UnlabeledDataConfig, VisualPromptingConfig
-from otx.core.data.dataset.kitti_3d.kitti3d import KITTI_Dataset
 from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
@@ -55,7 +54,7 @@ class OTXDataModule(LightningDataModule):
             a model requries multiple of specific value as input_size. Defaults to 1.
     """
 
-    def __init__(  # noqa: PLR0913, C901
+    def __init__(  # noqa: PLR0913
         self,
         task: OTXTaskType,
         data_format: str,
@@ -114,15 +113,15 @@ class OTXDataModule(LightningDataModule):
         from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
 
         VIDEO_EXTENSIONS.append(".mp4")
-        if self.task != "OBJECT_DETECTION_3D":
-            dataset = DmDataset.import_from(self.data_root, format=self.data_format)
-            if self.task != "H_LABEL_CLS":
-                dataset = pre_filtering(
-                    dataset,
-                    self.data_format,
-                    self.unannotated_items_ratio,
-                    ignore_index=self.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None,
-                )
+
+        dataset = DmDataset.import_from(self.data_root, format=self.data_format)
+        if self.task != "H_LABEL_CLS":
+            dataset = pre_filtering(
+                dataset,
+                self.data_format,
+                self.unannotated_items_ratio,
+                ignore_index=self.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None,
+            )
 
         unlabeled_dataset = None
         if self.unlabeled_subset.data_root is not None:
@@ -186,54 +185,33 @@ class OTXDataModule(LightningDataModule):
 
         label_infos: list[LabelInfo] = []
 
-        if self.task == "OBJECT_DETECTION_3D":
-            for name in config_mapping:
-                dm_subset = KITTI_Dataset(self.data_root, split=name)  # type: ignore[no-untyped-call]
-                dataset = OTXDatasetFactory.create(
+        for name, dm_subset in dataset.subsets().items():
+            if name not in config_mapping:
+                log.warning(f"{name} is not available. Skip it")
+                continue
+
+            dataset = OTXDatasetFactory.create(
+                task=self.task,
+                dm_subset=dm_subset.as_dataset(),
+                cfg_subset=config_mapping[name],
+                mem_cache_handler=mem_cache_handler,
+                mem_cache_img_max_size=mem_cache_img_max_size,
+                image_color_channel=image_color_channel,
+                stack_images=stack_images,
+                include_polygons=include_polygons,
+                ignore_index=ignore_index,
+                vpm_config=vpm_config,
+            )
+
+            if self.tile_config.enable_tiler:
+                dataset = OTXTileDatasetFactory.create(
                     task=self.task,
-                    dm_subset=dm_subset,
-                    cfg_subset=config_mapping[name],
-                    mem_cache_handler=mem_cache_handler,
-                    mem_cache_img_max_size=mem_cache_img_max_size,
-                    image_color_channel=image_color_channel,
-                    stack_images=stack_images,
-                    include_polygons=include_polygons,
-                    ignore_index=ignore_index,
-                    vpm_config=vpm_config,
+                    dataset=dataset,
+                    tile_config=self.tile_config,
                 )
-
-                self.subsets[name] = dataset
-                label_infos += [self.subsets[name].label_info]
-                log.info(f"Add name: {name}, self.subsets: {self.subsets}")
-        else:
-            for name, dm_subset in dataset.subsets().items():
-                if name not in config_mapping:
-                    log.warning(f"{name} is not available. Skip it")
-                    continue
-
-                dataset = OTXDatasetFactory.create(
-                    task=self.task,
-                    dm_subset=dm_subset.as_dataset(),
-                    cfg_subset=config_mapping[name],
-                    mem_cache_handler=mem_cache_handler,
-                    mem_cache_img_max_size=mem_cache_img_max_size,
-                    image_color_channel=image_color_channel,
-                    stack_images=stack_images,
-                    include_polygons=include_polygons,
-                    ignore_index=ignore_index,
-                    vpm_config=vpm_config,
-                )
-
-                if self.tile_config.enable_tiler:
-                    dataset = OTXTileDatasetFactory.create(
-                        task=self.task,
-                        dataset=dataset,
-                        tile_config=self.tile_config,
-                    )
-                self.subsets[name] = dataset
-
-                label_infos += [self.subsets[name].label_info]
-                log.info(f"Add name: {name}, self.subsets: {self.subsets}")
+            self.subsets[name] = dataset
+            label_infos += [self.subsets[name].label_info]
+            log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
         if unlabeled_dataset is not None:
             name = self.unlabeled_subset.subset_name

@@ -1,5 +1,6 @@
-# Copyright (C) 2023-2024 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
 """Class definition for 3d object detection model entity used in OTX."""
 
 from __future__ import annotations
@@ -12,13 +13,12 @@ from torchvision.ops import box_convert
 from model_api.models import ImageModel
 
 from otx.algo.utils.mmengine_utils import load_checkpoint
-from otx.core.data.dataset.kitti_3d.kitti_utils import class2angle
+from otx.core.data.dataset.utils.kitti_utils import class2angle
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
-from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
-from otx.core.metrics.ap_3d import KittiMetric
-from otx.core.model.base import OTXModel, OVModel
+from otx.core.metrics.average_precision_3d import KittiMetric
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:
@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.types.label import LabelInfoTypes
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 
 
 class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
@@ -47,7 +46,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = KittiMetric,
         torch_compile: bool = False,
-        score_threshold: float = 0.2,
+        score_threshold: float = 0.1,
     ) -> None:
         """Initialize the 3d detection model."""
         self.model_name = model_name
@@ -141,8 +140,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         return {
             "preds": result_list,
-            # TODO (Kirill): change it later to pre-process gt annotations here
-            "target": inputs.kitti_label_object,  # type: ignore[dict-item]
+            "target": inputs.original_kitti_format,  # type: ignore[dict-item]
         }
 
     @staticmethod
@@ -230,8 +228,6 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 alpha = _get_heading_angle(dets[i, j, 7:31])
                 ry = _alpha2ry(calib_matrix[i], alpha, x)
 
-                score = score * dets[i, j, -1]
-
                 names.append(class_names[cls_id])
                 alphas.append(alpha)
                 bboxes.append(bbox)
@@ -255,7 +251,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         return results
 
     def get_dummy_input(self, batch_size: int = 1) -> Det3DBatchDataEntity:
-        """Returns a dummy input for detection model."""
+        """Returns a dummy input for 3d object detection model."""
         if self.input_size is None:
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
@@ -283,7 +279,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             size_3d=[],
             depth=[],
             heading_angle=[],
-            kitti_label_object=[],
+            original_kitti_format=[],
         )
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:

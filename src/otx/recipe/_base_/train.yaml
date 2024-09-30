@@ -9,7 +9,7 @@ callbacks:
       check_on_train_epoch_end: false
       min_delta: 0.001
       warmup_iters: 30
-      warmup_epochs: 190
+      warmup_epochs: 3
   - class_path: lightning.pytorch.callbacks.RichProgressBar
     init_args:
       refresh_rate: 1
@@ -37,7 +37,7 @@ callbacks:
       log_momentum: true
   - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
     init_args:
-      max_interval: 1
+      max_interval: 5
       decay: -0.025
 logger:
   - class_path: lightning.pytorch.loggers.csv_logs.CSVLogger

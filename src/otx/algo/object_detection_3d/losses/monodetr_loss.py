@@ -48,7 +48,7 @@ class MonoDETRCriterion(nn.Module):
 
     def loss_labels(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
         """Classification loss."""
-        src_logits = outputs["pred_logits"]
+        src_logits = outputs["scores"]
 
         idx = self._get_src_permutation_idx(indices)
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
@@ -78,7 +78,7 @@ class MonoDETRCriterion(nn.Module):
     def loss_3dcenter(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
         """Compute the loss for the 3D center prediction."""
         idx = self._get_src_permutation_idx(indices)
-        src_3dcenter = outputs["pred_boxes"][:, :, 0:2][idx]
+        src_3dcenter = outputs["boxes_3d"][:, :, 0:2][idx]
         target_3dcenter = torch.cat([t["boxes_3d"][:, 0:2][i] for t, (_, i) in zip(targets, indices)], dim=0)
 
         loss_3dcenter = functional.l1_loss(src_3dcenter, target_3dcenter, reduction="none")
@@ -87,7 +87,7 @@ class MonoDETRCriterion(nn.Module):
     def loss_boxes(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
         """Compute l1 loss."""
         idx = self._get_src_permutation_idx(indices)
-        src_2dboxes = outputs["pred_boxes"][:, :, 2:6][idx]
+        src_2dboxes = outputs["boxes_3d"][:, :, 2:6][idx]
         target_2dboxes = torch.cat([t["boxes_3d"][:, 2:6][i] for t, (_, i) in zip(targets, indices)], dim=0)
 
         # l1
@@ -98,7 +98,7 @@ class MonoDETRCriterion(nn.Module):
         """Compute the GIoU loss."""
         # giou
         idx = self._get_src_permutation_idx(indices)
-        src_boxes = outputs["pred_boxes"][idx]
+        src_boxes = outputs["boxes_3d"][idx]
         target_boxes = torch.cat([t["boxes_3d"][i] for t, (_, i) in zip(targets, indices)], dim=0)
         loss_giou = giou_loss(box_cxcylrtb_to_xyxy(src_boxes), box_cxcylrtb_to_xyxy(target_boxes))
         return {"loss_giou": loss_giou}
@@ -107,7 +107,7 @@ class MonoDETRCriterion(nn.Module):
         """Compute the loss for the depth prediction."""
         idx = self._get_src_permutation_idx(indices)
 
-        src_depths = outputs["pred_depth"][idx]
+        src_depths = outputs["depth"][idx]
         target_depths = torch.cat([t["depth"][i] for t, (_, i) in zip(targets, indices)], dim=0).squeeze()
 
         depth_input, depth_log_variance = src_depths[:, 0], src_depths[:, 1]
@@ -119,7 +119,7 @@ class MonoDETRCriterion(nn.Module):
     def loss_dims(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
         """Compute the loss for the dimension prediction."""
         idx = self._get_src_permutation_idx(indices)
-        src_dims = outputs["pred_3d_dim"][idx]
+        src_dims = outputs["size_3d"][idx]
         target_dims = torch.cat([t["size_3d"][i] for t, (_, i) in zip(targets, indices)], dim=0)
 
         dimension = target_dims.clone().detach()
@@ -133,7 +133,7 @@ class MonoDETRCriterion(nn.Module):
     def loss_angles(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
         """Compute the loss for the angle prediction."""
         idx = self._get_src_permutation_idx(indices)
-        heading_input = outputs["pred_angle"][idx]
+        heading_input = outputs["heading_angle"][idx]
         target_heading_angle = torch.cat([t["heading_angle"][i] for t, (_, i) in zip(targets, indices)], dim=0)
         heading_target_cls = target_heading_angle[:, 0].view(-1).long()
         heading_target_res = target_heading_angle[:, 1].view(-1)

@@ -12,7 +12,7 @@ import json
 import logging
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, Sequence
 
 import numpy as np
 import openvino
@@ -141,9 +141,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         # so that it can retrieve it from the checkpoint
         self.save_hyperparameters(logger=False, ignore=["optimizer", "scheduler", "metric"])
 
-    def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
+    def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor | None:
         """Step for model training."""
         train_loss = self.forward(inputs=batch)
+        if train_loss is None:
+            # to skip current iteration
+            # TODO (sungchul): check this in distributed training
+            return None if self.trainer.world_size == 1 else torch.tensor(0.0, device=self.device)
 
         if isinstance(train_loss, Tensor):
             self.log(
@@ -924,20 +928,9 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def _forward(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
         """Model forward function."""
-
-        def _callback(result: NamedTuple, idx: int) -> None:
-            output_dict[idx] = result
-
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
         if self.async_inference:
-            output_dict: dict[int, NamedTuple] = {}
-            self.model.set_callback(_callback)
-            for idx, im in enumerate(numpy_inputs):
-                if not self.model.is_ready():
-                    self.model.await_any()
-                self.model.infer_async(im, user_data=idx)
-            self.model.await_all()
-            outputs = [out[1] for out in sorted(output_dict.items())]
+            outputs = self.model.infer_batch(numpy_inputs)
         else:
             outputs = [self.model(im) for im in numpy_inputs]
 

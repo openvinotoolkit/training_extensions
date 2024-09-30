@@ -195,7 +195,7 @@ def test_otx_e2e(
         print("Inference and explain are not supported for keypoint detection")
         return
 
-    if "3d" in recipe:
+    if "monodetr3d" in recipe:
         print("Inference and explain are not supported for object detection 3d")
         return
 
@@ -261,6 +261,9 @@ def test_otx_e2e(
 
     if "yolov9" in model_name:
         return  # RT-DETR currently is not supported.
+    if "keypoint" in recipe:
+        print("Explain is not supported for keypoint detection")
+        return
 
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:

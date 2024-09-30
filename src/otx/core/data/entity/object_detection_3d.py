@@ -6,11 +6,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
-from otx.core.data.dataset.kitti_3d.kitti_utils import Object3d
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
@@ -47,7 +46,7 @@ class Det3DDataEntity(OTXDataEntity):
     depth: Tensor
     heading_angle: Tensor
     labels: LongTensor
-    kitti_label_object: list[Object3d]
+    original_kitti_format: list[dict[str, Any]] | None
 
 
 @dataclass
@@ -73,7 +72,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     depth: list[Tensor]
     heading_angle: list[Tensor]
     labels: list[LongTensor]
-    kitti_label_object: list[list[Object3d]]
+    original_kitti_format: list[list[dict[str, Any]] | None]
 
     @property
     def task(self) -> OTXTaskType:
@@ -112,7 +111,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
             size_3d=[entity.size_3d for entity in entities],
             depth=[entity.depth for entity in entities],
             heading_angle=[entity.heading_angle for entity in entities],
-            kitti_label_object=[entity.kitti_label_object for entity in entities],
+            original_kitti_format=[entity.original_kitti_format for entity in entities],
         )
 
     def pin_memory(self) -> Det3DBatchDataEntity:
@@ -129,7 +128,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
                 size_3d=[size_3d.pin_memory() for size_3d in self.size_3d],
                 depth=[depth.pin_memory() for depth in self.depth],
                 heading_angle=[heading_angle.pin_memory() for heading_angle in self.heading_angle],
-                kitti_label_object=self.kitti_label_object,
+                original_kitti_format=self.original_kitti_format,
             )
         )
 
@@ -147,4 +146,3 @@ class Det3DBatchPredEntity(OTXBatchPredEntity, Det3DBatchDataEntity):
     depth: Tensor
     heading_angle: Tensor
     labels: Tensor
-    kitti_label_object: list[list[Object3d]]
