@@ -31,10 +31,15 @@ def fxt_trained_model(
     recipe_split = recipe.split("/")
     model_name = recipe_split[-1].split(".")[0]
     is_semisl = model_name.endswith("_semisl")
+    is_tiling = model_name.endswith("_tile")
     task = recipe_split[-2] if not is_semisl else recipe_split[-3]
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
+    train_kwargs = fxt_cli_override_command_per_task[task]
+    if is_tiling:
+        train_kwargs += ["--adaptive_bs", "Safe"]
+
     command_cfg = [
         "otx",
         "train",
@@ -48,7 +53,7 @@ def fxt_trained_model(
         fxt_accelerator,
         "--max_epochs",
         "1" if task in ("zero_shot_visual_prompting") else "2",
-        *fxt_cli_override_command_per_task[task],
+        *train_kwargs,
     ]
 
     if is_semisl:
