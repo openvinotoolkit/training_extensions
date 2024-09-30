@@ -185,7 +185,7 @@ class TestYOLOv9Criterion:
             return_value=(torch.tensor(0.0), torch.tensor(0.0), torch.tensor(0.0)),
         )
         main_preds = torch.tensor(0.0)
-        targets = torch.tensor(0.0)
+        targets = torch.zeros(1, 1, 4)
         aux_preds = torch.tensor(0.0)
 
         loss_dict = criterion.forward(main_preds, targets, aux_preds)

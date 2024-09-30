@@ -371,9 +371,9 @@ class YOLOv9Criterion(nn.Module):
         loss_dfl: nn.Module | None = None,
         loss_iou: nn.Module | None = None,
         reg_max: int = 16,
-        cls_rate: float = 1.5,
-        dfl_rate: float = 7.5,
-        iou_rate: float = 0.5,
+        cls_rate: float = 0.5,
+        dfl_rate: float = 1.5,
+        iou_rate: float = 7.5,
         aux_rate: float = 0.25,
     ) -> None:
         super().__init__()
@@ -394,7 +394,7 @@ class YOLOv9Criterion(nn.Module):
         main_preds: tuple[Tensor, Tensor, Tensor],
         targets: Tensor,
         aux_preds: tuple[Tensor, Tensor, Tensor] | None = None,
-    ) -> dict[str, Tensor]:
+    ) -> dict[str, Tensor] | None:
         """Forward pass of the YOLOv9 criterion module.
 
         Args:
@@ -405,6 +405,10 @@ class YOLOv9Criterion(nn.Module):
         Returns:
             dict[str, Tensor]: The loss dictionary.
         """
+        if targets.shape[1] == 0:
+            # TODO (sungchul): should this step be done here?
+            return None
+
         main_preds = self.vec2box(main_preds)
         main_iou, main_dfl, main_cls = self._forward(main_preds, targets)
 
