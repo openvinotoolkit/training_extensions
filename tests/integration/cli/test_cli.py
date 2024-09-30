@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from copy import copy
+from pathlib import Path
 
 import cv2
 import pytest
