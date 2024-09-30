@@ -67,6 +67,6 @@ class SPPBottleneck(BaseModule):
     def forward(self, x: Tensor) -> Tensor:
         """Forward."""
         x = self.conv1(x)
-        with torch.cuda.amp.autocast(enabled=False):
+        with torch.amp.autocast(x.device.type, enabled=False):
             x = torch.cat([x] + [pooling(x) for pooling in self.poolings], dim=1)
         return self.conv2(x)
