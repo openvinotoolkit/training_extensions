@@ -119,7 +119,7 @@ class MaskDINODecoder(nn.Module):
             known_num = [sum(k) for k in known]
 
             # use fix number of dn queries
-            scalar = scalar // int(max(known_num)) if max(known_num) > 0 else 0
+            scalar = max(scalar // int(max(known_num)), 1)
 
             # can be modified to selectively denosie some label or boxes; also known label prediction
             unmask_bbox = unmask_label = torch.cat(known)
