@@ -204,7 +204,7 @@ def load_checkpoint_to_model(
     """
     # get state_dict from checkpoint
     # TODO(Kirill): remove this when RTDETR weights is updloaded to openvino storage.
-    state_dict = checkpoint["ema"]["module"] if "ema" in checkpoint else checkpoint.get("model_state", checkpoint)
+    state_dict = checkpoint["ema"]["module"] if "ema" in checkpoint else checkpoint.get("state_dict", checkpoint)
 
     # strip prefix of state_dict
     metadata = getattr(state_dict, "_metadata", OrderedDict())
