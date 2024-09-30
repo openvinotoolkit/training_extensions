@@ -19,8 +19,8 @@ from otx.algo.instance_segmentation.layers.batch_norm import get_norm
 from otx.algo.instance_segmentation.utils.utils import (
     Conv2d,
     ShapeSpec,
-    _get_clones,
     c2_xavier_fill,
+    get_clones,
 )
 
 
@@ -197,7 +197,7 @@ class MSDeformAttnTransformerEncoder(nn.Module):
 
     def __init__(self, encoder_layer: nn.ModuleList, num_layers: int) -> None:
         super().__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
+        self.layers = get_clones(encoder_layer, num_layers)
         self.num_layers = num_layers
 
     @staticmethod

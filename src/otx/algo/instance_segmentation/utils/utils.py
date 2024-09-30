@@ -215,7 +215,7 @@ def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
     return pos
 
 
-def _get_clones(module: nn.Module, nums: int) -> nn.ModuleList:
+def get_clones(module: nn.Module, nums: int) -> nn.ModuleList:
     """Produce N identical layers."""
     return nn.ModuleList([copy.deepcopy(module) for i in range(nums)])
 

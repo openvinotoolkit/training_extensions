@@ -13,8 +13,8 @@ from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSD
 from otx.algo.detection.utils.utils import inverse_sigmoid
 from otx.algo.instance_segmentation.utils.utils import (
     MLP,
-    _get_clones,
     gen_sineembed_for_position,
+    get_clones,
 )
 
 
@@ -30,7 +30,7 @@ class TransformerDecoder(nn.Module):
         query_dim: int = 4,
     ):
         super().__init__()
-        self.layers = _get_clones(decoder_layer, num_layers)
+        self.layers = get_clones(decoder_layer, num_layers)
         self.norm = norm
         self.query_dim = query_dim
         self.ref_point_head = MLP(query_dim // 2 * d_model, d_model, d_model, 2)
