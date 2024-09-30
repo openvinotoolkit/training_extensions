@@ -10,11 +10,11 @@ from torch import Tensor, nn
 from torch.cuda.amp import autocast
 
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
+from otx.algo.detection.utils.utils import inverse_sigmoid
 from otx.algo.instance_segmentation.utils.utils import (
     MLP,
     _get_clones,
     gen_sineembed_for_position,
-    inverse_sigmoid,
 )
 
 

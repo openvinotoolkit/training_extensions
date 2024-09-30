@@ -7,6 +7,7 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
+from otx.algo.detection.utils.utils import inverse_sigmoid
 from otx.algo.instance_segmentation.heads.transformer_decoder.dino_decoder import (
     DeformableTransformerDecoderLayer,
     TransformerDecoder,
@@ -15,7 +16,6 @@ from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import (
     MLP,
     gen_encoder_output_proposals,
-    inverse_sigmoid,
 )
 
 
