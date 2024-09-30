@@ -26,7 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "datumaro==1.7.0",
+    "datumaro==1.10.0rc0",
     "omegaconf==2.3.0",
     "rich==13.8.0",
     "jsonargparse==4.30.0",
