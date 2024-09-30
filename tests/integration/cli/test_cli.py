@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from copy import copy
 
 import cv2
 import pytest
@@ -36,7 +37,7 @@ def fxt_trained_model(
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
-    train_kwargs = fxt_cli_override_command_per_task[task]
+    train_kwargs = copy(fxt_cli_override_command_per_task[task])
     if is_tiling:
         train_kwargs += ["--adaptive_bs", "Safe"]
 
