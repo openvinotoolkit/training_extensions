@@ -37,12 +37,7 @@ def test_auto_configuration(
 
     tmp_path_train = tmp_path / f"auto_train_{task}"
     data_root = fxt_target_dataset_per_task[task.lower()]
-    engine = Engine(
-        data_root=data_root,
-        task=task,
-        work_dir=tmp_path_train,
-        device=fxt_accelerator,
-    )
+    engine = Engine(data_root=data_root, task=task, work_dir=tmp_path_train, device=fxt_accelerator)
     if task.lower() == "zero_shot_visual_prompting":
         engine.model.infer_reference_info_root = Path(tmp_path_train)
         # update litmodule.hparams to reflect changed hparams

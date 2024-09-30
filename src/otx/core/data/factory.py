@@ -156,4 +156,9 @@ class OTXDatasetFactory:
 
             return OTXKeypointDetectionDataset(**common_kwargs)
 
+        if task == OTXTaskType.DIFFUSION:
+            from .dataset.diffusion import OTXDiffusionDataset
+
+            return OTXDiffusionDataset(**common_kwargs)
+
         raise NotImplementedError(task)

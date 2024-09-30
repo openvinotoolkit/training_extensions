@@ -28,3 +28,4 @@ Contents
    anomaly/index
    action/index
    visual_prompting/index
+   diffusion/index
