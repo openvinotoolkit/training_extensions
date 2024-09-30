@@ -48,9 +48,7 @@ jobs:
         include:
           - python-version: "3.10"
             tox-env: "py310"
-            # TODO(vinnamki): Revisit after fixing in the upstream: https://github.com/omni-us/jsonargparse/issues/484
-            # Ticket no. 138075
-          - python-version: "3.11.8"
+          - python-version: "3.11"
             tox-env: "py311"
     name: Unit-Test-with-Python${{ matrix.python-version }}
     steps:
