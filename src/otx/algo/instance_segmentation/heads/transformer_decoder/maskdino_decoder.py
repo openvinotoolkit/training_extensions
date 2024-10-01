@@ -195,13 +195,8 @@ class MaskDINODecoder(nn.Module):
                 "pad_size": pad_size,
                 "scalar": scalar,
             }
-        else:
-            input_query_label = None
-            input_query_bbox = None
-            attn_mask = None
-            mask_dict = None
-
-        return input_query_label, input_query_bbox, attn_mask, mask_dict
+            return input_query_label, input_query_bbox, attn_mask, mask_dict
+        return None, None, None, None
 
     def dn_post_process(
         self,
