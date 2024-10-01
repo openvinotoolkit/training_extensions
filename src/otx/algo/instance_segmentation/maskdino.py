@@ -316,7 +316,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             via_onnx=True,
             onnx_export_configuration={
                 "input_names": ["image"],
-                "output_names": ["boxes", "labels", "masks"],
                 "dynamic_axes": {
                     "image": {0: "batch", 2: "height", 3: "width"},
                     "boxes": {0: "batch", 1: "num_dets"},
