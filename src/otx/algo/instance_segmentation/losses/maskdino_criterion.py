@@ -336,27 +336,29 @@ class SetCriterion(nn.Module):
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
 
         # Retrieve the matching between the outputs of the last layer and the targets
-        output_known_lbs_bboxes, _, single_pad, scalar = self.prep_for_dn(mask_dict)
-        exc_idx = []
-        for target in targets:
-            device = target["labels"].device
-            if len(target["labels"]) > 0:
-                t = torch.arange(0, len(target["labels"]), device=device).long()
-                t = t.unsqueeze(0).repeat(scalar, 1)
-                tgt_idx = t.flatten()
-                output_idx = (torch.tensor(range(scalar), device=device) * single_pad).long().unsqueeze(1) + t
-                output_idx = output_idx.flatten()
-            else:
-                output_idx = tgt_idx = torch.tensor([], device=device).long()
-            exc_idx.append((output_idx, tgt_idx))
+        if mask_dict is not None:
+            output_known_lbs_bboxes, _, single_pad, scalar = self.prep_for_dn(mask_dict)
+            exc_idx = []
+            for target in targets:
+                device = target["labels"].device
+                if len(target["labels"]) > 0:
+                    t = torch.arange(0, len(target["labels"]), device=device).long()
+                    t = t.unsqueeze(0).repeat(scalar, 1)
+                    tgt_idx = t.flatten()
+                    output_idx = (torch.tensor(range(scalar), device=device) * single_pad).long().unsqueeze(1) + t
+                    output_idx = output_idx.flatten()
+                else:
+                    output_idx = tgt_idx = torch.tensor([], device=device).long()
+                exc_idx.append((output_idx, tgt_idx))
 
         indices = self.matcher(outputs_without_aux, targets)
         # Compute the average number of target boxes accross all nodes, for normalization purposes
+        device = next(iter(outputs.values())).device
         num_masks = sum(len(t["labels"]) for t in targets)
         num_masks = torch.as_tensor(
             [num_masks],
             dtype=torch.float,
-            device=next(iter(outputs.values())).device,
+            device=device,
         )
         world_size = 1
         if torch.distributed.is_available() and torch.distributed.is_initialized():
@@ -368,11 +370,21 @@ class SetCriterion(nn.Module):
         for loss in self.losses:
             losses.update(self.get_loss(loss, outputs, targets, indices, num_masks))
 
-        l_dict = {}
-        for loss in self.dn_losses:
-            l_dict.update(self.get_loss(loss, output_known_lbs_bboxes, targets, exc_idx, num_masks * scalar))
-        l_dict = {k + "_dn": v for k, v in l_dict.items()}
-        losses.update(l_dict)
+        if mask_dict is not None:
+            l_dict = {}
+            for loss in self.dn_losses:
+                l_dict.update(self.get_loss(loss, output_known_lbs_bboxes, targets, exc_idx, num_masks * scalar))
+            l_dict = {k + "_dn": v for k, v in l_dict.items()}
+            losses.update(l_dict)
+        else:
+            l_dict = {
+                "loss_bbox_dn": torch.as_tensor(0.0, device=device),
+                "loss_giou_dn": torch.as_tensor(0.0, device=device),
+                "loss_ce_dn": torch.as_tensor(0.0, device=device),
+                "loss_mask_dn": torch.as_tensor(0.0, device=device),
+                "loss_dice_dn": torch.as_tensor(0.0, device=device),
+            }
+            losses.update(l_dict)
 
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
@@ -384,12 +396,22 @@ class SetCriterion(nn.Module):
                     losses.update(l_dict)
                 start = 0 if "interm_outputs" in outputs else 1
                 if i >= start:
-                    out_ = output_known_lbs_bboxes["aux_outputs"][i]
-                    l_dict = {}
-                    for loss in self.dn_losses:
-                        l_dict.update(self.get_loss(loss, out_, targets, exc_idx, num_masks * scalar))
-                    l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
-                    losses.update(l_dict)
+                    if mask_dict is not None:
+                        out_ = output_known_lbs_bboxes["aux_outputs"][i]
+                        l_dict = {}
+                        for loss in self.dn_losses:
+                            l_dict.update(self.get_loss(loss, out_, targets, exc_idx, num_masks * scalar))
+                        l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
+                        losses.update(l_dict)
+                    else:
+                        l_dict = {
+                            "loss_bbox_dn": torch.as_tensor(0.0, device=device),
+                            "loss_giou_dn": torch.as_tensor(0.0, device=device),
+                            "loss_ce_dn": torch.as_tensor(0.0, device=device),
+                            "loss_mask_dn": torch.as_tensor(0.0, device=device),
+                            "loss_dice_dn": torch.as_tensor(0.0, device=device),
+                        }
+                        losses.update(l_dict)
 
         # interm_outputs loss
         if "interm_outputs" in outputs:

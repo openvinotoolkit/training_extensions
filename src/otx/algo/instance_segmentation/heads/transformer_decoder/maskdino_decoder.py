@@ -109,7 +109,7 @@ class MaskDINODecoder(nn.Module):
         self,
         targets: list[dict[str, Tensor]],
         batch_size: int,
-    ) -> tuple[Tensor, Tensor, Tensor, dict[str, Tensor] | None]:
+    ) -> tuple[Tensor | None, Tensor | None, Tensor | None, dict[str, Tensor] | None]:
         """Prepare the input for denoising training."""
         if self.training:
             scalar, noise_scale = self.dn_num, self.noise_scale
@@ -119,7 +119,9 @@ class MaskDINODecoder(nn.Module):
             known_num = [sum(k) for k in known]
 
             # use fix number of dn queries
-            scalar = max(scalar // int(max(known_num)), 1)
+            scalar = scalar // int(max(known_num))
+            if scalar == 0:
+                return None, None, None, None
 
             # can be modified to selectively denosie some label or boxes; also known label prediction
             unmask_bbox = unmask_label = torch.cat(known)
@@ -139,17 +141,16 @@ class MaskDINODecoder(nn.Module):
             known_bbox_expand = known_bboxs.clone()
 
             # noise on the label
-            if noise_scale > 0:
-                p = torch.rand_like(known_labels_expaned.float())
-                chosen_indice = torch.nonzero(p < (noise_scale * 0.5)).view(-1)  # half of bbox prob
-                new_label = torch.randint_like(chosen_indice, 0, self.num_classes)  # randomly put a new one here
-                known_labels_expaned.scatter_(0, chosen_indice, new_label)
-            if noise_scale > 0:
-                diff = torch.zeros_like(known_bbox_expand)
-                diff[:, :2] = known_bbox_expand[:, 2:] / 2
-                diff[:, 2:] = known_bbox_expand[:, 2:]
-                known_bbox_expand += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0), diff) * noise_scale
-                known_bbox_expand = known_bbox_expand.clamp(min=0.0, max=1.0)
+            p = torch.rand_like(known_labels_expaned.float())
+            chosen_indice = torch.nonzero(p < (noise_scale * 0.5)).view(-1)  # half of bbox prob
+            new_label = torch.randint_like(chosen_indice, 0, self.num_classes)  # randomly put a new one here
+            known_labels_expaned.scatter_(0, chosen_indice, new_label)
+
+            diff = torch.zeros_like(known_bbox_expand)
+            diff[:, :2] = known_bbox_expand[:, 2:] / 2
+            diff[:, 2:] = known_bbox_expand[:, 2:]
+            known_bbox_expand += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0), diff) * noise_scale
+            known_bbox_expand = known_bbox_expand.clamp(min=0.0, max=1.0)
 
             m = known_labels_expaned.long()
             input_label_embed = self.label_enc(m)
