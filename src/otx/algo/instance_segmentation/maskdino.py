@@ -10,6 +10,7 @@ import itertools
 from typing import Any, Callable
 
 import torch
+import torch.nn.functional as f
 from torch import Tensor, nn
 from torchvision import tv_tensors
 from torchvision.models.detection.image_list import ImageList
@@ -449,6 +450,28 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             labels=labels,
         )
 
+    def resize_and_calculate_mask_probs(
+        self,
+        mask_pred: torch.Tensor,
+        scores_per_image: torch.Tensor,
+        resize_shape: tuple[int, int],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Calculate average mask probabilities and resize masks."""
+        pred_masks = (mask_pred > 0).float()
+
+        # Calculate average mask prob
+        mask_scores_per_image = f.sigmoid(mask_pred).flatten(1) * pred_masks.flatten(1)
+        mask_scores_per_image = (mask_scores_per_image.sum(1) / (pred_masks.flatten(1).sum(1) + 1e-6)).unsqueeze(-1)
+
+        del pred_masks
+
+        # Resize and threshold mask
+        mask_pred = (
+            f.interpolate(mask_pred.unsqueeze(0), size=resize_shape, mode="bilinear", align_corners=False)[0] > 0
+        )
+
+        return scores_per_image * mask_scores_per_image, mask_pred
+
     def post_process_instance_segmentation(
         self,
         outputs: dict[str, Tensor],
@@ -484,24 +507,14 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
             topk_indices = topk_indices // num_classes
 
-            mask_pred = torch.nn.functional.interpolate(  # noqa: PLW2901
-                mask_pred.unsqueeze(0),
-                size=(ori_h, ori_w),
-                mode="bilinear",
-                align_corners=False,
-            )[0]
-
             mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
             pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
-            pred_masks = (mask_pred > 0).float()
 
-            # Calculate average mask prob
-            mask_scores_per_image = (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (
-                pred_masks.flatten(1).sum(1) + 1e-6
+            pred_scores, pred_masks = self.resize_and_calculate_mask_probs(
+                mask_pred,
+                scores_per_image,
+                resize_shape=(ori_h, ori_w),
             )
-            pred_scores = scores_per_image * mask_scores_per_image
-            pred_classes = labels_per_image
-
             pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)  # noqa: PLW2901
             pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
             pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)
@@ -511,7 +524,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
             batch_masks.append(pred_masks[keep])
             batch_bboxes.append(pred_boxes[keep])
-            batch_labels.append(pred_classes[keep])
+            batch_labels.append(labels_per_image[keep])
             batch_scores.append(pred_scores[keep])
 
         return batch_masks, batch_bboxes, batch_labels, batch_scores
