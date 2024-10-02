@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-<<<<<<< HEAD
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import numpy as np
@@ -21,21 +20,6 @@ from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3D
 from otx.core.metrics import MetricInput
 from otx.core.metrics.average_precision_3d import KittiMetric
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
-=======
-from typing import TYPE_CHECKING
-
-import numpy as np
-import torch
-from torchvision.ops import box_convert
-
-from otx.algo.utils.mmengine_utils import load_checkpoint
-from otx.core.data.dataset.utils.kitti_utils import class2angle
-from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
-from otx.core.metrics import MetricInput
-from otx.core.metrics.average_precision_3d import KittiMetric
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
->>>>>>> origin/develop
 from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:
@@ -91,13 +75,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
         return super()._export_parameters.wrap(
-<<<<<<< HEAD
             model_type="mono_3d_det",
             task_type="3d_detection",
-=======
-            model_type="ssd",
-            task_type="detection",
->>>>>>> origin/develop
         )
 
     def _convert_pred_entity_to_compute_metric(
