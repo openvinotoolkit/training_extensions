@@ -33,7 +33,7 @@ overrides:
         - class_path: torchvision.transforms.v2.ToImage
 
     test_subset:
-      to_tv_image: true
+      to_tv_image: false
       batch_size: 64
       transforms:
         - class_path: torchvision.transforms.v2.ToImage

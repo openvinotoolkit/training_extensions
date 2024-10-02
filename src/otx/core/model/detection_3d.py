@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import numpy as np
 import torch
@@ -15,7 +15,7 @@ from torchvision.ops import box_convert
 from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.data.dataset.utils.kitti_utils import class2angle
-from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.average_precision_3d import KittiMetric
@@ -304,7 +304,7 @@ class MonoDETRModel(ImageModel):
 
     __model__ = "mono_3d_det"
 
-    def __init__(self, inference_adapter, configuration={}, preload=False):
+    def __init__(self, inference_adapter, configuration, preload: bool = False):
         """Initializes a 3d detection model.
 
         Args:
@@ -450,7 +450,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             depth=depth,
             heading_angle=heading_angle,
             scores=scores,
-            kitti_label_object=inputs.kitti_label_object,
+            original_kitti_format=[None],
         )
 
     def _forward(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
@@ -588,5 +588,5 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         return {
             "preds": result_list,
             # TODO (Kirill): change it later to pre-process gt annotations here
-            "target": inputs.kitti_label_object,  # type: ignore[dict-item]
+            "target": inputs.original_kitti_format,  # type: ignore[dict-item]
         }
