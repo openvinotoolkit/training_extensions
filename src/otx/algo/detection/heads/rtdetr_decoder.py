@@ -15,9 +15,7 @@ import torchvision
 from torch import nn
 from torch.nn import init
 
-from otx.algo.detection.utils.utils import (
-    inverse_sigmoid,
-)
+from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.transformer import deformable_attention_core_func
 
