@@ -328,6 +328,11 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             output_names=["bboxes", "labels", "masks"],
         )
 
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for MaskDINO-R50."""
+        return {"model_type": "transformer"}
+
     def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict[str, Any]]]:
         """Configure an optimizer and learning-rate schedulers."""
         param_groups = self._get_optim_params(self.model)
