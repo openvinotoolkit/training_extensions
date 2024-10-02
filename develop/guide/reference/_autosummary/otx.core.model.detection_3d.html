@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.core.exporter.exportable_code &#8212; OpenVINO™ Training Extensions 2.3.0rc0 documentation</title>
+    <title>otx.core.model.detection_3d &#8212; OpenVINO™ Training Extensions 2.3.0rc0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.exporter.exportable_code';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.detection_3d';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.core.exporter.exportable_code.demo" href="otx.core.exporter.exportable_code.demo.html" />
-    <link rel="prev" title="otx.core.exporter.detection_3d" href="otx.core.exporter.detection_3d.html" />
+    <link rel="next" title="otx.core.model.instance_segmentation" href="otx.core.model.instance_segmentation.html" />
+    <link rel="prev" title="otx.core.model.detection" href="otx.core.model.detection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -334,9 +334,9 @@
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
-<li class="toctree-l4 current active"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.optimizer.html">otx.core.optimizer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.schedulers.html">otx.core.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
@@ -393,17 +393,37 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.core.exporter.exportable_code">
-<span id="otx-core-exporter-exportable-code"></span><h1>otx.core.exporter.exportable_code<a class="headerlink" href="#module-otx.core.exporter.exportable_code" title="Link to this heading">#</a></h1>
-<p>Methods for exportable code.</p>
-<p class="rubric">Modules</p>
+  <section id="module-otx.core.model.detection_3d">
+<span id="otx-core-model-detection-3d"></span><h1>otx.core.model.detection_3d<a class="headerlink" href="#module-otx.core.model.detection_3d" title="Link to this heading">#</a></h1>
+<p>Class definition for 3d object detection model entity used in OTX.</p>
+<p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.exporter.exportable_code.demo.html#module-otx.core.exporter.exportable_code.demo" title="otx.core.exporter.exportable_code.demo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.exporter.exportable_code.demo</span></code></a></p></td>
-<td><p>OTX Exportable code.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.detection_3d.OTX3DDetectionModel" title="otx.core.model.detection_3d.OTX3DDetectionModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTX3DDetectionModel</span></code></a>(label_info, model_name, ...)</p></td>
+<td><p>Base class for the 3d detection models used in OTX.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.core.model.detection_3d.OTX3DDetectionModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.detection_3d.</span></span><span class="sig-name descname"><span class="pre">OTX3DDetectionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes,</span> <span class="pre">model_name:</span> <span class="pre">str,</span> <span class="pre">input_size:</span> <span class="pre">tuple[int,</span> <span class="pre">int],</span> <span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;,</span> <span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;,</span> <span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'otx.core.metrics.average_precision_3d.KittiMetric'&gt;,</span> <span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">score_threshold:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/detection_3d.html#OTX3DDetectionModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.detection_3d.OTX3DDetectionModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Det3DBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Det3DBatchPredEntity</span></code>]</p>
+<p>Base class for the 3d detection models used in OTX.</p>
+<p>Initialize the 3d detection model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.detection_3d.OTX3DDetectionModel.get_classification_layers">
+<span class="sig-name descname"><span class="pre">get_classification_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'model.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/detection_3d.html#OTX3DDetectionModel.get_classification_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.detection_3d.OTX3DDetectionModel.get_classification_layers" title="Link to this definition">#</a></dt>
+<dd><p>Get final classification layer information for incremental learning case.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.detection_3d.OTX3DDetectionModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Det3DBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/detection_3d.html#OTX3DDetectionModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.detection_3d.OTX3DDetectionModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for 3d object detection model.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -414,17 +434,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.core.exporter.detection_3d.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.model.detection.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.core.exporter.detection_3d</p>
+          <p class="prev-next-title">otx.core.model.detection</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.core.exporter.exportable_code.demo.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.model.instance_segmentation.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.core.exporter.exportable_code.demo</p>
+      <p class="prev-next-title">otx.core.model.instance_segmentation</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -439,6 +459,47 @@
               
 <div class="toc-item">
   
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.model.detection_3d.OTX3DDetectionModel">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTX3DDetectionModel
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.detection_3d.OTX3DDetectionModel.get_classification_layers">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTX3DDetectionModel.get_classification_layers()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.detection_3d.OTX3DDetectionModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTX3DDetectionModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
 <div id="searchbox"></div>
 </div>
 
@@ -449,7 +510,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.core.exporter.exportable_code.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.core.model.detection_3d.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

@@ -421,6 +421,11 @@
 
             <span class="k">return</span> <span class="n">OTXKeypointDetectionDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">OBJECT_DETECTION_3D</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.object_detection_3d</span> <span class="kn">import</span> <span class="n">OTX3DObjectDetectionDataset</span>
+
+            <span class="k">return</span> <span class="n">OTX3DObjectDetectionDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></div>
 </div>
 

@@ -1,0 +1,29 @@
+otx.core.exporter.detection\_3d
+===============================
+
+.. automodule:: otx.core.exporter.detection_3d
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXObjectDetection3DExporter
+   
+   
+
+   
+   
+   
+
+
+

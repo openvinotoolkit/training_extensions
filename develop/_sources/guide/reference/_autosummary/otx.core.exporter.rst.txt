@@ -29,6 +29,7 @@ otx.core.exporter
 
    otx.core.exporter.anomaly
    otx.core.exporter.base
+   otx.core.exporter.detection_3d
    otx.core.exporter.exportable_code
    otx.core.exporter.native
    otx.core.exporter.visual_prompting

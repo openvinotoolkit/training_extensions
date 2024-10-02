@@ -1,0 +1,29 @@
+otx.core.model.detection\_3d
+============================
+
+.. automodule:: otx.core.model.detection_3d
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTX3DDetectionModel
+   
+   
+
+   
+   
+   
+
+
+
