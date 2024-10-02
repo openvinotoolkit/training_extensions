@@ -57,6 +57,7 @@ class OTXModelExporter:
         pad_value: int = 0,
         swap_rgb: bool = False,
         output_names: list[str] | None = None,
+        input_names: list[str] | None = None,
     ) -> None:
         self.input_size = input_size
         self.mean = mean
@@ -66,6 +67,7 @@ class OTXModelExporter:
         self.swap_rgb = swap_rgb
         self.task_level_export_parameters = task_level_export_parameters
         self.output_names = output_names
+        self.input_names = input_names
 
     @property
     def metadata(self) -> dict[tuple[str, str], str]:
@@ -316,6 +318,40 @@ class OTXModelExporter:
                 msg = (
                     "Model has less outputs than the number of output names provided: "
                     f"{len(exported_model.outputs)} vs {len(self.output_names)}"
+                )
+                raise RuntimeError(msg)
+
+        if self.input_names is not None:
+            if len(exported_model.inputs) >= len(self.input_names):
+                if len(exported_model.inputs) != len(self.input_names):
+                    msg = (
+                        "Number of model inputs is greater than the number"
+                        " of input names to assign. Please check input_names"
+                        " argument of the exporter's constructor."
+                    )
+                    log.warning(msg)
+
+                for i, name in enumerate(self.input_names):
+                    traced_names = exported_model.inputs[i].get_names()
+                    name_found = False
+                    for traced_name in traced_names:
+                        if name in traced_name:
+                            name_found = True
+                            break
+                    name_found = name_found and bool(len(traced_names))
+
+                    if not name_found:
+                        msg = (
+                            f"{name} is not matched with the converted model's traced input names: {traced_names}."
+                            " Please check input_names argument of the exporter's constructor."
+                        )
+                        log.warning(msg)
+
+                    exported_model.inputs[i].tensor.set_names({name})
+            else:
+                msg = (
+                    "Model has less inputs than the number of input names provided: "
+                    f"{len(exported_model.inputs)} vs {len(self.input_names)}"
                 )
                 raise RuntimeError(msg)
 

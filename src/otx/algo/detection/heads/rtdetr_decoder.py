@@ -211,7 +211,7 @@ class MSDeformableAttention(nn.Module):
         query: torch.Tensor,
         reference_points: torch.Tensor,
         value: torch.Tensor,
-        value_spatial_shapes: list[tuple[int, int]],
+        value_spatial_shapes: torch.Tensor,
         value_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Forward function of MSDeformableAttention.
@@ -263,7 +263,7 @@ class MSDeformableAttention(nn.Module):
                 value_spatial_shapes
                 if isinstance(value_spatial_shapes, torch.Tensor)
                 else torch.tensor(value_spatial_shapes)
-            )
+            ).clone()
             offset_normalizer = offset_normalizer.flip([1]).reshape(1, 1, 1, self.num_levels, 1, 2)
             sampling_locations = (
                 reference_points.reshape(
@@ -280,6 +280,14 @@ class MSDeformableAttention(nn.Module):
             sampling_locations = (
                 reference_points[:, :, None, :, None, :2]
                 + sampling_offsets / self.num_points * reference_points[:, :, None, :, None, 2:] * 0.5
+            )
+        elif reference_points.shape[-1] == 6:
+            sampling_locations = (
+                reference_points[:, :, None, :, None, :2]
+                + sampling_offsets
+                / self.num_points
+                * (reference_points[:, :, None, :, None, 2::2] + reference_points[:, :, None, :, None, 3::2])
+                * 0.5
             )
         else:
             msg = f"Last dim of reference_points must be 2 or 4, but get {reference_points.shape[-1]} instead."

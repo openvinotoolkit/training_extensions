@@ -37,6 +37,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
         output_names: list[str] | None = None,
+        input_names: list[str] | None = None,
     ) -> None:
         super().__init__(
             task_level_export_parameters=task_level_export_parameters,
@@ -47,6 +48,7 @@ class OTXNativeModelExporter(OTXModelExporter):
             pad_value=pad_value,
             swap_rgb=swap_rgb,
             output_names=output_names,
+            input_names=input_names,
         )
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}

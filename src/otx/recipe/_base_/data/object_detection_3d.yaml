@@ -1,0 +1,52 @@
+task: OBJECT_DETECTION_3D
+input_size:
+  - 384
+  - 1280
+mem_cache_size: 1GB
+mem_cache_img_max_size: null
+image_color_channel: RGB
+stack_images: true
+data_format: kitti3d
+unannotated_items_ratio: 0.0
+train_subset:
+  subset_name: train
+  transform_lib_type: TORCHVISION
+  batch_size: 8
+  num_workers: 4
+  to_tv_image: false
+  transforms:
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+val_subset:
+  subset_name: val
+  transform_lib_type: TORCHVISION
+  batch_size: 16
+  num_workers: 4
+  to_tv_image: false
+  transforms:
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+test_subset:
+  subset_name: test
+  transform_lib_type: TORCHVISION
+  batch_size: 16
+  num_workers: 4
+  to_tv_image: false
+  transforms:
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler
