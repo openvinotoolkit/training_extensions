@@ -141,7 +141,7 @@ class MaskDINODecoder(nn.Module):
             known_bbox_expand = known_bboxs.clone()
 
             # noise on the label
-            p = torch.rand_like(known_labels_expaned.float())
+            p = torch.rand_like(torch.tensor(known_labels_expaned, dtype=known_bbox_expand.dtype))
             chosen_indice = torch.nonzero(p < (noise_scale * 0.5)).view(-1)  # half of bbox prob
             new_label = torch.randint_like(chosen_indice, 0, self.num_classes)  # randomly put a new one here
             known_labels_expaned.scatter_(0, chosen_indice, new_label)
@@ -228,8 +228,8 @@ class MaskDINODecoder(nn.Module):
         _, height, width = mask.shape
         valid_height = torch.sum(~mask[:, :, 0], 1)
         valid_width = torch.sum(~mask[:, 0, :], 1)
-        valid_ratio_h = valid_height.float() / height
-        valid_ratio_w = valid_width.float() / width
+        valid_ratio_h = valid_height / height
+        valid_ratio_w = valid_width / width
         return torch.stack([valid_ratio_w, valid_ratio_h], -1)
 
     def pred_box(self, reference: Tensor, hs: list[Tensor], ref0: Tensor | None = None) -> Tensor:
@@ -290,11 +290,12 @@ class MaskDINODecoder(nn.Module):
         # convert masks into boxes to better initialize box in the decoder
         flaten_mask = outputs_mask.detach().flatten(0, 1)
         height, width = outputs_mask.shape[-2:]
-        refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0).to(device)
-        refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.as_tensor(
+        refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0, dtype=flaten_mask.dtype)
+        refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.tensor(
             [width, height, width, height],
-            dtype=torch.float,
-        ).to(device)
+            dtype=flaten_mask.dtype,
+            device=device,
+        )
         refpoint_embed = refpoint_embed.reshape(outputs_mask.shape[0], outputs_mask.shape[1], 4)
         refpoint_embed = inverse_sigmoid(refpoint_embed)
 

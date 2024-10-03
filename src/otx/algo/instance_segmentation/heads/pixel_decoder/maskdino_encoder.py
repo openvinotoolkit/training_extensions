@@ -9,7 +9,6 @@ from __future__ import annotations
 import numpy as np
 import torch
 from torch import Tensor, nn
-from torch.cuda.amp import autocast
 from torch.nn import functional as f
 from torch.nn.init import normal_
 
@@ -72,8 +71,8 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         _, height, width = mask.shape
         valid_height = torch.sum(~mask[:, :, 0], 1)
         valid_width = torch.sum(~mask[:, 0, :], 1)
-        valid_ratio_h = valid_height.float() / height
-        valid_ratio_w = valid_width.float() / width
+        valid_ratio_h = valid_height / height
+        valid_ratio_w = valid_width / width
         return torch.stack([valid_ratio_w, valid_ratio_h], -1)
 
     def _prepare_input(
@@ -206,8 +205,8 @@ class MSDeformAttnTransformerEncoder(nn.Module):
         reference_points_list = []
         for lvl, (height, width) in enumerate(spatial_shapes):
             ref_y, ref_x = torch.meshgrid(
-                torch.linspace(0.5, height - 0.5, height, dtype=torch.float32, device=device),
-                torch.linspace(0.5, width - 0.5, width, dtype=torch.float32, device=device),
+                torch.linspace(0.5, height - 0.5, height, device=device),
+                torch.linspace(0.5, width - 0.5, width, device=device),
             )
             ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * height)
             ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * width)
@@ -379,7 +378,6 @@ class MaskDINOEncoder(nn.Module):
         self.lateral_convs = lateral_convs[::-1]
         self.output_convs = output_convs[::-1]
 
-    @autocast(enabled=False)
     def forward_features(self, features: dict[str, Tensor]) -> tuple[Tensor, Tensor, list[Tensor]]:
         """Forward pass of the encoder."""
         # backbone features
@@ -389,7 +387,7 @@ class MaskDINOEncoder(nn.Module):
         srcsl: list[Tensor] = []
         posl = []
         if self.total_num_feature_levels > self.transformer_num_feature_levels:
-            smallest_feat = features[self.transformer_in_features[self.low_resolution_index]].float()
+            smallest_feat = features[self.transformer_in_features[self.low_resolution_index]]
             _len_srcs = self.transformer_num_feature_levels
             for lvl in range(_len_srcs, self.total_num_feature_levels):
                 src = self.input_proj[lvl](smallest_feat) if lvl == _len_srcs else self.input_proj[lvl](srcsl[-1])
@@ -398,7 +396,7 @@ class MaskDINOEncoder(nn.Module):
         srcsl = srcsl[::-1]
         # Reverse feature maps
         for idx, feat in enumerate(self.transformer_in_features[::-1]):
-            x = features[feat].float()  # deformable detr does not support half precision
+            x = features[feat]
             srcs.append(self.input_proj[idx](x))
             pos.append(self.pe_layer(x))
         srcs.extend(srcsl)
@@ -423,7 +421,7 @@ class MaskDINOEncoder(nn.Module):
         # append `out` with extra FPN levels
         # Reverse feature maps into top-down order (from low to high resolution)
         for idx, feat in enumerate(self.in_features[: self.num_fpn_levels][::-1]):
-            x = features[feat].float()
+            x = features[feat]
             lateral_conv = self.lateral_convs[idx]
             output_conv = self.output_convs[idx]
             cur_fpn = lateral_conv(x)

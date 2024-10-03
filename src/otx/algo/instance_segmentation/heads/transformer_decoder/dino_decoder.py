@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
-from torch.cuda.amp import autocast
 
 from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
@@ -151,7 +150,6 @@ class DeformableTransformerDecoderLayer(nn.Module):
         tgt = tgt + self.dropout4(tgt2)
         return self.norm3(tgt)
 
-    @autocast(enabled=False)
     def forward(
         self,
         # for tgt

@@ -163,8 +163,8 @@ def gen_encoder_output_proposals(
         valid_width = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
 
         grid_y, grid_x = torch.meshgrid(
-            torch.linspace(0, height - 1, height, dtype=torch.float32, device=memory.device),
-            torch.linspace(0, width - 1, width, dtype=torch.float32, device=memory.device),
+            torch.linspace(0, height - 1, height, device=memory.device),
+            torch.linspace(0, width - 1, width, device=memory.device),
         )
         grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
 
@@ -189,7 +189,7 @@ def gen_encoder_output_proposals(
 def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
     """Generate sine embeddings for position tensor."""
     scale = 2 * math.pi
-    dim_t = torch.arange(128, dtype=torch.float32, device=pos_tensor.device)
+    dim_t = torch.arange(128, dtype=pos_tensor.dtype, device=pos_tensor.device)
     dim_t = 10000 ** (2 * (dim_t // 2) / 128)
     x_embed = pos_tensor[:, :, 0] * scale
     y_embed = pos_tensor[:, :, 1] * scale

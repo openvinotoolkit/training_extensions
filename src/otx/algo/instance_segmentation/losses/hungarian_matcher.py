@@ -6,75 +6,55 @@
 from __future__ import annotations
 
 import torch
-import torch.nn.functional as f
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor, nn
-from torch.cuda.amp import autocast
 
 from otx.algo.instance_segmentation.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 from otx.algo.instance_segmentation.utils.utils import point_sample
 
 
-def batch_dice_loss(inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-    """Compute the DICE loss, similar to generalized IOU for masks.
+def pair_wise_dice_loss(inputs: Tensor, labels: Tensor) -> Tensor:
+    """A pair wise version of the dice loss, see `dice_loss` for usage.
 
     Args:
-        inputs: A float tensor of arbitrary shape.
-                The predictions for each example.
-        targets: A float tensor with the same shape as inputs. Stores the binary
-                 classification label for each element in inputs
-                (0 for the negative class and 1 for the positive class).
+        inputs (`torch.Tensor`):
+            A tensor representing a mask
+        labels (`torch.Tensor`):
+            A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+            (0 for the negative class and 1 for the positive class).
+
+    Returns:
+        `torch.Tensor`: The computed loss between each pairs.
     """
-    inputs = inputs.sigmoid()
-    inputs = inputs.flatten(1)
-    numerator = 2 * torch.einsum("nc,mc->nm", inputs, targets)
-    denominator = inputs.sum(-1)[:, None] + targets.sum(-1)[None, :]
+    inputs = inputs.sigmoid().flatten(1)
+    numerator = 2 * torch.matmul(inputs, labels.T)
+    # using broadcasting to get a [num_queries, NUM_CLASSES] matrix
+    denominator = inputs.sum(-1)[:, None] + labels.sum(-1)[None, :]
     return 1 - (numerator + 1) / (denominator + 1)
 
 
-batch_dice_loss_jit = torch.jit.script(
-    batch_dice_loss,
-)  # type: torch.jit.ScriptModule
-
-
-def batch_sigmoid_ce_loss(inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-    """Batch sigmoid cross entropy loss.
+def pair_wise_sigmoid_cross_entropy_loss(inputs: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+    r"""A pair wise version of the cross entropy loss, see `sigmoid_cross_entropy_loss` for usage.
 
     Args:
-        inputs: A float tensor of arbitrary shape.
-                The predictions for each example.
-        targets: A float tensor with the same shape as inputs. Stores the binary
-                 classification label for each element in inputs
-                (0 for the negative class and 1 for the positive class).
+        inputs (`torch.Tensor`):
+            A tensor representing a mask.
+        labels (`torch.Tensor`):
+            A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+            (0 for the negative class and 1 for the positive class).
 
     Returns:
-        Loss tensor
+        loss (`torch.Tensor`): The computed loss between each pairs.
     """
-    hw = inputs.shape[1]
+    height_and_width = inputs.shape[1]
 
-    pos = f.binary_cross_entropy_with_logits(
-        inputs,
-        torch.ones_like(inputs),
-        reduction="none",
-    )
-    neg = f.binary_cross_entropy_with_logits(
-        inputs,
-        torch.zeros_like(inputs),
-        reduction="none",
-    )
+    criterion = nn.BCEWithLogitsLoss(reduction="none")
+    cross_entropy_loss_pos = criterion(inputs, torch.ones_like(inputs))
+    cross_entropy_loss_neg = criterion(inputs, torch.zeros_like(inputs))
 
-    loss = torch.einsum("nc,mc->nm", pos, targets) + torch.einsum(
-        "nc,mc->nm",
-        neg,
-        (1 - targets),
-    )
-
-    return loss / hw
-
-
-batch_sigmoid_ce_loss_jit = torch.jit.script(
-    batch_sigmoid_ce_loss,
-)  # type: torch.jit.ScriptModule
+    loss_pos = torch.matmul(cross_entropy_loss_pos / height_and_width, labels.T)
+    loss_neg = torch.matmul(cross_entropy_loss_neg / height_and_width, (1 - labels).T)
+    return loss_pos + loss_neg
 
 
 class HungarianMatcher(nn.Module):
@@ -112,8 +92,8 @@ class HungarianMatcher(nn.Module):
         for b in range(bs):
             out_bbox = outputs["pred_boxes"][b]
             tgt_bbox = targets[b]["boxes"]
-            cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
-            cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox))
+            cost_bbox = torch.cdist(out_bbox.float(), tgt_bbox.float(), p=1).to(out_bbox)
+            cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox)).to(out_bbox)
 
             out_prob = outputs["pred_logits"][b].sigmoid()  # [num_queries, num_classes]
             tgt_ids = targets[b]["labels"]
@@ -130,7 +110,7 @@ class HungarianMatcher(nn.Module):
             # cost_class = -out_prob[:, tgt_ids]
             out_mask = outputs["pred_masks"][b]  # [num_queries, H_pred, W_pred]
             # gt masks are already padded when preparing target
-            tgt_mask = targets[b]["masks"].to(out_mask)
+            tgt_mask = targets[b]["masks"]
 
             out_mask = out_mask[:, None]
             tgt_mask = tgt_mask[:, None]
@@ -138,7 +118,7 @@ class HungarianMatcher(nn.Module):
             point_coords = torch.rand(1, self.num_points, 2, device=out_mask.device)
             # get gt labels
             tgt_mask = point_sample(
-                tgt_mask,
+                tgt_mask.to(out_bbox),
                 point_coords.repeat(tgt_mask.shape[0], 1, 1),
                 align_corners=False,
             ).squeeze(1)
@@ -149,18 +129,8 @@ class HungarianMatcher(nn.Module):
                 align_corners=False,
             ).squeeze(1)
 
-            with autocast(enabled=False):
-                out_mask = out_mask.float()
-                tgt_mask = tgt_mask.float()
-                # If there's no annotations
-                if out_mask.shape[0] == 0 or tgt_mask.shape[0] == 0:
-                    # Compute the focal loss between masks
-                    cost_mask = batch_sigmoid_ce_loss(out_mask, tgt_mask)
-                    # Compute the dice loss betwen masks
-                    cost_dice = batch_dice_loss(out_mask, tgt_mask)
-                else:
-                    cost_mask = batch_sigmoid_ce_loss_jit(out_mask, tgt_mask)
-                    cost_dice = batch_dice_loss_jit(out_mask, tgt_mask)
+            cost_mask = pair_wise_sigmoid_cross_entropy_loss(out_mask, tgt_mask)
+            cost_dice = pair_wise_dice_loss(out_mask, tgt_mask)
 
             matching_cost = (
                 self.cost_mask * cost_mask
@@ -169,6 +139,8 @@ class HungarianMatcher(nn.Module):
                 + self.cost_box * cost_bbox
                 + self.cost_giou * cost_giou
             )
+            matching_cost = torch.minimum(matching_cost, torch.tensor(1e10))
+            matching_cost = torch.maximum(matching_cost, torch.tensor(-1e10))
             matching_cost = matching_cost.reshape(num_queries, -1).cpu()
             indices.append(linear_sum_assignment(matching_cost))
 
@@ -184,13 +156,13 @@ class HungarianMatcher(nn.Module):
 
         Args:
             outputs: This is a dict that contains at least these entries:
-                 "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
-                 "pred_masks": Tensor of dim [batch_size, num_queries, H_pred, W_pred] with the predicted masks
+                "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
+                "pred_masks": Tensor of dim [batch_size, num_queries, H_pred, W_pred] with the predicted masks
 
             targets: This is a list of targets (len(targets) = batch_size), where each target is a dict containing:
-                 "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
-                           objects in the target) containing the class labels
-                 "masks": Tensor of dim [num_target_boxes, H_gt, W_gt] containing the target masks
+                "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
+                        objects in the target) containing the class labels
+                "masks": Tensor of dim [num_target_boxes, H_gt, W_gt] containing the target masks
 
         Returns:
             A list of size batch_size, containing tuples of (index_i, index_j) where:

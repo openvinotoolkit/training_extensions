@@ -11,7 +11,7 @@ import torch.nn.functional as f
 from torch import Tensor, nn
 
 from otx.algo.instance_segmentation.losses import HungarianMatcher
-from otx.algo.instance_segmentation.utils import box_ops
+from otx.algo.instance_segmentation.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness, point_sample
 
 
@@ -223,12 +223,8 @@ class SetCriterion(nn.Module):
         losses = {}
         losses["loss_bbox"] = loss_bbox.sum() / num_boxes
 
-        loss_giou = 1 - torch.diag(
-            box_ops.generalized_box_iou(
-                box_ops.box_cxcywh_to_xyxy(src_boxes),
-                box_ops.box_cxcywh_to_xyxy(target_boxes),
-            ),
-        )
+        giou = generalized_box_iou(box_cxcywh_to_xyxy(src_boxes), box_cxcywh_to_xyxy(target_boxes)).to(src_boxes)
+        loss_giou = 1 - torch.diag(giou)
         losses["loss_giou"] = loss_giou.sum() / num_boxes
 
         return losses
@@ -264,7 +260,7 @@ class SetCriterion(nn.Module):
             )
             # get gt labels
             point_labels = point_sample(
-                target_masks.float(),
+                target_masks.to(src_masks),
                 point_coords,
                 align_corners=False,
             ).squeeze(1)
