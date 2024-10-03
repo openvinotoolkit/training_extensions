@@ -13,6 +13,7 @@ import torch
 from torch import Tensor, nn
 from torchvision import tv_tensors
 from torchvision.models.detection.image_list import ImageList
+from torchvision.ops.roi_align import RoIAlign
 
 from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resnet_backbone
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
@@ -52,6 +53,12 @@ class _MaskDINO(nn.Module):
         self.num_queries = num_queries
         self.overlap_threshold = overlap_threshold
         self.object_mask_threshold = object_mask_threshold
+        self.roi_align = RoIAlign(
+            output_size=(28, 28),
+            sampling_ratio=0,
+            aligned=True,
+            spatial_scale=1.0,
+        )
         if size_divisibility < 0:
             # use backbone size_divisibility if not set
             size_divisibility = self.backbone.size_divisibility
@@ -224,11 +231,24 @@ class _MaskDINO(nn.Module):
         outputs, _ = self.sem_seg_head(features)
         return outputs
 
+    def roi_mask_extraction(
+        self,
+        bboxes: Tensor,
+        masks: Tensor,
+    ) -> Tensor:
+        """Extracts masks from the region of interest."""
+        bboxes = bboxes.unsqueeze(0)
+        batch_index = torch.arange(bboxes.size(0)).float().view(-1, 1, 1).expand(bboxes.size(0), bboxes.size(1), 1)
+        rois = torch.cat([batch_index, bboxes], dim=-1)
+        cropped_masks = self.roi_align(masks.unsqueeze(0), rois[0])
+        cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
+        return (cropped_masks > 0).unsqueeze(0)
+
     def export(
         self,
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
-    ) -> tuple[list[Tensor], list[Tensor], list[Tensor]]:
+    ) -> tuple[Tensor, Tensor, Tensor]:
         """Export the model."""
         b, _, h, w = batch_inputs.size()
         if b != 1:
@@ -269,22 +289,17 @@ class _MaskDINO(nn.Module):
             pred_masks.flatten(1).sum(1) + 1e-6
         )
         pred_scores = scores_per_image * mask_scores_per_image
-        pred_classes = labels_per_image
-
+        pred_classes = labels_per_image.unsqueeze(0)
         pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)
+        pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks)
 
         boxes_with_scores = torch.cat([pred_boxes, pred_scores[:, None]], dim=1)
-
-        batch_masks, batch_bboxes, batch_labels = [], [], []
-
-        batch_masks.append(pred_masks)
-        batch_bboxes.append(boxes_with_scores)
-        batch_labels.append(pred_classes)
+        boxes_with_scores = boxes_with_scores.unsqueeze(0)
 
         return (
-            batch_bboxes,
-            batch_labels,
-            batch_masks,
+            boxes_with_scores,
+            pred_classes,
+            pred_masks,
         )
 
 
