@@ -504,24 +504,22 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
             topk_indices = topk_indices // num_classes
 
-            mask_pred = torch.nn.functional.interpolate(  # noqa: PLW2901
-                mask_pred.unsqueeze(0),
-                size=(ori_h, ori_w),
-                mode="bilinear",
-                align_corners=False,
-            )[0]
-
             mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
             pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
-            pred_masks = (mask_pred > 0).float()
-
-            # Calculate average mask prob
-            mask_scores_per_image = (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (
-                pred_masks.flatten(1).sum(1) + 1e-6
-            )
-            del mask_pred
-            pred_scores = scores_per_image * mask_scores_per_image
+            pred_scores = scores_per_image * self.calculate_mask_scores(mask_pred)
             pred_classes = labels_per_image
+
+            pred_masks = (
+                (
+                    torch.nn.functional.interpolate(
+                        mask_pred.unsqueeze(0),
+                        size=(ori_h, ori_w),
+                        mode="bilinear",
+                        align_corners=False,
+                    )[0]
+                )
+                > 0
+            )
 
             pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)  # noqa: PLW2901
             pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
@@ -536,3 +534,10 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             batch_scores.append(pred_scores[keep])
 
         return batch_masks, batch_bboxes, batch_labels, batch_scores
+
+    def calculate_mask_scores(self, mask_pred: Tensor) -> Tensor:
+        """Calculate mask scores."""
+        pred_masks = (mask_pred > 0).float()
+
+        # Calculate average mask prob
+        return (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (pred_masks.flatten(1).sum(1) + 1e-6)
