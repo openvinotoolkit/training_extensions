@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
-from datumaro.components.annotation import AnnotationType, Bbox, Polygon, _Shape
+from datumaro.components.annotation import AnnotationType, Bbox, Polygon
+from datumaro.components.annotation import Shape as _Shape
 
 from otx.core.types import OTXTaskType
 
