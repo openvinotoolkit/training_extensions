@@ -239,20 +239,20 @@ class SetCriterion(nn.Module):
         """Compute the losses related to the masks: the focal loss and the dice loss."""
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices)
-        src_masks = outputs["pred_masks"]
-        src_masks = src_masks[src_idx]
+        pred_masks = outputs["pred_masks"]
+        pred_masks = pred_masks[src_idx]
         masks = [t["masks"] for t in targets]
         target_masks = select_masks(tgt_idx, masks)
 
         # No need to upsample predictions as we are using normalized coordinates :)
         # N x 1 x H x W
-        src_masks = src_masks[:, None]
+        pred_masks = pred_masks[:, None]
         target_masks = target_masks[:, None]
 
         with torch.no_grad():
             # sample point_coords
             point_coords = get_uncertain_point_coords_with_randomness(
-                src_masks,
+                pred_masks,
                 lambda logits: calculate_uncertainty(logits),
                 self.num_points,
                 self.oversample_ratio,
@@ -260,13 +260,13 @@ class SetCriterion(nn.Module):
             )
             # get gt labels
             point_labels = point_sample(
-                target_masks.to(src_masks),
+                target_masks.to(pred_masks),
                 point_coords,
                 align_corners=False,
             ).squeeze(1)
 
         point_logits = point_sample(
-            src_masks,
+            pred_masks,
             point_coords,
             align_corners=False,
         ).squeeze(1)
@@ -276,7 +276,7 @@ class SetCriterion(nn.Module):
             "loss_dice": dice_loss_jit(point_logits, point_labels, num_masks),
         }
 
-        del src_masks
+        del pred_masks
         del target_masks
         return losses
 
