@@ -1,6 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+# Copyright (c) Facebook, Inc. and its affiliates.
 
 """Implementation modified from Detectron2 ResNet.
 

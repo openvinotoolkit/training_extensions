@@ -29,7 +29,7 @@ from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 
-class _MaskDINO(nn.Module):
+class MaskDINO(nn.Module):
     """Main class for mask classification semantic segmentation architectures."""
 
     def __init__(
@@ -70,7 +70,7 @@ class _MaskDINO(nn.Module):
         self.transform_eval = transform_eval
 
     @classmethod
-    def from_config(cls, num_classes: int) -> _MaskDINO:
+    def from_config(cls, num_classes: int) -> MaskDINO:
         """Build a MaskDINO model from a config."""
         # Loss parameters:
         no_object_weight = 0.1
@@ -179,7 +179,7 @@ class _MaskDINO(nn.Module):
             dn_losses=["labels", "masks", "boxes"],
         )
 
-        return _MaskDINO(
+        return MaskDINO(
             backbone=backbone,
             sem_seg_head=sem_seg_head,
             criterion=criterion,
@@ -311,7 +311,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         """Builds the model."""
-        return _MaskDINO.from_config(num_classes)
+        return MaskDINO.from_config(num_classes)
 
     @property
     def _exporter(self) -> OTXModelExporter:
