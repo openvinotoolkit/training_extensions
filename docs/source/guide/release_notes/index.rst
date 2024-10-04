@@ -37,6 +37,7 @@ Enhancements
 - Include Geti arrow dataset subset names
 - Include full image with anno in case there's no tile in tile dataset
 - Add type checker in converter for callable functions (optimizer, scheduler)
+- Change sematic segmentation to consider bbox only annotations
 
 Bug fixes
 ^^^^^^^^^
