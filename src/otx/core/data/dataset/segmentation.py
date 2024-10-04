@@ -193,9 +193,8 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     @property
     def has_polygons(self) -> bool:
         """Check if the dataset has polygons in annotations."""
-        ann_types = {str(ann_type).split(".")[-1] for ann_type in self.dm_subset.ann_types()}
         # all polygon-like format should be considered as polygons
-        if ann_types & {"polygon", "ellipse", "bbox", "rotated_bbox"}:
+        if {ann_type.name for ann_type in self.dm_subset.ann_types()} & {"polygon", "ellipse", "bbox", "rotated_bbox"}:
             return True
         return False
 
