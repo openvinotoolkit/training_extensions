@@ -6,8 +6,7 @@
 from __future__ import annotations
 
 import copy
-import itertools
-from typing import Any, Callable
+from typing import Any
 
 import torch
 from torch import Tensor, nn
@@ -352,12 +351,8 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         """Configure an optimizer and learning-rate schedulers."""
         param_groups = self._get_optim_params(self.model)
         optimizer = self.optimizer_callable(param_groups)
-        optimizer_with_grad_clip = MaskDINOR50._add_grad_clipping(optimizer, clip_gradient_value=0.01)(
-            param_groups,
-            optimizer.defaults["lr"],
-        )
 
-        schedulers = self.scheduler_callable(optimizer_with_grad_clip)
+        schedulers = self.scheduler_callable(optimizer)
 
         def ensure_list(item: Any) -> list:  # noqa: ANN401
             return item if isinstance(item, list) else [item]
@@ -371,7 +366,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                 lr_scheduler_config["monitor"] = scheduler.monitor
             lr_scheduler_configs.append(lr_scheduler_config)
 
-        return [optimizer_with_grad_clip], lr_scheduler_configs
+        return [optimizer], lr_scheduler_configs
 
     def _get_optim_params(self, model: nn.Module) -> list[dict[str, Any]]:
         """Get optimizer parameters."""
@@ -425,21 +420,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                     hyperparams["weight_decay"] = weight_decay_embed
                 params.append({"params": [value], **hyperparams})
         return params
-
-    @staticmethod
-    def _add_grad_clipping(
-        optim: torch.optim.Optimizer,
-        clip_gradient_value: float = 0.01,
-    ) -> torch.optim.Optimizer:
-        """Add gradient clipping to the optimizer."""
-
-        class GradientClippingOptimizer(optim.__class__):
-            def step(self, closure: Callable | None = None) -> None:
-                all_params = itertools.chain(*[x["params"] for x in self.param_groups])
-                torch.nn.utils.clip_grad_norm_(all_params, clip_gradient_value)
-                super().step(closure=closure)
-
-        return GradientClippingOptimizer
 
     def _customize_outputs(
         self,
