@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Callable
 import cv2
 import numpy as np
 import torch
-from datumaro.components.annotation import Ellipse, Image, Mask, Polygon, Bbox, RotatedBbox
+from datumaro.components.annotation import Bbox, Ellipse, Image, Mask, Polygon, RotatedBbox
 from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import Transforms

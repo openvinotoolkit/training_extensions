@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import cv2
 import numpy as np
 import pytest
-from datumaro.components.annotation import Bbox, Label, LabelCategories, Mask, Polygon
+from datumaro.components.annotation import AnnotationType, Bbox, Label, LabelCategories, Mask, Polygon
 from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
@@ -133,6 +133,12 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
     mock_dm_subset.__getitem__.return_value = fxt_dm_item
     mock_dm_subset.__len__.return_value = 1
     mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
+    mock_dm_subset.ann_types.return_value = [
+        AnnotationType.label,
+        AnnotationType.bbox,
+        AnnotationType.mask,
+        AnnotationType.polygon,
+    ]
     return mock_dm_subset
 
 
@@ -142,6 +148,7 @@ def fxt_mock_det_dm_subset(mocker: MockerFixture, fxt_dm_item_bbox_only: Dataset
     mock_dm_subset.__getitem__.return_value = fxt_dm_item_bbox_only
     mock_dm_subset.__len__.return_value = 1
     mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
+    mock_dm_subset.ann_types.return_value = [AnnotationType.bbox]
     return mock_dm_subset
 
 
