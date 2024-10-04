@@ -82,6 +82,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3964>)
 - Add type checker in converter for callable functions (optimizer, scheduler)
   (<https://github.com/openvinotoolkit/training_extensions/pull/3968>)
+- Change sematic segmentation to consider bbox only annotations
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3996>)
 
 ### Bug fixes
 
