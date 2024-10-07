@@ -264,7 +264,7 @@ def adapt_input_size_to_dataset(
     return image_size  # type: ignore[return-value]
 
 
-def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task: OTXTaskType) -> None:
+def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
     """Config tile parameters.
 
     Adapt based on annotation statistics.

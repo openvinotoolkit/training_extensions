@@ -150,7 +150,7 @@ class OTXDataModule(LightningDataModule):
         self.input_size = input_size
 
         if self.tile_config.enable_tiler and self.tile_config.enable_adaptive_tiling:
-            adapt_tile_config(self.tile_config, dataset=dataset, task=self.task)
+            adapt_tile_config(self.tile_config, dataset=dataset)
 
         config_mapping = {
             self.train_subset.subset_name: self.train_subset,
