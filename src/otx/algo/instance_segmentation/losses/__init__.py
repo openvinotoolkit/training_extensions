@@ -6,7 +6,7 @@
 from .accuracy import accuracy
 from .dice_loss import DiceLoss
 from .hungarian_matcher import HungarianMatcher
-from .maskdino_criterion import SetCriterion
+from .maskdino_criterion import MaskDINOCriterion
 from .roi_loss import ROICriterion
 from .rpn_loss import RPNCriterion
 from .rtmdet_inst_loss import RTMDetInstCriterion
@@ -17,6 +17,6 @@ __all__ = [
     "RTMDetInstCriterion",
     "ROICriterion",
     "RPNCriterion",
-    "SetCriterion",
+    "MaskDINOCriterion",
     "HungarianMatcher",
 ]

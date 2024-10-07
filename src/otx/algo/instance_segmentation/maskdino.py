@@ -18,7 +18,7 @@ from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resn
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
 from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
-from otx.algo.instance_segmentation.losses import HungarianMatcher, SetCriterion
+from otx.algo.instance_segmentation.losses import HungarianMatcher, MaskDINOCriterion
 from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
@@ -27,6 +27,8 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.utils.mask_util import polygon_to_bitmap
+from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
+
 
 
 class MaskDINO(nn.Module):
@@ -37,37 +39,21 @@ class MaskDINO(nn.Module):
         backbone: nn.Module,
         sem_seg_head: MaskDINOHead,
         criterion: nn.Module,
-        num_queries: int,
-        object_mask_threshold: float,
-        overlap_threshold: float,
-        size_divisibility: int,
-        test_topk_per_image: int,
-        focus_on_box: bool = False,
-        transform_eval: bool = False,
+        num_queries: int = 300,
+        test_topk_per_image: int = 100,
     ):
         super().__init__()
         self.backbone = backbone
         self.sem_seg_head = sem_seg_head
         self.criterion = criterion
         self.num_queries = num_queries
-        self.overlap_threshold = overlap_threshold
-        self.object_mask_threshold = object_mask_threshold
+        self.test_topk_per_image = test_topk_per_image
         self.roi_align = RoIAlign(
             output_size=(28, 28),
             sampling_ratio=0,
             aligned=True,
             spatial_scale=1.0,
         )
-        if size_divisibility < 0:
-            # use backbone size_divisibility if not set
-            size_divisibility = self.backbone.size_divisibility
-        self.size_divisibility = size_divisibility
-
-        # additional args
-        self.test_topk_per_image = test_topk_per_image
-
-        self.focus_on_box = focus_on_box
-        self.transform_eval = transform_eval
 
     @classmethod
     def from_config(cls, num_classes: int) -> MaskDINO:
@@ -86,7 +72,7 @@ class MaskDINO(nn.Module):
         box_weight = 5.0
         cost_giou_weight = 2.0
         giou_weight = 2.0
-        train_num_points = 12544
+        train_num_points = 112 * 112
         oversample_ratio = 3.0
         importance_sample_ratio = 0.75
 
@@ -167,7 +153,7 @@ class MaskDINO(nn.Module):
         weight_dict.update(aux_weight_dict)
 
         # building criterion
-        criterion = SetCriterion(
+        criterion = MaskDINOCriterion(
             num_classes=num_classes,
             matcher=matcher,
             weight_dict=weight_dict,
@@ -184,11 +170,7 @@ class MaskDINO(nn.Module):
             sem_seg_head=sem_seg_head,
             criterion=criterion,
             num_queries=300,
-            object_mask_threshold=0.25,
-            overlap_threshold=0.8,
-            size_divisibility=32,
             test_topk_per_image=100,
-            transform_eval=True,
         )
 
     def forward(
@@ -385,19 +367,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         weight_decay_embed = 0.0
         backbone_multiplier = 0.1
 
-        norm_module_types = (
-            torch.nn.BatchNorm1d,
-            torch.nn.BatchNorm2d,
-            torch.nn.BatchNorm3d,
-            torch.nn.SyncBatchNorm,
-            torch.nn.GroupNorm,
-            torch.nn.InstanceNorm1d,
-            torch.nn.InstanceNorm2d,
-            torch.nn.InstanceNorm3d,
-            torch.nn.LayerNorm,
-            torch.nn.LocalResponseNorm,
-        )
-
         params = []
         uniques = set()
         for module_name, module in model.named_modules():
@@ -414,7 +383,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                     hyperparams["lr"] = hyperparams["lr"] * backbone_multiplier
                 if "relative_position_bias_table" in module_param_name or "absolute_pos_embed" in module_param_name:
                     hyperparams["weight_decay"] = 0.0
-                if isinstance(module, norm_module_types):
+                if isinstance(module, AVAILABLE_NORMALIZATION_LIST):
                     hyperparams["weight_decay"] = weight_decay_norm
                 if isinstance(module, torch.nn.Embedding):
                     hyperparams["weight_decay"] = weight_decay_embed

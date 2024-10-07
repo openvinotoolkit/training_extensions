@@ -129,7 +129,7 @@ def select_masks(tgt_idx: Tensor, mask_labels: Tensor) -> Tensor:
     return torch.cat(gt_masks, dim=0)
 
 
-class SetCriterion(nn.Module):
+class MaskDINOCriterion(nn.Module):
     """This class computes the loss for DETR.
 
     The process happens in two steps:
