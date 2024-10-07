@@ -25,18 +25,14 @@ def sigmoid_focal_loss(
     """Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
 
     Args:
-        inputs: A float tensor of arbitrary shape.
-                The predictions for each example.
-        targets: A float tensor with the same shape as inputs. Stores the binary
-                 classification label for each element in inputs
-                (0 for the negative class and 1 for the positive class).
-        alpha: (optional) Weighting factor in range (0,1) to balance
-                positive vs negative examples. Default = -1 (no weighting).
-        gamma: Exponent of the modulating factor (1 - p_t) to
-               balance easy vs hard examples.
+        inputs (torch.Tensor): A float tensor of arbitrary shape. The predictions for each example.
+        targets (torch.Tesnor): A float tensor with the same shape as inputs. Stores the binary classification label.
+        num_boxes (float): Number of boxes.
+        alpha (float): Weighting factor in the loss function. Default to 0.25.
+        gamma (float): Exponent of the modulating factor (1 - p_t) to balance easy vs hard examples. Default to 2.
 
     Returns:
-        Loss tensor
+        torch.Tensor: Loss tensor
     """
     prob = inputs.sigmoid()
     ce_loss = f.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
@@ -58,11 +54,13 @@ def dice_loss(
     """Compute the DICE loss, similar to generalized IOU for masks.
 
     Args:
-        inputs: A float tensor of arbitrary shape.
-                The predictions for each example.
-        targets: A float tensor with the same shape as inputs. Stores the binary
-                 classification label for each element in inputs
-                (0 for the negative class and 1 for the positive class).
+        inputs (Tensor): A float tensor of arbitrary shape. The predictions for each example.
+        targets (Tensor): A float tensor with the same shape as inputs. 
+            Stores the binary classification label for each element in inputs.
+        num_masks (float): Number of masks.
+    
+    Returns:
+        Tensor: Loss tensor
     """
     inputs = inputs.sigmoid()
     inputs = inputs.flatten(1)
@@ -85,14 +83,11 @@ def sigmoid_ce_loss(
     """Compute the sigmoid cross entropy loss.
 
     Args:
-        inputs: A float tensor of arbitrary shape.
-                The predictions for each example.
-        targets: A float tensor with the same shape as inputs. Stores the binary
-                 classification label for each element in inputs
-                (0 for the negative class and 1 for the positive class).
+        inputs (Tensor): A float tensor of arbitrary shape. The predictions for each example.
+        targets (Tensor): A float tensor with the same shape as inputs. Stores the binary classification label.
 
     Returns:
-        Loss tensor
+        Tensor: Loss tensor
     """
     loss = f.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
     return loss.mean(1).sum() / num_masks
@@ -123,29 +118,37 @@ def calculate_uncertainty(logits: Tensor) -> Tensor:
 
 
 def select_masks(tgt_idx: Tensor, mask_labels: Tensor) -> Tensor:
-    """Select the masks corresponding to the targets."""
+    """Select masks from mask_labels based on tgt_idx.
+
+    Args:
+        tgt_idx (Tensor): target index
+        mask_labels (Tensor): mask labels
+
+    Returns:
+        Tensor: selected target masks.
+    """
     batch_size = torch.max(tgt_idx[0]) + 1
     gt_masks = [mask_labels[b][tgt_idx[1][tgt_idx[0] == b]] for b in range(batch_size)]
     return torch.cat(gt_masks, dim=0)
 
 
 class MaskDINOCriterion(nn.Module):
-    """This class computes the loss for DETR.
+    """This class computes the loss for MaskDINO.
 
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
 
     Args:
-        num_classes: number of object categories, omitting the special no-object category
-        matcher: module able to compute a matching between targets and proposals
-        weight_dict: dict containing as key the names of the losses and as values their relative weight.
-        eos_coef: relative classification weight applied to the no-object category
-        losses: list of all the losses to be applied. See get_loss for list of available losses.
-        num_points: number of points to sample for pointwise mask loss
-        oversample_ratio: ratio of oversampling for pointwise mask loss
-        importance_sample_ratio: ratio of importance sampling for pointwise mask loss
-        dn_losses: list of all the losses to be applied for the known labels and bboxes.
+        num_classes (int): number of object categories, omitting the special no-object category
+        matcher (HungarianMatcher): module that computes the matching between ground truth and predicted boxes
+        weight_dict (dict): dict containing as key the names of the losses and as values their relative weight.
+        eos_coef (float): relative classification weight applied to the no-object category
+        losses (list): list of all the losses to be applied
+        num_points (int): number of points to sample for pointwise mask loss
+        oversample_ratio (float): ratio of oversampling for pointwise mask loss
+        importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss
+        dn_losses (list): list of all the denoise losses to be applied
     """
 
     def __init__(
@@ -184,7 +187,18 @@ class MaskDINOCriterion(nn.Module):
         indices: list[tuple[Tensor, Tensor]],
         num_boxes: float,
     ) -> dict[str, Tensor]:
-        """Classification loss (NLL)."""
+        """Compute the losses related to the labels: the classification loss.
+
+        Args:
+            outputs (dict[str, Tensor]): The model outputs.
+            targets (list[dict[str, Tensor]]): The targets.
+            indices (list[tuple[Tensor, Tensor]]): The indices of the matched labels.
+            num_boxes (float): Number of boxes.
+
+        Returns:
+            dict[str, Tensor]: The computed losses.
+        """
+
         src_logits = outputs["pred_logits"]
 
         idx = self._get_src_permutation_idx(indices)
@@ -214,7 +228,18 @@ class MaskDINOCriterion(nn.Module):
         indices: list[tuple[Tensor, Tensor]],
         num_boxes: float,
     ) -> dict[str, Tensor]:
-        """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss."""
+        """Compute the losses related to the bounding boxes: the L1 loss and the GIoU loss.
+
+        Args:
+            outputs (dict[str, Tensor]): The model outputs.
+            targets (list[dict[str, Tensor]]): The targets.
+            indices (list[tuple[Tensor, Tensor]]): The indices of the matched boxes.
+            num_boxes (float): Number of boxes.
+
+        Returns:
+            dict[str, Tensor]: The computed losses.
+        """
+
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices, strict=True)], dim=0)
@@ -236,7 +261,19 @@ class MaskDINOCriterion(nn.Module):
         indices: list[tuple[Tensor, Tensor]],
         num_masks: float,
     ) -> dict[str, Tensor]:
-        """Compute the losses related to the masks: the focal loss and the dice loss."""
+        """Compute the losses related to the masks: the focal loss and dice loss.
+
+        Args:
+            outputs (dict[str, Tensor]): The model outputs.
+            targets (list[dict[str, Tensor]]): The targets.
+            indices (list[tuple[Tensor, Tensor]]): The matched indices for masks.
+            num_masks (float): Number of masks.
+
+        Returns:
+            dict[str, Tensor]: The computed losses.
+        """
+
+
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices)
         pred_masks = outputs["pred_masks"]
