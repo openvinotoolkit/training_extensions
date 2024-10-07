@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""MaskFormer criterion."""
+"""MaskDINO criterion."""
 from __future__ import annotations
 
 import torch
@@ -55,10 +55,10 @@ def dice_loss(
 
     Args:
         inputs (Tensor): A float tensor of arbitrary shape. The predictions for each example.
-        targets (Tensor): A float tensor with the same shape as inputs. 
+        targets (Tensor): A float tensor with the same shape as inputs.
             Stores the binary classification label for each element in inputs.
         num_masks (float): Number of masks.
-    
+
     Returns:
         Tensor: Loss tensor
     """
@@ -68,11 +68,6 @@ def dice_loss(
     denominator = inputs.sum(-1) + targets.sum(-1)
     loss = 1 - (numerator + 1) / (denominator + 1)
     return loss.sum() / num_masks
-
-
-dice_loss_jit = torch.jit.script(
-    dice_loss,
-)  # type: torch.jit.ScriptModule
 
 
 def sigmoid_ce_loss(
@@ -91,11 +86,6 @@ def sigmoid_ce_loss(
     """
     loss = f.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
     return loss.mean(1).sum() / num_masks
-
-
-sigmoid_ce_loss_jit = torch.jit.script(
-    sigmoid_ce_loss,
-)  # type: torch.jit.ScriptModule
 
 
 def calculate_uncertainty(logits: Tensor) -> Tensor:
@@ -198,7 +188,6 @@ class MaskDINOCriterion(nn.Module):
         Returns:
             dict[str, Tensor]: The computed losses.
         """
-
         src_logits = outputs["pred_logits"]
 
         idx = self._get_src_permutation_idx(indices)
@@ -239,7 +228,6 @@ class MaskDINOCriterion(nn.Module):
         Returns:
             dict[str, Tensor]: The computed losses.
         """
-
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices, strict=True)], dim=0)
@@ -272,8 +260,6 @@ class MaskDINOCriterion(nn.Module):
         Returns:
             dict[str, Tensor]: The computed losses.
         """
-
-
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices)
         pred_masks = outputs["pred_masks"]
@@ -309,8 +295,8 @@ class MaskDINOCriterion(nn.Module):
         ).squeeze(1)
 
         losses = {
-            "loss_mask": sigmoid_ce_loss_jit(point_logits, point_labels, num_masks),
-            "loss_dice": dice_loss_jit(point_logits, point_labels, num_masks),
+            "loss_mask": sigmoid_ce_loss(point_logits, point_labels, num_masks),
+            "loss_dice": dice_loss(point_logits, point_labels, num_masks),
         }
 
         del pred_masks
@@ -318,7 +304,21 @@ class MaskDINOCriterion(nn.Module):
         return losses
 
     def prep_for_dn(self, mask_dict: dict) -> tuple[dict[str, Tensor], int, int, int]:
-        """Prepare outputs for denoise training loss."""
+        """Prepare denoised output for denoise loss computation.
+
+        Args:
+            mask_dict (dict): denoise output information.
+
+        Raises:
+            ValueError: pad_size must be divisible by scalar.
+
+        Returns:
+            tuple[dict[str, Tensor], int, int, int]: output_known_lbs_bboxes, num_tgt, single_pad, scalar.
+                - output_known_lbs_bboxes: output known labels and bboxes.
+                - num_tgt: number of targets.
+                - single_pad: single pad size.
+                - scalar: scalar value.
+        """
         output_known_lbs_bboxes = mask_dict["output_known_lbs_bboxes"]
 
         known_indice = mask_dict["known_indice"]
@@ -351,7 +351,18 @@ class MaskDINOCriterion(nn.Module):
         indices: list[tuple[Tensor, Tensor]],
         num_masks: float,
     ) -> dict[str, Tensor]:
-        """Compute the loss for each output."""
+        """Get the loss function.
+
+        Args:
+            loss (str): "labels", "masks" or "boxes".
+            outputs (dict[str, Tensor]): model outputs.
+            targets (list[dict[str, Tensor]]): targets.
+            indices (list[tuple[Tensor, Tensor]]): matched indices.
+            num_masks (float): number of masks.
+
+        Returns:
+            dict[str, Tensor]: computed losses.
+        """
         loss_map = {
             "labels": self.loss_labels,
             "masks": self.loss_masks,
@@ -365,7 +376,16 @@ class MaskDINOCriterion(nn.Module):
         targets: list[dict[str, Tensor]],
         mask_dict: dict,
     ) -> dict[str, Tensor]:
-        """This function performs the loss computation."""
+        """Compute the losses.
+
+        Args:
+            outputs (dict[str, Tensor]): dict of model outputs.
+            targets (list[dict[str, Tensor]]): list of targets.
+            mask_dict (dict): dict containing denoise annotation information.
+
+        Returns:
+            dict[str, Tensor]: dict containing the computed losses.
+        """
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
 
         # Retrieve the matching between the outputs of the last layer and the targets
@@ -419,7 +439,7 @@ class MaskDINOCriterion(nn.Module):
             }
             losses.update(l_dict)
 
-        # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
+        # In case of auxiliary losses, this repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets)
@@ -446,7 +466,7 @@ class MaskDINOCriterion(nn.Module):
                         }
                         losses.update(l_dict)
 
-        # interm_outputs loss
+        # intermediate losses
         if "interm_outputs" in outputs:
             interm_outputs = outputs["interm_outputs"]
             indices = self.matcher(interm_outputs, targets)

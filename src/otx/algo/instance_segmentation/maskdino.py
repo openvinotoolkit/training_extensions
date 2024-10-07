@@ -21,14 +21,13 @@ from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder i
 from otx.algo.instance_segmentation.losses import HungarianMatcher, MaskDINOCriterion
 from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
+from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.utils.mask_util import polygon_to_bitmap
-from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
-
 
 
 class MaskDINO(nn.Module):
@@ -217,7 +216,18 @@ class MaskDINO(nn.Module):
         bboxes: Tensor,
         masks: Tensor,
     ) -> Tensor:
-        """Extracts masks from the region of interest."""
+        """Extract masks from RoI (Region of Interest).
+
+        This function is used for exporting the model, as it extracts same-size square masks from RoI for speed.
+
+        Args:
+            bboxes (Tensor): Bounding boxes with shape (N, 4), where N is the number of bounding boxes.
+            masks (Tensor): Masks with shape (H, W), where H and W are the height and width of the mask.
+
+        Returns:
+            Tensor: Extracted masks with shape (1, N, H', W'), where H' and W'
+                are the height and width of the extracted masks.
+        """
         bboxes = bboxes.unsqueeze(0)
         batch_index = torch.arange(bboxes.size(0)).float().view(-1, 1, 1).expand(bboxes.size(0), bboxes.size(1), 1)
         rois = torch.cat([batch_index, bboxes], dim=-1)

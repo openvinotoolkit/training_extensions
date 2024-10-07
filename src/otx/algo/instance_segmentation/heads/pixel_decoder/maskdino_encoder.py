@@ -24,7 +24,17 @@ from otx.algo.instance_segmentation.utils.utils import (
 
 
 class MSDeformAttnTransformerEncoderOnly(nn.Module):
-    """MSDeformAttnTransformerEncoderOnly is a transformer encoder with MSDeformable Attention."""
+    """MSDeformAttnTransformerEncoderOnly is a transformer encoder with MSDeformable Attention.
+
+    Args:
+        d_model (int, optional): hidden dimension. Defaults to 256.
+        nhead (int, optional): number of heads in the multi-head attention models. Defaults to 8.
+        num_encoder_layers (int, optional): number of sub-encoder-layers in the encoder. Defaults to 6.
+        dim_feedforward (int, optional): dimension of the feedforward network model. Defaults to 1024.
+        dropout (float, optional): dropout value. Defaults to 0.1.
+        num_feature_levels (int, optional): number of feature levels. Defaults to 4.
+        enc_n_points (int, optional): number of points for MSDeformAttn. Defaults to 4.
+    """
 
     def __init__(
         self,
@@ -35,7 +45,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         dropout: float = 0.1,
         num_feature_levels: int = 4,
         enc_n_points: int = 4,
-    ):
+    ) -> None:
         super().__init__()
 
         self.d_model = d_model
@@ -125,7 +135,16 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
 
 
 class MSDeformAttnTransformerEncoderLayer(nn.Module):
-    """MSDeformAttnTransformerEncoderLayer is a single layer of MSDeformable Attention Transformer."""
+    """MSDeformAttnTransformerEncoderLayer is a single layer of MSDeformable Attention Transformer.
+
+    Args:
+        d_model (int, optional): hidden dimension. Defaults to 256.
+        d_ffn (int, optional): hidden dimension of feedforward network. Defaults to 1024.
+        dropout (float, optional): dropout value. Defaults to 0.1.
+        n_levels (int, optional): number of levels in MSDeformAttn. Defaults to 4.
+        n_heads (int, optional): number of heads in MSDeformAttn. Defaults to 8.
+        n_points (int, optional): number of points in MSDeformAttn. Defaults to 4.
+    """
 
     def __init__(
         self,
@@ -192,7 +211,12 @@ class MSDeformAttnTransformerEncoderLayer(nn.Module):
 
 
 class MSDeformAttnTransformerEncoder(nn.Module):
-    """MSDeformAttnTransformerEncoder is a stack of MSDeformAttnTransformerEncoderLayer."""
+    """MSDeformAttnTransformerEncoder is a stack of MSDeformAttnTransformerEncoderLayer.
+
+    Args:
+        encoder_layer (nn.ModuleList): encoder layer module list.
+        num_layers (int): number of layers
+    """
 
     def __init__(self, encoder_layer: nn.ModuleList, num_layers: int) -> None:
         super().__init__()
@@ -236,16 +260,16 @@ class MaskDINOEncoder(nn.Module):
     """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models.
 
     Args:
-        input_shape: shapes (channels and stride) of the input features
-        transformer_dropout: dropout probability in transformer
-        transformer_nheads: number of heads in transformer
-        transformer_dim_feedforward: dimension of feedforward network
-        transformer_enc_layers: number of transformer encoder layers
-        conv_dim: number of output channels for the intermediate conv layers.
-        mask_dim: number of output channels for the final conv layer.
+        input_shape (dict[str, ShapeSpec]): shapes (channels and stride) of the input features
+        transformer_dropout (float): dropout probability in transformer
+        transformer_nheads (int): number of heads in transformer
+        transformer_dim_feedforward (int): dimension of feedforward network
+        transformer_enc_layers (int): number of transformer encoder layers
+        conv_dim (int): number of output channels for the intermediate conv layers.
+        mask_dim (int): number of output channels for the final conv layer.
         norm (str): normalization for all conv layers
-        num_feature_levels: feature scales used
-        total_num_feature_levels: total feautre scales used (include the downsampled features)
+        num_feature_levels (int): feature scales used
+        total_num_feature_levels (int): total feautre scales used (include the downsampled features)
     """
 
     def __init__(

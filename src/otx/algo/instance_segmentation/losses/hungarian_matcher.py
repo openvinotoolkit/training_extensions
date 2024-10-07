@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""Modules to compute the matching cost and solve the corresponding LSAP."""
+"""HungarianMatcher to compute the matching cost and solve the corresponding LSAP."""
 from __future__ import annotations
 
 import torch
@@ -17,14 +17,13 @@ def pair_wise_dice_loss(inputs: Tensor, labels: Tensor) -> Tensor:
     """A pair wise version of the dice loss, see `dice_loss` for usage.
 
     Args:
-        inputs (`torch.Tensor`):
-            A tensor representing a mask
-        labels (`torch.Tensor`):
-            A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+        inputs (Tensor): A tensor representing a mask
+        labels (Tensor): A tensor with the same shape as inputs.
+            Stores the binary classification labels for each element in inputs
             (0 for the negative class and 1 for the positive class).
 
     Returns:
-        `torch.Tensor`: The computed loss between each pairs.
+        Tensor: The computed loss between each pairs.
     """
     inputs = inputs.sigmoid().flatten(1)
     numerator = 2 * torch.matmul(inputs, labels.T)
@@ -33,18 +32,17 @@ def pair_wise_dice_loss(inputs: Tensor, labels: Tensor) -> Tensor:
     return 1 - (numerator + 1) / (denominator + 1)
 
 
-def pair_wise_sigmoid_cross_entropy_loss(inputs: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+def pair_wise_sigmoid_cross_entropy_loss(inputs: Tensor, labels: Tensor) -> Tensor:
     r"""A pair wise version of the cross entropy loss, see `sigmoid_cross_entropy_loss` for usage.
 
     Args:
-        inputs (`torch.Tensor`):
-            A tensor representing a mask.
-        labels (`torch.Tensor`):
-            A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+        inputs (Tensor): A tensor representing a mask.
+        labels (Tensor): A tensor with the same shape as inputs.
+            Stores the binary classification labels for each element in inputs
             (0 for the negative class and 1 for the positive class).
 
     Returns:
-        loss (`torch.Tensor`): The computed loss between each pairs.
+        loss (Tensor): The computed loss between each pairs.
     """
     height_and_width = inputs.shape[1]
 
@@ -58,7 +56,16 @@ def pair_wise_sigmoid_cross_entropy_loss(inputs: torch.Tensor, labels: torch.Ten
 
 
 class HungarianMatcher(nn.Module):
-    """This class computes an assignment between the targets and the predictions of the network."""
+    """This class computes an assignment between the targets and the predictions of the network.
+
+    Args:
+        cost_class (float, optional): label classification cost. Defaults to 1.
+        cost_mask (float, optional): mask cost. Defaults to 1.
+        cost_dice (float, optional): dice loss cost. Defaults to 1.
+        num_points (int, optional): number of points to sample for mask loss. Defaults to 0.
+        cost_box (float, optional): box cost. Defaults to 0.
+        cost_giou (float, optional): giou cost. Defaults to 0.
+    """
 
     def __init__(
         self,
@@ -155,20 +162,17 @@ class HungarianMatcher(nn.Module):
         """Performs the matching.
 
         Args:
-            outputs: This is a dict that contains at least these entries:
+            outputs (dict[str, Tensor]): This is a dict that contains at least these entries:
                 "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
                 "pred_masks": Tensor of dim [batch_size, num_queries, H_pred, W_pred] with the predicted masks
 
-            targets: This is a list of targets (len(targets) = batch_size), where each target is a dict containing:
-                "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
-                        objects in the target) containing the class labels
-                "masks": Tensor of dim [num_target_boxes, H_gt, W_gt] containing the target masks
+            targets (list[dict[str, Tensor]]): This is a list of targets (len(targets) = batch_size),
+                where each target is a dict containing:
+                    "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
+                            objects in the target) containing the class labels.
+                    "masks": Tensor of dim [num_target_boxes, H_gt, W_gt] containing the target masks.
 
         Returns:
-            A list of size batch_size, containing tuples of (index_i, index_j) where:
-                - index_i is the indices of the selected predictions (in order)
-                - index_j is the indices of the corresponding selected targets (in order)
-            For each batch element, it holds:
-                len(index_i) = len(index_j) = min(num_queries, num_target_boxes)
+            list[tuple[torch.Tensor, torch.Tensor]]: The matched indices.
         """
         return self.memory_efficient_forward(outputs, targets)
