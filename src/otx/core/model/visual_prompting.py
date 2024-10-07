@@ -756,7 +756,7 @@ class OVVisualPromptingModel(
         labels: list[Tensor] = []
         for image_output in outputs:
             masks.append(tv_tensors.Mask(np.concatenate(image_output.hard_predictions), device=self.device))
-            scores.append(torch.as_tensor(np.concatenate(image_output.scores), device=self.device))
+            scores.append(torch.as_tensor(np.concatenate(image_output.scores)[:, 0], device=self.device))
             labels.append(torch.as_tensor(image_output.labels, device=self.device))
 
         return VisualPromptingBatchPredEntity(
