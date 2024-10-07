@@ -55,10 +55,10 @@ def dice_loss(
 
     Args:
         inputs (Tensor): A float tensor of arbitrary shape. The predictions for each example.
-        targets (Tensor): A float tensor with the same shape as inputs. 
+        targets (Tensor): A float tensor with the same shape as inputs.
             Stores the binary classification label for each element in inputs.
         num_masks (float): Number of masks.
-    
+
     Returns:
         Tensor: Loss tensor
     """
@@ -198,7 +198,6 @@ class SetCriterion(nn.Module):
         Returns:
             dict[str, Tensor]: The computed losses.
         """
-
         src_logits = outputs["pred_logits"]
 
         idx = self._get_src_permutation_idx(indices)
@@ -239,7 +238,6 @@ class SetCriterion(nn.Module):
         Returns:
             dict[str, Tensor]: The computed losses.
         """
-
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices, strict=True)], dim=0)
@@ -276,8 +274,6 @@ class SetCriterion(nn.Module):
         Returns:
             dict[str, Tensor]: The computed losses.
         """
-
-
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices)
         src_masks = outputs["pred_masks"]
