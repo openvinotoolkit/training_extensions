@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3970)
 - Add tiling for semantic segmentation
   (https://github.com/openvinotoolkit/training_extensions/pull/3954)
+- Add 3D Object Detection task with MonoDETR model
+  (https://github.com/openvinotoolkit/training_extensions/pull/3979)
 
 ### Enhancements
 
