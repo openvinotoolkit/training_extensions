@@ -264,7 +264,7 @@ def adapt_input_size_to_dataset(
     return image_size  # type: ignore[return-value]
 
 
-def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
+def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task: OTXTaskType) -> None:
     """Config tile parameters.
 
     Adapt based on annotation statistics.
@@ -276,7 +276,7 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
         task (Task): task type of the model
     """
     if (train_dataset := dataset.subsets().get("train") or dataset.subsets().get("TRAINING")) is not None:
-        stat = compute_robust_dataset_statistics(train_dataset)
+        stat = compute_robust_dataset_statistics(train_dataset, task=task)
         max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
         avg_size = stat["annotation"]["size_of_shape"]["avg"]
         min_size = stat["annotation"]["size_of_shape"]["robust_min"]
