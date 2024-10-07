@@ -411,7 +411,7 @@ class MSCANModule(nn.Module):
         if pretrained_weights is not None:
             self.load_pretrained_weights(pretrained_weights)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward function."""
         outs = []
 
