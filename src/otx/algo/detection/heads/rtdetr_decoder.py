@@ -15,9 +15,7 @@ import torchvision
 from torch import nn
 from torch.nn import init
 
-from otx.algo.detection.utils.utils import (
-    inverse_sigmoid,
-)
+from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.transformer import deformable_attention_core_func
 
@@ -236,8 +234,6 @@ class MSDeformableAttention(nn.Module):
         value = self.value_proj(value)
         if value_mask is not None:
             value = value.masked_fill(value_mask[..., None], float(0))
-            # value_mask = value_mask.astype(value.dtype).unsqueeze(-1)
-            # value3 = value * value_mask.unsqueeze(-1)
         value = value.reshape(bs, len_v, self.num_heads, self.head_dim)
 
         sampling_offsets = self.sampling_offsets(query).reshape(
@@ -263,7 +259,11 @@ class MSDeformableAttention(nn.Module):
         )
 
         if reference_points.shape[-1] == 2:
-            offset_normalizer = value_spatial_shapes.clone()
+            offset_normalizer = (
+                value_spatial_shapes
+                if isinstance(value_spatial_shapes, torch.Tensor)
+                else torch.tensor(value_spatial_shapes)
+            ).clone()
             offset_normalizer = offset_normalizer.flip([1]).reshape(1, 1, 1, self.num_levels, 1, 2)
             sampling_locations = (
                 reference_points.reshape(
