@@ -37,6 +37,7 @@ Enhancements
 - Include Geti arrow dataset subset names
 - Include full image with anno in case there's no tile in tile dataset
 - Add type checker in converter for callable functions (optimizer, scheduler)
+- Change sematic segmentation to consider bbox only annotations
 
 Bug fixes
 ^^^^^^^^^
@@ -46,6 +47,7 @@ Bug fixes
 - Add num_devices in Engine for multi-gpu training
 - Add missing tile recipes and various tile recipe changes
 - Change categories mapping logic
+- Fix config converter for tiling
 
 v2.1.0 (2024.07)
 ----------------
