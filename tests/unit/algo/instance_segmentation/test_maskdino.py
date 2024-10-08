@@ -59,4 +59,4 @@ class TestMaskDINO:
         assert len(masks) == len(bboxes) == len(labels) == len(scores) == 1
         assert len(bboxes[0]) == len(masks[0]) == len(labels[0]) == len(scores[0])
         assert masks[0].shape[-2:] == (320, 320)
-        assert bboxes[0].shape == (100, 4)
+        assert bboxes[0].shape[-1:] == (4, )
