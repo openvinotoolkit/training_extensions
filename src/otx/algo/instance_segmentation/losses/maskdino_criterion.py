@@ -10,7 +10,7 @@ import torch.distributed
 import torch.nn.functional as f
 from torch import Tensor, nn
 
-from otx.algo.common.matcher import HungarianMatcher
+from otx.algo.common.utils.assigners import HungarianMatcher
 from otx.algo.instance_segmentation.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness, point_sample
 

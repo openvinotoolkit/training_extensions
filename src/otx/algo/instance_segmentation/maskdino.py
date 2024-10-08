@@ -14,7 +14,7 @@ from torchvision import tv_tensors
 from torchvision.models.detection.image_list import ImageList
 from torchvision.ops.roi_align import RoIAlign
 
-from otx.algo.common.matcher import HungarianMatcher
+from otx.algo.common.utils.assigners import HungarianMatcher
 from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resnet_backbone
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
@@ -124,16 +124,6 @@ class MaskDINO(nn.Module):
                 total_num_feature_levels=4,
             ),
         )
-
-        # building matcher
-        # matcher = MaskDINOHungarianMatcher(
-        #     cost_class=cost_class_weight,
-        #     cost_mask=cost_mask_weight,
-        #     cost_dice=cost_dice_weight,
-        #     cost_box=cost_box_weight,
-        #     cost_giou=cost_giou_weight,
-        #     num_points=train_num_points,
-        # )
 
         matcher = HungarianMatcher(
             weight_dict={
