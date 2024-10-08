@@ -142,15 +142,13 @@ def bbox_overlaps(
         >>> assert tuple(bbox_overlaps(nonempty, empty).shape) == (1, 0)
         >>> assert tuple(bbox_overlaps(empty, empty).shape) == (0, 0)
     """
-    batch_shape = bboxes1.shape[:-2]
-
     rows = bboxes1.size(-2)
     cols = bboxes2.size(-2)
 
     if rows * cols == 0:
         if is_aligned:
-            return bboxes1.new((*batch_shape, rows))
-        return bboxes1.new((*batch_shape, rows, cols))
+            return bboxes1.new((*bboxes1.shape[:-2], rows))
+        return bboxes1.new((*bboxes1.shape[:-2], rows, cols))
 
     area1 = (bboxes1[..., 2] - bboxes1[..., 0]) * (bboxes1[..., 3] - bboxes1[..., 1])
     area2 = (bboxes2[..., 2] - bboxes2[..., 0]) * (bboxes2[..., 3] - bboxes2[..., 1])
