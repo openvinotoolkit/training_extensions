@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""HungarianMatcher for detection task."""
+"""Custom matcher implementations."""
 
 from .hungarian_matcher import HungarianMatcher
 

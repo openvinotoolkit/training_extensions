@@ -5,7 +5,6 @@
 
 from .accuracy import accuracy
 from .dice_loss import DiceLoss
-from .hungarian_matcher import HungarianMatcher
 from .maskdino_criterion import MaskDINOCriterion
 from .roi_loss import ROICriterion
 from .rpn_loss import RPNCriterion
@@ -18,5 +17,4 @@ __all__ = [
     "ROICriterion",
     "RPNCriterion",
     "MaskDINOCriterion",
-    "HungarianMatcher",
 ]

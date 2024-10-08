@@ -14,11 +14,12 @@ from torchvision import tv_tensors
 from torchvision.models.detection.image_list import ImageList
 from torchvision.ops.roi_align import RoIAlign
 
+from otx.algo.common.matcher import HungarianMatcher
 from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resnet_backbone
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
 from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
-from otx.algo.instance_segmentation.losses import HungarianMatcher, MaskDINOCriterion
+from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
@@ -125,13 +126,23 @@ class MaskDINO(nn.Module):
         )
 
         # building matcher
+        # matcher = MaskDINOHungarianMatcher(
+        #     cost_class=cost_class_weight,
+        #     cost_mask=cost_mask_weight,
+        #     cost_dice=cost_dice_weight,
+        #     cost_box=cost_box_weight,
+        #     cost_giou=cost_giou_weight,
+        #     num_points=train_num_points,
+        # )
+
         matcher = HungarianMatcher(
-            cost_class=cost_class_weight,
-            cost_mask=cost_mask_weight,
-            cost_dice=cost_dice_weight,
-            cost_box=cost_box_weight,
-            cost_giou=cost_giou_weight,
-            num_points=train_num_points,
+            weight_dict={
+                "cost_class": cost_class_weight,
+                "cost_bbox": cost_box_weight,
+                "cost_giou": cost_giou_weight,
+                "cost_mask": cost_mask_weight,
+                "cost_dice": cost_dice_weight,
+            },
         )
 
         weight_dict = {

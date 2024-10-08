@@ -5,7 +5,7 @@
 
 import pytest
 import torch
-from otx.algo.detection.utils.matchers.hungarian_matcher import HungarianMatcher
+from otx.algo.common.matcher import HungarianMatcher
 
 
 class TestHungarianMatcher:
