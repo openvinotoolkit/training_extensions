@@ -196,6 +196,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Include Geti arrow dataset subset names
 - Include full image with anno in case there's no tile in tile dataset
 - Add type checker in converter for callable functions (optimizer, scheduler)
+- Change sematic segmentation to consider bbox only annotations
 
 ### Bug fixes
 
@@ -204,6 +205,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Add num_devices in Engine for multi-gpu training
 - Add missing tile recipes and various tile recipe changes
 - Change categories mapping logic
+- Fix config converter for tiling
 
 ### Known issues
 
