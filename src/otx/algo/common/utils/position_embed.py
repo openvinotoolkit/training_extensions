@@ -6,15 +6,13 @@
 from __future__ import annotations
 
 import math
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING
 
 import torch
-import torchvision
 from torch import nn
-from torchvision.models._utils import IntermediateLayerGetter
 
-from otx.algo.modules.norm import FrozenBatchNorm2d
-from otx.algo.object_detection_3d.utils.utils import NestedTensor
+if TYPE_CHECKING:
+    from otx.algo.object_detection_3d.utils.utils import NestedTensor
 
 
 class PositionEmbeddingSine(nn.Module):

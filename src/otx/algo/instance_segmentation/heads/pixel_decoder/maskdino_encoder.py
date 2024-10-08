@@ -12,8 +12,8 @@ from torch import Tensor, nn
 from torch.nn import functional as f
 from torch.nn.init import normal_
 
-from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.common.utils.position_embed import PositionEmbeddingSine
+from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.instance_segmentation.layers.batch_norm import get_norm
 from otx.algo.instance_segmentation.utils.utils import (
     Conv2d,
