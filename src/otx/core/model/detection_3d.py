@@ -24,6 +24,7 @@ from otx.core.types.export import TaskLevelExportParameters
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from model_api.adapters.inference_adapter import InferenceAdapter
     from torch import nn
 
     from otx.core.metrics import MetricCallable
@@ -131,7 +132,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
         calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
-        result_list = self._decode_detections_for_kitti_format(
+        result_list = self.decode_detections_for_kitti_format(
             detections,
             img_sizes,
             calib_matrix,
@@ -145,7 +146,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         }
 
     @staticmethod
-    def _decode_detections_for_kitti_format(
+    def decode_detections_for_kitti_format(
         dets: np.ndarray,
         img_size: np.ndarray,
         calib_matrix: list[np.ndarray],
@@ -304,7 +305,7 @@ class MonoDETRModel(ImageModel):
 
     __model__ = "mono_3d_det"
 
-    def __init__(self, inference_adapter, configuration, preload: bool = False):
+    def __init__(self, inference_adapter: InferenceAdapter, configuration: dict[str, Any], preload: bool = False):
         """Initializes a 3d detection model.
 
         Args:
@@ -316,7 +317,15 @@ class MonoDETRModel(ImageModel):
         super().__init__(inference_adapter, configuration, preload)
         self._check_io_number(3, 5)
 
-    def preprocess(self, inputs):
+    def preprocess(self, inputs: dict[str, np.ndarray]) -> tuple[dict[str, Any], ...]:
+        """Preprocesses the input data for the model.
+
+        Args:
+            inputs (dict[str, np.ndarray]): a dict with image, calibration matrix, and image size
+
+        Returns:
+            tuple[dict[str, Any], ...]: a tuple with the preprocessed inputs and meta information
+        """
         return {
             self.image_blob_name: inputs["image"][None],
             "calib_matrix": inputs["calib"],
@@ -326,7 +335,7 @@ class MonoDETRModel(ImageModel):
             "resized_shape": (self.w, self.h, self.c),
         }
 
-    def _get_inputs(self):
+    def _get_inputs(self) -> tuple[list[Any], list[Any]]:
         """Defines the model inputs for images and additional info.
 
         Raises:
@@ -361,6 +370,7 @@ class MonoDETRModel(ImageModel):
             meta (dict[str, Any]): meta information about the input data
 
         Returns:
+            dict[str, Any]: postprocessed model outputs
         """
         result = {}
         for k in outputs:
@@ -577,7 +587,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
         calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
-        result_list = OTX3DDetectionModel._decode_detections_for_kitti_format(
+        result_list = OTX3DDetectionModel.decode_detections_for_kitti_format(
             detections,
             img_sizes,
             calib_matrix,
