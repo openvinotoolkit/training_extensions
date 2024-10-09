@@ -40,7 +40,7 @@ class DetrCriterion(nn.Module):
         """Create the criterion."""
         super().__init__()
         self.num_classes = num_classes
-        self.matcher = HungarianMatcher(weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2})
+        self.matcher = HungarianMatcher(cost_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2})
         loss_bbox_weight = weight_dict["loss_bbox"] if "loss_bbox" in weight_dict else 1.0
         loss_giou_weight = weight_dict["loss_giou"] if "loss_giou" in weight_dict else 1.0
         self.loss_vfl_weight = weight_dict["loss_vfl"] if "loss_vfl" in weight_dict else 1.0

@@ -68,14 +68,14 @@ class HungarianMatcher(nn.Module):
 
     def __init__(
         self,
-        weight_dict: dict[str, float | int],
+        cost_dict: dict[str, float | int],
         alpha: float = 0.25,
         gamma: float = 2.0,
     ):
         """Creates the matcher.
 
         Args:
-            weight_dict (dict[str, float | int]): A dictionary containing the weights for different costs.
+            cost_dict (dict[str, float | int]): A dictionary containing the cost for each annotation type.
                 The dictionary may have the following keys:
                 - "cost_class" (float | int): The weight for the class cost.
                 - "cost_bbox" (float | int): The weight for the bounding box cost.
@@ -86,10 +86,7 @@ class HungarianMatcher(nn.Module):
             gamma (float, optional): The gamma parameter for the cost computation. Defaults to 2.0.
         """
         super().__init__()
-        self.cost_list = []
-        for cost_type, cost_weight in weight_dict.items():
-            self.cost_list.append(partial(self.cost_functions[cost_type], cost_weight=cost_weight))
-
+        self.cost_dict = cost_dict
         self.alpha = alpha
         self.gamma = gamma
 
@@ -105,7 +102,7 @@ class HungarianMatcher(nn.Module):
         }
 
     @torch.no_grad()
-    def label_cost(self, output: dict[str, Tensor], cost_weight: float | int) -> Tensor:
+    def label_cost(self, output: dict[str, Tensor], cost_class: float | int, **kwargs) -> Tensor:
         """Compute the classification cost.
 
         Contrary to the loss, we don't use the NLL, but approximate it in 1 - proba[target class].
@@ -130,11 +127,11 @@ class HungarianMatcher(nn.Module):
         # compute class cost
         neg_cost_class = (1 - self.alpha) * (pred_probs**self.gamma) * (-(1 - pred_probs + 1e-8).log())
         pos_cost_class = self.alpha * ((1 - pred_probs) ** self.gamma) * (-(pred_probs + 1e-8).log())
-        cost_class = pos_cost_class[:, target_labels] - neg_cost_class[:, target_labels]
-        return cost_class * cost_weight
+        cost = pos_cost_class[:, target_labels] - neg_cost_class[:, target_labels]
+        return cost * cost_class
 
     @torch.no_grad()
-    def bbox_cost(self, output: dict[str, Tensor], cost_weight: float | int) -> Tensor:
+    def bbox_cost(self, output: dict[str, Tensor], cost_bbox: float | int, **kwargs) -> Tensor:
         """Compute the L1 cost between boxes.
 
         Args:
@@ -145,7 +142,7 @@ class HungarianMatcher(nn.Module):
                 - "target_labels": The target class labels.
                 - "target_boxes": The target box coordinates.
                 - "target_mask": The target masks. Can be None.
-            cost_weight (float | int): The weight for the cost.
+            cost_bbox (float | int): The weight for the cost.
 
         Returns:
             Tensor: The L1 cost between boxes
@@ -154,11 +151,10 @@ class HungarianMatcher(nn.Module):
         target_bboxes = output["target_boxes"]
 
         # Compute the L1 cost between boxes
-        cost_bbox = torch.cdist(pred_bboxes, target_bboxes, p=1)
-        return cost_bbox * cost_weight
+        return torch.cdist(pred_bboxes, target_bboxes, p=1) * cost_bbox
 
     @torch.no_grad()
-    def giou_cost(self, output: dict[str, Tensor], cost_weight: float | int) -> Tensor:
+    def giou_cost(self, output: dict[str, Tensor], cost_giou: float | int, ) -> Tensor:
         """Compute the giou cost betwen boxes.
 
         Args:
@@ -169,7 +165,7 @@ class HungarianMatcher(nn.Module):
                 - "target_labels": The target class labels.
                 - "target_boxes": The target box coordinates.
                 - "target_mask": The target masks. Can be None.
-            cost_weight (float | int): The weight for the cost.
+            cost_giou (float | int): The weight for the cost.
 
         Returns:
             Tensor: The L1 cost between boxes
@@ -178,12 +174,12 @@ class HungarianMatcher(nn.Module):
         target_bboxes = output["target_boxes"]
 
         # Compute the giou cost betwen boxes
-        cost_giou = -bbox_overlaps(
+        cost = -bbox_overlaps(
             box_convert(pred_bboxes, in_fmt="cxcywh", out_fmt="xyxy"),
             box_convert(target_bboxes, in_fmt="cxcywh", out_fmt="xyxy"),
             mode="giou",
         )
-        return cost_giou * cost_weight
+        return cost * cost_giou
 
     @torch.no_grad()
     def mask_cost(self, output: dict[str, Tensor], cost_weight: float | int, num_points: int = 12544) -> Tensor:
@@ -346,8 +342,11 @@ class HungarianMatcher(nn.Module):
         # Iterate through batch size
         for i in range(batch_size):
             # Compute the cost matrix for each cost function and sum them.
-            cost_matrix = torch.stack([cost_func(formatted_batch[i]) for cost_func in self.cost_list]).sum(dim=0)
-
+            cost_matrix = torch.stack([
+                self.cost_functions[cost_name](formatted_batch[i], **self.cost_dict) 
+                for cost_name in self.cost_dict]
+            ).sum(dim=0)
+                
             # Eliminate infinite values in cost_matrix to avoid the error ``ValueError: cost matrix is infeasible``
             cost_matrix = torch.minimum(cost_matrix, torch.tensor(1e10))
             cost_matrix = torch.maximum(cost_matrix, torch.tensor(-1e10))
