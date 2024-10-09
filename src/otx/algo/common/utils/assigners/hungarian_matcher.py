@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable
 
 import torch
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
@@ -45,7 +44,7 @@ def pair_wise_sigmoid_cross_entropy_loss(inputs: Tensor, labels: Tensor) -> Tens
             (0 for the negative class and 1 for the positive class).
 
     Returns:
-        loss (Tensor): The computed loss between each pairs.
+        Tensor: The computed loss between each pairs.
     """
     height_and_width = inputs.shape[1]
 
@@ -86,23 +85,40 @@ class HungarianMatcher(nn.Module):
             gamma (float, optional): The gamma parameter for the cost computation. Defaults to 2.0.
         """
         super().__init__()
-        self.cost_dict = cost_dict
+        self.cost_functions = self.build_cost_functions(cost_dict)
         self.alpha = alpha
         self.gamma = gamma
 
-    @property
-    def cost_functions(self) -> dict[str, Callable]:
-        """Return the cost functions."""
-        return {
-            "cost_class": self.label_cost,
-            "cost_bbox": self.bbox_cost,
-            "cost_giou": self.giou_cost,
-            "cost_mask": self.mask_cost,
-            "cost_dice": self.dice_cost,
-        }
+    def build_cost_functions(self, cost_dict: dict[str, float | int]) -> list[partial]:
+        """Return the cost functions based on the provided cost dictionary.
+
+        Args:
+            cost_dict (dict[str, float | int]): A dictionary containing the cost for each annotation type.
+
+        Returns:
+            list[partial callable]: A list of partial functions for computing the costs.
+        """
+        cost_functions = []
+        if "cost_class" in cost_dict:
+            cost_functions.append(
+                partial(self.label_cost, cost_class=cost_dict["cost_class"]),
+            )
+        if "cost_bbox" in cost_dict:
+            cost_functions.append(
+                partial(self.bbox_cost, cost_bbox=cost_dict["cost_bbox"]),
+            )
+        if "cost_giou" in cost_dict:
+            cost_functions.append(
+                partial(self.giou_cost, cost_giou=cost_dict["cost_giou"]),
+            )
+        if "cost_mask" in cost_dict and "cost_dice" in cost_dict:
+            cost_functions.append(
+                partial(self.mask_cost, cost_mask=cost_dict["cost_mask"], cost_dice=cost_dict["cost_dice"]),
+            )
+        return cost_functions
 
     @torch.no_grad()
-    def label_cost(self, output: dict[str, Tensor], cost_class: float | int, **kwargs) -> Tensor:
+    def label_cost(self, output: dict[str, Tensor], cost_class: float | int) -> Tensor:
         """Compute the classification cost.
 
         Contrary to the loss, we don't use the NLL, but approximate it in 1 - proba[target class].
@@ -131,7 +147,7 @@ class HungarianMatcher(nn.Module):
         return cost * cost_class
 
     @torch.no_grad()
-    def bbox_cost(self, output: dict[str, Tensor], cost_bbox: float | int, **kwargs) -> Tensor:
+    def bbox_cost(self, output: dict[str, Tensor], cost_bbox: float | int) -> Tensor:
         """Compute the L1 cost between boxes.
 
         Args:
@@ -154,7 +170,7 @@ class HungarianMatcher(nn.Module):
         return torch.cdist(pred_bboxes, target_bboxes, p=1) * cost_bbox
 
     @torch.no_grad()
-    def giou_cost(self, output: dict[str, Tensor], cost_giou: float | int, ) -> Tensor:
+    def giou_cost(self, output: dict[str, Tensor], cost_giou: float | int) -> Tensor:
         """Compute the giou cost betwen boxes.
 
         Args:
@@ -182,7 +198,13 @@ class HungarianMatcher(nn.Module):
         return cost * cost_giou
 
     @torch.no_grad()
-    def mask_cost(self, output: dict[str, Tensor], cost_weight: float | int, num_points: int = 12544) -> Tensor:
+    def mask_cost(
+        self,
+        output: dict[str, Tensor],
+        cost_mask: float | int,
+        cost_dice: float | int,
+        num_points: int = 12544,
+    ) -> Tensor:
         """Compute the mask cost.
 
         Args:
@@ -221,52 +243,9 @@ class HungarianMatcher(nn.Module):
             align_corners=False,
         ).squeeze(1)
 
-        cost_mask = pair_wise_sigmoid_cross_entropy_loss(out_mask, target_mask)
-        return cost_mask * cost_weight
-
-    @torch.no_grad()
-    def dice_cost(self, output: dict[str, Tensor], cost_weight: float | int, num_points: int = 12544) -> Tensor:
-        """Compute the dice cost for masks.
-
-        Args:
-            output (dict[str, Tensor]): A dictionary containing the following:
-                - "pred_logits": The predicted logits for each query.
-                - "pred_boxes": The predicted box coordinates for each query.
-                - "pred_masks": The predicted masks for each query. Can be None.
-                - "target_labels": The target class labels.
-                - "target_boxes": The target box coordinates.
-                - "target_mask": The target masks. Can be None.
-            cost_weight (float | int): The weight for the cost.
-            num_points (int, optional): The number of points to sample. Defaults to 12544.
-
-        Returns:
-            Tensor: _description_
-        """
-        out_mask = output["pred_masks"]
-        target_mask = output["target_mask"]
-
-        # compute mask cost
-        out_mask = out_mask[:, None]
-        target_mask = target_mask[:, None]
-
-        # Sample ground truth and predicted masks
-        point_coordinates = torch.rand(1, num_points, 2, device=out_mask.device)
-
-        # get gt labels
-        target_mask = point_sample(
-            target_mask.to(out_mask),
-            point_coordinates.repeat(target_mask.shape[0], 1, 1),
-            align_corners=False,
-        ).squeeze(1)
-
-        out_mask = point_sample(
-            out_mask,
-            point_coordinates.repeat(out_mask.shape[0], 1, 1),
-            align_corners=False,
-        ).squeeze(1)
-
-        cost_dice = pair_wise_dice_loss(out_mask, target_mask)
-        return cost_dice * cost_weight
+        cost = pair_wise_sigmoid_cross_entropy_loss(out_mask, target_mask) * cost_mask
+        cost += pair_wise_dice_loss(out_mask, target_mask) * cost_dice
+        return cost
 
     def batch_preparation(
         self,
@@ -342,11 +321,10 @@ class HungarianMatcher(nn.Module):
         # Iterate through batch size
         for i in range(batch_size):
             # Compute the cost matrix for each cost function and sum them.
-            cost_matrix = torch.stack([
-                self.cost_functions[cost_name](formatted_batch[i], **self.cost_dict) 
-                for cost_name in self.cost_dict]
+            cost_matrix = torch.stack(
+                [cost_func(formatted_batch[i]) for cost_func in self.cost_functions],
             ).sum(dim=0)
-                
+
             # Eliminate infinite values in cost_matrix to avoid the error ``ValueError: cost matrix is infeasible``
             cost_matrix = torch.minimum(cost_matrix, torch.tensor(1e10))
             cost_matrix = torch.maximum(cost_matrix, torch.tensor(-1e10))

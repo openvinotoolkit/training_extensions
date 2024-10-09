@@ -402,7 +402,7 @@ class MaskDINOEncoder(nn.Module):
         self.lateral_convs = lateral_convs[::-1]
         self.output_convs = output_convs[::-1]
 
-    def forward_features(self, features: dict[str, Tensor]) -> tuple[Tensor, Tensor, list[Tensor]]:
+    def forward(self, features: dict[str, Tensor]) -> tuple[Tensor, Tensor, list[Tensor]]:
         """Forward pass of the encoder."""
         # backbone features
         srcs = []

@@ -13,9 +13,6 @@ Implementation modified from:
 
 from __future__ import annotations
 
-import copy
-from typing import Any
-
 import torch
 from torch import Tensor, nn
 from torchvision import tv_tensors
@@ -30,12 +27,7 @@ from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder i
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
-from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
-from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 

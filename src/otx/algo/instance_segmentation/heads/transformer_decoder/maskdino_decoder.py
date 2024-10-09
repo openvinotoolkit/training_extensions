@@ -362,14 +362,16 @@ class MaskDINODecoder(nn.Module):
             "pred_logits": predictions_class[-1],
             "pred_masks": predictions_mask[-1],
             "pred_boxes": out_boxes[-1],
-            "aux_outputs": self._set_aux_loss(
-                predictions_class,
-                predictions_mask,
-                out_boxes,
-            ),
-            "interm_outputs": interm_outputs,
         }
 
+        # Add auxiliary outputs and intermediate output in training for loss computation.
+        if self.training:
+            out.update(
+                {
+                    "aux_outputs": self._set_aux_loss(predictions_class, predictions_mask, out_boxes),
+                    "interm_outputs": interm_outputs,
+                },
+            )
         return out, mask_dict
 
     def flatten_and_concat_features(

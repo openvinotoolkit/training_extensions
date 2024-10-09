@@ -38,5 +38,5 @@ class MaskDINOHead(nn.Module):
         targets: list[dict[str, Tensor]] | None = None,
     ) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
         """Forward pass."""
-        mask_features, _, multi_scale_features = self.pixel_decoder.forward_features(features)
+        mask_features, _, multi_scale_features = self.pixel_decoder(features)
         return self.predictor(multi_scale_features, mask_features, targets=targets)
