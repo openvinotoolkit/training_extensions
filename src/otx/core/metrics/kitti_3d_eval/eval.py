@@ -3,12 +3,9 @@
 #
 """KITTI 3D eval for OTX."""
 
-# flake8: noqa
-# mypy: ignore-errors
 
 from __future__ import annotations
 
-import io as sysio
 from typing import Any
 
 import numba
@@ -40,14 +37,11 @@ def get_thresholds(
     """
     scores.sort()
     scores = scores[::-1]
-    current_recall = 0
+    current_recall = 0.0
     thresholds = []
     for i, score in enumerate(scores):
         l_recall = (i + 1) / num_gt
-        if i < (len(scores) - 1):
-            r_recall = (i + 2) / num_gt
-        else:
-            r_recall = l_recall
+        r_recall = (i + 2) / num_gt if i < len(scores) - 1 else l_recall
         if ((r_recall - current_recall) < (current_recall - l_recall)) and (i < (len(scores) - 1)):
             continue
         # recall = l_recall
@@ -73,9 +67,9 @@ def clean_data(
     Returns:
         tuple: The number of valid objects, ignored_gt, ignored_dt, and dc_bboxes.
     """
-    MIN_HEIGHT = [40, 25, 25]
-    MAX_OCCLUSION = [0, 1, 2]
-    MAX_TRUNCATION = [0.15, 0.3, 0.5]
+    min_height = [40, 25, 25]
+    max_occlusion = [0, 1, 2]
+    max_truncation = [0.15, 0.3, 0.5]
     dc_bboxes, ignored_gt, ignored_dt = [], [], []
     num_gt = len(gt_anno["name"])
     num_dt = len(dt_anno["name"])
@@ -87,17 +81,17 @@ def clean_data(
         valid_class = -1
         if gt_name == current_class:
             valid_class = 1
-        elif current_class == "Pedestrian".lower() and "Person_sitting".lower() == gt_name:
-            valid_class = 0
-        elif current_class == "Car".lower() and "Van".lower() == gt_name:
+        elif (current_class == "Pedestrian".lower() and "Person_sitting".lower() == gt_name) or (
+            current_class == "Car".lower() and "Van".lower() == gt_name
+        ):
             valid_class = 0
         else:
             valid_class = -1
         ignore = False
         if (
-            (gt_anno["occluded"][i] > MAX_OCCLUSION[difficulty])
-            or (gt_anno["truncated"][i] > MAX_TRUNCATION[difficulty])
-            or (height <= MIN_HEIGHT[difficulty])
+            (gt_anno["occluded"][i] > max_occlusion[difficulty])
+            or (gt_anno["truncated"][i] > max_truncation[difficulty])
+            or (height <= min_height[difficulty])
         ):
             # if gt_anno["difficulty"][i] > difficulty or gt_anno["difficulty"][i] == -1:
             ignore = True
@@ -109,15 +103,12 @@ def clean_data(
         else:
             ignored_gt.append(-1)
         # for i in range(num_gt):
-        if gt_anno["name"][i] == "DontCare":
+        if gt_anno["name"][i] == "dontcare":
             dc_bboxes.append(gt_anno["bbox"][i])
     for i in range(num_dt):
-        if dt_anno["name"][i].lower() == current_class:
-            valid_class = 1
-        else:
-            valid_class = -1
+        valid_class = 1 if dt_anno["name"][i].lower() == current_class else -1
         height = abs(dt_anno["bbox"][i, 3] - dt_anno["bbox"][i, 1])
-        if height < MIN_HEIGHT[difficulty]:
+        if height < min_height[difficulty]:
             ignored_dt.append(1)
         elif valid_class == 1:
             ignored_dt.append(0)
@@ -131,22 +122,25 @@ def clean_data(
 def image_box_overlap(
     boxes: np.ndarray,  # shape: (N, 4)
     query_boxes: np.ndarray,  # shape: (K, 4)
-    criterion: int = -1,  # default overlap criterion, -1: intersection over union, 0: intersection over box area, 1: intersection over query box area
+    criterion: int = -1,  # default overlap criterion: intersection over union
 ) -> np.ndarray:  # shape: (N, K)
-    """Args:
+    """Image box overlap.
+
+    Args:
         boxes (np.ndarray): shape: (N, 4), 2D boxes, (x1, y1, x2, y2)
         query_boxes (np.ndarray): shape: (K, 4), 2D boxes, (x1, y1, x2, y2)
-        criterion (int, optional): overlap criterion, -1: intersection over union, 0: intersection over box area, 1: intersection over query box area. Defaults to -1.
+        criterion (int, optional): overlap criterion, -1: intersection over union,
+            0: intersection over box area, 1: intersection over query box area. Defaults to -1.
 
     Returns:
         np.ndarray: shape: (N, K), overlap between boxes and query_boxes
     """
-    N = boxes.shape[0]
-    K = query_boxes.shape[0]
-    overlaps = np.zeros((N, K), dtype=boxes.dtype)
-    for k in range(K):
+    num_n = boxes.shape[0]
+    num_k = query_boxes.shape[0]
+    overlaps = np.zeros((num_n, num_k), dtype=boxes.dtype)
+    for k in range(num_k):
         qbox_area = (query_boxes[k, 2] - query_boxes[k, 0]) * (query_boxes[k, 3] - query_boxes[k, 1])
-        for n in range(N):
+        for n in range(num_n):
             iw = min(boxes[n, 2], query_boxes[k, 2]) - max(boxes[n, 0], query_boxes[k, 0])
             if iw > 0:
                 ih = min(boxes[n, 3], query_boxes[k, 3]) - max(boxes[n, 1], query_boxes[k, 1])
@@ -165,17 +159,19 @@ def image_box_overlap(
 
 @numba.jit(nopython=True)
 def d3_box_overlap_kernel(
-    boxes: np.ndarray,  # shape: (N, 7)
-    qboxes: np.ndarray,  # shape: (K, 7)
-    rinc: np.ndarray,  # shape: (N, K)
+    boxes: np.ndarray,  # shape: (n, 7)
+    qboxes: np.ndarray,  # shape: (k, 7)
+    rinc: np.ndarray,  # shape: (n, k)
     criterion: int = -1,  # default overlap criterion
 ) -> None:
-    """Args:
-        boxes: Array of shape (N, 7) representing N 3D boxes.
-        qboxes: Array of shape (K, 7) representing K 3D boxes.
-        rinc: Array of shape (N, K) representing the overlap between boxes
+    """Calculate 3D box overlap.
+
+    Args:
+        boxes (np.ndarray): Array of shape (n, 7) representing n 3D boxes.
+        qboxes (np.ndarray): Array of shape (k, 7) representing k 3D boxes.
+        rinc (np.ndarray): Array of shape (n, k) representing the overlap between boxes
             and qboxes.
-        criterion: Overlap criterion. Defaults to -1. If -1, uses the
+        criterion (int, optional): Overlap criterion. Defaults to -1. If -1, uses the
             intersection-over-union (IoU) criterion. If 0, uses the
             intersection-over-area1 criterion. If 1, uses the
             intersection-over-area2 criterion.
@@ -184,9 +180,9 @@ def d3_box_overlap_kernel(
         None
     """
     # ONLY support overlap in CAMERA, not lidar.
-    N, K = boxes.shape[0], qboxes.shape[0]
-    for i in range(N):
-        for j in range(K):
+    n, k = boxes.shape[0], qboxes.shape[0]
+    for i in range(n):
+        for j in range(k):
             if rinc[i, j] > 0:
                 # iw = (min(boxes[i, 1] + boxes[i, 4], qboxes[j, 1] +
                 #         qboxes[j, 4]) - max(boxes[i, 1], qboxes[j, 1]))
@@ -210,7 +206,7 @@ def d3_box_overlap_kernel(
 
 
 @numba.jit(nopython=True)
-def compute_statistics_jit(
+def compute_statistics_jit(  # noqa: C901
     overlaps: np.ndarray,  # shape: (total_dt_num, total_gt_num)
     gt_datas: np.ndarray,  # shape: (total_gt_num, 7)
     dt_datas: np.ndarray,  # shape: (total_dt_num, 7)
@@ -221,7 +217,6 @@ def compute_statistics_jit(
     min_overlap: float,
     thresh: float = 0,
     compute_fp: bool = False,
-    compute_aos: bool = False,
 ) -> tuple[int, int, int, float, np.ndarray]:
     """This function computes statistics of an evaluation.
 
@@ -236,7 +231,6 @@ def compute_statistics_jit(
         min_overlap (float): Minimum overlap between dt and gt bboxes.
         thresh (float): Detection score threshold. Defaults to 0.
         compute_fp (bool): Whether to compute false positives. Defaults to False.
-        compute_aos (bool): Whether to compute average orientation similarity. Defaults to False.
 
     Returns:
         Tuple[int, int, int, float, np.ndarray]: tp, fp, fn, similarity, thresholds
@@ -244,8 +238,6 @@ def compute_statistics_jit(
     det_size = dt_datas.shape[0]
     gt_size = gt_datas.shape[0]
     dt_scores = dt_datas[:, -1]
-    dt_alphas = dt_datas[:, 4]
-    gt_alphas = gt_datas[:, 4]
     dt_bboxes = dt_datas[:, :4]
 
     assigned_detection = [False] * det_size
@@ -254,19 +246,15 @@ def compute_statistics_jit(
         for i in range(det_size):
             if dt_scores[i] < thresh:
                 ignored_threshold[i] = True
-    NO_DETECTION = -10000000
+    no_detection = -10000000
     tp, fp, fn, similarity = 0, 0, 0, 0
-    # thresholds = [0.0]
-    # delta = [0.0]
     thresholds = np.zeros((gt_size,))
     thresh_idx = 0
-    delta = np.zeros((gt_size,))
-    delta_idx = 0
     for i in range(gt_size):
         if ignored_gt[i] == -1:
             continue
         det_idx = -1
-        valid_detection = NO_DETECTION
+        valid_detection = no_detection
         max_overlap = 0
         assigned_ignored_det = False
 
@@ -292,24 +280,20 @@ def compute_statistics_jit(
                 det_idx = j
                 valid_detection = 1
                 assigned_ignored_det = False
-            elif compute_fp and (overlap > min_overlap) and (valid_detection == NO_DETECTION) and ignored_det[j] == 1:
+            elif compute_fp and (overlap > min_overlap) and (valid_detection == no_detection) and ignored_det[j] == 1:
                 det_idx = j
                 valid_detection = 1
                 assigned_ignored_det = True
 
-        if (valid_detection == NO_DETECTION) and ignored_gt[i] == 0:
+        if (valid_detection == no_detection) and ignored_gt[i] == 0:
             fn += 1
-        elif (valid_detection != NO_DETECTION) and (ignored_gt[i] == 1 or ignored_det[det_idx] == 1):
+        elif (valid_detection != no_detection) and (ignored_gt[i] == 1 or ignored_det[det_idx] == 1):
             assigned_detection[det_idx] = True
-        elif valid_detection != NO_DETECTION:
+        elif valid_detection != no_detection:
             tp += 1
             # thresholds.append(dt_scores[det_idx])
             thresholds[thresh_idx] = dt_scores[det_idx]
             thresh_idx += 1
-            if compute_aos:
-                # delta.append(gt_alphas[i] - dt_alphas[det_idx])
-                delta[delta_idx] = gt_alphas[i] - dt_alphas[det_idx]
-                delta_idx += 1
 
             assigned_detection[det_idx] = True
     if compute_fp:
@@ -331,18 +315,7 @@ def compute_statistics_jit(
                         assigned_detection[j] = True
                         nstuff += 1
         fp -= nstuff
-        if compute_aos:
-            tmp = np.zeros((fp + delta_idx,))
-            # tmp = [0] * fp
-            for i in range(delta_idx):
-                tmp[i + fp] = (1.0 + np.cos(delta[i])) / 2.0
-                # tmp.append((1.0 + np.cos(delta[i])) / 2.0)
-            # assert len(tmp) == fp + tp
-            # assert len(delta) == tp
-            if tp > 0 or fp > 0:
-                similarity = np.sum(tmp)
-            else:
-                similarity = -1
+
     return tp, fp, fn, similarity, thresholds[:thresh_idx]
 
 
@@ -364,8 +337,7 @@ def get_split_parts(num: int, num_part: int) -> list[int]:
 
     if remain_num == 0:
         return [same_part] * num_part
-    else:
-        return [same_part] * num_part + [remain_num]
+    return [same_part] * num_part + [remain_num]
 
 
 @numba.jit(nopython=True)
@@ -383,40 +355,38 @@ def fused_compute_statistics(
     metric: int,
     min_overlap: float,
     thresholds: np.ndarray,  # shape: (num_thresholds)
-    compute_aos: bool = False,
 ) -> None:
     """Fast compute statistics. Must be used in CAMERA coordinate system.
 
     Args:
-    overlaps: 2D array of shape (total_dt_num, total_gt_num)
-    [dt_num, gt_num] is the overlap between dt_num-th detection
-    and gt_num-th ground truth
-    pr: 2D array of shape (num_thresholds, 4)
-    [t, 0] is the number of true positives at threshold t
-    [t, 1] is the number of false positives at threshold t
-    [t, 2] is the number of false negatives at threshold t
-    [t, 3] is the similarity at threshold t
-    gt_nums: 1D array of shape (num_samples)
-    gt_nums[i] is the number of ground truths in i-th sample
-    dt_nums: 1D array of shape (num_samples)
-    dt_nums[i] is the number of detections in i-th sample
-    dc_nums: 1D array of shape (num_samples)
-    dc_nums[i] is the number of dontcare areas in i-th sample
-    gt_datas: 2D array of shape (total_gt_num, 7)
-    gt_datas[i] is the i-th ground truth box
-    dt_datas: 2D array of shape (total_dt_num, 7)
-    dt_datas[i] is the i-th detection box
-    dontcares: 2D array of shape (total_dc_num, 4)
-    dontcares[i] is the i-th dontcare area
-    ignored_gts: 1D array of shape (total_gt_num)
-    ignored_gts[i] is 1 if the i-th ground truth is ignored, 0 otherwise
-    ignored_dets: 1D array of shape (total_dt_num)
-    ignored_dets[i] is 1 if the i-th detection is ignored, 0 otherwise
-    metric: Eval type. 0: bbox, 1: bev, 2: 3d
-    min_overlap: Min overlap
-    thresholds: 1D array of shape (num_thresholds)
-    thresholds[i] is the i-th threshold
-    compute_aos: Whether to compute aos
+        overlaps (np.ndarray): 2D array of shape (total_dt_num, total_gt_num),
+            [dt_num, gt_num] is the overlap between dt_num-th detection
+            and gt_num-th ground truth
+            pr (np.ndarray): 2D array of shape (num_thresholds, 4)
+            [t, 0] is the number of true positives at threshold t
+            [t, 1] is the number of false positives at threshold t
+            [t, 2] is the number of false negatives at threshold t
+            [t, 3] is the similarity at threshold t
+        gt_nums (np.ndarray): 1D array of shape (num_samples),
+            gt_nums[i] is the number of ground truths in i-th sample
+        dt_nums (np.ndarray): 1D array of shape (num_samples),
+            dt_nums[i] is the number of detections in i-th sample
+        dc_nums (np.ndarray): 1D array of shape (num_samples),
+            dc_nums[i] is the number of dontcare areas in i-th sample
+        gt_datas (np.ndarray): 2D array of shape (total_gt_num, 7),
+            gt_datas[i] is the i-th ground truth box
+        dt_datas (np.ndarray): 2D array of shape (total_dt_num, 7),
+            dt_datas[i] is the i-th detection box
+        dontcares (np.ndarray): 2D array of shape (total_dc_num, 4),
+            dontcares[i] is the i-th dontcare area
+        ignored_gts (np.ndarray): 1D array of shape (total_gt_num),
+            ignored_gts[i] is 1 if the i-th ground truth is ignored, 0 otherwise
+        ignored_dets (np.ndarray): 1D array of shape (total_dt_num),
+            ignored_dets[i] is 1 if the i-th detection is ignored, 0 otherwise
+        metric (int): Eval type. 0: bbox, 1: bev, 2: 3d
+        min_overlap (float): Min overlap
+        thresholds (np.ndarray): 1D array of shape (num_thresholds),
+            thresholds[i] is the i-th threshold
     """
     gt_num = 0
     dt_num = 0
@@ -440,7 +410,6 @@ def fused_compute_statistics(
                 min_overlap=min_overlap,
                 thresh=thresh,
                 compute_fp=True,
-                compute_aos=compute_aos,
             )
             pr[t, 0] += tp
             pr[t, 1] += fp
@@ -458,8 +427,10 @@ def calculate_iou_partly(
     metric: int,
     num_parts: int = 50,
 ) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray, np.ndarray]:
-    """Fast iou algorithm. This function can be used independently to
-    do result analysis. Must be used in CAMERA coordinate system.
+    """Fast iou algorithm.
+
+    This function can be used independently to do result analysis.
+    Must be used in CAMERA coordinate system.
 
     Args:
         gt_annos: List of dict, must from get_label_annos() in kitti_common.py
@@ -475,12 +446,28 @@ def calculate_iou_partly(
             total_dt_num: Numpy array, shape (num_images,)
     """
 
-    def d3_box_overlap(boxes, qboxes, criterion=-1):
+    def d3_box_overlap(boxes: np.ndarray, qboxes: np.ndarray, criterion: int = -1) -> np.ndarray:
+        """Calculate 3D box overlap.
+
+        Args:
+            boxes (np.ndarray): Array of shape (n, 7) representing n 3D boxes.
+            qboxes (np.ndarray): Array of shape (k, 7) representing k 3D boxes.
+            criterion (int, optional): Overlap criterion. Defaults to -1. If -1, uses the
+                intersection-over-union (IoU) criterion. If 0, uses the
+                intersection-over-area1 criterion. If 1, uses the
+                intersection-over-area2 criterion.
+
+        Returns:
+            np.ndarray: 1D array of shape (k, )
+        """
         rinc = rotate_iou_eval(boxes[:, [0, 2, 3, 5, 6]], qboxes[:, [0, 2, 3, 5, 6]], 2)
         d3_box_overlap_kernel(boxes, qboxes, rinc, criterion)
         return rinc
 
-    assert len(gt_annos) == len(dt_annos)
+    if len(gt_annos) != len(dt_annos):
+        msg = "gt_annos and dt_annos must have same length"
+        raise ValueError(msg)
+
     total_dt_num = np.stack([len(a["name"]) for a in dt_annos], 0)
     total_gt_num = np.stack([len(a["name"]) for a in gt_annos], 0)
     num_examples = len(gt_annos)
@@ -506,7 +493,8 @@ def calculate_iou_partly(
             dt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1)
             overlap_part = d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
         else:
-            raise ValueError("unknown metric")
+            msg = "unknown metric"
+            raise ValueError(msg)
         parted_overlaps.append(overlap_part)
         example_idx += num_part
     overlaps = []
@@ -543,8 +531,10 @@ def _prepare_data(
         difficulty (int): Difficulty level.
 
     Returns:
-        Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], np.ndarray, int]:
-            gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares, total_dc_num, total_num_valid_gt
+        Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray],
+        List[np.ndarray], List[np.ndarray], np.ndarray, int]:
+            gt_datas_list, dt_datas_list, ignored_gts, ignored_dets,
+            dontcares, total_dc_num, total_num_valid_gt
     """
     gt_datas_list = []
     dt_datas_list = []
@@ -585,7 +575,6 @@ def eval_class(
     difficultys: list[int],
     metric: int,
     min_overlaps: np.ndarray,
-    compute_aos: bool = False,
     num_parts: int = 50,
 ) -> dict[str, np.ndarray]:
     """Kitti eval. support 2d/bev/3d/aos eval. support 0.5:0.05:0.95 coco AP.
@@ -602,22 +591,21 @@ def eval_class(
     Returns:
         dict of recall, precision and aos
     """
-    assert len(gt_annos) == len(dt_annos)
     num_examples = len(gt_annos)
     split_parts = get_split_parts(num_examples, num_parts)
 
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts)
-    overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
-    N_SAMPLE_PTS = 41
+    part_calculated = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts)
+    overlaps, parted_overlaps, total_dt_num, total_gt_num = part_calculated
+    num_samples_pts = 41  # TODO(Kirill): why it is 41?
+    # The validation with 1-40 examples are not possible corecctly
     num_minoverlap = len(min_overlaps)
     num_class = len(current_classes)
     num_difficulty = len(difficultys)
-    precision = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
-    recall = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
-    aos = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
+    precision = np.zeros([num_class, num_difficulty, num_minoverlap, num_samples_pts])
+    recall = np.zeros([num_class, num_difficulty, num_minoverlap, num_samples_pts])
+    aos = np.zeros([num_class, num_difficulty, num_minoverlap, num_samples_pts])
     for m, current_class in enumerate(current_classes):
-        for l, difficulty in enumerate(difficultys):
-            rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty)
+        for d, difficulty in enumerate(difficultys):
             (
                 gt_datas_list,
                 dt_datas_list,
@@ -626,11 +614,11 @@ def eval_class(
                 dontcares,
                 total_dc_num,
                 total_num_valid_gt,
-            ) = rets
+            ) = _prepare_data(gt_annos, dt_annos, current_class, difficulty)
             for k, min_overlap in enumerate(min_overlaps[:, metric, m]):
                 thresholdss = []
                 for i in range(len(gt_annos)):
-                    rets = compute_statistics_jit(
+                    tp, fp, fn, similarity, thresholds = compute_statistics_jit(
                         overlaps[i],
                         gt_datas_list[i],
                         dt_datas_list[i],
@@ -642,7 +630,6 @@ def eval_class(
                         thresh=0.0,
                         compute_fp=False,
                     )
-                    tp, fp, fn, similarity, thresholds = rets
                     thresholdss += thresholds.tolist()
                 thresholdss = np.array(thresholdss)
                 thresholds = get_thresholds(thresholdss, total_num_valid_gt)
@@ -669,57 +656,42 @@ def eval_class(
                         metric,
                         min_overlap=min_overlap,
                         thresholds=thresholds,
-                        compute_aos=compute_aos,
                     )
                     idx += num_part
                 for i in range(len(thresholds)):
-                    recall[m, l, k, i] = pr[i, 0] / (pr[i, 0] + pr[i, 2])
-                    precision[m, l, k, i] = pr[i, 0] / (pr[i, 0] + pr[i, 1])
-                    if compute_aos:
-                        aos[m, l, k, i] = pr[i, 3] / (pr[i, 0] + pr[i, 1])
+                    recall[m, d, k, i] = pr[i, 0] / (pr[i, 0] + pr[i, 2])
+                    precision[m, d, k, i] = pr[i, 0] / (pr[i, 0] + pr[i, 1])
+
                 for i in range(len(thresholds)):
-                    precision[m, l, k, i] = np.max(precision[m, l, k, i:], axis=-1)
-                    recall[m, l, k, i] = np.max(recall[m, l, k, i:], axis=-1)
-                    if compute_aos:
-                        aos[m, l, k, i] = np.max(aos[m, l, k, i:], axis=-1)
-    ret_dict = {
+                    precision[m, d, k, i] = np.max(precision[m, d, k, i:], axis=-1)
+                    recall[m, d, k, i] = np.max(recall[m, d, k, i:], axis=-1)
+
+    return {
         "recall": recall,
         "precision": precision,
         "orientation": aos,
     }
-    return ret_dict
-
-
-def print_str(value, *arg, sstream=None):
-    if sstream is None:
-        sstream = sysio.StringIO()
-    sstream.truncate(0)
-    sstream.seek(0)
-    print(value, *arg, file=sstream)
-    return sstream.getvalue()
 
 
 def do_eval_cut_version(
-    gt_annos: list[dict[str, Any]],  # type hint
-    dt_annos: list[dict[str, Any]],  # type hint
-    current_classes: list[str],  # type hint
-    min_overlaps: np.ndarray,  # type hint
-    compute_aos: bool = False,  # type hint
-) -> tuple[float, float]:  # type hint
+    gt_annos: list[dict[str, Any]],
+    dt_annos: list[dict[str, Any]],
+    current_classes: list[str],
+    min_overlaps: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
     """Evaluates detections with COCO style AP.
 
     Args:
-        gt_annos (List[dict]): Ground truth annotations.
-        dt_annos (List[dict]): Detection results.
-        current_classes (List[str]): Classes to evaluate.
+        gt_annos (list[dict]): Ground truth annotations.
+        dt_annos (list[dict]): Detection results.
+        current_classes (list[str]): Classes to evaluate.
         min_overlaps (np.ndarray): Overlap ranges.
-        compute_aos (bool): Whether to compute aos.
 
     Returns:
         Tuple[float, float]: Bounding box and 3D bounding box AP.
     """
 
-    def _get_mAP(prec: np.ndarray) -> np.ndarray:
+    def _get_map(prec: np.ndarray) -> np.ndarray:
         sums = 0
         for i in range(0, prec.shape[-1], 4):
             sums = sums + prec[..., i]
@@ -727,16 +699,16 @@ def do_eval_cut_version(
 
     # min_overlaps: [num_minoverlap, metric, num_class]
     difficultys = [0, 1, 2]
-    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 0, min_overlaps, compute_aos)
+    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 0, min_overlaps)
     # ret: [num_class, num_diff, num_minoverlap, num_sample_points]
-    # get 2D bbox mAP
-    mAP_bbox = _get_mAP(ret["precision"])
+    # get 2d bbox map
+    map_bbox = _get_map(ret["precision"])
 
-    # get 3D bbox mAP
+    # get 3d bbox map
     ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2, min_overlaps)
-    mAP_3d = _get_mAP(ret["precision"])
+    map_3d = _get_map(ret["precision"])
 
-    return mAP_bbox, mAP_3d
+    return map_bbox, map_3d
 
 
 def get_coco_eval_result(
@@ -747,9 +719,9 @@ def get_coco_eval_result(
     """Evaluates detections with COCO style AP.
 
     Args:
-        gt_annos (List[dict]): Ground truth annotations.
-        dt_annos (List[dict]): Detection results.
-        current_classes (List[str]): Classes to evaluate.
+        gt_annos (list[dict]): Ground truth annotations.
+        dt_annos (list[dict]): Detection results.
+        current_classes (list[str]): Classes to evaluate.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: Bounding box and 3D bounding box AP.
@@ -760,16 +732,14 @@ def get_coco_eval_result(
         dt_annos: list[dict],
         current_classes: list[str],
         overlap_ranges: np.ndarray,
-        compute_aos: bool,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Evaluates detections with COCO style AP.
 
         Args:
-            gt_annos (List[dict]): Ground truth annotations.
-            dt_annos (List[dict]): Detection results.
-            current_classes (List[str]): Classes to evaluate.
+            gt_annos (list[dict]): Ground truth annotations.
+            dt_annos (list[dict]): Detection results.
+            current_classes (list[str]): Classes to evaluate.
             overlap_ranges (np.ndarray): Overlap ranges.
-            compute_aos (bool): Whether to compute aos.
 
         Returns:
             Tuple[np.ndarray, np.ndarray]: Bounding box and 3D bounding box AP.
@@ -780,32 +750,31 @@ def get_coco_eval_result(
             for j in range(overlap_ranges.shape[2]):
                 min_overlaps[:, i, j] = np.linspace(*overlap_ranges[:, i, j][:2], 10)
 
-        mAP_bbox, mAP_3d = do_eval_cut_version(gt_annos, dt_annos, current_classes, min_overlaps, compute_aos)
+        map_bbox, map_3d = do_eval_cut_version(gt_annos, dt_annos, current_classes, min_overlaps)
 
-        return mAP_bbox.mean(-1), mAP_3d.mean(-1)
+        return map_bbox.mean(-1), map_3d.mean(-1)
 
     iou_range = [0.5, 0.95, 10]
     if not isinstance(current_classes, (list, tuple)):
         current_classes = [current_classes]
 
     overlap_ranges = np.zeros([3, 3, len(current_classes)])
-    for i, curcls in enumerate(current_classes):
-        # IoU from 0.5 to 0.95
+    for i in range(len(current_classes)):
+        # iou from 0.5 to 0.95
         overlap_ranges[:, :, i] = np.array(iou_range)[:, np.newaxis]
     result = ""
     # check whether alpha is valid
-    compute_aos = False
-    mAPbbox, mAP3d = do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges, compute_aos)
+    map_bbox, map_3d = do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges)
 
     for j, curcls in enumerate(current_classes):
-        # mAP threshold array: [num_minoverlap, metric, class]
-        # mAP result: [num_class, num_diff, num_minoverlap]
+        # map threshold array: [num_minoverlap, metric, class]
+        # map result: [num_class, num_diff, num_minoverlap]
         o_range = np.array(iou_range)[[0, 2, 1]]
         o_range[1] = (o_range[2] - o_range[0]) / (o_range[1] - 1)
-        result += print_str(f"{curcls} " "coco AP@{:.2f}:{:.2f}:{:.2f}:".format(*o_range))
-        result += print_str(f"bbox AP:{mAPbbox[j, 0]:.2f}, {mAPbbox[j, 1]:.2f}, {mAPbbox[j, 2]:.2f}")
-        result += print_str(f"3d   AP:{mAP3d[j, 0]:.2f}, {mAP3d[j, 1]:.2f}, {mAP3d[j, 2]:.2f}")
+        result += f"{curcls} " + "coco AP@{:.2f}:{:.2f}:{:.2f}:\n".format(*o_range)
+        result += f"bbox AP:{map_bbox[j, 0]:.2f}, {map_bbox[j, 1]:.2f}, {map_bbox[j, 2]:.2f}\n"
+        result += f"3d   AP:{map_3d[j, 0]:.2f}, {map_3d[j, 1]:.2f}, {map_3d[j, 2]:.2f}\n"
 
     print("\n COCO style evaluation results: \n", result)
 
-    return mAPbbox, mAP3d
+    return map_bbox, map_3d
