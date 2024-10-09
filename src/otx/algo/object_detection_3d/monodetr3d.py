@@ -240,7 +240,7 @@ class MonoDETR3D(OTX3DDetectionModel):
                 "opset_version": 16,
             },
             input_names=["images", "calib_matrix", "img_sizes"],
-            output_names=["scores", "boxes_3d", "size_3d", "heading_angle", "depth"],
+            output_names=["scores", "boxes_3d", "size_3d", "depth", "heading_angle"],
         )
 
     @property
