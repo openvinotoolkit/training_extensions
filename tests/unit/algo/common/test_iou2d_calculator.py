@@ -48,7 +48,7 @@ def test_bbox_overlaps_2d(eps: float = 1e-7):
     bboxes2, _ = _construct_bbox(num_bbox)
     bboxes1 = bboxes1.unsqueeze(0).repeat(2, 1, 1)
     # test assertion when batch dim is not the same
-    with pytest.raises(ValueError, match="The last dimension of bboxes must be 4."):
+    with pytest.raises(ValueError, match="The batch dimension of bboxes must be the same."):
         self(bboxes1, bboxes2.unsqueeze(0).repeat(3, 1, 1), "giou", True)
     bboxes2 = bboxes2.unsqueeze(0).repeat(2, 1, 1)
     gious = self(bboxes1, bboxes2, "giou", True)
