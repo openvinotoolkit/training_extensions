@@ -8,6 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structur
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import torch
 from datumaro.components.annotation import Polygon
@@ -41,7 +43,7 @@ def mask_target(
     """
     cfg_list = [cfg for _ in range(len(pos_proposals_list))]
     mask_targets = map(
-        mask_target_single,
+        mask_target_single,  # type: ignore[arg-type]
         pos_proposals_list,
         pos_assigned_gt_inds_list,
         gt_masks_list,
@@ -58,20 +60,24 @@ def mask_target_single(
     pos_proposals: Tensor,
     pos_assigned_gt_inds: Tensor,
     gt_masks: list[Polygon] | tv_tensors.Mask,
-    cfg: dict,
+    mask_size: list[int],
     meta_info: dict,
 ) -> Tensor:
     """Compute mask target for each positive proposal in the image."""
+    mask_size = _pair(mask_size)
+    if len(gt_masks) == 0:
+        warnings.warn("No ground truth masks are provided!", stacklevel=2)
+        return pos_proposals.new_zeros((0, *mask_size))
+
     if isinstance(gt_masks[0], Polygon):
         crop_and_resize = crop_and_resize_polygons
     elif isinstance(gt_masks, tv_tensors.Mask):
         crop_and_resize = crop_and_resize_masks
     else:
-        msg = f"Unsupported type of masks: {type(gt_masks[0])}"
-        raise NotImplementedError(msg)
+        warnings.warn("Unsupported ground truth mask type!", stacklevel=2)
+        return pos_proposals.new_zeros((0, *mask_size))
 
     device = pos_proposals.device
-    mask_size = _pair(cfg["mask_size"])
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
         proposals_np = pos_proposals.cpu().numpy()
@@ -83,7 +89,7 @@ def mask_target_single(
         mask_targets = crop_and_resize(
             gt_masks,
             proposals_np,
-            mask_size,
+            mask_size,  # type: ignore[arg-type]
             inds=pos_assigned_gt_inds,
             device=device,
         )
