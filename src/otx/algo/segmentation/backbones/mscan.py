@@ -413,7 +413,6 @@ class MSCANModule(nn.Module):
 
     def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward function."""
-        b = x.shape[0]
         outs = []
 
         for i in range(self.num_stages):
@@ -424,7 +423,7 @@ class MSCANModule(nn.Module):
             for blk in block:
                 x = blk(x, h, w)
             x = norm(x)
-            x = x.reshape(b, h, w, -1).permute(0, 3, 1, 2).contiguous()
+            x = x.reshape(x.shape[0], h, w, -1).permute(0, 3, 1, 2).contiguous()
             outs.append(x)
 
         return outs

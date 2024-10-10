@@ -185,12 +185,6 @@ class SigmoidGeometricMean(Function):
 sigmoid_geometric_mean = SigmoidGeometricMean.apply
 
 
-def inverse_sigmoid(x: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
-    """Compute the inverse of sigmoid function."""
-    x = x.clip(min=0.0, max=1.0)
-    return torch.log(x.clip(min=eps) / (1 - x).clip(min=eps))
-
-
 def auto_pad(kernel_size: int | tuple[int, int], dilation: int | tuple[int, int] = 1, **kwargs) -> tuple[int, int]:  # noqa: ARG001
     """Auto Padding for the convolution blocks.
 
