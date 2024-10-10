@@ -143,7 +143,7 @@ class TestBsSearchAlgo:
         """Batch size 2 doesn't make oom but use most of memory."""
         mock_train_func = self.get_mock_train_func(cuda_oom_bound=2, max_runnable_bs=1)
 
-        bs_search_algo = BsSearchAlgo(mock_train_func, 128, 1000)
+        bs_search_algo = BsSearchAlgo(mock_train_func, 2, 1000)
         assert bs_search_algo.find_big_enough_batch_size() == 2
 
     def test_find_big_enough_batch_size_gradient_zero(self):
