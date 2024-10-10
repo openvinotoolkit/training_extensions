@@ -440,9 +440,9 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         resized_image = model.input_transform(resized_image)
 
         return {
-            "image": model._change_layout(resized_image),  # noqa: SLF001,
-            "calib": all_inputs["calibs"][0],
-            "img_size": all_inputs["img_sizes"][0][None],
+            "images": model._change_layout(resized_image),  # noqa: SLF001,
+            "calib_matrix": all_inputs["calibs"][0],
+            "img_sizes": all_inputs["img_sizes"][0][None],
         }
 
     @staticmethod

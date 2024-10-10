@@ -274,10 +274,6 @@ def test_otx_export_infer(
             cli_override_command=infer_reference_info_root,
         )
 
-    if "monodetr3d" in recipe:
-        print("Optimize is not supported for object detection 3d")
-        return
-
     # 5) test optimize
     command_cfg = [
         "otx",
