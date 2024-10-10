@@ -8,6 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structur
 
 from __future__ import annotations
 
+import warnings
+
 import torch
 from torch import Tensor
 
@@ -142,15 +144,24 @@ def bbox_overlaps(
         >>> assert tuple(bbox_overlaps(nonempty, empty).shape) == (1, 0)
         >>> assert tuple(bbox_overlaps(empty, empty).shape) == (0, 0)
     """
+    if not (bboxes1.size(-1) == 4 or bboxes1.size(0) == 0) or not (bboxes2.size(-1) == 4 or bboxes2.size(0) == 0):
+        msg = "The last dimension of bboxes must be 4."
+        raise ValueError(msg)
+
+    if bboxes1.shape[:-2] != bboxes2.shape[:-2]:
+        msg = "The batch dimension of bboxes must be the same."
+        raise ValueError(msg)
+
     batch_shape = bboxes1.shape[:-2]
 
     rows = bboxes1.size(-2)
     cols = bboxes2.size(-2)
 
     if rows * cols == 0:
+        warnings.warn("No bboxes are provided! Returning empty boxes!", stacklevel=2)
         if is_aligned:
-            return bboxes1.new((*batch_shape, rows))
-        return bboxes1.new((*batch_shape, rows, cols))
+            return bboxes1.new(batch_shape + (rows,))  # noqa: RUF005
+        return bboxes1.new(batch_shape + (rows, cols))  # noqa: RUF005
 
     area1 = (bboxes1[..., 2] - bboxes1[..., 0]) * (bboxes1[..., 3] - bboxes1[..., 1])
     area2 = (bboxes2[..., 2] - bboxes2[..., 0]) * (bboxes2[..., 3] - bboxes2[..., 1])
