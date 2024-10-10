@@ -54,7 +54,7 @@ class TestOTX3DDetectionModel:
 
     def test_export_parameters(self, model):
         params = model._export_parameters
-        assert params.model_type == "ssd" # TODO: should be "object_detection_3d" when IR Inference is integrated
+        assert params.model_type == "ssd"  # TODO(Vlad): should be "object_detection_3d" when IR Inference is integrated
         assert params.task_type == "detection"
 
     @pytest.mark.parametrize(
@@ -89,8 +89,14 @@ class TestOTX3DDetectionModel:
 
     def test_customize_outputs_predict(self, model, batch_data_entity):
         model.training = False
-        outputs = {"scores": torch.randn(2, 50, 2), "boxes_3d": torch.randn(2, 50, 6), "boxes": torch.randn(2, 50, 4),
-                   "size_3d": torch.randn(2, 50, 3),  "depth": torch.randn(2, 50, 2), "heading_angle": torch.randn(2, 50, 24)}
+        outputs = {
+            "scores": torch.randn(2, 50, 2),
+            "boxes_3d": torch.randn(2, 50, 6),
+            "boxes": torch.randn(2, 50, 4),
+            "size_3d": torch.randn(2, 50, 3),
+            "depth": torch.randn(2, 50, 2),
+            "heading_angle": torch.randn(2, 50, 24),
+        }
         customized_outputs = model._customize_outputs(outputs, batch_data_entity)
         assert isinstance(customized_outputs, Det3DBatchPredEntity)
         assert hasattr(customized_outputs, "scores")
@@ -98,7 +104,6 @@ class TestOTX3DDetectionModel:
         assert hasattr(customized_outputs, "boxes")
         assert hasattr(customized_outputs, "size_2d")
         assert len(customized_outputs.boxes_3d) == len(customized_outputs.scores)
-
 
     def test_dummy_input(self, model: OTX3DDetectionModel):
         batch_size = 2

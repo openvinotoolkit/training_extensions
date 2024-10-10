@@ -278,7 +278,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             size_3d=torch.zeros(batch_size, 0, 3),
             depth=torch.zeros(batch_size, 0, 1),
             heading_angle=torch.zeros(batch_size, 0, 2),
-            original_kitti_format=None,
+            original_kitti_format=[None],
         )
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
