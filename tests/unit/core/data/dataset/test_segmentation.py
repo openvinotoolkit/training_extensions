@@ -19,7 +19,7 @@ class TestOTXSegmentationDataset:
             max_refetch=3,
         )
         assert isinstance(dataset[0], SegDataEntity)
-        assert "background" in [label_name.lower() for label_name in dataset.label_info.label_names]
+        assert "otx_background_lbl" in [label_name.lower() for label_name in dataset.label_info.label_names]
 
     def test_get_item_from_bbox_dataset(
         self,
@@ -33,4 +33,4 @@ class TestOTXSegmentationDataset:
         )
         assert isinstance(dataset[0], SegDataEntity)
         # OTXSegmentationDataset should add background when getting a dataset which includes only bbox annotations
-        assert "background" in [label_name.lower() for label_name in dataset.label_info.label_names]
+        assert "otx_background_lbl" in [label_name.lower() for label_name in dataset.label_info.label_names]
