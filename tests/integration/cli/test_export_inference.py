@@ -49,6 +49,7 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "zero_shot_visual_prompting": "test/f1-score",
     "action_classification": "test/accuracy",
     "keypoint_detection": "test/PCK",
+    "object_detection_3d": "test/mAP_bbox_3d",
 }
 
 
@@ -272,6 +273,10 @@ def test_otx_export_infer(
             "cpu",
             cli_override_command=infer_reference_info_root,
         )
+
+    if "monodetr3d" in recipe:
+        print("Optimize is not supported for object detection 3d")
+        return
 
     # 5) test optimize
     command_cfg = [
