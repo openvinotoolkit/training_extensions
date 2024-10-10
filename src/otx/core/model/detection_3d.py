@@ -355,17 +355,15 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         self,
         entity: Det3DBatchDataEntity,
     ) -> dict[str, Any]:
-        # prepare bboxes for the model
-        targets_list: list[Any] = []
         img_sizes = np.array([img_info.ori_shape for img_info in entity.imgs_info])
         images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
 
         return {
             "images": images,
             "calibs": [p2.unsqueeze(0).cpu().numpy() for p2 in entity.calib_matrix],
-            "targets": targets_list,
+            "targets": [],
             "img_sizes": img_sizes,
-            "mode": "loss" if self.training else "predict",
+            "mode": "predict",
         }
 
     def _customize_outputs(
@@ -407,35 +405,23 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
     def _forward(self, inputs: Det3DBatchDataEntity) -> Det3DBatchPredEntity:
         """Model forward function."""
-
-        def _callback(result: NamedTuple, idx: int) -> None:
-            output_dict[idx] = result
-
         all_inputs = self._customize_inputs(inputs)
-        if self.async_inference:
-            output_dict: dict[int, NamedTuple] = {}
-            self.model.set_callback(_callback)
-            img_id = 0
-            for image, calib, img_size in zip(all_inputs["images"], all_inputs["calibs"], all_inputs["img_sizes"]):
-                if not self.model.is_ready():
-                    self.model.await_any()
-                model_input = {
+
+        model_ready_inputs = []
+        for image, calib, img_size in zip(all_inputs["images"], all_inputs["calibs"], all_inputs["img_sizes"]):
+            model_ready_inputs.append(
+                {
                     "image": image,
                     "calib": calib,
                     "img_size": img_size,
-                }
-                self.model.infer_async(model_input, user_data=img_id)
-                img_id += 1
-            self.model.await_all()
-            outputs = [out[1] for out in sorted(output_dict.items())]
+                },
+            )
+
+        if self.async_inference:
+            outputs = self.model.infer_batch(model_ready_inputs)
         else:
             outputs = []
-            for image, calib, img_size in zip(all_inputs["images"], all_inputs["calibs"], all_inputs["img_sizes"]):
-                model_input = {
-                    "image": image,
-                    "calib": calib,
-                    "img_size": img_size,
-                }
+            for model_input in model_ready_inputs:
                 outputs.append(self.model(model_input))
 
         customized_outputs = self._customize_outputs(outputs, inputs)
