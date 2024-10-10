@@ -200,7 +200,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
+        images = torch.rand(batch_size, 3, *self.input_size)
         calib_matrix = [torch.rand(3, 4) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
@@ -215,14 +215,14 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             batch_size,
             images,
             infos,
-            boxes=[],
-            labels=[],
+            boxes=[torch.Tensor(0)] * batch_size,
+            labels=[torch.LongTensor(0)] * batch_size,
             calib_matrix=calib_matrix,
-            boxes_3d=[],
+            boxes_3d=[torch.LongTensor(0)] * batch_size,
             size_2d=[],
-            size_3d=[],
-            depth=[],
-            heading_angle=[],
+            size_3d=[torch.LongTensor(0)] * batch_size,
+            depth=[torch.LongTensor(0)] * batch_size,
+            heading_angle=[torch.LongTensor(0)] * batch_size,
             original_kitti_format=[],
         )
 
