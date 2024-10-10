@@ -85,65 +85,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         preds: Det3DBatchPredEntity,
         inputs: Det3DBatchDataEntity,
     ) -> MetricInput:
-        """Converts the prediction entity to the format required for computing metrics.
-
-        Args:
-            preds (Det3DBatchPredEntity): Prediction entity.
-            inputs (Det3DBatchDataEntity): Input data entity.
-        """
-        boxes = preds.boxes_3d
-        # bbox 2d decoding
-        xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
-
-        xs3d = boxes[:, :, 0:1]
-        ys3d = boxes[:, :, 1:2]
-        xs2d = xywh_2d[:, :, 0:1]
-        ys2d = xywh_2d[:, :, 1:2]
-
-        batch = len(boxes)
-        labels = preds.labels.view(batch, -1, 1)
-        scores = preds.scores.view(batch, -1, 1)
-        xs2d = xs2d.view(batch, -1, 1)
-        ys2d = ys2d.view(batch, -1, 1)
-        xs3d = xs3d.view(batch, -1, 1)
-        ys3d = ys3d.view(batch, -1, 1)
-
-        detections = (
-            torch.cat(
-                [
-                    labels,
-                    scores,
-                    xs2d,
-                    ys2d,
-                    preds.size_2d,
-                    preds.depth[:, :, 0:1],
-                    preds.heading_angle,
-                    preds.size_3d,
-                    xs3d,
-                    ys3d,
-                    torch.exp(-preds.depth[:, :, 1:2]),
-                ],
-                dim=2,
-            )
-            .detach()
-            .cpu()
-            .numpy()
-        )
-
-        img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
-        calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
-        result_list = self.decode_detections_for_kitti_format(
-            detections,
-            img_sizes,
-            calib_matrix,
-            class_names=self.label_info.label_names,
-            threshold=self.score_threshold,
-        )
-
-        return {
-            "preds": result_list,
-            "target": inputs.original_kitti_format,  # type: ignore[dict-item]
-        }
+        return _convert_pred_entity_to_compute_metric(preds, inputs, self.label_info.label_names, self.score_threshold)
 
     @staticmethod
     def decode_detections_for_kitti_format(
@@ -540,63 +482,73 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         preds: Det3DBatchPredEntity,
         inputs: Det3DBatchDataEntity,
     ) -> MetricInput:
-        """Converts the prediction entity to the format required for computing metrics.
+        return _convert_pred_entity_to_compute_metric(preds, inputs, self.label_info.label_names, self.score_threshold)
 
-        Args:
-            preds (Det3DBatchPredEntity): Prediction entity.
-            inputs (Det3DBatchDataEntity): Input data entity.
-        """
-        boxes = preds.boxes_3d
-        # bbox 2d decoding
-        xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
 
-        xs3d = boxes[:, :, 0:1]
-        ys3d = boxes[:, :, 1:2]
-        xs2d = xywh_2d[:, :, 0:1]
-        ys2d = xywh_2d[:, :, 1:2]
+def _convert_pred_entity_to_compute_metric(
+    preds: Det3DBatchPredEntity,
+    inputs: Det3DBatchDataEntity,
+    label_names: list[str],
+    score_threshold: float,
+) -> MetricInput:
+    """Converts the prediction entity to the format required for computing metrics.
 
-        batch = len(boxes)
-        labels = preds.labels.view(batch, -1, 1)
-        scores = preds.scores.view(batch, -1, 1)
-        xs2d = xs2d.view(batch, -1, 1)
-        ys2d = ys2d.view(batch, -1, 1)
-        xs3d = xs3d.view(batch, -1, 1)
-        ys3d = ys3d.view(batch, -1, 1)
+    Args:
+        preds (Det3DBatchPredEntity): Prediction entity.
+        inputs (Det3DBatchDataEntity): Input data entity.
+        label_names (list[str]): List of label names.
+        score_threshold (float): Score threshold for filtering the predictions.
+    """
+    boxes = preds.boxes_3d
+    # bbox 2d decoding
+    xywh_2d = box_convert(preds.boxes, "xyxy", "cxcywh")
 
-        detections = (
-            torch.cat(
-                [
-                    labels,
-                    scores,
-                    xs2d,
-                    ys2d,
-                    preds.size_2d,
-                    preds.depth[:, :, 0:1],
-                    preds.heading_angle,
-                    preds.size_3d,
-                    xs3d,
-                    ys3d,
-                    torch.exp(-preds.depth[:, :, 1:2]),
-                ],
-                dim=2,
-            )
-            .detach()
-            .cpu()
-            .numpy()
+    xs3d = boxes[:, :, 0:1]
+    ys3d = boxes[:, :, 1:2]
+    xs2d = xywh_2d[:, :, 0:1]
+    ys2d = xywh_2d[:, :, 1:2]
+
+    batch = len(boxes)
+    labels = preds.labels.view(batch, -1, 1)
+    scores = preds.scores.view(batch, -1, 1)
+    xs2d = xs2d.view(batch, -1, 1)
+    ys2d = ys2d.view(batch, -1, 1)
+    xs3d = xs3d.view(batch, -1, 1)
+    ys3d = ys3d.view(batch, -1, 1)
+
+    detections = (
+        torch.cat(
+            [
+                labels,
+                scores,
+                xs2d,
+                ys2d,
+                preds.size_2d,
+                preds.depth[:, :, 0:1],
+                preds.heading_angle,
+                preds.size_3d,
+                xs3d,
+                ys3d,
+                torch.exp(-preds.depth[:, :, 1:2]),
+            ],
+            dim=2,
         )
+        .detach()
+        .cpu()
+        .numpy()
+    )
 
-        img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
-        calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
-        result_list = OTX3DDetectionModel.decode_detections_for_kitti_format(
-            detections,
-            img_sizes,
-            calib_matrix,
-            class_names=self.label_info.label_names,
-            threshold=self.score_threshold,
-        )
+    img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
+    calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
+    result_list = OTX3DDetectionModel.decode_detections_for_kitti_format(
+        detections,
+        img_sizes,
+        calib_matrix,
+        class_names=label_names,
+        threshold=score_threshold,
+    )
 
-        return {
-            "preds": result_list,
-            # TODO (Kirill): change it later to pre-process gt annotations here
-            "target": inputs.original_kitti_format,  # type: ignore[dict-item]
-        }
+    return {
+        "preds": result_list,
+        "target": inputs.original_kitti_format,  # type: ignore[dict-item]
+    }
