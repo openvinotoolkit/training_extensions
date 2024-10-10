@@ -144,8 +144,12 @@ def bbox_overlaps(
         >>> assert tuple(bbox_overlaps(nonempty, empty).shape) == (1, 0)
         >>> assert tuple(bbox_overlaps(empty, empty).shape) == (0, 0)
     """
-    if not (bboxes1.size(-1) == 4 or bboxes1.size(0) == 0) or not (bboxes2.size(-1) == 4 or bboxes2.size(0) == 0):
-        msg = "The last dimension of bboxes must be 4."
+    if not (bboxes1.size(-1) == 4 or bboxes1.size(0) == 0):
+        msg = "bboxes1 must have a last dimension of size 4 or be an empty tensor."
+        raise ValueError(msg)
+
+    if not (bboxes2.size(-1) == 4 or bboxes2.size(0) == 0):
+        msg = "bboxes2 must have a last dimension of size 4 or be an empty tensor."
         raise ValueError(msg)
 
     if bboxes1.shape[:-2] != bboxes2.shape[:-2]:
