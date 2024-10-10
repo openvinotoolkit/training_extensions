@@ -758,15 +758,5 @@ class OVInstanceSegmentationModel(
                 ir_label_info.label_groups[0].pop(0)
             return ir_label_info
 
-        if label_names := getattr(self.model, "labels", None):
-            msg = (
-                'Cannot find "label_info" from OpenVINO IR. '
-                "However, we found labels attributes from ModelAPI. "
-                "Construct LabelInfo from it."
-            )
-
-            log.warning(msg)
-            return LabelInfo(label_names=label_names, label_groups=[label_names])
-
         msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
         raise ValueError(msg)
