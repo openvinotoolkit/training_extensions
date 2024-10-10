@@ -99,11 +99,18 @@ class TestBsSearchAlgo:
         assert adapted_bs == 80
 
     def test_find_max_usable_bs_gpu_memory_too_small(self):
-        mock_train_func = self.get_mock_train_func(cuda_oom_bound=4, max_runnable_bs=1)
+        mock_train_func = self.get_mock_train_func(cuda_oom_bound=1, max_runnable_bs=1)
 
         bs_search_algo = BsSearchAlgo(mock_train_func, 128, 1000)
         with pytest.raises(RuntimeError):
             bs_search_algo.auto_decrease_batch_size()
+
+    def test_auto_decrease_batch_size_bs2_not_oom_but_most_mem(self):
+        """Batch size 2 doesn't make oom but use most of memory."""
+        mock_train_func = self.get_mock_train_func(cuda_oom_bound=4, max_runnable_bs=1)
+
+        bs_search_algo = BsSearchAlgo(mock_train_func, 128, 1000)
+        bs_search_algo.auto_decrease_batch_size()
 
     @pytest.mark.parametrize(
         ("max_runnable_bs", "max_bs", "expected_bs"),
@@ -126,7 +133,15 @@ class TestBsSearchAlgo:
             assert adapted_bs == expected_bs
 
     def test_find_big_enough_batch_size_gpu_memory_too_small(self):
-        mock_train_func = self.get_mock_train_func(cuda_oom_bound=4, max_runnable_bs=1)
+        mock_train_func = self.get_mock_train_func(cuda_oom_bound=1, max_runnable_bs=1)
+
+        bs_search_algo = BsSearchAlgo(mock_train_func, 128, 1000)
+        with pytest.raises(RuntimeError):
+            bs_search_algo.find_big_enough_batch_size()
+
+    def test_find_big_enough_batch_size_bs2_not_oom_but_most_mem(self):
+        """Batch size 2 doesn't make oom but use most of memory."""
+        mock_train_func = self.get_mock_train_func(cuda_oom_bound=1, max_runnable_bs=1)
 
         bs_search_algo = BsSearchAlgo(mock_train_func, 128, 1000)
         with pytest.raises(RuntimeError):
