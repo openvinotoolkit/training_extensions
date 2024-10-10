@@ -60,11 +60,11 @@ def mask_target_single(
     pos_proposals: Tensor,
     pos_assigned_gt_inds: Tensor,
     gt_masks: list[Polygon] | tv_tensors.Mask,
-    mask_size: list[int],
+    cfg: dict,
     meta_info: dict,
 ) -> Tensor:
     """Compute mask target for each positive proposal in the image."""
-    mask_size = _pair(mask_size)
+    mask_size = _pair(cfg["mask_size"])
     if len(gt_masks) == 0:
         warnings.warn("No ground truth masks are provided!", stacklevel=2)
         return pos_proposals.new_zeros((0, *mask_size))
@@ -89,7 +89,7 @@ def mask_target_single(
         mask_targets = crop_and_resize(
             gt_masks,
             proposals_np,
-            mask_size,  # type: ignore[arg-type]
+            mask_size,
             inds=pos_assigned_gt_inds,
             device=device,
         )
