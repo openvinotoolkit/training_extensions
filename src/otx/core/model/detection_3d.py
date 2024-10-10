@@ -15,7 +15,7 @@ from torchvision.ops import box_convert
 from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.data.dataset.utils.kitti_utils import class2angle
-from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.average_precision_3d import KittiMetric
@@ -414,7 +414,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         entity: Det3DBatchDataEntity,
     ) -> dict[str, Any]:
         # prepare bboxes for the model
-        targets_list = []
+        targets_list: list[Any] = []
         img_sizes = np.array([img_info.ori_shape for img_info in entity.imgs_info])
         images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
 
@@ -428,10 +428,10 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
     def _customize_outputs(
         self,
-        outputs: list[dict],
+        outputs: list[NamedTuple],
         inputs: Det3DBatchDataEntity,
     ) -> Det3DBatchPredEntity | OTXBatchLossEntity:
-        stacked_outputs = {}
+        stacked_outputs: dict[str, Any] = {}
 
         for output in outputs:
             for k in output:
@@ -463,7 +463,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             original_kitti_format=[None],
         )
 
-    def _forward(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
+    def _forward(self, inputs: Det3DBatchDataEntity) -> Det3DBatchPredEntity:
         """Model forward function."""
 
         def _callback(result: NamedTuple, idx: int) -> None:
