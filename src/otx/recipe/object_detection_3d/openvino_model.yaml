@@ -23,12 +23,12 @@ overrides:
   data:
     stack_images: false
     train_subset:
-      to_tv_image: true
+      to_tv_image: false
       transforms:
         - class_path: torchvision.transforms.v2.ToImage
 
     val_subset:
-      to_tv_image: true
+      to_tv_image: false
       transforms:
         - class_path: torchvision.transforms.v2.ToImage
 

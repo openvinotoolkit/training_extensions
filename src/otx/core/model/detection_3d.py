@@ -431,6 +431,20 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
 
         return customized_outputs
 
+    def transform_fn(self, data_batch: Det3DBatchDataEntity) -> dict:
+        """Data transform function for PTQ."""
+        all_inputs = self._customize_inputs(data_batch)
+        image = all_inputs["images"][0]
+        model = self.model
+        resized_image = model.resize(image, (model.w, model.h))
+        resized_image = model.input_transform(resized_image)
+
+        return {
+            "image": model._change_layout(resized_image),  # noqa: SLF001,
+            "calib": all_inputs["calibs"][0],
+            "img_size": all_inputs["img_sizes"][0][None],
+        }
+
     @staticmethod
     def extract_dets_from_outputs(outputs: dict[str, torch.Tensor], topk: int = 50) -> tuple[torch.Tensor, ...]:
         """Extract detection results from model outputs."""
