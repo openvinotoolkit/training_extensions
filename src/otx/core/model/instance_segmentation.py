@@ -758,5 +758,4 @@ class OVInstanceSegmentationModel(
                 ir_label_info.label_groups[0].pop(0)
             return ir_label_info
 
-        msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
-        raise ValueError(msg)
+        return super()._create_label_info_from_ov_ir()
