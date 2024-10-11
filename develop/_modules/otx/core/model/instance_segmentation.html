@@ -257,6 +257,7 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
@@ -283,7 +284,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">TaskLevelExportParameters</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfoTypes</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">LabelInfoTypes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.mask_util</span> <span class="kn">import</span> <span class="n">encode_rle</span><span class="p">,</span> <span class="n">polygon_to_rle</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.tile_merge</span> <span class="kn">import</span> <span class="n">InstanceSegTileMerge</span>
 
@@ -538,12 +539,17 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskLevelExportParameters</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines parameters required to export a particular model implementation.&quot;&quot;&quot;</span>
+        <span class="n">modified_label_info</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span>
+        <span class="c1"># Instance segmentation needs to add empty label to satisfy MAPI wrapper requirements</span>
+        <span class="n">modified_label_info</span><span class="o">.</span><span class="n">label_names</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;otx_empty_lbl&quot;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_export_parameters</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span>
             <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;MaskRCNN&quot;</span><span class="p">,</span>
             <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;instance_segmentation&quot;</span><span class="p">,</span>
             <span class="n">confidence_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
             <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">tile_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">label_info</span><span class="o">=</span><span class="n">modified_label_info</span><span class="p">,</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="OTXInstanceSegModel.on_load_checkpoint">
@@ -1026,7 +1032,21 @@
     <span class="k">def</span> <span class="nf">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">:</span> <span class="n">Metric</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">compute_kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">best_confidence_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">compute_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">:</span> <span class="n">best_confidence_threshold</span><span class="p">}</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">meter</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">compute_kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">meter</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">compute_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_label_info_from_ov_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelInfo</span><span class="p">:</span>
+        <span class="n">ov_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">has_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">]):</span>
+            <span class="n">serialized</span> <span class="o">=</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">get_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">ir_label_info</span> <span class="o">=</span> <span class="n">LabelInfo</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+            <span class="c1"># workaround to hide extra otx_empty_lbl</span>
+            <span class="k">if</span> <span class="n">ir_label_info</span><span class="o">.</span><span class="n">label_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;otx_empty_lbl&quot;</span><span class="p">:</span>
+                <span class="n">ir_label_info</span><span class="o">.</span><span class="n">label_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">ir_label_info</span><span class="o">.</span><span class="n">label_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ir_label_info</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_create_label_info_from_ov_ir</span><span class="p">()</span></div>
 
 </pre></div>
 
