@@ -1,0 +1,39 @@
+model:
+  class_path: otx.core.model.detection_3d.OV3DDetectionModel
+  init_args:
+    label_info: 3
+    model_name: monodetr-001
+    model_type: "mono_3d_det"
+    async_inference: true
+    use_throughput_mode: true
+
+engine:
+  task: OBJECT_DETECTION_3D
+  device: cpu
+
+callback_monitor: val/mAP_bbox_2d
+
+data: ../_base_/data/object_detection_3d.yaml
+overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
+  data:
+    stack_images: false
+    train_subset:
+      to_tv_image: false
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+
+    val_subset:
+      to_tv_image: false
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+
+    test_subset:
+      to_tv_image: false
+      batch_size: 64
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
