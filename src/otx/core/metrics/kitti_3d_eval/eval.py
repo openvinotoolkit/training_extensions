@@ -217,7 +217,6 @@ def compute_statistics_jit(
     ignored_gt: list[int],  # shape: (total_gt_num)
     ignored_det: list[int],  # shape: (total_dt_num)
     dc_bboxes: np.ndarray,  # shape: (total_dc_num, 4)
-    metric: int,
     min_overlap: float,
     thresh: float = 0,
     compute_fp: bool = False,
@@ -317,32 +316,8 @@ def compute_statistics_jit(
             if not (assigned_detection[i] or ignored_det[i] == -1 or ignored_det[i] == 1 or ignored_threshold[i]):
                 fp += 1
         nstuff = 0
-        if metric == 0:
-            overlaps_dt_dc = image_box_overlap(dt_bboxes, dc_bboxes, 0)
-            for i in range(dc_bboxes.shape[0]):
-                for j in range(det_size):
-                    if assigned_detection[j]:
-                        continue
-                    if ignored_det[j] == -1 or ignored_det[j] == 1:
-                        continue
-                    if ignored_threshold[j]:
-                        continue
-                    if overlaps_dt_dc[j, i] > min_overlap:
-                        assigned_detection[j] = True
-                        nstuff += 1
         fp -= nstuff
-        if compute_aos:
-            tmp = np.zeros((fp + delta_idx,))
-            # tmp = [0] * fp
-            for i in range(delta_idx):
-                tmp[i + fp] = (1.0 + np.cos(delta[i])) / 2.0
-                # tmp.append((1.0 + np.cos(delta[i])) / 2.0)
-            # assert len(tmp) == fp + tp
-            # assert len(delta) == tp
-            if tp > 0 or fp > 0:
-                similarity = np.sum(tmp)
-            else:
-                similarity = -1
+
     return tp, fp, fn, similarity, thresholds[:thresh_idx]
 
 
@@ -455,7 +430,6 @@ def fused_compute_statistics(
 def calculate_iou_partly(
     gt_annos: list[dict[str, Any]],
     dt_annos: list[dict[str, Any]],
-    metric: int,
     num_parts: int = 50,
 ) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray, np.ndarray]:
     """Fast iou algorithm. This function can be used independently to
@@ -464,7 +438,6 @@ def calculate_iou_partly(
     Args:
         gt_annos: List of dict, must from get_label_annos() in kitti_common.py
         dt_annos: List of dict, must from get_label_annos() in kitti_common.py
-        metric: Eval type. 0: bbox, 1: bev, 2: 3d
         num_parts: Int, a parameter for fast calculate algorithm
 
     Returns:
@@ -491,22 +464,17 @@ def calculate_iou_partly(
     for num_part in split_parts:
         gt_annos_part = gt_annos[example_idx : example_idx + num_part]
         dt_annos_part = dt_annos[example_idx : example_idx + num_part]
-        if metric == 0:
-            gt_boxes = np.concatenate([a["bbox"] for a in gt_annos_part], 0)
-            dt_boxes = np.concatenate([a["bbox"] for a in dt_annos_part], 0)
-            overlap_part = image_box_overlap(gt_boxes, dt_boxes)
-        elif metric == 2:
-            loc = np.concatenate([a["location"] for a in gt_annos_part], 0)
-            dims = np.concatenate([a["dimensions"] for a in gt_annos_part], 0)
-            rots = np.concatenate([a["rotation_y"] for a in gt_annos_part], 0)
-            gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1)
-            loc = np.concatenate([a["location"] for a in dt_annos_part], 0)
-            dims = np.concatenate([a["dimensions"] for a in dt_annos_part], 0)
-            rots = np.concatenate([a["rotation_y"] for a in dt_annos_part], 0)
-            dt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1)
-            overlap_part = d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
-        else:
-            raise ValueError("unknown metric")
+
+        loc = np.concatenate([a["location"] for a in gt_annos_part], 0)
+        dims = np.concatenate([a["dimensions"] for a in gt_annos_part], 0)
+        rots = np.concatenate([a["rotation_y"] for a in gt_annos_part], 0)
+        gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1)
+        loc = np.concatenate([a["location"] for a in dt_annos_part], 0)
+        dims = np.concatenate([a["dimensions"] for a in dt_annos_part], 0)
+        rots = np.concatenate([a["rotation_y"] for a in dt_annos_part], 0)
+        dt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]], axis=1)
+        overlap_part = d3_box_overlap(gt_boxes, dt_boxes).astype(np.float64)
+
         parted_overlaps.append(overlap_part)
         example_idx += num_part
     overlaps = []
@@ -583,7 +551,6 @@ def eval_class(
     dt_annos: list[dict[str, Any]],
     current_classes: list[str],
     difficultys: list[int],
-    metric: int,
     min_overlaps: np.ndarray,
     compute_aos: bool = False,
     num_parts: int = 50,
@@ -595,8 +562,7 @@ def eval_class(
         dt_annos: dict, must from get_label_annos() in kitti_common.py
         current_classes: list of label names
         difficultys: list of int. eval difficulty, 0: easy, 1: normal, 2: hard
-        metric: eval type. 0: bbox, 1: bev, 2: 3d
-        min_overlaps: float, min overlap. format: [num_overlap, metric, class].
+        min_overlaps: float, min overlap. format: [num_overlap, class].
         num_parts: int. a parameter for fast calculate algorithm
 
     Returns:
@@ -606,7 +572,7 @@ def eval_class(
     num_examples = len(gt_annos)
     split_parts = get_split_parts(num_examples, num_parts)
 
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts)
+    rets = calculate_iou_partly(dt_annos, gt_annos, num_parts)
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
     N_SAMPLE_PTS = 41
     num_minoverlap = len(min_overlaps)
@@ -637,7 +603,6 @@ def eval_class(
                         ignored_gts[i],
                         ignored_dets[i],
                         dontcares[i],
-                        metric,
                         min_overlap=min_overlap,
                         thresh=0.0,
                         compute_fp=False,
@@ -700,12 +665,11 @@ def print_str(value, *arg, sstream=None):
 
 
 def do_eval_cut_version(
-    gt_annos: list[dict[str, Any]],  # type hint
-    dt_annos: list[dict[str, Any]],  # type hint
-    current_classes: list[str],  # type hint
-    min_overlaps: np.ndarray,  # type hint
-    compute_aos: bool = False,  # type hint
-) -> tuple[float, float]:  # type hint
+    gt_annos: list[dict[str, Any]],
+    dt_annos: list[dict[str, Any]],
+    current_classes: list[str],
+    min_overlaps: np.ndarray,
+) -> tuple[float, float]:
     """Evaluates detections with COCO style AP.
 
     Args:
@@ -725,18 +689,13 @@ def do_eval_cut_version(
             sums = sums + prec[..., i]
         return sums / 11 * 100
 
-    # min_overlaps: [num_minoverlap, metric, num_class]
+    # min_overlaps: [num_minoverlap, num_class]
     difficultys = [0, 1, 2]
-    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 0, min_overlaps, compute_aos)
-    # ret: [num_class, num_diff, num_minoverlap, num_sample_points]
-    # get 2D bbox mAP
-    mAP_bbox = _get_mAP(ret["precision"])
-
     # get 3D bbox mAP
-    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2, min_overlaps)
+    ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, min_overlaps)
     mAP_3d = _get_mAP(ret["precision"])
 
-    return mAP_bbox, mAP_3d
+    return mAP_3d
 
 
 def get_coco_eval_result(
@@ -780,9 +739,9 @@ def get_coco_eval_result(
             for j in range(overlap_ranges.shape[2]):
                 min_overlaps[:, i, j] = np.linspace(*overlap_ranges[:, i, j][:2], 10)
 
-        mAP_bbox, mAP_3d = do_eval_cut_version(gt_annos, dt_annos, current_classes, min_overlaps, compute_aos)
+        mAP_3d = do_eval_cut_version(gt_annos, dt_annos, current_classes, min_overlaps, compute_aos)
 
-        return mAP_bbox.mean(-1), mAP_3d.mean(-1)
+        return mAP_3d.mean(-1)
 
     iou_range = [0.5, 0.95, 10]
     if not isinstance(current_classes, (list, tuple)):
@@ -795,7 +754,7 @@ def get_coco_eval_result(
     result = ""
     # check whether alpha is valid
     compute_aos = False
-    mAPbbox, mAP3d = do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges, compute_aos)
+    mAP3d = do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges, compute_aos)
 
     for j, curcls in enumerate(current_classes):
         # mAP threshold array: [num_minoverlap, metric, class]
@@ -803,9 +762,8 @@ def get_coco_eval_result(
         o_range = np.array(iou_range)[[0, 2, 1]]
         o_range[1] = (o_range[2] - o_range[0]) / (o_range[1] - 1)
         result += print_str(f"{curcls} " "coco AP@{:.2f}:{:.2f}:{:.2f}:".format(*o_range))
-        result += print_str(f"bbox AP:{mAPbbox[j, 0]:.2f}, {mAPbbox[j, 1]:.2f}, {mAPbbox[j, 2]:.2f}")
         result += print_str(f"3d   AP:{mAP3d[j, 0]:.2f}, {mAP3d[j, 1]:.2f}, {mAP3d[j, 2]:.2f}")
 
     print("\n COCO style evaluation results: \n", result)
 
-    return mAPbbox, mAP3d
+    return mAP3d
