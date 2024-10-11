@@ -200,31 +200,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = torch.rand(batch_size, 3, *self.input_size)
-        calib_matrix = [torch.rand(3, 4) for _ in range(batch_size)]
-        infos = []
-        for i, img in enumerate(images):
-            infos.append(
-                ImageInfo(
-                    img_idx=i,
-                    img_shape=img.shape,
-                    ori_shape=img.shape,
-                ),
-            )
-        return Det3DBatchDataEntity(
-            batch_size,
-            images,
-            infos,
-            boxes=[torch.Tensor(0)] * batch_size,
-            labels=[torch.LongTensor(0)] * batch_size,
-            calib_matrix=calib_matrix,
-            boxes_3d=[torch.LongTensor(0)] * batch_size,
-            size_2d=[],
-            size_3d=[torch.LongTensor(0)] * batch_size,
-            depth=[torch.LongTensor(0)] * batch_size,
-            heading_angle=[torch.LongTensor(0)] * batch_size,
-            original_kitti_format=[],
-        )
+        return _generate_dummy_input(self.input_size, batch_size)
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
         """Get final classification layer information for incremental learning case."""
@@ -484,6 +460,10 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     ) -> MetricInput:
         return _convert_pred_entity_to_compute_metric(preds, inputs, self.label_info.label_names, self.score_threshold)
 
+    def get_dummy_input(self, batch_size: int = 1) -> Det3DBatchDataEntity:
+        """Returns a dummy input for 3d object detection model."""
+        return _generate_dummy_input((224, 224), batch_size)
+
 
 def _convert_pred_entity_to_compute_metric(
     preds: Det3DBatchPredEntity,
@@ -552,3 +532,33 @@ def _convert_pred_entity_to_compute_metric(
         "preds": result_list,
         "target": inputs.original_kitti_format,  # type: ignore[dict-item]
     }
+
+
+def _generate_dummy_input(input_size: tuple[int, ...], batch_size: int = 1) -> Det3DBatchDataEntity:
+    """Returns a dummy input for 3d object detection model."""
+    images = torch.rand(batch_size, 3, *input_size)
+    calib_matrix = [torch.rand(3, 4) for _ in range(batch_size)]
+    infos = []
+    for i, img in enumerate(images):
+        infos.append(
+            ImageInfo(
+                img_idx=i,
+                img_shape=img.shape[1:],
+                ori_shape=img.shape[1:],
+            ),
+        )
+
+    return Det3DBatchDataEntity(
+        batch_size,
+        images,
+        infos,
+        boxes=[torch.Tensor(0)] * batch_size,
+        labels=[torch.LongTensor(0)] * batch_size,
+        calib_matrix=calib_matrix,
+        boxes_3d=[torch.LongTensor(0)] * batch_size,
+        size_2d=[],
+        size_3d=[torch.LongTensor(0)] * batch_size,
+        depth=[torch.LongTensor(0)] * batch_size,
+        heading_angle=[torch.LongTensor(0)] * batch_size,
+        original_kitti_format=[],
+    )
