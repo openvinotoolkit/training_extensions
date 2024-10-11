@@ -1,0 +1,29 @@
+otx.algo.plugins
+================
+
+.. automodule:: otx.algo.plugins
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MixedPrecisionXPUPlugin
+   
+   
+
+   
+   
+   
+
+
+
