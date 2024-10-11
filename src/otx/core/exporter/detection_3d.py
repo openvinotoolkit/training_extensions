@@ -98,3 +98,26 @@ class OTXObjectDetection3DExporter(OTXNativeModelExporter):
         log.info("Converting to ONNX is done.")
 
         return Path(save_path)
+
+    def to_exportable_code(
+        self,
+        model: OTXModel,
+        output_dir: Path,
+        base_model_name: str = "exported_model",
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
+        """Export to zip folder final OV IR model with runable demo.
+
+        NOT SUPPORTED FOR OD 3D. It will raise an error.
+
+        Args:
+            model (OTXModel): OTXModel to be exported
+            output_dir (Path): path to the directory to store export artifacts
+            base_model_name (str, optional): exported model name
+            precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+
+        Returns:
+            Path: path to the exported model.
+        """
+        msg = "Exportable code option is not supported for Object Detection 3D."
+        raise NotImplementedError(msg)
