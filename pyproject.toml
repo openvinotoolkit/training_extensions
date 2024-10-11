@@ -28,12 +28,12 @@ classifiers = [
 dependencies = [
     "datumaro==1.10.0rc0",
     "omegaconf==2.3.0",
-    "rich==13.8.0",
+    "rich==13.9.2",
     "jsonargparse==4.30.0",
     "psutil==6.0.0", # Mem cache needs system checks
-    "ftfy==6.2.3",
-    "regex==2024.7.24",
-    "importlib_resources==6.4.4",
+    "ftfy==6.3.0",
+    "regex==2024.9.11",
+    "importlib_resources==6.4.5",
     "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.5.2", # CLI help-formatter
     "einops==0.8.0",
@@ -46,7 +46,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "tox==4.18.1",
+    "tox==4.21.2",
     "pre-commit==3.8.0",
     "pylint",
     "pytest",
@@ -82,7 +82,7 @@ xpu = [
     "openvino==2024.4",
     "openvino-dev==2024.4",
     "openvino-model-api==0.2.4",
-    "onnx==1.16.2",
+    "onnx==1.17.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.13.0",
     "anomalib[core]==1.1.0",
@@ -96,14 +96,14 @@ base = [
     "openvino==2024.4",
     "openvino-dev==2024.4",
     "openvino-model-api==0.2.4",
-    "onnx==1.16.2",
+    "onnx==1.17.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.13.0",
     "anomalib[core]==1.1.0",
 ]
 
 transformers = [
-    "transformers==4.44.2",
+    "transformers==4.45.2",
 ]
 
 mmlab = [
@@ -118,7 +118,7 @@ mmlab = [
 ]
 
 ci_tox = [
-    "tox==4.18.1",
+    "tox==4.21.2",
 ]
 
 ci_publish = [
@@ -129,10 +129,10 @@ ci_benchmark = [
     "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.9.2",
     "nbconvert==7.16.4",
-    "ipython==8.27.0",
+    "ipython==8.28.0",
     "ipykernel==6.29.5",
     "openpyxl==3.1.5",
-    "mlflow==2.16.0",
+    "mlflow==2.16.2",
     "py-cpuinfo==9.0.0",
 ]
 
