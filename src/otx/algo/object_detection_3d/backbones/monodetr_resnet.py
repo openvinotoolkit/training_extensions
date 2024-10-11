@@ -112,7 +112,7 @@ class Backbone(BackboneBase):
         norm_layer = FrozenBatchNorm2d
         backbone = getattr(torchvision.models, name)(
             replace_stride_with_dilation=[False, False, dilation],
-            weights=get_model_weights(name).IMAGENET1K_V1, # the same as pretrained=True
+            weights=get_model_weights(name).IMAGENET1K_V1,  # the same as pretrained=True
             norm_layer=norm_layer,
         )
         super().__init__(backbone, train_backbone, return_interm_layers)

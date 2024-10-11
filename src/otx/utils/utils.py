@@ -263,7 +263,6 @@ def check_pickleable(obj: Any) -> bool:  # noqa: ANN401
 
 
 def measure_flops(
-    model: torch.nn.Module,
     forward_fn: Callable[[], torch.Tensor],
     loss_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
     print_stats_depth: int = 0,
