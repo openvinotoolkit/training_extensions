@@ -66,8 +66,25 @@ class CommonSettingMixin:
     ) -> None:
         """Load checkpoint for SAM.
 
+        This method loads a pre-trained state dictionary for the SAM model. It can load from
+        a provided state dictionary or from a URL specified in the `load_from` parameter.
+
         Args:
-            load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
+            state_dict (dict[str, Any] | None, optional): The state dictionary to load.
+                Defaults to None.
+            strict (bool, optional): Whether to strictly enforce that the keys in state_dict
+                match the keys returned by this module's state_dict() function. Defaults to True.
+            assign (bool, optional): Whether to copy parameters instead of moving them.
+                Defaults to False.
+            load_from (str | None, optional): URL to load the checkpoint from. If provided,
+                this will be used instead of the state_dict argument. Defaults to None.
+
+        Raises:
+            ValueError: If the checkpoint format is not desirable for torch.hub.load_state_dict_from_url.
+
+        Note:
+            If loading from a URL, some keys are removed from the loaded state dictionary
+            and a 'model.' prefix is added to all remaining keys.
         """
         try:
             if load_from is not None:
