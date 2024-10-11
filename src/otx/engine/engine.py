@@ -874,7 +874,7 @@ class Engine:
                 input_batch = self.model.get_dummy_input(1)
                 model_fwd = lambda: self.model.forward(input_batch)
                 depth = 3 if extended_stats else 0
-                fwd_flops = measure_flops(self.model.model, model_fwd, print_stats_depth=depth)
+                fwd_flops = measure_flops(model_fwd, print_stats_depth=depth)
                 flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops * 10**3))
                 final_stats["complexity"] = flops_str + " MACs"
             except Exception as e:
