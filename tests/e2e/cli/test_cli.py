@@ -52,6 +52,8 @@ def test_otx_e2e_cli(
     if task == OTXTaskType.INSTANCE_SEGMENTATION:
         is_tiling = "tile" in recipe
         dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
+    elif task == OTXTaskType.KEYPOINT_DETECTION:
+        dataset_path = fxt_target_dataset_per_task[task][model_name]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
 
@@ -138,7 +140,7 @@ def test_otx_e2e_cli(
             ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
             ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
         ]
-    elif "ANOMALY" in task or OTXTaskType.KEYPOINT_DETECTION in task:
+    elif task in ("ANOMALY", OTXTaskType.KEYPOINT_DETECTION, OTXTaskType.OBJECT_DETECTION_3D):
         fxt_export_list = [
             ExportCase2Test("ONNX", False, "exported_model.onnx"),
             ExportCase2Test("OPENVINO", False, "exported_model.xml"),
@@ -177,6 +179,9 @@ def test_otx_e2e_cli(
         )
         assert latest_dir.exists()
         assert (latest_dir / export_case.expected_output).exists()
+
+    if task == OTXTaskType.OBJECT_DETECTION_3D:
+        return # "3D Object Detection is not supported for OV IR inference.
 
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
@@ -302,6 +307,24 @@ def test_otx_explain_e2e_cli(
     ]:
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
+    models_not_supported = [
+        "dino",
+        "yolov9_s",
+        "yolov9_c",
+        "rtdetr_18",
+        "rtdetr_18_tile",
+        "rtdetr_50_tile",
+        "yolov9_m",
+        "rtdetr_101_tile",
+        "rtdetr_50",
+        "rtdetr_101",
+        "maskrcnn_r50_tv",
+        "maskrcnn_r50_tv_tile"
+    ]
+
+    if any(model in model_name for model in models_not_supported):
+        pytest.skip(f"{model_name} is not supported.")
+
     deterministic = "True"
     if task == OTXTaskType.INSTANCE_SEGMENTATION:
         # Determinism is not required for this test for instance_segmentation models.
@@ -313,9 +336,6 @@ def test_otx_explain_e2e_cli(
 
     if isinstance(dataset_path, dict) and "supervised" in dataset_path:
         dataset_path = dataset_path["supervised"]
-
-    if "dino" in model_name:
-        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
@@ -431,6 +451,8 @@ def test_otx_hpo_e2e_cli(
 
     if task == OTXTaskType.INSTANCE_SEGMENTATION:
         dataset_path = fxt_target_dataset_per_task[task]["non_tiling"]
+    elif task == OTXTaskType.KEYPOINT_DETECTION:
+        dataset_path = fxt_target_dataset_per_task[task]["rtmpose_tiny"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
 
