@@ -54,8 +54,8 @@ class TestOTX3DDetectionModel:
 
     def test_export_parameters(self, model):
         params = model._export_parameters
-        assert params.model_type == "ssd"  # TODO(Vlad): should be "object_detection_3d" when IR Inference is integrated
-        assert params.task_type == "detection"
+        assert params.model_type == "mono_3d_det"
+        assert params.task_type == "3d_detection"
 
     @pytest.mark.parametrize(
         ("label_info", "expected_label_info"),
