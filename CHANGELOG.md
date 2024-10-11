@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3970)
 - Add tiling for semantic segmentation
   (https://github.com/openvinotoolkit/training_extensions/pull/3954)
+- Add 3D Object Detection task with MonoDETR model
+  (https://github.com/openvinotoolkit/training_extensions/pull/3979)
 
 ### Enhancements
 
@@ -89,6 +91,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3964>)
 - Add type checker in converter for callable functions (optimizer, scheduler)
   (<https://github.com/openvinotoolkit/training_extensions/pull/3968>)
+- Change sematic segmentation to consider bbox only annotations
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3996>)
 
 ### Bug fixes
 
@@ -102,6 +106,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3942>)
 - Change categories mapping logic
   (<https://github.com/openvinotoolkit/training_extensions/pull/3946>)
+- Fix config converter for tiling
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3973>)
 
 ## \[v2.1.0\]
 

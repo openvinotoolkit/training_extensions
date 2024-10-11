@@ -184,6 +184,7 @@ class OTXDataModule(LightningDataModule):
         )
 
         label_infos: list[LabelInfo] = []
+
         for name, dm_subset in dataset.subsets().items():
             if name not in config_mapping:
                 log.warning(f"{name} is not available. Skip it")
@@ -209,7 +210,6 @@ class OTXDataModule(LightningDataModule):
                     tile_config=self.tile_config,
                 )
             self.subsets[name] = dataset
-
             label_infos += [self.subsets[name].label_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
