@@ -197,6 +197,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Include full image with anno in case there's no tile in tile dataset
 - Add type checker in converter for callable functions (optimizer, scheduler)
 - Change sematic segmentation to consider bbox only annotations
+- Relieve memory usage criteria on batch size 2 during adaptive batch size
 
 ### Bug fixes
 

@@ -4,7 +4,7 @@ Releases
 .. toctree::
   :maxdepth: 1
 
-v2.2.0 (2024.09)
+v2.2.0 (2024.10)
 ----------------
 
 New features
@@ -38,6 +38,7 @@ Enhancements
 - Include full image with anno in case there's no tile in tile dataset
 - Add type checker in converter for callable functions (optimizer, scheduler)
 - Change sematic segmentation to consider bbox only annotations
+- Relieve memory usage criteria on batch size 2 during adaptive batch size
 
 Bug fixes
 ^^^^^^^^^

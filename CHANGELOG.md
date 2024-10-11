@@ -57,6 +57,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3968>)
 - Change sematic segmentation to consider bbox only annotations
   (<https://github.com/openvinotoolkit/training_extensions/pull/3996>)
+- Relieve memory usage criteria on batch size 2 during adaptive batch size
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4009>)
 
 ### Bug fixes
 
