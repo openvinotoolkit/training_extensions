@@ -109,3 +109,19 @@ class TestOTX3DDetectionModel:
         batch_size = 2
         batch = model.get_dummy_input(batch_size)
         assert batch.batch_size == batch_size
+
+    def test_convert_pred_entity_to_compute_metric(self, model: OTX3DDetectionModel, batch_data_entity):
+        model.training = False
+        outputs = {
+            "scores": torch.randn(2, 50, 2),
+            "boxes_3d": torch.randn(2, 50, 6),
+            "boxes": torch.randn(2, 50, 4),
+            "size_3d": torch.randn(2, 50, 3),
+            "depth": torch.randn(2, 50, 2),
+            "heading_angle": torch.randn(2, 50, 24),
+        }
+        customized_outputs = model._customize_outputs(outputs, batch_data_entity)
+        converted_pred = model._convert_pred_entity_to_compute_metric(customized_outputs, batch_data_entity)
+
+        assert "preds" in converted_pred
+        assert "target" in converted_pred
