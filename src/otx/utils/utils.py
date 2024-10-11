@@ -271,7 +271,7 @@ def measure_flops(
     """Utility to compute the total number of FLOPs used by a module during training or during inference."""
     from torch.utils.flop_counter import FlopCounterMode
 
-    flop_counter = FlopCounterMode(model, display=print_stats_depth > 0, depth=print_stats_depth)
+    flop_counter = FlopCounterMode(display=print_stats_depth > 0, depth=print_stats_depth)
     with flop_counter:
         if loss_fn is None:
             forward_fn()

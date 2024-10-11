@@ -12,6 +12,7 @@ import torchvision
 from torch import nn
 from torchvision.models._utils import IntermediateLayerGetter
 
+from otx.algo.classification.backbones.torchvision import get_model_weights
 from otx.algo.modules.norm import FrozenBatchNorm2d
 from otx.algo.object_detection_3d.utils.utils import NestedTensor
 
@@ -111,7 +112,7 @@ class Backbone(BackboneBase):
         norm_layer = FrozenBatchNorm2d
         backbone = getattr(torchvision.models, name)(
             replace_stride_with_dilation=[False, False, dilation],
-            pretrained=True,
+            weights=get_model_weights(name).IMAGENET1K_V1, # the same as pretrained=True
             norm_layer=norm_layer,
         )
         super().__init__(backbone, train_backbone, return_interm_layers)
