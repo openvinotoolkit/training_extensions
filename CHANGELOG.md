@@ -74,6 +74,10 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3973>)
 - Fix `BboxOverlaps2D` handling of empty ground-truth annotations in datasets.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4010>)
+- Fix num_trials calculation on dataset length less than num_class
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4014>)
+- Fix out_features in HierarchicalCBAMClsHead
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4016>)
 
 ## \[v2.1.0\]
 

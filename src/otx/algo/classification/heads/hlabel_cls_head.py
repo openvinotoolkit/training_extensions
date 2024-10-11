@@ -355,7 +355,7 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         self.fc_superclass = nn.Linear(in_channels * self.step_size[0] * self.step_size[1], num_multiclass_heads)
         self.attention_fc = nn.Linear(num_multiclass_heads, in_channels * self.step_size[0] * self.step_size[1])
         self.cbam = CBAM(in_channels)
-        self.fc_subclass = nn.Linear(in_channels * self.step_size[0] * self.step_size[1], num_single_label_classes)
+        self.fc_subclass = nn.Linear(in_channels * self.step_size[0] * self.step_size[1], num_classes)
 
         self._init_layers()
 
