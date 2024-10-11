@@ -198,6 +198,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Add type checker in converter for callable functions (optimizer, scheduler)
 - Change sematic segmentation to consider bbox only annotations
 - Relieve memory usage criteria on batch size 2 during adaptive batch size
+- Remove background label from RT Info for segmentation task
 
 ### Bug fixes
 
@@ -207,6 +208,8 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Add missing tile recipes and various tile recipe changes
 - Change categories mapping logic
 - Fix config converter for tiling
+- Fix num_trials calculation on dataset length less than num_class
+- Fix out_features in HierarchicalCBAMClsHead
 
 ### Known issues
 
