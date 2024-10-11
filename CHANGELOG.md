@@ -30,6 +30,8 @@ All notable changes to this project will be documented in this file.
 
 - Fix a wrong HPO log
   (https://github.com/openvinotoolkit/training_extensions/pull/3972)
+- Fix Rotated MaskRCNN EfficientNet incorrect model name
+  (https://github.com/openvinotoolkit/training_extensions/pull/4021)
 
 ## \[2.2.0\]
 
