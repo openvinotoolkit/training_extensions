@@ -30,6 +30,8 @@ All notable changes to this project will be documented in this file.
 
 - Fix a wrong HPO log
   (https://github.com/openvinotoolkit/training_extensions/pull/3972)
+- Update model name in rotated detection recipes
+  (https://github.com/openvinotoolkit/training_extensions/pull/4028)
 
 ## \[2.2.0\]
 
