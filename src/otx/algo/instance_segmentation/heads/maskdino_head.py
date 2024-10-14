@@ -12,24 +12,23 @@ from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder i
 
 
 class MaskDINOHead(nn.Module):
-    """MaskDINO Head module."""
+    """MaskDINO Head module.
+
+    Args:
+        num_classes (int): number of classes
+        pixel_decoder (MaskDINOEncoder): pixel decoder
+        transformer_predictor (MaskDINODecoder): mask transformer predictor
+    """
 
     def __init__(
         self,
         num_classes: int,
         pixel_decoder: MaskDINOEncoder,
-        loss_weight: float,
-        ignore_value: int,
         transformer_predictor: MaskDINODecoder,
     ):
         super().__init__()
-        self.ignore_value = ignore_value
-        self.common_stride = 4
-        self.loss_weight = loss_weight
-
         self.pixel_decoder = pixel_decoder
         self.predictor = transformer_predictor
-
         self.num_classes = num_classes
 
     def forward(

@@ -275,17 +275,17 @@ class MaskDINOEncoder(nn.Module):
     def __init__(
         self,
         input_shape: dict[str, ShapeSpec],
-        transformer_dropout: float,
-        transformer_nheads: int,
-        transformer_dim_feedforward: int,
-        transformer_enc_layers: int,
-        conv_dim: int,
-        mask_dim: int,
-        norm: str,
-        transformer_in_features: list[str],
-        common_stride: int,
-        num_feature_levels: int,
-        total_num_feature_levels: int,
+        transformer_dropout: float = 0.0,
+        transformer_nheads: int = 8,
+        transformer_dim_feedforward: int = 2048,
+        transformer_enc_layers: int = 6,
+        conv_dim: int = 256,
+        mask_dim: int = 256,
+        norm: str = "GN",
+        transformer_in_features: tuple[str, str, str] = ("res5", "res4", "res3"),
+        common_stride: int = 4,
+        num_feature_levels: int = 3,
+        total_num_feature_levels: int = 4,
     ):
         super().__init__()
         # this is the input shape of pixel decoder

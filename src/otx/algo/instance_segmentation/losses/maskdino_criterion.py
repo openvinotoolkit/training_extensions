@@ -5,13 +5,16 @@
 """MaskDINO criterion."""
 from __future__ import annotations
 
+from typing import Callable
+
 import torch
 import torch.distributed
 import torch.nn.functional as f
 from torch import Tensor, nn
+from torchvision.ops import box_convert
 
+from otx.algo.common.losses import GIoULoss, L1Loss
 from otx.algo.common.utils.assigners import HungarianMatcher
-from otx.algo.instance_segmentation.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness, point_sample
 
 
@@ -132,37 +135,58 @@ class MaskDINOCriterion(nn.Module):
     Args:
         num_classes (int): number of object categories, omitting the special no-object category
         matcher (HungarianMatcher): module that computes the matching between ground truth and predicted boxes
-        weight_dict (dict): dict containing as key the names of the losses and as values their relative weight.
+        weight_dict (dict, optional): dict containing key names of the losses and as values their relative weight.
         eos_coef (float): relative classification weight applied to the no-object category
         losses (list): list of all the losses to be applied
         num_points (int): number of points to sample for pointwise mask loss
         oversample_ratio (float): ratio of oversampling for pointwise mask loss
         importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss
-        dn_losses (list): list of all the denoise losses to be applied
+        dec_layers (int): number of decoder layers
     """
 
     def __init__(
         self,
         num_classes: int,
         matcher: HungarianMatcher,
-        weight_dict: dict[str, float],
-        eos_coef: float,
-        losses: list[str],
-        num_points: int,
-        oversample_ratio: float,
-        importance_sample_ratio: float,
-        dn_losses: list[str],
+        weight_dict: dict[str, float] | None = None,
+        eos_coef: float = 0.1,
+        num_points: int = 112 * 112,
+        oversample_ratio: float = 3.0,
+        importance_sample_ratio: float = 0.75,
+        dec_layers: int = 9,
     ) -> None:
         super().__init__()
+        if weight_dict is None:
+            dec_layers = 9
+            weight_dict = {
+                "loss_ce": 4.0,
+                "loss_dice": 5.0,
+                "loss_mask": 5.0,
+                "loss_bbox": 5.0,
+                "loss_giou": 2.0,
+            }
+            weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
+
+            # denoising training
+            weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
+
+            aux_weight_dict = {}
+            for i in range(dec_layers):
+                aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+            weight_dict.update(aux_weight_dict)
+
         self.num_classes = num_classes
         self.matcher = matcher
         self.weight_dict = weight_dict
         self.eos_coef = eos_coef
-        self.losses = losses
-        self.dn_losses = dn_losses
         empty_weight = torch.ones(self.num_classes + 1)
         empty_weight[-1] = self.eos_coef
         self.register_buffer("empty_weight", empty_weight)
+
+        loss_bbox_weight = weight_dict["loss_bbox"] if "loss_bbox" in weight_dict else 1.0
+        loss_giou_weight = weight_dict["loss_giou"] if "loss_giou" in weight_dict else 1.0
+        self.lossl1 = L1Loss(loss_weight=loss_bbox_weight)
+        self.giou = GIoULoss(loss_weight=loss_giou_weight)
 
         # pointwise mask loss parameters
         self.num_points = num_points
@@ -232,13 +256,16 @@ class MaskDINOCriterion(nn.Module):
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices, strict=True)], dim=0)
 
-        loss_bbox = f.l1_loss(src_boxes, target_boxes, reduction="none")
         losses = {}
-        losses["loss_bbox"] = loss_bbox.sum() / num_boxes
 
-        giou = generalized_box_iou(box_cxcywh_to_xyxy(src_boxes), box_cxcywh_to_xyxy(target_boxes)).to(src_boxes)
-        loss_giou = 1 - torch.diag(giou)
-        losses["loss_giou"] = loss_giou.sum() / num_boxes
+        loss_bbox = self.lossl1(src_boxes, target_boxes, avg_factor=num_boxes)
+        loss_giou = self.giou(
+            box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            avg_factor=num_boxes,
+        )
+        losses["loss_giou"] = loss_giou
+        losses["loss_bbox"] = loss_bbox
 
         return losses
 
@@ -343,32 +370,9 @@ class MaskDINOCriterion(nn.Module):
         tgt_idx = torch.cat([tgt for (_, tgt) in indices])
         return batch_idx, tgt_idx
 
-    def get_loss(
-        self,
-        loss: str,
-        outputs: dict[str, Tensor],
-        targets: list[dict[str, Tensor]],
-        indices: list[tuple[Tensor, Tensor]],
-        num_masks: float,
-    ) -> dict[str, Tensor]:
-        """Get the loss function.
-
-        Args:
-            loss (str): "labels", "masks" or "boxes".
-            outputs (dict[str, Tensor]): model outputs.
-            targets (list[dict[str, Tensor]]): targets.
-            indices (list[tuple[Tensor, Tensor]]): matched indices.
-            num_masks (float): number of masks.
-
-        Returns:
-            dict[str, Tensor]: computed losses.
-        """
-        loss_map = {
-            "labels": self.loss_labels,
-            "masks": self.loss_masks,
-            "boxes": self.loss_boxes,
-        }
-        return loss_map[loss](outputs, targets, indices, num_masks)
+    @property
+    def _available_losses(self) -> tuple[Callable]:
+        return (self.loss_labels, self.loss_boxes, self.loss_masks)  # type: ignore[return-value]
 
     def forward(
         self,
@@ -420,13 +424,13 @@ class MaskDINOCriterion(nn.Module):
 
         # Compute all the requested losses
         losses = {}
-        for loss in self.losses:
-            losses.update(self.get_loss(loss, outputs, targets, indices, num_masks))
+        for loss in self._available_losses:
+            losses.update(loss(outputs, targets, indices, num_masks))
 
         if mask_dict is not None:
             l_dict = {}
-            for loss in self.dn_losses:
-                l_dict.update(self.get_loss(loss, output_known_lbs_bboxes, targets, exc_idx, num_masks * scalar))
+            for loss in self._available_losses:
+                l_dict.update(loss(output_known_lbs_bboxes, targets, exc_idx, num_masks * scalar))
             l_dict = {k + "_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
@@ -443,8 +447,8 @@ class MaskDINOCriterion(nn.Module):
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets)
-                for loss in self.losses:
-                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_masks)
+                for loss in self._available_losses:
+                    l_dict = loss(aux_outputs, targets, indices, num_masks)
                     l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
                 start = 0 if "interm_outputs" in outputs else 1
@@ -452,8 +456,8 @@ class MaskDINOCriterion(nn.Module):
                     if mask_dict is not None:
                         out_ = output_known_lbs_bboxes["aux_outputs"][i]
                         l_dict = {}
-                        for loss in self.dn_losses:
-                            l_dict.update(self.get_loss(loss, out_, targets, exc_idx, num_masks * scalar))
+                        for loss in self._available_losses:
+                            l_dict.update(loss(out_, targets, exc_idx, num_masks * scalar))
                         l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
                         losses.update(l_dict)
                     else:
@@ -470,8 +474,8 @@ class MaskDINOCriterion(nn.Module):
         if "interm_outputs" in outputs:
             interm_outputs = outputs["interm_outputs"]
             indices = self.matcher(interm_outputs, targets)
-            for loss in self.losses:
-                l_dict = self.get_loss(loss, interm_outputs, targets, indices, num_masks)
+            for loss in self._available_losses:
+                l_dict = loss(interm_outputs, targets, indices, num_masks)
                 l_dict = {k + "_interm": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 

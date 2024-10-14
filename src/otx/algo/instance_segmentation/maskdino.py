@@ -69,25 +69,12 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         """Build a MaskDINO model from a config."""
-        # Loss parameters:
-        no_object_weight = 0.1
-
         # loss weights
-        class_weight = 4.0
         cost_class_weight = 4.0
         cost_dice_weight = 5.0
-        dice_weight = 5.0
         cost_mask_weight = 5.0
-        mask_weight = 5.0
         cost_box_weight = 5.0
-        box_weight = 5.0
         cost_giou_weight = 2.0
-        giou_weight = 2.0
-        train_num_points = 112 * 112
-        oversample_ratio = 3.0
-        importance_sample_ratio = 0.75
-
-        dec_layers = 9
 
         backbone = IntermediateLayerGetter(
             resnet50(norm_layer=FrozenBatchNorm2d),
@@ -105,36 +92,14 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             channels=[256, 512, 1024, 2048],
         )
 
+        pixel_decoder = MaskDINOEncoder(input_shape=fmap_shape_specs)
+
+        transformer_predictor = MaskDINODecoder(num_classes=num_classes)
+
         sem_seg_head = MaskDINOHead(
-            ignore_value=255,
             num_classes=num_classes,
-            pixel_decoder=MaskDINOEncoder(
-                input_shape=fmap_shape_specs,
-                conv_dim=256,
-                mask_dim=256,
-                norm="GN",
-                transformer_dropout=0.0,
-                transformer_nheads=8,
-                transformer_dim_feedforward=2048,
-                transformer_enc_layers=6,
-                transformer_in_features=["res3", "res4", "res5"],
-                common_stride=4,
-                total_num_feature_levels=4,
-                num_feature_levels=3,
-            ),
-            loss_weight=1.0,
-            transformer_predictor=MaskDINODecoder(
-                num_classes=num_classes,
-                hidden_dim=256,
-                num_queries=300,
-                nheads=8,
-                dim_feedforward=2048,
-                dec_layers=9,
-                mask_dim=256,
-                noise_scale=0.4,
-                dn_num=100,
-                total_num_feature_levels=4,
-            ),
+            pixel_decoder=pixel_decoder,
+            transformer_predictor=transformer_predictor,
         )
 
         matcher = HungarianMatcher(
@@ -147,34 +112,10 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             },
         )
 
-        weight_dict = {
-            "loss_ce": class_weight,
-            "loss_dice": dice_weight,
-            "loss_mask": mask_weight,
-            "loss_bbox": box_weight,
-            "loss_giou": giou_weight,
-        }
-        weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
-
-        # denoising training
-        weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
-
-        aux_weight_dict = {}
-        for i in range(dec_layers):
-            aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
-        weight_dict.update(aux_weight_dict)
-
         # building criterion
         criterion = MaskDINOCriterion(
             num_classes=num_classes,
             matcher=matcher,
-            weight_dict=weight_dict,
-            eos_coef=no_object_weight,
-            losses=["labels", "masks", "boxes"],
-            num_points=train_num_points,
-            oversample_ratio=oversample_ratio,
-            importance_sample_ratio=importance_sample_ratio,
-            dn_losses=["labels", "masks", "boxes"],
         )
 
         return MaskDINO(
@@ -218,10 +159,14 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         for layer_name, weights in detector.backbone.state_dict().items():
             if "downsample" in layer_name:
                 w = maskdino_backbone_shortcut_weights.pop(0)
-                assert w.shape == weights.shape
+                if w.shape != weights.shape:
+                    msg = f"Shape mismatch: {layer_name} {w.shape} != {weights.shape}"
+                    raise ValueError(msg)
             else:
                 w = maskdino_backbone_weights.pop(0)
-                assert w.shape == weights.shape
+                if w.shape != weights.shape:
+                    msg = f"Shape mismatch: {layer_name} {w.shape} != {weights.shape}"
+                    raise ValueError(msg)
             tv_model_dict[layer_name] = w.clone()
         detector.backbone.load_state_dict(tv_model_dict)
 
