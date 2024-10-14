@@ -54,7 +54,7 @@ def clean_data(
     gt_anno: dict,  # ground truth annotations
     dt_anno: dict,  # detection results
     current_class: str,  # the current class name
-) -> tuple:  # (num_valid_gt, ignored_gt, ignored_dt, dc_bboxes)
+) -> tuple:  # (num_valid_gt, ignored_gt, ignored_dt)
     """Filter out the objects that are not in the current class.
 
     Args:
@@ -64,7 +64,7 @@ def clean_data(
         difficulty (int): The difficulty level.
 
     Returns:
-        tuple: The number of valid objects, ignored_gt, ignored_dt, and dc_bboxes.
+        tuple: The number of valid objects, ignored_gt, ignored_dt.
     """
     min_height = 20
     max_occlusion = 2
@@ -475,7 +475,7 @@ def _prepare_data(
     gt_annos: list[dict[str, Any]],
     dt_annos: list[dict[str, Any]],
     current_class: str,
-) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], np.ndarray, int]:
+) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], int]:
     """Prepare data for evaluation.
 
     Args:
@@ -485,13 +485,13 @@ def _prepare_data(
 
     Returns:
         Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray],
-        List[np.ndarray], List[np.ndarray], np.ndarray, int]:
+        List[np.ndarray], int]:
             gt_datas_list, dt_datas_list, ignored_gts, ignored_dets,
-            dontcares, total_num_valid_gt
+            total_num_valid_gt
     """
     gt_datas_list = []
     dt_datas_list = []
-    ignored_gts, ignored_dets, dontcares = [], [], []
+    ignored_gts, ignored_dets = [], []
     total_num_valid_gt = 0
     for i in range(len(gt_annos)):
         rets = clean_data(gt_annos[i], dt_annos[i], current_class)
@@ -608,7 +608,7 @@ def do_eval_cut_version(
     dt_annos: list[dict[str, Any]],
     current_classes: list[str],
     min_overlaps: np.ndarray,
-) -> tuple[float, float]:
+) -> np.ndarray:
     """Evaluates detections with COCO style AP.
 
     Args:
@@ -618,7 +618,7 @@ def do_eval_cut_version(
         min_overlaps (np.ndarray): Overlap ranges.
 
     Returns:
-        Tuple[float, float]: Bounding box and 3D bounding box AP.
+        np.ndarray: 3D bounding box AP.
     """
 
     def _get_map(prec: np.ndarray) -> np.ndarray:
@@ -630,16 +630,14 @@ def do_eval_cut_version(
     # min_overlaps: [num_minoverlap, num_class]
     # get 3D bbox mAP
     ret = eval_class(gt_annos, dt_annos, current_classes, min_overlaps)
-    map_3d = _get_map(ret["precision"])
-
-    return map_3d
+    return _get_map(ret["precision"])
 
 
 def get_coco_eval_result(
     gt_annos: list[dict],
     dt_annos: list[dict],
     current_classes: list[str],
-) -> tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """Evaluates detections with COCO style AP.
 
     Args:
@@ -648,7 +646,7 @@ def get_coco_eval_result(
         current_classes (list[str]): Classes to evaluate.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: Bounding box and 3D bounding box AP.
+        np.ndarray: 3D bounding box AP.
     """
 
     def do_coco_style_eval(
@@ -656,7 +654,7 @@ def get_coco_eval_result(
         dt_annos: list[dict],
         current_classes: list[str],
         overlap_ranges: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> np.ndarray:
         """Evaluates detections with COCO style AP.
 
         Args:
@@ -666,7 +664,7 @@ def get_coco_eval_result(
             overlap_ranges (np.ndarray): Overlap ranges.
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: Bounding box and 3D bounding box AP.
+            np.ndarray: 3D bounding box AP.
         """
         min_overlaps = np.zeros([10, *overlap_ranges.shape[1:]])
 

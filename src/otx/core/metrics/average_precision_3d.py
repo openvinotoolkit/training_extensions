@@ -67,19 +67,17 @@ class KittiMetric(Metric):
 
     def prepare_inputs_for_map_coco(self, targets: list[dict[str, np.array]]) -> list[dict[str, Tensor]]:
         """Prepare targets for torchmetrics."""
-        targets_for_torchmetrics = []
-        for target in targets:
-            targets_for_torchmetrics.append(
-                {
-                    "boxes": torch.tensor(target["bbox"]),
-                    "scores": torch.tensor(target["score"]) if "score" in target else None,
-                    "labels": torch.tensor(
-                        [self.label_info.label_names.index(label) for label in target["name"]],
-                        dtype=torch.long,
-                    ),
-                },
-            )
-        return targets_for_torchmetrics
+        return [
+            {
+                "boxes": torch.tensor(target["bbox"]),
+                "scores": torch.tensor(target["score"]) if "score" in target else None,
+                "labels": torch.tensor(
+                    [self.label_info.label_names.index(label) for label in target["name"]],
+                    dtype=torch.long,
+                ),
+            }
+            for target in targets
+        ]
 
 
 def _kitti_metric_measure_callable(label_info: LabelInfo) -> KittiMetric:
