@@ -10,9 +10,10 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
+from torchvision.models import resnet50
+from torchvision.models._utils import IntermediateLayerGetter
 
 from otx.algo.common.utils.assigners import HungarianMatcher
-from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resnet_backbone
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
 from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
@@ -20,7 +21,8 @@ from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.instance_segmentation.segmentors import MaskDINO
 from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
-from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
+from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
+from otx.algo.utils.mmengine_utils import load_from_http
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -37,6 +39,33 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     load_from = "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def build_fmap_shape_specs(
+        self,
+        out_feautres: list[str],
+        strides: list[int],
+        channels: list[int],
+    ) -> dict[str, ShapeSpec]:
+        """Build feature map shape specs.
+
+        Args:
+            out_feautres (list[str]): feature map names.
+            strides (list[int]): stride of each feature map.
+            channels (list[int]): number of channels for each feature map.
+
+        Todo:
+            - Implement Unit tests.
+
+        Returns:
+            dict[str, ShapeSpec]: feature map shape specs.
+        """
+        output_shape_dict = {}
+        for out_feature, stride, channel in zip(out_feautres, strides, channels, strict=True):
+            output_shape_dict[out_feature] = ShapeSpec(
+                channels=channel,
+                stride=stride,
+            )
+        return output_shape_dict
 
     def _build_model(self, num_classes: int) -> nn.Module:
         """Build a MaskDINO model from a config."""
@@ -60,26 +89,27 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
         dec_layers = 9
 
-        backbone = build_resnet_backbone(
-            norm="FrozenBN",
-            stem_out_channels=64,
-            input_shape=ShapeSpec(channels=3),
-            freeze_at=0,
-            out_features=("res2", "res3", "res4", "res5"),
-            depth=50,
-            num_groups=1,
-            width_per_group=64,
-            in_channels=64,
-            out_channels=256,
-            stride_in_1x1=False,
-            res5_dilation=1,
+        backbone = IntermediateLayerGetter(
+            resnet50(norm_layer=FrozenBatchNorm2d),
+            return_layers={
+                "layer1": "res2",
+                "layer2": "res3",
+                "layer3": "res4",
+                "layer4": "res5",
+            },
+        )
+
+        fmap_shape_specs = self.build_fmap_shape_specs(
+            out_feautres=["res2", "res3", "res4", "res5"],
+            strides=[4, 8, 16, 32],
+            channels=[256, 512, 1024, 2048],
         )
 
         sem_seg_head = MaskDINOHead(
             ignore_value=255,
             num_classes=num_classes,
             pixel_decoder=MaskDINOEncoder(
-                input_shape=backbone.output_shape(),
+                input_shape=fmap_shape_specs,
                 conv_dim=256,
                 mask_dim=256,
                 norm="GN",
@@ -154,6 +184,48 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             num_queries=300,
             test_topk_per_image=100,
         )
+
+    def _create_model(self) -> nn.Module:
+        """Create MaskDINO model and load pre-trained weights.
+
+        Detectron R50 coco-pretrained weights have different structure than TV R50 weights,
+        so we need to implement custom loading logic.
+
+        Returns:
+            nn.Module: MaskDINO model.
+
+        Todo:
+            - Implement Unit tests.
+        """
+        detector = super()._create_model()
+
+        # Load pre-trained backbone weights
+        maskdino_pretrained = load_from_http(self.load_from, map_location="cpu")
+        maskdino_pretrained = maskdino_pretrained.pop("model")
+        maskdino_backbone_weights = []
+        maskdino_backbone_shortcut_weights = []
+
+        # Load MaskDINO pre-trained backbone weights
+        for layer_name, weights in maskdino_pretrained.items():
+            if layer_name.startswith("backbone"):
+                if "shortcut" in layer_name:
+                    maskdino_backbone_shortcut_weights.append(weights)
+                else:
+                    maskdino_backbone_weights.append(weights)
+
+        # Load TV backbone
+        tv_model_dict = {}
+        for layer_name, weights in detector.backbone.state_dict().items():
+            if "downsample" in layer_name:
+                w = maskdino_backbone_shortcut_weights.pop(0)
+                assert w.shape == weights.shape
+            else:
+                w = maskdino_backbone_weights.pop(0)
+                assert w.shape == weights.shape
+            tv_model_dict[layer_name] = w.clone()
+        detector.backbone.load_state_dict(tv_model_dict)
+
+        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:
