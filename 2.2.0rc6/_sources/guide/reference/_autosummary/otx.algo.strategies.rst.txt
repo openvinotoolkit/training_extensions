@@ -1,0 +1,29 @@
+otx.algo.strategies
+===================
+
+.. automodule:: otx.algo.strategies
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SingleXPUStrategy
+   
+   
+
+   
+   
+   
+
+
+

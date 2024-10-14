@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; OpenVINO™ Training Extensions 2.2.0rc6 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=0a108b04" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script src="_static/documentation_options.js?v=2f0dc617"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search" aria-label="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        
+<form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search" aria-label="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+      </div>
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        
+<form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search" aria-label="Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+      </div>
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.__call__">__call__() (otx.core.optimizer.OptimizerCallableSupportHPO method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.LinearWarmupSchedulerCallable.__call__">(otx.core.schedulers.LinearWarmupSchedulerCallable method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO.__call__">(otx.core.schedulers.SchedulerCallableSupportHPO method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.html#otx.cli.utils.absolute_path">absolute_path() (in module otx.cli.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.LinearWarmupScheduler.activated">activated (otx.core.schedulers.LinearWarmupScheduler property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#id0">add_argument() (otx.cli.utils.help_formatter.CustomHelpFormatter method)</a>, <a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter.add_argument">[1]</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.add_hardware_suffix_to_torch">add_hardware_suffix_to_torch() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.install.html#otx.cli.install.add_install_parser">add_install_parser() (in module otx.cli.install)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.add_list_type_arguments">add_list_type_arguments() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.add_subcommands">add_subcommands() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#id1">add_usage() (otx.cli.utils.help_formatter.CustomHelpFormatter method)</a>, <a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter.add_usage">[1]</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.any_representer">any_representer() (in module otx.core.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.utils.html#otx.utils.append_main_proc_signal_handler">append_main_proc_signal_handler() (in module otx.utils)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.utils.html#otx.utils.append_signal_handler">append_signal_handler() (in module otx.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.apply_config">apply_config() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.apply_override">apply_override() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#otx.core.utils.cache.TrainerArgumentsCache.args">args (otx.core.utils.cache.TrainerArgumentsCache property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo.as_dict">as_dict() (otx.core.types.LabelInfo method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.HLabelInfo.as_head_config_dict">as_head_config_dict() (otx.core.types.HLabelInfo method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.as_int_tuple">as_int_tuple() (in module otx.core.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.as_torch_dtype">as_torch_dtype() (in module otx.core.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.auto_config">auto_config() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.auto_device_count">auto_device_count() (otx.algo.accelerators.XPUAccelerator static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.batch_size">batch_size (otx.core.config.data.SubsetConfig attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.benchmark">benchmark() (otx.engine.Engine method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.best_confidence_threshold">best_confidence_threshold (otx.core.model.detection.OTXDetectionModel property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.clip_gradients">clip_gradients() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.TileConfig.clone">clone() (otx.core.config.data.TileConfig method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.tools.converter.html#otx.tools.converter.ConfigConverter">ConfigConverter (class in otx.tools.converter)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.configure_callbacks">configure_callbacks() (otx.core.model.anomaly.OTXAnomaly method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.configure_metric">configure_metric() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.configure_metric">(otx.core.model.keypoint_detection.OTXKeypointDetectionModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.configure_optimizers">configure_optimizers() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.configure_optimizers">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.configure_optimizers">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.tools.converter.html#otx.tools.converter.ConfigConverter.convert">convert() (otx.tools.converter.ConfigConverter static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.config.html#otx.core.utils.config.convert_conf_to_mmconfig_dict">convert_conf_to_mmconfig_dict() (in module otx.core.utils.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDatasetFactory.create">create() (otx.core.data.OTXDatasetFactory class method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#otx.core.utils.mask_util.crop_and_resize_masks">crop_and_resize_masks() (in module otx.core.utils.mask_util)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#otx.core.utils.mask_util.crop_and_resize_polygons">crop_and_resize_polygons() (in module otx.core.utils.mask_util)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter">CustomHelpFormatter (class in otx.cli.utils.help_formatter)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.datamodule">datamodule (otx.engine.Engine property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.DetectionTileMerge">DetectionTileMerge (class in otx.core.utils.tile_merge)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.device">device (otx.engine.Engine property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.device.html#otx.core.config.device.DeviceConfig">DeviceConfig (class in otx.core.config.device)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.dtype_representer">dtype_representer() (in module otx.core.config)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#otx.core.utils.mask_util.encode_rle">encode_rle() (in module otx.core.utils.mask_util)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine">Engine (class in otx.engine)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommand_parser">engine_subcommand_parser() (otx.cli.cli.OTXCLI static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommands">engine_subcommands() (otx.cli.cli.OTXCLI static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.miscellaneous.html#otx.core.utils.miscellaneous.ensure_callable">ensure_callable() (in module otx.core.utils.miscellaneous)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.explain">explain() (otx.engine.Engine method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.explain_mode">explain_mode (otx.core.model.base.OTXModel attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#id0">(otx.core.model.base.OTXModel property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel">ExplainableOTXDetModel (class in otx.core.model.detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel">ExplainableOTXInstanceSegModel (class in otx.core.model.instance_segmentation)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.config.explain.html#otx.core.config.explain.ExplainConfig">ExplainConfig (class in otx.core.config.explain)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter.export">export() (otx.core.exporter.base.OTXModelExporter method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.export">(otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.export">(otx.core.model.anomaly.OTXAnomaly method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.export">(otx.core.model.base.OTXModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.export">(otx.core.model.base.OVModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.export">(otx.core.model.segmentation.OTXSegmentationModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.export">(otx.engine.Engine method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.export_model_forward_context">export_model_forward_context() (otx.core.model.detection.ExplainableOTXDetModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.export_model_forward_context">(otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.flatten_dict">flatten_dict() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#id2">format_help() (otx.cli.utils.help_formatter.CustomHelpFormatter method)</a>, <a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter.format_help">[1]</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.forward">forward() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.forward">(otx.core.model.base.OVModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel.forward">(otx.core.model.visual_prompting.OVVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.forward">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.forward_context">forward_context() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.forward_explain">forward_explain() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.forward_explain">(otx.core.model.base.OVModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.forward_explain">(otx.core.model.detection.ExplainableOTXDetModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">(otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel.forward_for_tracing">forward_for_tracing() (otx.core.model.action_classification.OTXActionClsModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.forward_for_tracing">(otx.core.model.base.OTXModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel.forward_for_tracing">(otx.core.model.classification.OTXHlabelClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel.forward_for_tracing">(otx.core.model.classification.OTXMulticlassClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMultilabelClsModel.forward_for_tracing">(otx.core.model.classification.OTXMultilabelClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.forward_for_tracing">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_for_tracing">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.forward_for_tracing">(otx.core.model.keypoint_detection.OTXKeypointDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.forward_for_tracing">(otx.core.model.segmentation.OTXSegmentationModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.forward_tiles">forward_tiles() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.forward_tiles">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_tiles">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.from_callable">from_callable() (otx.core.optimizer.OptimizerCallableSupportHPO class method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO.from_callable">(otx.core.schedulers.SchedulerCallableSupportHPO class method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.from_config">from_config() (otx.engine.Engine class method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.HLabelInfo.from_dm_label_groups">from_dm_label_groups() (otx.core.types.HLabelInfo class method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo.from_dm_label_groups">(otx.core.types.LabelInfo class method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.HLabelInfo.from_json">from_json() (otx.core.types.HLabelInfo class method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo.from_json">(otx.core.types.LabelInfo class method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.NullLabelInfo.from_json">(otx.core.types.NullLabelInfo class method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.from_model_name">from_model_name() (otx.engine.Engine class method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo.from_num_classes">from_num_classes() (otx.core.types.LabelInfo class method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.SegLabelInfo.from_num_classes">(otx.core.types.SegLabelInfo class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.TransformLibFactory.generate">generate() (otx.core.data.TransformLibFactory class method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.get_adaptive_num_workers">get_adaptive_num_workers() (in module otx.core.utils.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_best_config">get_best_config() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.get_ckpt_label_info_v1">get_ckpt_label_info_v1() (otx.core.model.base.OTXModel static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel.get_classification_layers">get_classification_layers() (otx.core.model.action_classification.OTXActionClsModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.get_classification_layers">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.get_classification_layers">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.get_classification_layers">(otx.core.model.keypoint_detection.OTXKeypointDetectionModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.get_cli_usage_docstring">get_cli_usage_docstring() (in module otx.cli.utils.help_formatter)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_config_value">get_config_value() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_configuration">get_configuration() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_cuda_suffix">get_cuda_suffix() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_cuda_version">get_cuda_version() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.build.html#otx.core.utils.build.get_default_num_async_infer_requests">get_default_num_async_infer_requests() (in module otx.core.utils.build)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_defaults_with_overrides">get_defaults_with_overrides() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.get_device_stats">get_device_stats() (otx.algo.accelerators.XPUAccelerator method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel.get_dummy_input">get_dummy_input() (otx.core.model.action_classification.OTXActionClsModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OVActionClsModel.get_dummy_input">(otx.core.model.action_classification.OVActionClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.get_dummy_input">(otx.core.model.anomaly.OTXAnomaly method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.get_dummy_input">(otx.core.model.base.OTXModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.get_dummy_input">(otx.core.model.base.OVModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel.get_dummy_input">(otx.core.model.classification.OTXHlabelClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel.get_dummy_input">(otx.core.model.classification.OTXMulticlassClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMultilabelClsModel.get_dummy_input">(otx.core.model.classification.OTXMultilabelClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.get_dummy_input">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.get_dummy_input">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input">(otx.core.model.segmentation.OTXSegmentationModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OTXVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OVVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.get_explain_fn">get_explain_fn() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.get_explain_fn">(otx.core.model.detection.ExplainableOTXDetModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.get_explain_fn">(otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_hardware_suffix">get_hardware_suffix() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.get_idx_list_per_classes">get_idx_list_per_classes() (in module otx.core.utils.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_instantiated_classes">get_instantiated_classes() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_mmcv_install_args">get_mmcv_install_args() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_module_version">get_module_version() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_next_sample">get_next_sample() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.get_num_anchors">get_num_anchors() (otx.core.model.detection.ExplainableOTXDetModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.get_onnx_dummy_inputs">get_onnx_dummy_inputs() (otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.imports.html#otx.core.utils.imports.get_otx_root_path">get_otx_root_path() (in module otx.core.utils.imports)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.get_parallel_devices">get_parallel_devices() (otx.algo.accelerators.XPUAccelerator static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_progress">get_progress() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.pylogger.html#otx.core.utils.pylogger.get_pylogger">get_pylogger() (in module otx.core.utils.pylogger)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_requirements">get_requirements() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.get_results_from_head">get_results_from_head() (otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.InstanceSegTileMerge.get_saliency_maps_from_masks">get_saliency_maps_from_masks() (otx.core.utils.tile_merge.InstanceSegTileMerge method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_short_docstring">get_short_docstring() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_subcommand_parser">get_subcommand_parser() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_torch_install_args">get_torch_install_args() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#otx.core.utils.cache.TrainerArgumentsCache.get_trainer_constructor_args">get_trainer_constructor_args() (otx.core.utils.cache.TrainerArgumentsCache static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.get_verbosity_subcommand">get_verbosity_subcommand() (in module otx.cli.utils.help_formatter)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.HLabelInfo">HLabelInfo (class in otx.core.types)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.hparams_initial">hparams_initial (otx.core.data.OTXDataModule property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.config.hpo.html#otx.core.config.hpo.HpoConfig">HpoConfig (class in otx.core.config.hpo)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand">HyperBand (class in otx.hpo)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.ignore_aliases">ignore_aliases() (in module otx.core.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.import_object_from_module">import_object_from_module() (in module otx.core.utils.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.infer">infer() (otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.init_parser">init_parser() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.initialize_reference_info">initialize_reference_info() (otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.input_size">input_size (otx.core.config.data.SubsetConfig attribute)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.input_size">(otx.core.model.anomaly.OTXAnomaly property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.input_size_multiplier">input_size_multiplier (otx.core.model.base.OTXModel attribute)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.InstanceSegTileMerge">InstanceSegTileMerge (class in otx.core.utils.tile_merge)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.tools.converter.html#otx.tools.converter.ConfigConverter.instantiate">instantiate() (otx.tools.converter.ConfigConverter static method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#otx.core.utils.instantiators.instantiate_callbacks">instantiate_callbacks() (in module otx.core.utils.instantiators)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_classes">instantiate_classes() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_engine">instantiate_engine() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#otx.core.utils.instantiators.instantiate_loggers">instantiate_loggers() (in module otx.core.utils.instantiators)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_model">instantiate_model() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#otx.core.utils.instantiators.instantiate_sampler">instantiate_sampler() (in module otx.core.utils.instantiators)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.is_available">is_available() (otx.algo.accelerators.XPUAccelerator static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.is_ckpt_for_finetuning">is_ckpt_for_finetuning() (in module otx.core.utils.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.is_ckpt_from_otx_v1">is_ckpt_from_otx_v1() (in module otx.core.utils.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.strategies.html#otx.algo.strategies.SingleXPUStrategy.is_distributed">is_distributed (otx.algo.strategies.SingleXPUStrategy property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.is_done">is_done() (otx.hpo.HyperBand method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.label_info">label_info (otx.core.model.base.OTXModel property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo">LabelInfo (class in otx.core.types)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.learn">learn() (otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.LinearWarmupScheduler">LinearWarmupScheduler (class in otx.core.schedulers)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.LinearWarmupSchedulerCallable">LinearWarmupSchedulerCallable (class in otx.core.schedulers)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.list_override">list_override() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.load_from_otx_v1_ckpt">load_from_otx_v1_ckpt() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.load_reference_info">load_reference_info() (otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.load_state_dict">load_state_dict() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.load_state_dict">(otx.core.model.base.OTXModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.load_state_dict_incrementally">load_state_dict_incrementally() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.load_state_dict_pre_hook">load_state_dict_pre_hook() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.lr_scheduler_step">lr_scheduler_step() (otx.core.model.base.OTXModel method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.html#otx.cli.main">main() (in module otx.cli)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.map_class_names">map_class_names() (otx.core.model.base.OTXModel static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.DetectionTileMerge.merge">merge() (otx.core.utils.tile_merge.DetectionTileMerge method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.InstanceSegTileMerge.merge">(otx.core.utils.tile_merge.InstanceSegTileMerge method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.TileMerge.merge">(otx.core.utils.tile_merge.TileMerge method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.anomaly.html#otx.core.exporter.anomaly.OTXAnomalyModelExporter.metadata">metadata (otx.core.exporter.anomaly.OTXAnomalyModelExporter property)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter.metadata">(otx.core.exporter.base.OTXModelExporter property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.metric">metric (otx.core.model.base.OTXModel property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.mim_installation">mim_installation() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin">MixedPrecisionXPUPlugin (class in otx.algo.plugins)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.model">model (otx.engine.Engine property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OVActionClsModel.model_adapter_parameters">model_adapter_parameters (otx.core.model.action_classification.OVActionClsModel property)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.model_adapter_parameters">(otx.core.model.base.OVModel property)</a>
+</li>
+      </ul></li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.html#module-otx">otx</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.html#module-otx.algo">otx.algo</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#module-otx.algo.accelerators">otx.algo.accelerators</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#module-otx.algo.plugins">otx.algo.plugins</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.strategies.html#module-otx.algo.strategies">otx.algo.strategies</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.html#module-otx.cli">otx.cli</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.cli.html#module-otx.cli.cli">otx.cli.cli</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.install.html#module-otx.cli.install">otx.cli.install</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.html#module-otx.cli.utils">otx.cli.utils</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#module-otx.cli.utils.help_formatter">otx.cli.utils.help_formatter</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#module-otx.cli.utils.installation">otx.cli.utils.installation</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#module-otx.cli.utils.jsonargparse">otx.cli.utils.jsonargparse</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.workspace.html#module-otx.cli.utils.workspace">otx.cli.utils.workspace</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.html#module-otx.core">otx.core</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.config.html#module-otx.core.config">otx.core.config</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.config.data.html#module-otx.core.config.data">otx.core.config.data</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.config.device.html#module-otx.core.config.device">otx.core.config.device</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.config.explain.html#module-otx.core.config.explain">otx.core.config.explain</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.config.hpo.html#module-otx.core.config.hpo">otx.core.config.hpo</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.data.html#module-otx.core.data">otx.core.data</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.html#module-otx.core.exporter">otx.core.exporter</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.anomaly.html#module-otx.core.exporter.anomaly">otx.core.exporter.anomaly</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#module-otx.core.exporter.base">otx.core.exporter.base</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.exportable_code.html#module-otx.core.exporter.exportable_code">otx.core.exporter.exportable_code</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.exportable_code.demo.html#module-otx.core.exporter.exportable_code.demo">otx.core.exporter.exportable_code.demo</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.native.html#module-otx.core.exporter.native">otx.core.exporter.native</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#module-otx.core.exporter.visual_prompting">otx.core.exporter.visual_prompting</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.metrics.html#module-otx.core.metrics">otx.core.metrics</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.html#module-otx.core.model">otx.core.model</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#module-otx.core.model.action_classification">otx.core.model.action_classification</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#module-otx.core.model.anomaly">otx.core.model.anomaly</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#module-otx.core.model.base">otx.core.model.base</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#module-otx.core.model.classification">otx.core.model.classification</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#module-otx.core.model.detection">otx.core.model.detection</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#module-otx.core.model.instance_segmentation">otx.core.model.instance_segmentation</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#module-otx.core.model.keypoint_detection">otx.core.model.keypoint_detection</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#module-otx.core.model.rotated_detection">otx.core.model.rotated_detection</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#module-otx.core.model.segmentation">otx.core.model.segmentation</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#module-otx.core.model.visual_prompting">otx.core.model.visual_prompting</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.optimizer.html#module-otx.core.optimizer">otx.core.optimizer</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#module-otx.core.schedulers">otx.core.schedulers</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#module-otx.core.types">otx.core.types</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.html#module-otx.core.utils">otx.core.utils</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.build.html#module-otx.core.utils.build">otx.core.utils.build</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#module-otx.core.utils.cache">otx.core.utils.cache</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.config.html#module-otx.core.utils.config">otx.core.utils.config</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.imports.html#module-otx.core.utils.imports">otx.core.utils.imports</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#module-otx.core.utils.instantiators">otx.core.utils.instantiators</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#module-otx.core.utils.mask_util">otx.core.utils.mask_util</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.miscellaneous.html#module-otx.core.utils.miscellaneous">otx.core.utils.miscellaneous</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.pylogger.html#module-otx.core.utils.pylogger">otx.core.utils.pylogger</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#module-otx.core.utils.tile_merge">otx.core.utils.tile_merge</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#module-otx.core.utils.utils">otx.core.utils.utils</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.engine.html#module-otx.engine">otx.engine</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.hpo.html#module-otx.hpo">otx.hpo</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.recipe.html#module-otx.recipe">otx.recipe</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.tools.html#module-otx.tools">otx.tools</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.tools.converter.html#module-otx.tools.converter">otx.tools.converter</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.tools.templates.html#module-otx.tools.templates">otx.tools.templates</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.utils.html#module-otx.utils">otx.utils</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.namespace_override">namespace_override() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.TileMerge.nms_postprocess">nms_postprocess() (otx.core.utils.tile_merge.TileMerge method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.NullLabelInfo">NullLabelInfo (class in otx.core.types)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.num_classes">num_classes (otx.core.model.base.OTXModel property)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo.num_classes">(otx.core.types.LabelInfo property)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.num_devices">num_devices (otx.engine.Engine property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.num_workers">num_workers (otx.core.config.data.SubsetConfig attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_load_checkpoint">on_load_checkpoint() (otx.core.model.anomaly.OTXAnomaly method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_load_checkpoint">(otx.core.model.base.OTXModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.on_load_checkpoint">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.on_load_checkpoint">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_predict_batch_end">on_predict_batch_end() (otx.core.model.anomaly.OTXAnomaly method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_predict_start">on_predict_start() (otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_predict_start">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_save_checkpoint">on_save_checkpoint() (otx.core.model.anomaly.OTXAnomaly method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_save_checkpoint">(otx.core.model.base.OTXModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_test_epoch_end">on_test_epoch_end() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_test_epoch_start">on_test_epoch_start() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_test_start">on_test_start() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_test_start">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_test_start">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_train_epoch_end">on_train_epoch_end() (otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_train_epoch_end">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_train_epoch_start">on_train_epoch_start() (otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_train_epoch_start">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_train_start">on_train_start() (otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_train_start">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_validation_epoch_end">on_validation_epoch_end() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_validation_epoch_end">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_validation_epoch_end">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_validation_epoch_start">on_validation_epoch_start() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_validation_epoch_start">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_validation_epoch_start">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_validation_start">on_validation_start() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.optimize">optimize() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.optimize">(otx.core.model.base.OVModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel.optimize">(otx.core.model.visual_prompting.OVVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.optimize">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.optimize">(otx.engine.Engine method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.optimizer_step">optimizer_step() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO">OptimizerCallableSupportHPO (class in otx.core.optimizer)</a>
+</li>
+      <li>
+    otx
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.html#module-otx">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algo
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.algo.html#module-otx.algo">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algo.accelerators
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#module-otx.algo.accelerators">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algo.plugins
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#module-otx.algo.plugins">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.algo.strategies
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.algo.strategies.html#module-otx.algo.strategies">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.html#module-otx.cli">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.cli
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.cli.html#module-otx.cli.cli">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.install
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.install.html#module-otx.cli.install">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.utils
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.html#module-otx.cli.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.utils.help_formatter
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#module-otx.cli.utils.help_formatter">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.utils.installation
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#module-otx.cli.utils.installation">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.utils.jsonargparse
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#module-otx.cli.utils.jsonargparse">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.cli.utils.workspace
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.cli.utils.workspace.html#module-otx.cli.utils.workspace">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.html#module-otx.core">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.config
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.config.html#module-otx.core.config">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.config.data
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.config.data.html#module-otx.core.config.data">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.config.device
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.config.device.html#module-otx.core.config.device">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.config.explain
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.config.explain.html#module-otx.core.config.explain">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.config.hpo
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.config.hpo.html#module-otx.core.config.hpo">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.data
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.data.html#module-otx.core.data">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.html#module-otx.core.exporter">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter.anomaly
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.anomaly.html#module-otx.core.exporter.anomaly">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter.base
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#module-otx.core.exporter.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter.exportable_code
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.exportable_code.html#module-otx.core.exporter.exportable_code">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter.exportable_code.demo
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.exportable_code.demo.html#module-otx.core.exporter.exportable_code.demo">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter.native
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.native.html#module-otx.core.exporter.native">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.exporter.visual_prompting
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#module-otx.core.exporter.visual_prompting">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.metrics
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.metrics.html#module-otx.core.metrics">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.html#module-otx.core.model">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.action_classification
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#module-otx.core.model.action_classification">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    otx.core.model.anomaly
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#module-otx.core.model.anomaly">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.base
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#module-otx.core.model.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.classification
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#module-otx.core.model.classification">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.detection
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#module-otx.core.model.detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.instance_segmentation
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#module-otx.core.model.instance_segmentation">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.keypoint_detection
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#module-otx.core.model.keypoint_detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.rotated_detection
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#module-otx.core.model.rotated_detection">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.segmentation
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#module-otx.core.model.segmentation">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.model.visual_prompting
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#module-otx.core.model.visual_prompting">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.optimizer
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.optimizer.html#module-otx.core.optimizer">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.schedulers
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#module-otx.core.schedulers">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.types
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.types.html#module-otx.core.types">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.html#module-otx.core.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.build
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.build.html#module-otx.core.utils.build">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.cache
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#module-otx.core.utils.cache">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.config
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.config.html#module-otx.core.utils.config">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.imports
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.imports.html#module-otx.core.utils.imports">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.instantiators
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#module-otx.core.utils.instantiators">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.mask_util
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#module-otx.core.utils.mask_util">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.miscellaneous
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.miscellaneous.html#module-otx.core.utils.miscellaneous">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.pylogger
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.pylogger.html#module-otx.core.utils.pylogger">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.tile_merge
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#module-otx.core.utils.tile_merge">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.core.utils.utils
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#module-otx.core.utils.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.engine
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.engine.html#module-otx.engine">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.hpo
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.hpo.html#module-otx.hpo">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.recipe
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.recipe.html#module-otx.recipe">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.tools
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.tools.html#module-otx.tools">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.tools.converter
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.tools.converter.html#module-otx.tools.converter">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.tools.templates
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.tools.templates.html#module-otx.tools.templates">module</a>
+</li>
+      </ul></li>
+      <li>
+    otx.utils
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.utils.html#module-otx.utils">module</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.cli.install.html#otx.cli.install.otx_install">otx_install() (in module otx.cli.install)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.otx_str_type_representer">otx_str_type_representer() (in module otx.core.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel">OTXActionClsModel (class in otx.core.model.action_classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly">OTXAnomaly (class in otx.core.model.anomaly)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.anomaly.html#otx.core.exporter.anomaly.OTXAnomalyModelExporter">OTXAnomalyModelExporter (class in otx.core.exporter.anomaly)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI">OTXCLI (class in otx.cli.cli)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule">OTXDataModule (class in otx.core.data)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDatasetFactory">OTXDatasetFactory (class in otx.core.data)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel">OTXDetectionModel (class in otx.core.model.detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel">OTXHlabelClsModel (class in otx.core.model.classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel">OTXInstanceSegModel (class in otx.core.model.instance_segmentation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.keypoint_detection.html#otx.core.model.keypoint_detection.OTXKeypointDetectionModel">OTXKeypointDetectionModel (class in otx.core.model.keypoint_detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel">OTXModel (class in otx.core.model.base)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter">OTXModelExporter (class in otx.core.exporter.base)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel">OTXMulticlassClsModel (class in otx.core.model.classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMultilabelClsModel">OTXMultilabelClsModel (class in otx.core.model.classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.native.html#otx.core.exporter.native.OTXNativeModelExporter">OTXNativeModelExporter (class in otx.core.exporter.native)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel">OTXSegmentationModel (class in otx.core.model.segmentation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.OTXTaskType">OTXTaskType (class in otx.core.types)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXVisualPromptingModel">OTXVisualPromptingModel (class in otx.core.model.visual_prompting)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter">OTXVisualPromptingModelExporter (class in otx.core.exporter.visual_prompting)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel">OTXZeroShotVisualPromptingModel (class in otx.core.model.visual_prompting)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OVActionClsModel">OVActionClsModel (class in otx.core.model.action_classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OVDetectionModel">OVDetectionModel (class in otx.core.model.detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OVHlabelClassificationModel">OVHlabelClassificationModel (class in otx.core.model.classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OVInstanceSegmentationModel">OVInstanceSegmentationModel (class in otx.core.model.instance_segmentation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel">OVModel (class in otx.core.model.base)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OVMulticlassClassificationModel">OVMulticlassClassificationModel (class in otx.core.model.classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OVMultilabelClassificationModel">OVMultilabelClassificationModel (class in otx.core.model.classification)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.OVRotatedDetectionModel">OVRotatedDetectionModel (class in otx.core.model.rotated_detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OVSegmentationModel">OVSegmentationModel (class in otx.core.model.segmentation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel">OVVisualPromptingModel (class in otx.core.model.visual_prompting)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel">OVZeroShotVisualPromptingModel (class in otx.core.model.visual_prompting)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.parse_devices">parse_devices() (otx.algo.accelerators.XPUAccelerator static method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.parse_requirements">parse_requirements() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#otx.core.utils.instantiators.partial_instantiate_class">partial_instantiate_class() (in module otx.core.utils.instantiators)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.patch_mmaction2">patch_mmaction2() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.patch_optimizer_and_scheduler_for_hpo">patch_optimizer_and_scheduler_for_hpo() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.patch_update_configs">patch_update_configs() (in module otx.cli.utils.jsonargparse)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#otx.core.utils.mask_util.polygon_to_bitmap">polygon_to_bitmap() (in module otx.core.utils.mask_util)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.mask_util.html#otx.core.utils.mask_util.polygon_to_rle">polygon_to_rle() (in module otx.core.utils.mask_util)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.pre_backward">pre_backward() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.predict">predict() (otx.engine.Engine method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.predict_dataloader">predict_dataloader() (otx.core.data.OTXDataModule method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.predict_step">predict_step() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.predict_step">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNModel.predict_step">(otx.core.model.rotated_detection.RotatedMaskRCNNModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.prepare_subcommand_kwargs">prepare_subcommand_kwargs() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.print_result">print_result() (otx.hpo.HyperBand method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.config.html#otx.core.config.register_configs">register_configs() (in module otx.core.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.register_load_state_dict_pre_hook">register_load_state_dict_pre_hook() (otx.core.model.base.OTXModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.remove_state_dict_prefix">remove_state_dict_prefix() (in module otx.core.utils.utils)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.render_guide">render_guide() (in module otx.cli.utils.help_formatter)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.report_score">report_score() (otx.hpo.HyperBand method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#otx.core.utils.cache.TrainerArgumentsCache.requires_update">requires_update() (otx.core.utils.cache.TrainerArgumentsCache method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNEfficientNet">RotatedMaskRCNNEfficientNet (class in otx.core.model.rotated_detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNModel">RotatedMaskRCNNModel (class in otx.core.model.rotated_detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNResNet50">RotatedMaskRCNNResNet50 (class in otx.core.model.rotated_detection)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.run">run() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.run_hpo_loop">run_hpo_loop() (in module otx.hpo)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SamplerConfig">SamplerConfig (class in otx.core.config.data)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.save_config">save_config() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.save_reference_info">save_reference_info() (otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.save_results">save_results() (otx.hpo.HyperBand method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO">SchedulerCallableSupportHPO (class in otx.core.schedulers)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.SegLabelInfo">SegLabelInfo (class in otx.core.types)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.set_seed">set_seed() (otx.cli.cli.OTXCLI method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.setup">setup() (otx.core.data.OTXDataModule method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.setup">(otx.core.model.base.OTXModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.setup_device">setup_device() (otx.algo.accelerators.XPUAccelerator method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.strategies.html#otx.algo.strategies.SingleXPUStrategy.setup_optimizers">setup_optimizers() (otx.algo.strategies.SingleXPUStrategy method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.strategies.html#otx.algo.strategies.SingleXPUStrategy">SingleXPUStrategy (class in otx.algo.strategies)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.state_dict">state_dict() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.LinearWarmupScheduler.step">step() (otx.core.schedulers.LinearWarmupScheduler method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter.subcommand">subcommand (otx.cli.utils.help_formatter.CustomHelpFormatter attribute)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.subset_name">subset_name (otx.core.config.data.SubsetConfig attribute)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig">SubsetConfig (class in otx.core.config.data)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.task">task (otx.core.model.anomaly.OTXAnomaly property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.teardown">teardown() (otx.algo.accelerators.XPUAccelerator method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.teardown">(otx.core.data.OTXDataModule method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.test">test() (otx.engine.Engine method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.test_dataloader">test_dataloader() (otx.core.data.OTXDataModule method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.test_step">test_step() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.test_step">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXVisualPromptingModel.test_step">(otx.core.model.visual_prompting.OTXVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.test_step">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel.test_step">(otx.core.model.visual_prompting.OVVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.test_step">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.tile_config">tile_config (otx.core.model.base.OTXModel property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.TileConfig">TileConfig (class in otx.core.config.data)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.TileMerge">TileMerge (class in otx.core.utils.tile_merge)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter.to_exportable_code">to_exportable_code() (otx.core.exporter.base.OTXModelExporter method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.types.html#otx.core.types.LabelInfo.to_json">to_json() (otx.core.types.LabelInfo method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.config.html#otx.core.utils.config.to_list">to_list() (in module otx.core.utils.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter.to_onnx">to_onnx() (otx.core.exporter.base.OTXModelExporter method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.native.html#otx.core.exporter.native.OTXNativeModelExporter.to_onnx">(otx.core.exporter.native.OTXNativeModelExporter method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.to_onnx">(otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter.to_openvino">to_openvino() (otx.core.exporter.base.OTXModelExporter method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.native.html#otx.core.exporter.native.OTXNativeModelExporter.to_openvino">(otx.core.exporter.native.OTXNativeModelExporter method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.to_openvino">(otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.config.html#otx.core.utils.config.to_tuple">to_tuple() (in module otx.core.utils.config)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.train">train() (otx.engine.Engine method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.train_dataloader">train_dataloader() (otx.core.data.OTXDataModule method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.trainable_model">trainable_model (otx.core.model.anomaly.OTXAnomaly property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.trainer">trainer (otx.engine.Engine property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.trainer_params">trainer_params (otx.engine.Engine property)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#otx.core.utils.cache.TrainerArgumentsCache">TrainerArgumentsCache (class in otx.core.utils.cache)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.training_step">training_step() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel.training_step">(otx.core.model.classification.OTXMulticlassClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.training_step">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.training_step">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OVActionClsModel.transform_fn">transform_fn() (otx.core.model.action_classification.OVActionClsModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.transform_fn">(otx.core.model.base.OVModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.transform_lib_type">transform_lib_type (otx.core.config.data.SubsetConfig attribute)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.TransformLibFactory">TransformLibFactory (class in otx.core.data)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.transforms">transforms (otx.core.config.data.SubsetConfig attribute)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.hpo.html#otx.hpo.TrialStatus">TrialStatus (class in otx.hpo)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.unlabeled_dataloader">unlabeled_dataloader() (otx.core.data.OTXDataModule method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.UnlabeledDataConfig">UnlabeledDataConfig (class in otx.core.config.data)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.update">update() (in module otx.cli.utils.jsonargparse)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.utils.cache.html#otx.core.utils.cache.TrainerArgumentsCache.update">(otx.core.utils.cache.TrainerArgumentsCache method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.update_cuda_version_with_available_torch_cuda_build">update_cuda_version_with_available_torch_cuda_build() (in module otx.cli.utils.installation)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.update_latest">update_latest() (otx.cli.cli.OTXCLI method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.val_dataloader">val_dataloader() (otx.core.data.OTXDataModule method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.validation_step">validation_step() (otx.core.model.base.OTXModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXVisualPromptingModel.validation_step">(otx.core.model.visual_prompting.OTXVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.validation_step">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel.validation_step">(otx.core.model.visual_prompting.OVVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.validation_step">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter.verbosity_level">verbosity_level (otx.cli.utils.help_formatter.CustomHelpFormatter attribute)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.VisualPromptingConfig">VisualPromptingConfig (class in otx.core.config.data)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.work_dir">work_dir (otx.engine.Engine property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.cli.utils.workspace.html#otx.cli.utils.workspace.Workspace">Workspace (class in otx.cli.utils.workspace)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator">XPUAccelerator (class in otx.algo.accelerators)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
