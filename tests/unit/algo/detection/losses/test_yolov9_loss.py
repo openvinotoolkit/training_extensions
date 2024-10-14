@@ -176,7 +176,7 @@ class TestBoxMatcher:
         assert torch.all(align_targets == 0)
 
         assert valid_masks.shape == (1, 8400)
-        assert torch.all(valid_masks == False)
+        assert torch.all(~valid_masks)
 
 
 class TestYOLOv9Criterion:
