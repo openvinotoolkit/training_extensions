@@ -10,9 +10,9 @@ from typing import Any, ClassVar
 import torch
 import torchvision
 from torch import nn
+from torchvision.models import get_model_weights
 from torchvision.models._utils import IntermediateLayerGetter
 
-from otx.algo.classification.backbones.torchvision import get_model_weights
 from otx.algo.modules.norm import FrozenBatchNorm2d
 from otx.algo.object_detection_3d.utils.utils import NestedTensor
 
