@@ -11,8 +11,15 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.assigners import HungarianMatcher
+from otx.algo.instance_segmentation.backbones.detectron_resnet import build_resnet_backbone
+from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
+from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
+from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
+from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.instance_segmentation.segmentors import MaskDINO
 from otx.algo.instance_segmentation.utils import box_ops
+from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -32,8 +39,121 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        """Builds the model."""
-        return MaskDINO.from_config(num_classes)
+        """Build a MaskDINO model from a config."""
+        # Loss parameters:
+        no_object_weight = 0.1
+
+        # loss weights
+        class_weight = 4.0
+        cost_class_weight = 4.0
+        cost_dice_weight = 5.0
+        dice_weight = 5.0
+        cost_mask_weight = 5.0
+        mask_weight = 5.0
+        cost_box_weight = 5.0
+        box_weight = 5.0
+        cost_giou_weight = 2.0
+        giou_weight = 2.0
+        train_num_points = 112 * 112
+        oversample_ratio = 3.0
+        importance_sample_ratio = 0.75
+
+        dec_layers = 9
+
+        backbone = build_resnet_backbone(
+            norm="FrozenBN",
+            stem_out_channels=64,
+            input_shape=ShapeSpec(channels=3),
+            freeze_at=0,
+            out_features=("res2", "res3", "res4", "res5"),
+            depth=50,
+            num_groups=1,
+            width_per_group=64,
+            in_channels=64,
+            out_channels=256,
+            stride_in_1x1=False,
+            res5_dilation=1,
+        )
+
+        sem_seg_head = MaskDINOHead(
+            ignore_value=255,
+            num_classes=num_classes,
+            pixel_decoder=MaskDINOEncoder(
+                input_shape=backbone.output_shape(),
+                conv_dim=256,
+                mask_dim=256,
+                norm="GN",
+                transformer_dropout=0.0,
+                transformer_nheads=8,
+                transformer_dim_feedforward=2048,
+                transformer_enc_layers=6,
+                transformer_in_features=["res3", "res4", "res5"],
+                common_stride=4,
+                total_num_feature_levels=4,
+                num_feature_levels=3,
+            ),
+            loss_weight=1.0,
+            transformer_predictor=MaskDINODecoder(
+                num_classes=num_classes,
+                hidden_dim=256,
+                num_queries=300,
+                nheads=8,
+                dim_feedforward=2048,
+                dec_layers=9,
+                mask_dim=256,
+                noise_scale=0.4,
+                dn_num=100,
+                total_num_feature_levels=4,
+            ),
+        )
+
+        matcher = HungarianMatcher(
+            cost_dict={
+                "cost_class": cost_class_weight,
+                "cost_bbox": cost_box_weight,
+                "cost_giou": cost_giou_weight,
+                "cost_mask": cost_mask_weight,
+                "cost_dice": cost_dice_weight,
+            },
+        )
+
+        weight_dict = {
+            "loss_ce": class_weight,
+            "loss_dice": dice_weight,
+            "loss_mask": mask_weight,
+            "loss_bbox": box_weight,
+            "loss_giou": giou_weight,
+        }
+        weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
+
+        # denoising training
+        weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
+
+        aux_weight_dict = {}
+        for i in range(dec_layers):
+            aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+        weight_dict.update(aux_weight_dict)
+
+        # building criterion
+        criterion = MaskDINOCriterion(
+            num_classes=num_classes,
+            matcher=matcher,
+            weight_dict=weight_dict,
+            eos_coef=no_object_weight,
+            losses=["labels", "masks", "boxes"],
+            num_points=train_num_points,
+            oversample_ratio=oversample_ratio,
+            importance_sample_ratio=importance_sample_ratio,
+            dn_losses=["labels", "masks", "boxes"],
+        )
+
+        return MaskDINO(
+            backbone=backbone,
+            sem_seg_head=sem_seg_head,
+            criterion=criterion,
+            num_queries=300,
+            test_topk_per_image=100,
+        )
 
     @property
     def _exporter(self) -> OTXModelExporter:
