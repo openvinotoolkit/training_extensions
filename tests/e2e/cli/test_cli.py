@@ -181,7 +181,7 @@ def test_otx_e2e_cli(
         assert (latest_dir / export_case.expected_output).exists()
 
     if task == OTXTaskType.OBJECT_DETECTION_3D:
-        return # "3D Object Detection is not supported for OV IR inference.
+        return  # "3D Object Detection is not supported for OV IR inference.
 
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
@@ -319,7 +319,7 @@ def test_otx_explain_e2e_cli(
         "rtdetr_50",
         "rtdetr_101",
         "maskrcnn_r50_tv",
-        "maskrcnn_r50_tv_tile"
+        "maskrcnn_r50_tv_tile",
     ]
 
     if any(model in model_name for model in models_not_supported):
