@@ -99,7 +99,7 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
         OTXTaskType.MULTI_LABEL_CLS: Path(fxt_ci_data_root / "v2/multilabel_classification/multilabel_CUB_small/1"),
         OTXTaskType.H_LABEL_CLS: Path(fxt_ci_data_root / "v2/hlabel_classification/hlabel_CUB_small/1"),
         OTXTaskType.DETECTION: Path(fxt_ci_data_root / "v2/detection/bdd_small/1"),
-        OTXTaskType.ROTATED_DETECTION: Path(fxt_ci_data_root / "v2/rotated_detection/subway"),
+        OTXTaskType.ROTATED_DETECTION: Path(fxt_ci_data_root / "v2/rotated_detection/sample"),
         OTXTaskType.INSTANCE_SEGMENTATION: {
             "non_tiling": Path(fxt_ci_data_root / "v2/instance_seg/wgisd_small/1"),
             "tiling": Path(fxt_ci_data_root / "v2/tiling_instance_seg/vitens_aeromonas_small/1"),
@@ -109,7 +109,7 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
             "unlabeled": Path(fxt_ci_data_root / "v2/semantic_seg/semi-sl/unlabeled_images/kvasir"),
         },
         OTXTaskType.ACTION_CLASSIFICATION: Path(
-            fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small",
+            fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_30percent_medium",
         ),
         OTXTaskType.VISUAL_PROMPTING: Path(fxt_ci_data_root / "v2/visual_prompting/coco_car_person_medium"),
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: Path(
@@ -119,7 +119,11 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
         OTXTaskType.ANOMALY_CLASSIFICATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.ANOMALY_DETECTION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.ANOMALY_SEGMENTATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
-        OTXTaskType.KEYPOINT_DETECTION: Path(fxt_ci_data_root / "v2/keypoint_detection/coco_keypoint_medium"),
+        OTXTaskType.KEYPOINT_DETECTION: {
+            "rtmpose_tiny": Path(fxt_ci_data_root / "v2/keypoint_detection/coco_keypoint/medium"),
+            "rtmpose_tiny_single_obj": Path(fxt_ci_data_root / "v2/keypoint_detection/coco_keypoint_single_obj/medium"),
+        },
+        OTXTaskType.OBJECT_DETECTION_3D: Path(fxt_ci_data_root / "v2/object_detection_3d/medium_pedestrian_cyclist"),
     }
 
 
@@ -141,4 +145,5 @@ def fxt_cli_override_command_per_task() -> dict:
         OTXTaskType.ANOMALY_DETECTION: [],
         OTXTaskType.ANOMALY_SEGMENTATION: [],
         OTXTaskType.KEYPOINT_DETECTION: [],
+        OTXTaskType.OBJECT_DETECTION_3D: [],
     }

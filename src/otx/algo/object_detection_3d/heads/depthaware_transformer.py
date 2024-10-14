@@ -167,58 +167,6 @@ class DepthAwareTransformer(nn.Module):
         # N, L, 6, 64, 2
         return torch.stack((pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4).flatten(2)
 
-    def gen_encoder_output_proposals(
-        self,
-        memory: Tensor,
-        memory_padding_mask: Tensor,
-        spatial_shapes: list[tuple[int, int]],
-    ) -> tuple[Tensor, Tensor]:
-        """Generate encoder output and proposals.
-
-        Args:
-            memory (Tensor): Memory tensor of shape (N, S, C).
-            memory_padding_mask (Tensor): Memory padding mask tensor of shape (N, S).
-            spatial_shapes (List[Tuple[int, int]]): List of spatial shapes.
-
-        Returns:
-            Tuple[Tensor, Tensor]: Encoder output tensor of shape (N, S, C) and proposals tensor of shape (N, L, 6).
-        """
-        n_, _, _ = memory.shape
-        proposals = []
-        _cur = 0
-        for lvl, (h_, w_) in enumerate(spatial_shapes):
-            mask_flatten_ = memory_padding_mask[:, _cur : (_cur + h_ * w_)].view(n_, h_, w_, 1)
-            valid_h = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
-            valid_w = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
-
-            grid_y, grid_x = torch.meshgrid(
-                torch.linspace(0, h_ - 1, h_, dtype=torch.float32, device=memory.device),
-                torch.linspace(0, w_ - 1, w_, dtype=torch.float32, device=memory.device),
-            )
-            grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
-
-            scale = torch.cat([valid_w.unsqueeze(-1), valid_h.unsqueeze(-1)], 1).view(n_, 1, 1, 2)
-            grid = (grid.unsqueeze(0).expand(n_, -1, -1, -1) + 0.5) / scale
-
-            lr = torch.ones_like(grid) * 0.05 * (2.0**lvl)
-            tb = torch.ones_like(grid) * 0.05 * (2.0**lvl)
-            wh = torch.cat((lr, tb), -1)
-
-            proposal = torch.cat((grid, wh), -1).view(n_, -1, 6)
-            proposals.append(proposal)
-            _cur += h_ * w_
-        output_proposals = torch.cat(proposals, 1)
-        output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(-1, keepdim=True)
-        output_proposals = torch.log(output_proposals / (1 - output_proposals))
-        output_proposals = output_proposals.masked_fill(memory_padding_mask.unsqueeze(-1), float("inf"))
-        output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
-
-        output_memory = memory
-        output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
-        output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
-        output_memory = self.enc_output_norm(self.enc_output(output_memory))
-        return output_memory, output_proposals
-
     def get_valid_ratio(self, mask: Tensor) -> Tensor:
         """Calculate the valid ratio of the mask.
 
@@ -830,7 +778,7 @@ class DepthAwareDecoder(nn.Module):
                 intermediate_reference_dims,
             )
 
-        return output, reference_points
+        return output, reference_points, None
 
 
 class DepthAwareTransformerBuilder:

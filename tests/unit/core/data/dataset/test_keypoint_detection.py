@@ -19,7 +19,7 @@ class TestOTXKeypointDetectionDataset:
         return DmDataset.import_from("tests/assets/car_tree_bug_keypoint", format="coco_person_keypoints")
 
     @pytest.fixture()
-    def fxt_tvt_transforms(self, mocker) -> Identity:
+    def fxt_tvt_transforms(self) -> Identity:
         return Identity()
 
     @pytest.mark.parametrize("subset", ["train", "val"])

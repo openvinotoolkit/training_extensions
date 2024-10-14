@@ -25,10 +25,10 @@ class MonoDETR(nn.Module):
         backbone: nn.Module,
         depthaware_transformer: nn.Module,
         depth_predictor: nn.Module,
-        criterion: nn.Module,
         num_classes: int,
         num_queries: int,
         num_feature_levels: int,
+        criterion: nn.Module | None = None,
         aux_loss: bool = True,
         with_box_refine: bool = False,
         init_box: bool = False,
@@ -41,7 +41,7 @@ class MonoDETR(nn.Module):
             backbone (nn.Module): torch module of the backbone to be used. See backbone.py
             depthaware_transformer (nn.Module): depth-aware transformer architecture. See depth_aware_transformer.py
             depth_predictor (nn.Module): depth predictor module
-            criterion (nn.Module): loss criterion module
+            criterion (nn.Module | None): loss criterion module
             num_classes (int): number of object classes
             num_queries (int): number of object queries, ie detection slot. This is the maximal number of objects
                        DETR can detect in a single image. For KITTI, we recommend 50 queries.
@@ -285,6 +285,9 @@ class MonoDETR(nn.Module):
             )
 
         if mode == "loss":
+            if self.criterion is None:
+                msg = "Criterion is not set for the model"
+                raise ValueError(msg)
             return self.criterion(outputs=out, targets=targets)
 
         return out

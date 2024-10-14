@@ -17,7 +17,14 @@ from datumaro import Image
 from PIL import Image as PILImage
 from torchvision import tv_tensors
 
-from otx.core.data.dataset.utils.kitti_utils import Calibration, affine_transform, angle2class, get_affine_transform
+from otx.core.data.dataset.utils.kitti_utils import (
+    affine_transform,
+    angle2class,
+    get_affine_transform,
+    get_calib_from_file,
+    rect_to_img,
+    ry2alpha,
+)
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
@@ -45,7 +52,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
-        to_tv_image: bool = True,
+        to_tv_image: bool = False,
         max_objects: int = 50,
         depth_threshold: int = 65,
         resolution: tuple[int, int] = (1280, 384),  # (W, H)
@@ -69,7 +76,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         entity = self.dm_subset[index]
         image = entity.media_as(Image)
         image = self._get_img_data_and_shape(image)[0]
-        calib = Calibration(entity.attributes["calib_path"])
+        calib = get_calib_from_file(entity.attributes["calib_path"])
         original_kitti_format = None  # don't use for training
         if self.subset_type != "train":
             # TODO (Kirill): remove this or duplication of the inputs
@@ -106,7 +113,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
                 dtype=torch.float32,
             ),
             labels=torch.as_tensor(targets["labels"], dtype=torch.long),
-            calib_matrix=torch.as_tensor(calib.P2, dtype=torch.float32),
+            calib_matrix=torch.as_tensor(calib, dtype=torch.float32),
             boxes_3d=torch.as_tensor(targets["boxes_3d"], dtype=torch.float32),
             size_2d=torch.as_tensor(targets["size_2d"], dtype=torch.float32),
             size_3d=torch.as_tensor(targets["size_3d"], dtype=torch.float32),
@@ -123,7 +130,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         """Collection function to collect DetDataEntity into DetBatchDataEntity in data loader."""
         return partial(Det3DBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
-    def _decode_item(self, img: PILImage, annotations: list[Bbox], calib: Calibration) -> tuple:  # noqa: C901
+    def _decode_item(self, img: PILImage, annotations: list[Bbox], calib: np.ndarray) -> tuple:  # noqa: C901
         """Decode item for training."""
         # data augmentation for image
         img_size = np.array(img.size)
@@ -219,7 +226,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
                 ],
             )  # real 3D center in 3D space
             center_3d = center_3d.reshape(-1, 3)  # shape adjustment (N, 3)
-            center_3d, _ = calib.rect_to_img(center_3d)  # project 3D center to image plane
+            center_3d, _ = rect_to_img(calib, center_3d)  # project 3D center to image plane
             center_3d = center_3d[0]  # shape adjustment
             if random_flip_flag:  # random flip for center3d
                 center_3d[0] = img_size[0] - center_3d[0]
@@ -264,7 +271,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
             depth[i] = cur_obj["location"][-1] * crop_scale
 
             # encoding heading angle
-            heading_angle = calib.ry2alpha(cur_obj["rotation_y"], (bbox2d[i][0] + bbox2d[i][2]) / 2)
+            heading_angle = ry2alpha(calib, cur_obj["rotation_y"], (bbox2d[i][0] + bbox2d[i][2]) / 2)
             if heading_angle > np.pi:
                 heading_angle -= 2 * np.pi  # check range
             if heading_angle < -np.pi:

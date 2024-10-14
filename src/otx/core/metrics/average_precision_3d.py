@@ -7,12 +7,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from torch import Tensor
 import torch
+from torch import Tensor
 from torchmetrics import Metric
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.metrics.kitti_3d_eval import get_coco_eval_result
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 if TYPE_CHECKING:
     import numpy as np
@@ -54,17 +54,16 @@ class KittiMetric(Metric):
     def compute(self) -> dict:
         """Compute metrics for 3d object detection."""
         current_classes = self.label_info.label_names
-        preds_for_torchmetrics = self.prepare_targets(self.preds)
-        targets_for_torchmetrics = self.prepare_targets(self.targets)
+        preds_for_torchmetrics = self.prepare_inputs_for_map_coco(self.preds)
+        targets_for_torchmetrics = self.prepare_inputs_for_map_coco(self.targets)
         map_bbox_coco = self.mean_ap(preds_for_torchmetrics, targets_for_torchmetrics)
         map_3d = get_coco_eval_result(
             self.targets,
             self.preds,
             current_classes=[curcls.lower() for curcls in current_classes],
         )
-        breakpoint()
-        # use moderate difficulty as final score. Average across all calsses.
-        return {"mAP_bbox_3d": Tensor([map_3d[:, 1].mean()]), "mAP_bbox_2d": map_bbox_coco["map_50"]}
+        # Average across all calsses.
+        return {"mAP_bbox_3d": Tensor([map_3d.mean()]), "mAP_bbox_2d": map_bbox_coco["map_50"]}
 
     def prepare_inputs_for_map_coco(self, targets: list[dict[str, np.array]]) -> list[dict[str, Tensor]]:
         """Prepare targets for torchmetrics."""
@@ -74,10 +73,14 @@ class KittiMetric(Metric):
                 {
                     "boxes": torch.tensor(target["bbox"]),
                     "scores": torch.tensor(target["score"]) if "score" in target else None,
-                    "labels": torch.tensor([self.label_info.label_names.index(label) for label in target["name"]], dtype=torch.long),
-                }
+                    "labels": torch.tensor(
+                        [self.label_info.label_names.index(label) for label in target["name"]],
+                        dtype=torch.long,
+                    ),
+                },
             )
         return targets_for_torchmetrics
+
 
 def _kitti_metric_measure_callable(label_info: LabelInfo) -> KittiMetric:
     return KittiMetric(label_info=label_info)

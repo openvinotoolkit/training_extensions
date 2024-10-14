@@ -159,6 +159,10 @@ def test_otx_e2e(
             ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
         ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
 
+    if task == "object_detection_3d":
+        # exportable code and demo package are not supported for OD 3D
+        fxt_export_list.pop(-1)
+
     overrides = fxt_cli_override_command_per_task[task]
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
