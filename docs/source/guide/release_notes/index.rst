@@ -40,6 +40,7 @@ Enhancements
 - Change sematic segmentation to consider bbox only annotations
 - Relieve memory usage criteria on batch size 2 during adaptive batch size
 - Remove background label from RT Info for segmentation task
+- Prevent using too low confidence thresholds in detection
 
 Bug fixes
 ^^^^^^^^^

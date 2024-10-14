@@ -61,6 +61,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4009>)
 - Remove background label from RT Info for segmentation task
   (<https://github.com/openvinotoolkit/training_extensions/pull/4011>)
+- Prevent using too low confidence thresholds in detection
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4018>)
 
 ### Bug fixes
 
