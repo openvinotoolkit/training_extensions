@@ -229,7 +229,6 @@ class MonoDETRModel(ImageModel):
         Args:
             inference_adapter (InferenceAdapter): inference adapter containing the underlying model.
             configuration (dict, optional): configuration overrides the model parameters (see parameters() method).
-              Defaults to dict().
             preload (bool, optional): forces inference adapter to load the model. Defaults to False.
         """
         super().__init__(inference_adapter, configuration, preload)
@@ -449,7 +448,6 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         depth = torch.gather(depth, 1, topk_boxes.repeat(1, 1, 2))
         # 3d dims decoding
         size_3d = torch.gather(size_3d, 1, topk_boxes.repeat(1, 1, 3))
-        # 2d boxes of the corners decoding
 
         return labels, scores, size_3d, heading, boxes_3d, depth
 
