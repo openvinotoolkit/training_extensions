@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path  # noqa: TCH003
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
 import torch
 
@@ -40,3 +40,5 @@ class HpoConfig:
     asynchronous_sha: bool = num_workers > 1
     metric_name: str | None = None
     adapt_bs_search_space_max_val: Literal["None", "Safe", "Full"] = "None"
+    progress_update_callback: Callable[[int | float], None] | None = None
+    callbacks_to_exclude: list[str] | str | None = None
