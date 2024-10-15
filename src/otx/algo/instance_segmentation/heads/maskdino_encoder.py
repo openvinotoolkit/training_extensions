@@ -80,7 +80,14 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         normal_(self.level_embed)
 
     def get_valid_ratio(self, mask: Tensor) -> Tensor:
-        """Get the valid ratio of the mask."""
+        """Calculate the valid ratio of the mask.
+
+        Args:
+            mask (Tensor): The mask tensor.
+
+        Returns:
+            Tensor: The valid ratio tensor.
+        """
         _, height, width = mask.shape
         valid_height = torch.sum(~mask[:, :, 0], 1)
         valid_width = torch.sum(~mask[:, 0, :], 1)
@@ -94,7 +101,20 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         pos_embeds: list[Tensor],
         masks: list[Tensor],
     ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Prepare input for encoder."""
+        """Prepare the input for the encoder.
+
+        Args:
+            srcs (list[Tensor]): list of feature maps
+            pos_embeds (list[Tensor]): list of positional embeddings for each feature map
+            masks (list[Tensor]): mask for each feature map
+
+        Returns:
+            tuple[Tensor, Tensor, Tensor, Tensor]: 
+                src_flatten: flattened feature maps
+                mask_flatten: flattened masks
+                lvl_pos_embed_flatten: flattened positional embeddings
+                spatial_shapes: spatial shapes of the feature maps
+        """
         src_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []

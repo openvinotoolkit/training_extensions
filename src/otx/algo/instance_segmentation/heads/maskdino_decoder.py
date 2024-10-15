@@ -399,7 +399,14 @@ class MaskDINODecoderHead(nn.Module):
         return outputs_class, outputs_coord, outputs_mask
 
     def get_valid_ratio(self, mask: Tensor) -> Tensor:
-        """Get the valid ratio of the mask."""
+        """Calculate the valid ratio of the mask.
+
+        Args:
+            mask (Tensor): The mask tensor.
+
+        Returns:
+            Tensor: The valid ratio tensor.
+        """
         _, height, width = mask.shape
         valid_height = torch.sum(~mask[:, :, 0], 1)
         valid_width = torch.sum(~mask[:, 0, :], 1)
