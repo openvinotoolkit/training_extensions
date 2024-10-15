@@ -11,8 +11,8 @@ import torch
 from torch import Tensor, nn
 from torch.nn.init import constant_, normal_, xavier_uniform_
 
+from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MLP, MSDeformableAttention
-from otx.algo.detection.utils.utils import inverse_sigmoid
 from otx.algo.object_detection_3d.utils.utils import get_clones
 
 

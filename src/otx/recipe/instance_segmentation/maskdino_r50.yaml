@@ -1,0 +1,103 @@
+model:
+  class_path: otx.algo.instance_segmentation.maskdino.MaskDINOR50
+  init_args:
+    model_name: maskdino_r50
+    label_info: 80
+
+    optimizer:
+      class_path: torch.optim.AdamW
+      init_args:
+        lr: 0.0001
+        weight_decay: 0.05
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 20
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 6
+            monitor: val/map_50
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/instance_segmentation.yaml
+overrides:
+  gradient_clip_val: 0.01
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 1
+        decay: -0.025
+        min_lrschedule_patience: 3
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        monitor: null
+        mode: max
+        patience: 10
+        check_on_train_epoch_end: false
+        min_delta: 0.001
+        warmup_iters: 100
+        warmup_epochs: 7
+  max_epochs: 100
+  data:
+    train_subset:
+      batch_size: 2
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            keep_ratio: false
+            transform_bbox: true
+            transform_mask: true
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+          init_args:
+            prob: 0.5
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+
+    val_subset:
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            keep_ratio: false
+            scale: $(input_size)
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+
+    test_subset:
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            keep_ratio: false
+            scale: $(input_size)
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]

@@ -3,8 +3,10 @@
 #
 
 import pytest
+import torch
 from otx.algo.segmentation.dino_v2_seg import DinoV2Seg
 from otx.core.exporter.base import OTXModelExporter
+from torch._dynamo.testing import CompileCounter
 
 
 class TestDinoV2Seg:
@@ -26,3 +28,22 @@ class TestDinoV2Seg:
         assert isinstance(config, dict)
         assert "model_type" in config
         assert config["model_type"] == "transformer"
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            DinoV2Seg(model_name="dinov2_vits14", label_info=3),
+        ],
+    )
+    def test_compiled_model(self, model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        model.model = torch.compile(model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, 560, 560)
+        model.model(x)
+        assert cnt.frame_count == 1
