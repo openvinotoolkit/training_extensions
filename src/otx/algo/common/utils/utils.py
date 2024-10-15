@@ -9,6 +9,8 @@ Reference :
     - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/transforms.
     - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/layers/transformer/utils.
     - https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/pytorch/functions/topk.
+    - https://github.com/facebookresearch/detectron2/blob/main/projects/PointRend/point_rend/point_features.py
+    - https://github.com/facebookresearch/detr/blob/master/models/detr.py
 """
 
 from __future__ import annotations
@@ -20,7 +22,6 @@ from typing import Callable
 import numpy as np
 import torch
 import torch.distributed as dist
-import torch.nn.functional as f
 from torch import Tensor, nn
 
 
@@ -350,6 +351,8 @@ def gen_encoder_output_proposals(
 ) -> tuple[Tensor, Tensor]:
     """Generate encoder output and proposals.
 
+    Source: https://github.com/facebookresearch/detr/blob/master/models/detr.py
+
     Args:
         memory (Tensor): Memory tensor of shape (N, S, C).
         memory_padding_mask (Tensor): Memory padding mask tensor of shape (N, S).
@@ -390,27 +393,31 @@ def gen_encoder_output_proposals(
     return output_memory, output_proposals
 
 
-def point_sample(input_tensor: Tensor, point_coords: Tensor, **kwargs) -> Tensor:
-    """A wrapper around :function:`torch.nn.functional.grid_sample` to support 3D point_coords tensors.
+def sample_point(
+    input_features: torch.Tensor,
+    point_coordinates: torch.Tensor,
+    add_dim: bool = False,
+    **kwargs,
+) -> Tensor:
+    """A wrapper around `torch.nn.functional.grid_sample` to support 3D point_coordinates tensors.
 
-    Unlike :function:`torch.nn.functional.grid_sample` it assumes `point_coords` to lie inside
-    [0, 1] x [0, 1] square.
+    Source: https://github.com/facebookresearch/detectron2/blob/main/projects/PointRend/point_rend/point_features.py
 
     Args:
-        input_tensor (Tensor): A tensor of shape (N, C, H, W) that contains features map on a H x W grid.
-        point_coords (Tensor): A tensor of shape (N, P, 2) or (N, Hgrid, Wgrid, 2) that contains
-        [0, 1] x [0, 1] normalized point coordinates.
+        input_features (torch.Tensor): A tensor of shape (batch_size, channels, height, width) contains features map
+        point_coordinates (torch.Tensor): A tensor that contains [0, 1] * [0, 1] normalized point coordinates
+        add_dim (bool): boolean value to keep track of added dimension
 
     Returns:
-        output (Tensor): A tensor of shape (N, C, P) or (N, C, Hgrid, Wgrid) that contains
-            features for points in `point_coords`. The features are obtained via bilinear
-            interplation from `input` the same way as :function:`torch.nn.functional.grid_sample`.
+        point_features (torch.Tensor): A tensor that contains features for points in `point_coordinates`.
     """
-    add_dim = False
-    if point_coords.dim() == 3:
+    if point_coordinates.dim() == 3:
         add_dim = True
-        point_coords = point_coords.unsqueeze(2)
-    output = f.grid_sample(input_tensor, 2.0 * point_coords - 1.0, **kwargs)
+        point_coordinates = point_coordinates.unsqueeze(2)
+
+    # use nn.function.grid_sample to get features for points in `point_coordinates` via bilinear interpolation
+    point_features = torch.nn.functional.grid_sample(input_features, 2.0 * point_coordinates - 1.0, **kwargs)
     if add_dim:
-        output = output.squeeze(3)
-    return output
+        point_features = point_features.squeeze(3)
+
+    return point_features

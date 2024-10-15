@@ -15,8 +15,8 @@ from torchvision.ops import box_convert
 
 from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.common.losses import GIoULoss, L1Loss
-from otx.algo.common.utils.utils import point_sample
-from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness
+from otx.algo.common.utils.utils import sample_point
+from otx.algo.instance_segmentation.utils.utils import sample_points_using_uncertainty
 
 
 def sigmoid_focal_loss(
@@ -302,7 +302,7 @@ class MaskDINOCriterion(nn.Module):
 
         with torch.no_grad():
             # sample point_coords
-            point_coords = get_uncertain_point_coords_with_randomness(
+            point_coords = sample_points_using_uncertainty(
                 pred_masks,
                 lambda logits: calculate_uncertainty(logits),
                 self.num_points,
@@ -310,13 +310,13 @@ class MaskDINOCriterion(nn.Module):
                 self.importance_sample_ratio,
             )
             # get gt labels
-            point_labels = point_sample(
+            point_labels = sample_point(
                 target_masks.to(pred_masks),
                 point_coords,
                 align_corners=False,
             ).squeeze(1)
 
-        point_logits = point_sample(
+        point_logits = sample_point(
             pred_masks,
             point_coords,
             align_corners=False,

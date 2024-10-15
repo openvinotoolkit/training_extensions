@@ -15,8 +15,7 @@ from torch.nn import functional as f
 from torch.nn.init import normal_
 
 from otx.algo.common.layers.position_embed import PositionEmbeddingSine
-from otx.algo.common.layers.transformer_layers import MSDeformableAttention as MSDeformAttn
-from otx.algo.common.layers.transformer_layers import VisualEncoder, VisualEncoderLayer
+from otx.algo.common.layers.transformer_layers import MSDeformableAttention, VisualEncoder, VisualEncoderLayer
 from otx.algo.instance_segmentation.utils.utils import (
     ShapeSpec,
     c2_xavier_fill,
@@ -34,7 +33,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         dim_feedforward (int, optional): dimension of the feedforward network model. Defaults to 1024.
         dropout (float, optional): dropout value. Defaults to 0.1.
         num_feature_levels (int, optional): number of feature levels. Defaults to 4.
-        enc_n_points (int, optional): number of points for MSDeformAttn. Defaults to 4.
+        enc_n_points (int, optional): number of points for MSDeformableAttention. Defaults to 4.
     """
 
     def __init__(
@@ -75,7 +74,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
         for m in self.modules():
-            if isinstance(m, MSDeformAttn):
+            if isinstance(m, MSDeformableAttention):
                 m._reset_parameters()  # noqa: SLF001
         normal_(self.level_embed)
 
@@ -109,7 +108,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
             masks (list[Tensor]): mask for each feature map
 
         Returns:
-            tuple[Tensor, Tensor, Tensor, Tensor]: 
+            tuple[Tensor, Tensor, Tensor, Tensor]:
                 src_flatten: flattened feature maps
                 mask_flatten: flattened masks
                 lvl_pos_embed_flatten: flattened positional embeddings

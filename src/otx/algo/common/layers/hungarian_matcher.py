@@ -9,7 +9,7 @@ from functools import partial
 
 import torch
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
-from otx.algo.common.utils.utils import point_sample
+from otx.algo.common.utils.utils import sample_point
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor, nn
 from torchvision.ops import box_convert
@@ -231,13 +231,13 @@ class HungarianMatcher(nn.Module):
         point_coordinates = torch.rand(1, num_points, 2, device=out_mask.device)
 
         # get gt labels
-        target_mask = point_sample(
+        target_mask = sample_point(
             target_mask.to(out_mask),
             point_coordinates.repeat(target_mask.shape[0], 1, 1),
             align_corners=False,
         ).squeeze(1)
 
-        out_mask = point_sample(
+        out_mask = sample_point(
             out_mask,
             point_coordinates.repeat(out_mask.shape[0], 1, 1),
             align_corners=False,
