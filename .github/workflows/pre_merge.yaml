@@ -103,15 +103,41 @@ jobs:
           - task: "multi_cls_classification"
           - task: "multi_label_classification"
           - task: "hlabel_classification"
-          - task: "detection"
-          - task: "instance_segmentation"
-          - task: "semantic_segmentation"
           - task: "visual_prompting"
           - task: "zero_shot_visual_prompting"
           - task: "anomaly_classification"
           - task: "anomaly_detection"
           - task: "anomaly_segmentation"
     name: Integration-Test-${{ matrix.task }}-py310
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install Python
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+        with:
+          python-version: "3.10"
+      - name: Install tox
+        run: |
+          python -m pip install --require-hashes --no-deps -r .ci/requirements.txt
+          pip-compile --generate-hashes --output-file=/tmp/requirements.txt --extra=ci_tox pyproject.toml
+          python -m pip install --require-hashes --no-deps -r /tmp/requirements.txt
+          rm /tmp/requirements.txt
+      - name: Run Integration Test
+        run: tox -vv -e integration-test-${{ matrix.task }}
+  Integration-Test-Large:
+    if: |
+      github.event.pull_request.draft == false &&
+      !(startsWith(github.event.pull_request.title, '[WIP]'))
+    runs-on: [self-hosted, linux, x64, dev, dmount]
+    needs: Unit-Test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: "detection"
+          - task: "instance_segmentation"
+          - task: "semantic_segmentation"
+    name: Integration-Test-Large-${{ matrix.task }}-py310
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
