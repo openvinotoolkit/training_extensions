@@ -6,8 +6,8 @@
 from __future__ import annotations
 
 import torch
-import torch.nn.functional as f
-from torch import Tensor, nn
+from torch import Tensor
+
 
 def gen_encoder_output_proposals(
     memory: Tensor,
