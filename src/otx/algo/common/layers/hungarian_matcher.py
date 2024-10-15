@@ -9,7 +9,7 @@ from functools import partial
 
 import torch
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
-from otx.algo.instance_segmentation.utils.utils import point_sample
+from otx.algo.common.utils.utils import point_sample
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor, nn
 from torchvision.ops import box_convert

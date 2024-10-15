@@ -15,7 +15,8 @@ from torchvision.ops import box_convert
 
 from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.common.losses import GIoULoss, L1Loss
-from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness, point_sample
+from otx.algo.common.utils.utils import point_sample
+from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness
 
 
 def sigmoid_focal_loss(

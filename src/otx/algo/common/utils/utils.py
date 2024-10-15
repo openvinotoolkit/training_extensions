@@ -20,6 +20,7 @@ from typing import Callable
 import numpy as np
 import torch
 import torch.distributed as dist
+import torch.nn.functional as f
 from torch import Tensor, nn
 
 
@@ -387,3 +388,29 @@ def gen_encoder_output_proposals(
     output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
     output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
     return output_memory, output_proposals
+
+
+def point_sample(input_tensor: Tensor, point_coords: Tensor, **kwargs) -> Tensor:
+    """A wrapper around :function:`torch.nn.functional.grid_sample` to support 3D point_coords tensors.
+
+    Unlike :function:`torch.nn.functional.grid_sample` it assumes `point_coords` to lie inside
+    [0, 1] x [0, 1] square.
+
+    Args:
+        input_tensor (Tensor): A tensor of shape (N, C, H, W) that contains features map on a H x W grid.
+        point_coords (Tensor): A tensor of shape (N, P, 2) or (N, Hgrid, Wgrid, 2) that contains
+        [0, 1] x [0, 1] normalized point coordinates.
+
+    Returns:
+        output (Tensor): A tensor of shape (N, C, P) or (N, C, Hgrid, Wgrid) that contains
+            features for points in `point_coords`. The features are obtained via bilinear
+            interplation from `input` the same way as :function:`torch.nn.functional.grid_sample`.
+    """
+    add_dim = False
+    if point_coords.dim() == 3:
+        add_dim = True
+        point_coords = point_coords.unsqueeze(2)
+    output = f.grid_sample(input_tensor, 2.0 * point_coords - 1.0, **kwargs)
+    if add_dim:
+        output = output.squeeze(3)
+    return output

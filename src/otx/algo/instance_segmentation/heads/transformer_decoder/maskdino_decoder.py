@@ -14,7 +14,7 @@ from otx.algo.instance_segmentation.heads.transformer_decoder.dino_decoder impor
     DeformableTransformerDecoderLayer,
     TransformerDecoder,
 )
-from otx.algo.instance_segmentation.utils.utils import masks_to_boxes
+from otx.algo.instance_segmentation.utils.structures.mask.mask_target import masks_to_boxes
 
 
 class MaskDINODecoder(nn.Module):
