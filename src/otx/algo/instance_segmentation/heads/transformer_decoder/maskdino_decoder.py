@@ -53,6 +53,7 @@ class MaskDINODecoder(nn.Module):
         nhead: int = 8,
         dec_n_points: int = 4,
         query_dim: int = 4,
+        activation: nn.Module = nn.ReLU,
     ) -> None:
         super().__init__()
         self.num_feature_levels = total_num_feature_levels
@@ -75,7 +76,7 @@ class MaskDINODecoder(nn.Module):
         # output FFNs
         self.class_embed = nn.Linear(hidden_dim, num_classes)
         self.label_enc = nn.Embedding(num_classes, hidden_dim)
-        self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3)
+        self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3, activation)
 
         # init decoder
         self.decoder_norm = decoder_norm = nn.LayerNorm(hidden_dim)
@@ -96,7 +97,7 @@ class MaskDINODecoder(nn.Module):
         )
 
         self.hidden_dim = hidden_dim
-        self._bbox_embed = _bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self._bbox_embed = _bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3, activation)
         nn.init.constant_(_bbox_embed.layers[-1].weight.data, 0)
         nn.init.constant_(_bbox_embed.layers[-1].bias.data, 0)
         box_embed_layerlist = [_bbox_embed for i in range(self.num_layers)]  # share box prediction each layer

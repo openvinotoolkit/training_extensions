@@ -10,8 +10,9 @@ import math
 from typing import Callable
 
 import torch
+from otx.algo.common.utils.utils import get_clones
 from otx.algo.modules.transformer import deformable_attention_core_func
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import init
 
 
@@ -126,7 +127,15 @@ class TransformerEncoder(nn.Module):
 
 
 class MLP(nn.Module):
-    """MLP."""
+    """A classic Multi Layer Perceptron (MLP).
+
+    Args:
+        input_dim (int): The number of expected features in the input.
+        hidden_dim (int): The number of features in the hidden layers.
+        output_dim (int): The number of features in the output layer.
+        num_layers (int): The number of layers in the MLP.
+        activation (Callable[..., nn.Module] | None, optional): The activation function. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -295,3 +304,174 @@ class MSDeformableAttention(nn.Module):
         output = self.ms_deformable_attn_core(value, value_spatial_shapes, sampling_locations, attention_weights)
 
         return self.output_proj(output)
+
+
+class VisualEncoderLayer(nn.Module):
+    """VisualEncoderLayer module consisting of MSDeformableAttention and feed-forward network.
+
+    Args:
+        d_model (int): The input and output dimension of the layer. Defaults to 256.
+        d_ffn (int): The hidden dimension of the feed-forward network. Defaults to 1024.
+        dropout (float): The dropout rate. Defaults to 0.1.
+        activation (Callable[..., nn.Module]): The activation function. Defaults to nn.ReLU.
+        n_levels (int): The number of feature levels. Defaults to 4.
+        n_heads (int): The number of attention heads. Defaults to 8.
+        n_points (int): The number of sampling points for the MSDeformableAttention. Defaults to 4.
+    """
+
+    def __init__(
+        self,
+        d_model: int = 256,
+        d_ffn: int = 1024,
+        dropout: float = 0.1,
+        activation: Callable[..., nn.Module] = nn.ReLU,
+        n_levels: int = 4,
+        n_heads: int = 8,
+        n_points: int = 4,
+    ) -> None:
+        super().__init__()
+
+        # self attention
+        self.self_attn = MSDeformableAttention(d_model, n_heads, n_levels, n_points)
+        self.dropout1 = nn.Dropout(dropout)
+        self.norm1 = nn.LayerNorm(d_model)
+
+        # ffn
+        self.linear1 = nn.Linear(d_model, d_ffn)
+        self.activation = activation()
+        self.dropout2 = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(d_ffn, d_model)
+        self.dropout3 = nn.Dropout(dropout)
+        self.norm2 = nn.LayerNorm(d_model)
+
+    @staticmethod
+    def with_pos_embed(tensor: Tensor, pos: Tensor | None) -> Tensor:
+        """Add position embedding to the input tensor.
+
+        Args:
+            tensor (Tensor): The input tensor.
+            pos (Tensor | None): The position embedding tensor. Defaults to None.
+
+        Returns:
+            Tensor: The tensor with position embedding added.
+        """
+        return tensor if pos is None else tensor + pos
+
+    def forward_ffn(self, src: Tensor) -> Tensor:
+        """Forward pass of the ffn.
+
+        Args:
+            src (Tensor): The input tensor.
+
+        Returns:
+            Tensor: The output tensor.
+        """
+        src2 = self.linear2(self.dropout2(self.activation(self.linear1(src))))
+        src = src + self.dropout3(src2)
+        return self.norm2(src)
+
+    def forward(
+        self,
+        src: Tensor,
+        pos: Tensor,
+        reference_points: Tensor,
+        spatial_shapes: list[tuple[int, int]],
+        level_start_index: Tensor,
+        padding_mask: Tensor | None = None,
+    ) -> Tensor:
+        """Forward pass of the VisualEncoderLayer.
+
+        Args:
+            src (Tensor): The input tensor.
+            pos (Tensor): The position embedding tensor.
+            reference_points (Tensor): The reference points tensor.
+            spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            level_start_index (Tensor): The level start index tensor.
+            padding_mask (Optional[Tensor]): The padding mask tensor. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+        """
+        # self attention
+        src2 = self.self_attn(self.with_pos_embed(src, pos), reference_points, src, spatial_shapes, padding_mask)
+        src = src + self.dropout1(src2)
+        src = self.norm1(src)
+
+        # ffn
+        return self.forward_ffn(src)
+
+
+class VisualEncoder(nn.Module):
+    """VisualEncoder module consisting of multiple VisualEncoderLayer modules.
+
+    Args:
+        encoder_layer (VisualEncoderLayer): The Visual encoder layer module.
+        num_layers (int): The number of layers.
+    """
+
+    def __init__(self, encoder_layer: VisualEncoderLayer, num_layers: int):
+        super().__init__()
+        self.layers = get_clones(encoder_layer, num_layers)
+        self.num_layers = num_layers
+
+    @staticmethod
+    def get_reference_points(
+        spatial_shapes: list[tuple[int, int]],
+        valid_ratios: Tensor,
+        device: torch.device,
+    ) -> Tensor:
+        """Generate reference points for each spatial level.
+
+        Args:
+            spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            valid_ratios (Tensor): The tensor of valid ratios.
+            device (torch.device): The device to use.
+
+        Returns:
+            Tensor: The tensor of reference points.
+        """
+        reference_points_list = []
+        for lvl, (h_, w_) in enumerate(spatial_shapes):
+            ref_y, ref_x = torch.meshgrid(
+                torch.linspace(0.5, h_ - 0.5, h_, dtype=torch.float32, device=device),
+                torch.linspace(0.5, w_ - 0.5, w_, dtype=torch.float32, device=device),
+            )
+            ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * h_)
+            ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * w_)
+            ref = torch.stack((ref_x, ref_y), -1)
+            reference_points_list.append(ref)
+        reference_points = torch.cat(reference_points_list, 1)
+        return reference_points[:, :, None] * valid_ratios[:, None]
+
+    def forward(
+        self,
+        src: Tensor,
+        spatial_shapes: list[tuple[int, int]],
+        level_start_index: Tensor,
+        valid_ratios: Tensor,
+        pos: Tensor | None = None,
+        padding_mask: Tensor | None = None,
+        ref_token_index: int | None = None,
+        ref_token_coord: Tensor | None = None,
+    ) -> Tensor:
+        """Forward pass of the VisualEncoder module.
+
+        Args:
+            src (Tensor): The input tensor.
+            spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
+            level_start_index (Tensor): The level start index tensor.
+            valid_ratios (Tensor): The tensor of valid ratios.
+            pos (Tensor | None): The position embedding tensor. Defaults to None.
+            padding_mask (Tensor | None): The padding mask tensor. Defaults to None.
+            ref_token_index (int | None): The reference token index. Defaults to None.
+            ref_token_coord (Tensor | None): The reference token coordinates. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+        """
+        output = src
+        reference_points = self.get_reference_points(spatial_shapes, valid_ratios, device=src.device)
+        for _, layer in enumerate(self.layers):
+            output = layer(output, pos, reference_points, spatial_shapes, level_start_index, padding_mask)
+
+        return output

@@ -9,8 +9,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.common.layers.position_embed import gen_sineembed_for_position
-from otx.algo.common.layers.transformer_layers import MLP
-from otx.algo.common.layers.transformer_layers import MSDeformableAttention as MSDeformAttn
+from otx.algo.common.layers.transformer_layers import MLP, MSDeformableAttention
 from otx.algo.common.utils.utils import get_clones, inverse_sigmoid
 
 
@@ -54,7 +53,7 @@ class TransformerDecoder(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
         for m in self.modules():
-            if isinstance(m, MSDeformAttn):
+            if isinstance(m, MSDeformableAttention):
                 m._reset_parameters()  # noqa: SLF001
 
     def forward(
@@ -126,7 +125,7 @@ class DeformableTransformerDecoderLayer(nn.Module):
         super().__init__()
 
         # cross attention
-        self.cross_attn = MSDeformAttn(
+        self.cross_attn = MSDeformableAttention(
             embed_dim=d_model,
             num_levels=n_levels,
             num_heads=n_heads,

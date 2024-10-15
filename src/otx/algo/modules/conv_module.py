@@ -363,7 +363,7 @@ class Conv3dModule(ConvModule):
 
 
 class Conv2d(nn.Conv2d):
-    """A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features."""
+    """A wrapper around torch.nn.Conv2d to support empty inputs and more features."""
 
     def __init__(self, *args, **kwargs) -> None:
         """Extra keyword arguments supported in addition to those in `torch.nn.Conv2d`.
