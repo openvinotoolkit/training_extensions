@@ -92,6 +92,7 @@ OVMODEL_PER_TASK = {
     OTXTaskType.ANOMALY_DETECTION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
     OTXTaskType.ANOMALY_SEGMENTATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
     OTXTaskType.KEYPOINT_DETECTION: "otx.core.model.keypoint_detection.OVKeypointDetectionModel",
+    OTXTaskType.OBJECT_DETECTION_3D: "otx.core.model.detection_3d.OV3DDetectionModel",
 }
 
 

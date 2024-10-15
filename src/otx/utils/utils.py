@@ -263,7 +263,6 @@ def check_pickleable(obj: Any) -> bool:  # noqa: ANN401
 
 
 def measure_flops(
-    model: torch.nn.Module,
     forward_fn: Callable[[], torch.Tensor],
     loss_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
     print_stats_depth: int = 0,
@@ -271,7 +270,7 @@ def measure_flops(
     """Utility to compute the total number of FLOPs used by a module during training or during inference."""
     from torch.utils.flop_counter import FlopCounterMode
 
-    flop_counter = FlopCounterMode(model, display=print_stats_depth > 0, depth=print_stats_depth)
+    flop_counter = FlopCounterMode(display=print_stats_depth > 0, depth=print_stats_depth)
     with flop_counter:
         if loss_fn is None:
             forward_fn()
