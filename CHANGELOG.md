@@ -63,6 +63,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4011>)
 - Prevent using too low confidence thresholds in detection
   (<https://github.com/openvinotoolkit/training_extensions/pull/4018>)
+- Update HPO interface
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4035>)
 
 ### Bug fixes
 
