@@ -284,7 +284,6 @@
     <span class="n">VisualPromptingBatchPredEntity</span><span class="p">,</span>
     <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
     <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">,</span>
-    <span class="n">ZeroShotVisualPromptingLabel</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.visual_prompting</span> <span class="kn">import</span> <span class="n">OTXVisualPromptingModelExporter</span>
@@ -312,7 +311,10 @@
     <span class="n">preds</span><span class="p">:</span> <span class="n">VisualPromptingBatchPredEntity</span> <span class="o">|</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">,</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span> <span class="o">|</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricInput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the prediction entity to the format required by the compute metric function.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the prediction entity to the format required by the compute metric function.</span>
+
+<span class="sd">    TODO (sungchul): consider to use iseg and sseg&#39;s metrics</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pred_info</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">target_info</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -335,10 +337,14 @@
         <span class="n">inputs</span><span class="o">.</span><span class="n">polygons</span><span class="p">,</span>
         <span class="n">inputs</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="n">bit_masks</span> <span class="o">=</span> <span class="n">masks</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span> <span class="k">else</span> <span class="n">polygon_to_bitmap</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="o">*</span><span class="n">imgs_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">)</span>
+        <span class="n">bit_masks</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">masks</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">polygon_to_bitmap</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="o">*</span><span class="n">imgs_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">target_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">bit_masks</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">bit_masks</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
                 <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">labels</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span>
@@ -347,48 +353,18 @@
 
 
 <span class="k">def</span> <span class="nf">_inference_step</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">OTXVisualPromptingModel</span> <span class="o">|</span> <span class="n">OVVisualPromptingModel</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">OTXVisualPromptingModel</span>
+    <span class="o">|</span> <span class="n">OVVisualPromptingModel</span>
+    <span class="o">|</span> <span class="n">OTXZeroShotVisualPromptingModel</span>
+    <span class="o">|</span> <span class="n">OVZeroShotVisualPromptingModel</span><span class="p">,</span>
     <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCollection</span><span class="p">,</span>
-    <span class="n">inputs</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span> <span class="o">|</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a single inference step on a batch of data from the inference set.&quot;&quot;&quot;</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">VisualPromptingBatchPredEntity</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="p">(</span><span class="n">VisualPromptingBatchPredEntity</span><span class="p">,</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
-
-    <span class="n">converted_entities</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
-
-    <span class="k">for</span> <span class="n">_name</span><span class="p">,</span> <span class="n">_metric</span> <span class="ow">in</span> <span class="n">metric</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">_name</span> <span class="o">==</span> <span class="s2">&quot;mAP&quot;</span><span class="p">:</span>
-            <span class="c1"># MeanAveragePrecision</span>
-            <span class="n">_preds</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;masks&quot;</span> <span class="k">else</span> <span class="n">v</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;scores&quot;</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ett</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-                <span class="k">for</span> <span class="n">ett</span> <span class="ow">in</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">]</span>
-            <span class="p">]</span>
-            <span class="n">_target</span> <span class="o">=</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span>
-            <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">_preds</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">_target</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iou&quot;</span><span class="p">,</span> <span class="s2">&quot;f1-score&quot;</span><span class="p">,</span> <span class="s2">&quot;dice&quot;</span><span class="p">]:</span>
-            <span class="c1"># BinaryJaccardIndex, BinaryF1Score, Dice</span>
-            <span class="k">for</span> <span class="n">cvt_preds</span><span class="p">,</span> <span class="n">cvt_target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">],</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]):</span>
-                <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">],</span> <span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">])</span>
-
-
-<span class="k">def</span> <span class="nf">_inference_step_for_zero_shot</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">OTXZeroShotVisualPromptingModel</span> <span class="o">|</span> <span class="n">OVZeroShotVisualPromptingModel</span><span class="p">,</span>
-    <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCollection</span><span class="p">,</span>
-    <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform a single inference step on a batch of data from the inference set.&quot;&quot;&quot;</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
-
-    <span class="c1"># filter labels using corresponding ground truth</span>
-    <span class="n">inputs</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">label</span><span class="o">.</span><span class="n">masks</span> <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">masks</span> <span class="ow">and</span> <span class="n">label</span><span class="o">.</span><span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">label</span><span class="o">.</span><span class="n">polygons</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">labels</span>
-    <span class="p">]</span>
 
     <span class="n">converted_entities</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
 
@@ -403,11 +379,23 @@
             <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">_preds</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">_target</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iou&quot;</span><span class="p">,</span> <span class="s2">&quot;f1-score&quot;</span><span class="p">,</span> <span class="s2">&quot;dice&quot;</span><span class="p">]:</span>
             <span class="c1"># BinaryJaccardIndex, BinaryF1Score, Dice</span>
+            <span class="c1"># TODO (sungchul): change to multi-class metric</span>
+            <span class="c1"># Currently, label_info is NullLabelInfo and it is required to be changed for multi-label support.</span>
+            <span class="c1"># But huge changes is required, it will be changed in the near future.</span>
             <span class="k">for</span> <span class="n">cvt_preds</span><span class="p">,</span> <span class="n">cvt_target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">],</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]):</span>
-                <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                <span class="p">)</span>
+                <span class="n">max_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">],</span> <span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_label</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">mask_preds</span> <span class="o">=</span> <span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">][</span><span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+                    <span class="n">mask_target</span> <span class="o">=</span> <span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">][</span><span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_preds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">mask_preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">mask_target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">device</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_target</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">mask_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">mask_preds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">device</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+                    <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="n">mask_preds</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                        <span class="n">mask_target</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="OTXVisualPromptingModel">
@@ -417,7 +405,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">(),</span>
+        <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">(),</span>  <span class="c1"># TODO (sungchul): update label_info for multi-label support</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
@@ -427,7 +415,7 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Given label_info=</span><span class="si">{</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> has no effect.&quot;</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label_info</span><span class="o">=</span><span class="n">NullLabelInfo</span><span class="p">(),</span>
+            <span class="n">label_info</span><span class="o">=</span><span class="n">NullLabelInfo</span><span class="p">(),</span>  <span class="c1"># TODO (sungchul): update label_info for multi-label support</span>
             <span class="n">input_size</span><span class="o">=</span><span class="n">input_size</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
@@ -615,7 +603,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">(),</span>
+        <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">(),</span>  <span class="c1"># TODO (sungchul): update label_info for multi-label support</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">VisualPromptingMetricCallable</span><span class="p">,</span>
@@ -624,7 +612,7 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Given label_info=</span><span class="si">{</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> has no effect.&quot;</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label_info</span><span class="o">=</span><span class="n">NullLabelInfo</span><span class="p">(),</span>
+            <span class="n">label_info</span><span class="o">=</span><span class="n">NullLabelInfo</span><span class="p">(),</span>  <span class="c1"># TODO (sungchul): update label_info for multi-label support</span>
             <span class="n">input_size</span><span class="o">=</span><span class="n">input_size</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
@@ -878,7 +866,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchDataEntity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_inference_step_for_zero_shot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
+        <span class="n">_inference_step</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
@@ -898,7 +886,7 @@
     <span class="k">def</span> <span class="nf">get_dummy_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dummy input for ZSL VPT model.&quot;&quot;&quot;</span>
         <span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)]</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">ZeroShotVisualPromptingLabel</span><span class="p">(</span><span class="n">prompts</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]))]</span> <span class="o">*</span> <span class="n">batch_size</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;points&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">)}]</span> <span class="o">*</span> <span class="n">batch_size</span>
         <span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))]</span> <span class="o">*</span> <span class="n">batch_size</span>
         <span class="n">infos</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
@@ -1077,7 +1065,7 @@
         <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">image_output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
             <span class="n">masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">image_output</span><span class="o">.</span><span class="n">hard_predictions</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
-            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">image_output</span><span class="o">.</span><span class="n">scores</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">image_output</span><span class="o">.</span><span class="n">scores</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
             <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">image_output</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">VisualPromptingBatchPredEntity</span><span class="p">(</span>
@@ -1252,7 +1240,7 @@
 
     <span class="k">def</span> <span class="nf">_create_label_info_from_ov_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelInfo</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create NullLabelInfo since Visual Prompting tasks has no use of label information.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">NullLabelInfo</span><span class="p">()</span>  <span class="c1"># TODO (sungchul): update label_info for multi-label support</span>
 
     <span class="k">def</span> <span class="nf">_set_label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Reconfiguring label_info has no effect on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
@@ -1458,10 +1446,9 @@
         <span class="n">images</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">processed_prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">polygons</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
             <span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
             <span class="n">entity</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span>
-            <span class="n">entity</span><span class="o">.</span><span class="n">polygons</span><span class="p">,</span>
             <span class="n">entity</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="c1"># preprocess image encoder inputs</span>
@@ -1469,25 +1456,28 @@
             <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy_image</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-                <span class="n">_bboxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">_boxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">_points</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span><span class="o">.</span><span class="n">prompts</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">):</span>
-                        <span class="n">_bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
+                        <span class="n">_boxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
                     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">Points</span><span class="p">):</span>
                         <span class="n">_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">dmPolygon</span><span class="p">):</span>
+                        <span class="n">_polygons</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="n">Prompt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+                                <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">prompt</span>
+                            <span class="p">],</span>
+                        <span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">polygons</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">polygons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">polygon</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">labels</span><span class="o">.</span><span class="n">polygons</span><span class="p">):</span>
-                        <span class="n">_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
-
-                <span class="c1"># TODO (sungchul, sovrasov): support mask?</span>
+                    <span class="c1"># TODO (sungchul, sovrasov): support mask?</span>
 
                 <span class="c1"># preprocess decoder inputs</span>
                 <span class="n">processed_prompts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;boxes&quot;</span><span class="p">:</span> <span class="n">_bboxes</span><span class="p">,</span>
+                        <span class="s2">&quot;boxes&quot;</span><span class="p">:</span> <span class="n">_boxes</span><span class="p">,</span>
                         <span class="s2">&quot;points&quot;</span><span class="p">:</span> <span class="n">_points</span><span class="p">,</span>
                         <span class="s2">&quot;polygons&quot;</span><span class="p">:</span> <span class="n">_polygons</span><span class="p">,</span>
                     <span class="p">},</span>
@@ -1604,7 +1594,7 @@
             <span class="n">_labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
             <span class="c1"># use only the first prompt</span>
-            <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_batch</span><span class="o">.</span><span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data_batch</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prompts</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_batch</span><span class="o">.</span><span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data_batch</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">):</span>
                     <span class="n">bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
                     <span class="n">_labels</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
@@ -1898,7 +1888,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchPredEntity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_inference_step_for_zero_shot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
+        <span class="n">_inference_step</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
@@ -1911,7 +1901,7 @@
 
     <span class="k">def</span> <span class="nf">_create_label_info_from_ov_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelInfo</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create NullLabelInfo since Visual Prompting tasks has no use of label information.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">NullLabelInfo</span><span class="p">()</span>  <span class="c1"># TODO (sungchul): update label_info for multi-label support</span>
 
     <span class="k">def</span> <span class="nf">_set_label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Reconfiguring label_info has no effect on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
@@ -1923,7 +1913,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dummy input for classification OV model.&quot;&quot;&quot;</span>
         <span class="c1"># Resize is embedded to the OV model, which means we don&#39;t need to know the actual size</span>
         <span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)]</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">ZeroShotVisualPromptingLabel</span><span class="p">(</span><span class="n">prompts</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]))]</span> <span class="o">*</span> <span class="n">batch_size</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">)]</span> <span class="o">*</span> <span class="n">batch_size</span>
         <span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))]</span> <span class="o">*</span> <span class="n">batch_size</span>
         <span class="n">infos</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
