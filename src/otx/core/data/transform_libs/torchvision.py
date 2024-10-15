@@ -3471,6 +3471,8 @@ class TorchVisionTransformLib:
         transforms = []
         for cfg_transform in config.transforms:
             if isinstance(cfg_transform, (dict, DictConfig)):
+                if not cfg_transform.get("enable", True):  # Optional "enable: false" flag would remove the transform
+                    continue
                 cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
