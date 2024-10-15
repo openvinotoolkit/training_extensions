@@ -16,10 +16,10 @@ from otx.algo.common.layers.position_embed import PositionEmbeddingSine
 from otx.algo.common.layers.transformer_layers import MSDeformableAttention as MSDeformAttn
 from otx.algo.common.utils.utils import get_clones
 from otx.algo.instance_segmentation.utils.utils import (
-    Conv2d,
     ShapeSpec,
     c2_xavier_fill,
 )
+from otx.algo.modules.conv_module import Conv2d
 
 
 class MSDeformAttnTransformerEncoderOnly(nn.Module):
