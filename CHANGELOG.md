@@ -7,29 +7,29 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add RT-DETR model for Object Detection
-  (https://github.com/openvinotoolkit/training_extensions/pull/3741)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3741>)
 - Add Multi-Label & H-label Classification with torchvision models
-  (https://github.com/openvinotoolkit/training_extensions/pull/3697)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3697>)
 - Add Hugging-Face Model Wrapper for Classification
-  (https://github.com/openvinotoolkit/training_extensions/pull/3710)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3710>)
 - Add LoRA finetuning capability for ViT Architectures
-  (https://github.com/openvinotoolkit/training_extensions/pull/3729)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3729>)
 - Add Hugging-Face Model Wrapper for Object Detection
-  (https://github.com/openvinotoolkit/training_extensions/pull/3747)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3747>)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation
-  (https://github.com/openvinotoolkit/training_extensions/pull/3749)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3749>)
 - Enable torch.compile to work with classification
-  (https://github.com/openvinotoolkit/training_extensions/pull/3758)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3758>)
 - Add `otx benchmark` subcommand
-  (https://github.com/openvinotoolkit/training_extensions/pull/3762)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3762>)
 - Add RTMPose for Keypoint Detection Task
-  (https://github.com/openvinotoolkit/training_extensions/pull/3781)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3781>, <https://github.com/openvinotoolkit/training_extensions/pull/4034>)
 - Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
-  (https://github.com/openvinotoolkit/training_extensions/pull/3801)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3801>)
 - Update head and h-label format for hierarchical label classification
-  (https://github.com/openvinotoolkit/training_extensions/pull/3810)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3810>)
 - Support configurable input size
-  (https://github.com/openvinotoolkit/training_extensions/pull/3788)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3788>)
 
 ### Enhancements
 
