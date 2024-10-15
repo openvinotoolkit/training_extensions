@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import numba
@@ -16,38 +17,6 @@ if torch.cuda.is_available():
     from .rotate_gpu_iou import rotate_iou_eval_gpu as rotate_iou_eval
 else:
     from .rotate_iou import rotate_iou_eval_cpu as rotate_iou_eval
-
-
-@numba.jit(nopython=True)
-def get_thresholds(
-    scores: np.ndarray,  # 1D array of confidence scores
-    num_gt: int,  # Number of ground truth objects
-    num_sample_pts: int = 41,  # Number of sample points used to compute recall thresholds
-) -> np.ndarray:  # 1D array of recall thresholds
-    """Compute recall thresholds for a given score array.
-
-    Args:
-        scores (np.ndarray): 1D array of confidence scores.
-        num_gt (int): Number of ground truth objects.
-        num_sample_pts (int, optional): Number of sample points used to
-            compute recall thresholds. Defaults to 41.
-
-    Returns:
-        np.ndarray: 1D array of recall thresholds.
-    """
-    scores.sort()
-    scores = scores[::-1]
-    current_recall = 0.0
-    thresholds = []
-    for i, score in enumerate(scores):
-        l_recall = (i + 1) / num_gt
-        r_recall = (i + 2) / num_gt if i < len(scores) - 1 else l_recall
-        if ((r_recall - current_recall) < (current_recall - l_recall)) and (i < (len(scores) - 1)):
-            continue
-        # recall = l_recall
-        thresholds.append(score)
-        current_recall += 1 / (num_sample_pts - 1.0)
-    return thresholds
 
 
 def clean_data(
@@ -112,45 +81,6 @@ def clean_data(
             ignored_dt.append(-1)
 
     return num_valid_gt, ignored_gt, ignored_dt
-
-
-@numba.jit(nopython=True)
-def image_box_overlap(
-    boxes: np.ndarray,  # shape: (N, 4)
-    query_boxes: np.ndarray,  # shape: (K, 4)
-    criterion: int = -1,  # default overlap criterion: intersection over union
-) -> np.ndarray:  # shape: (N, K)
-    """Image box overlap.
-
-    Args:
-        boxes (np.ndarray): shape: (N, 4), 2D boxes, (x1, y1, x2, y2)
-        query_boxes (np.ndarray): shape: (K, 4), 2D boxes, (x1, y1, x2, y2)
-        criterion (int, optional): overlap criterion, -1: intersection over union,
-            0: intersection over box area, 1: intersection over query box area. Defaults to -1.
-
-    Returns:
-        np.ndarray: shape: (N, K), overlap between boxes and query_boxes
-    """
-    num_n = boxes.shape[0]
-    num_k = query_boxes.shape[0]
-    overlaps = np.zeros((num_n, num_k), dtype=boxes.dtype)
-    for k in range(num_k):
-        qbox_area = (query_boxes[k, 2] - query_boxes[k, 0]) * (query_boxes[k, 3] - query_boxes[k, 1])
-        for n in range(num_n):
-            iw = min(boxes[n, 2], query_boxes[k, 2]) - max(boxes[n, 0], query_boxes[k, 0])
-            if iw > 0:
-                ih = min(boxes[n, 3], query_boxes[k, 3]) - max(boxes[n, 1], query_boxes[k, 1])
-                if ih > 0:
-                    if criterion == -1:
-                        ua = (boxes[n, 2] - boxes[n, 0]) * (boxes[n, 3] - boxes[n, 1]) + qbox_area - iw * ih
-                    elif criterion == 0:
-                        ua = (boxes[n, 2] - boxes[n, 0]) * (boxes[n, 3] - boxes[n, 1])
-                    elif criterion == 1:
-                        ua = qbox_area
-                    else:
-                        ua = 1.0
-                    overlaps[n, k] = iw * ih / ua
-    return overlaps
 
 
 @numba.jit(nopython=True)
@@ -230,14 +160,14 @@ def compute_statistics_jit(
     dt_scores = dt_datas[:, -1]
 
     assigned_detection = [False] * det_size
-    ignored_threshold = [False] * det_size
+    ignored_obj_by_threshold = [False] * det_size
     if compute_fp:
         for i in range(det_size):
             if dt_scores[i] < thresh:
-                ignored_threshold[i] = True
+                ignored_obj_by_threshold[i] = True
     no_detection = -10000000
     tp, fp, fn, similarity = 0, 0, 0, 0
-    thresholds = np.zeros((gt_size,))
+    tp_scores = np.zeros((gt_size,))
     thresh_idx = 0
     for i in range(gt_size):
         if ignored_gt[i] == -1:
@@ -252,7 +182,7 @@ def compute_statistics_jit(
                 continue
             if assigned_detection[j]:
                 continue
-            if ignored_threshold[j]:
+            if ignored_obj_by_threshold[j]:
                 continue
             overlap = overlaps[j, i]
             dt_score = dt_scores[j]
@@ -280,19 +210,21 @@ def compute_statistics_jit(
             assigned_detection[det_idx] = True
         elif valid_detection != no_detection:
             tp += 1
-            # thresholds.append(dt_scores[det_idx])
-            thresholds[thresh_idx] = dt_scores[det_idx]
+
+            tp_scores[thresh_idx] = dt_scores[det_idx]
             thresh_idx += 1
 
             assigned_detection[det_idx] = True
     if compute_fp:
         for i in range(det_size):
-            if not (assigned_detection[i] or ignored_det[i] == -1 or ignored_det[i] == 1 or ignored_threshold[i]):
+            if not (
+                assigned_detection[i] or ignored_det[i] == -1 or ignored_det[i] == 1 or ignored_obj_by_threshold[i]
+            ):
                 fp += 1
         nstuff = 0
         fp -= nstuff
 
-    return tp, fp, fn, similarity, thresholds[:thresh_idx]
+    return tp, fp, fn, similarity, tp_scores[:thresh_idx]
 
 
 @numba.jit(nopython=True)
@@ -521,15 +453,17 @@ def eval_class(
     current_classes: list[str],
     min_overlaps: np.ndarray,
     num_parts: int = 50,
+    num_samples_pts: int = 41,
 ) -> dict[str, np.ndarray]:
     """Kitti eval. support 2d/bev/3d/aos eval. support 0.5:0.05:0.95 coco AP.
 
     Args:
-        gt_annos: dict, must from get_label_annos() in kitti_common.py
-        dt_annos: dict, must from get_label_annos() in kitti_common.py
-        current_classes: list of label names
-        min_overlaps: float, min overlap. format: [num_overlap, class].
-        num_parts: int. a parameter for fast calculate algorithm
+        gt_annos (dict): must from get_label_annos() in kitti_common.py
+        dt_annos (dict): must from get_label_annos() in kitti_common.py
+        current_classes (list): label names
+        min_overlaps (float): min overlap. format: [num_overlap, class].
+        num_parts (int): a parameter for fast calculate algorithm
+        num_samples_pts (int): number of points for precision-recall curve
 
     Returns:
         dict of recall, precision
@@ -539,7 +473,6 @@ def eval_class(
 
     rets = calculate_iou_partly(dt_annos, gt_annos, num_parts)
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
-    num_samples_pts = 41
     num_minoverlap = len(min_overlaps)
     num_class = len(current_classes)
     precision = np.zeros([num_class, num_minoverlap, num_samples_pts])
@@ -566,9 +499,10 @@ def eval_class(
                     compute_fp=False,
                 )
                 thresholdss += thresholds.tolist()
-            thresholdss = np.array(thresholdss)
-            thresholds = get_thresholds(thresholdss, total_num_valid_gt)
-            thresholds = np.array(thresholds)
+            if not thresholdss:
+                continue  # no tp -> 0 precision and recall
+            # create thresholds between 0 and the max threshold, len(thresholds) == num_samples_pts
+            thresholds = np.linspace(0.0, np.max(thresholdss), num_samples_pts)
             pr = np.zeros([len(thresholds), 4])
             idx = 0
             for j, num_part in enumerate(split_parts):
@@ -589,13 +523,10 @@ def eval_class(
                     thresholds=thresholds,
                 )
                 idx += num_part
+
             for i in range(len(thresholds)):
                 recall[m, k, i] = pr[i, 0] / (pr[i, 0] + pr[i, 2])
                 precision[m, k, i] = pr[i, 0] / (pr[i, 0] + pr[i, 1])
-
-            for i in range(len(thresholds)):
-                precision[m, k, i] = np.max(precision[m, k, i:], axis=-1)
-                recall[m, k, i] = np.max(recall[m, k, i:], axis=-1)
 
     return {
         "recall": recall,
@@ -620,17 +551,10 @@ def do_eval_cut_version(
     Returns:
         np.ndarray: 3D bounding box AP.
     """
-
-    def _get_map(prec: np.ndarray) -> np.ndarray:
-        sums = 0
-        for i in range(0, prec.shape[-1], 4):
-            sums = sums + prec[..., i]
-        return sums / 11
-
     # min_overlaps: [num_minoverlap, num_class]
     # get 3D bbox mAP
     ret = eval_class(gt_annos, dt_annos, current_classes, min_overlaps)
-    return _get_map(ret["precision"])
+    return np.mean(ret["precision"], axis=2)
 
 
 def get_coco_eval_result(
@@ -673,7 +597,16 @@ def get_coco_eval_result(
 
         map_3d = do_eval_cut_version(gt_annos, dt_annos, current_classes, min_overlaps)
 
-        return map_3d.mean(-1)
+        result_str = ""
+
+        for i, lbl in enumerate(current_classes):
+            result_str += f"\nclass: {lbl}\n" + "-" * len(f"class: {lbl}") + "\n"
+            for j, overlap in enumerate(min_overlaps):
+                result_str += f"AP@IoU={np.round(overlap[i],2)}: {np.round(map_3d[i][j] * 100, 2)}\n"
+            result_str += "\n"
+        logging.log(msg=result_str, level=logging.INFO)
+
+        return map_3d.mean(0)
 
     iou_range = [0.5, 0.95]
     if not isinstance(current_classes, (list, tuple)):

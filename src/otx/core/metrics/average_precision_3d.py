@@ -56,14 +56,19 @@ class KittiMetric(Metric):
         current_classes = self.label_info.label_names
         preds_for_torchmetrics = self.prepare_inputs_for_map_coco(self.preds)
         targets_for_torchmetrics = self.prepare_inputs_for_map_coco(self.targets)
-        map_bbox_coco = self.mean_ap(preds_for_torchmetrics, targets_for_torchmetrics)
-        map_3d = get_coco_eval_result(
+        ap_bbox_coco = self.mean_ap(preds_for_torchmetrics, targets_for_torchmetrics)
+        ap_3d = get_coco_eval_result(
             self.targets,
             self.preds,
             current_classes=[curcls.lower() for curcls in current_classes],
         )
         # Average across all calsses.
-        return {"mAP_bbox_3d": Tensor([map_3d.mean()]), "mAP_bbox_2d": map_bbox_coco["map_50"]}
+        return {
+            "AP_3d@0.5": Tensor([ap_3d[0]]),
+            "AP_2d@0.5": ap_bbox_coco["map_50"],
+            "mAP_3d": Tensor([ap_3d.mean()]),
+            "mAP_2d": ap_bbox_coco["map"],
+        }
 
     def prepare_inputs_for_map_coco(self, targets: list[dict[str, np.array]]) -> list[dict[str, Tensor]]:
         """Prepare targets for torchmetrics."""
