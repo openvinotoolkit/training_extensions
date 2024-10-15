@@ -12,14 +12,14 @@ import torch
 from torch import Tensor, nn
 from torchvision.models import resnet50
 from torchvision.models._utils import IntermediateLayerGetter
+from torchvision.ops import box_convert
 
-from otx.algo.common.utils.assigners import HungarianMatcher
+from otx.algo.common.transformers.hungarian_matcher import HungarianMatcher
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
 from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.instance_segmentation.segmentors import MaskDINO
-from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
 from otx.algo.utils.mmengine_utils import load_from_http
@@ -347,7 +347,11 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                 > 0
             )
 
-            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)  # noqa: PLW2901
+            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_convert(  # noqa: PLW2901
+                pred_boxes,
+                in_fmt="cxcywh",
+                out_fmt="xyxy",
+            )
             pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
             pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)
 

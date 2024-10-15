@@ -8,13 +8,10 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.utils.utils import inverse_sigmoid
+from otx.algo.common.transformers.position_embed import gen_sineembed_for_position
+from otx.algo.common.utils.utils import get_clones, inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
-from otx.algo.instance_segmentation.utils.utils import (
-    MLP,
-    gen_sineembed_for_position,
-    get_clones,
-)
+from otx.algo.instance_segmentation.utils.utils import MLP
 
 
 class TransformerDecoder(nn.Module):

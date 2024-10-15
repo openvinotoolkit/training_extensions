@@ -4,8 +4,6 @@
 
 from __future__ import annotations
 
-import copy
-import math
 from dataclasses import dataclass
 from typing import Callable
 
@@ -146,78 +144,6 @@ class MLP(nn.Module):
         for i, layer in enumerate(self.layers):
             x = f.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x
-
-
-def gen_encoder_output_proposals(
-    memory: Tensor,
-    memory_padding_mask: Tensor,
-    spatial_shapes: Tensor,
-) -> tuple[Tensor, Tensor]:
-    """Generate proposals for encoder output."""
-    batch_size = memory.shape[0]
-    proposals = []
-    _cur = 0
-    for lvl, (height, width) in enumerate(spatial_shapes):
-        mask_flatten_ = memory_padding_mask[:, _cur : (_cur + height * width)].view(batch_size, height, width, 1)
-        valid_height = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
-        valid_width = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
-
-        grid_y, grid_x = torch.meshgrid(
-            torch.linspace(0, height - 1, height, device=memory.device),
-            torch.linspace(0, width - 1, width, device=memory.device),
-        )
-        grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
-
-        scale = torch.cat([valid_width.unsqueeze(-1), valid_height.unsqueeze(-1)], 1).view(batch_size, 1, 1, 2)
-        grid = (grid.unsqueeze(0).expand(batch_size, -1, -1, -1) + 0.5) / scale
-        wh = torch.ones_like(grid) * 0.05 * (2.0**lvl)
-        proposal = torch.cat((grid, wh), -1).view(batch_size, -1, 4)
-        proposals.append(proposal)
-        _cur += height * width
-    output_proposals = torch.cat(proposals, 1)
-    output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(-1, keepdim=True)
-    output_proposals = torch.log(output_proposals / (1 - output_proposals))
-    output_proposals = output_proposals.masked_fill(memory_padding_mask.unsqueeze(-1), float("inf"))
-    output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
-
-    output_memory = memory
-    output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
-    output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
-    return output_memory, output_proposals
-
-
-def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
-    """Generate sine embeddings for position tensor."""
-    scale = 2 * math.pi
-    dim_t = torch.arange(128, dtype=pos_tensor.dtype, device=pos_tensor.device)
-    dim_t = 10000 ** (2 * (dim_t // 2) / 128)
-    x_embed = pos_tensor[:, :, 0] * scale
-    y_embed = pos_tensor[:, :, 1] * scale
-    pos_x = x_embed[:, :, None] / dim_t
-    pos_y = y_embed[:, :, None] / dim_t
-    pos_x = torch.stack((pos_x[:, :, 0::2].sin(), pos_x[:, :, 1::2].cos()), dim=3).flatten(2)
-    pos_y = torch.stack((pos_y[:, :, 0::2].sin(), pos_y[:, :, 1::2].cos()), dim=3).flatten(2)
-    if pos_tensor.size(-1) == 2:
-        pos = torch.cat((pos_y, pos_x), dim=2)
-    elif pos_tensor.size(-1) == 4:
-        w_embed = pos_tensor[:, :, 2] * scale
-        pos_w = w_embed[:, :, None] / dim_t
-        pos_w = torch.stack((pos_w[:, :, 0::2].sin(), pos_w[:, :, 1::2].cos()), dim=3).flatten(2)
-
-        h_embed = pos_tensor[:, :, 3] * scale
-        pos_h = h_embed[:, :, None] / dim_t
-        pos_h = torch.stack((pos_h[:, :, 0::2].sin(), pos_h[:, :, 1::2].cos()), dim=3).flatten(2)
-
-        pos = torch.cat((pos_y, pos_x, pos_w, pos_h), dim=2)
-    else:
-        msg = f"Unknown pos_tensor shape(-1):{pos_tensor.size(-1)}"
-        raise ValueError(msg)
-    return pos
-
-
-def get_clones(module: nn.Module, nums: int) -> nn.ModuleList:
-    """Produce N identical layers."""
-    return nn.ModuleList([copy.deepcopy(module) for i in range(nums)])
 
 
 def c2_xavier_fill(module: nn.Module) -> None:
@@ -393,3 +319,30 @@ def get_uncertain_point_coords_with_randomness(
             dim=1,
         )
     return point_coords
+
+
+def masks_to_boxes(masks: Tensor, dtype: torch.dtype) -> Tensor:
+    """Compute the bounding boxes around the provided masks.
+
+    The masks should be in format [N, H, W] where N is the number of masks, (H, W) are the spatial dimensions.
+
+    Returns a [N, 4] tensors, with the boxes in xyxy format
+    """
+    if masks.numel() == 0:
+        return torch.zeros((0, 4), device=masks.device)
+
+    h, w = masks.shape[-2:]
+
+    y = torch.arange(0, h, dtype=dtype, device=masks.device)
+    x = torch.arange(0, w, dtype=dtype, device=masks.device)
+    y, x = torch.meshgrid(y, x)
+
+    x_mask = masks * x.unsqueeze(0)
+    x_max = x_mask.flatten(1).max(-1)[0]
+    x_min = x_mask.masked_fill(~(masks.bool()), 1e4).flatten(1).min(-1)[0]
+
+    y_mask = masks * y.unsqueeze(0)
+    y_max = y_mask.flatten(1).max(-1)[0]
+    y_min = y_mask.masked_fill(~(masks.bool()), 1e4).flatten(1).min(-1)[0]
+
+    return torch.stack([x_min, y_min, x_max, y_max], 1)

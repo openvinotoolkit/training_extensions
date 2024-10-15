@@ -12,14 +12,13 @@ from torch import Tensor, nn
 from torch.nn import functional as f
 from torch.nn.init import normal_
 
-from otx.algo.common.utils.position_embed import PositionEmbeddingSine
+from otx.algo.common.transformers.position_embed import PositionEmbeddingSine
+from otx.algo.common.utils.utils import get_clones
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
-from otx.algo.instance_segmentation.layers.batch_norm import get_norm
 from otx.algo.instance_segmentation.utils.utils import (
     Conv2d,
     ShapeSpec,
     c2_xavier_fill,
-    get_clones,
 )
 
 
@@ -370,8 +369,8 @@ class MaskDINOEncoder(nn.Module):
 
         use_bias = norm == ""
         for idx, in_channels in enumerate(self.feature_channels[: self.num_fpn_levels]):
-            lateral_norm = get_norm(norm, conv_dim)
-            output_norm = get_norm(norm, conv_dim)
+            lateral_norm = nn.GroupNorm(32, conv_dim)
+            output_norm = nn.GroupNorm(32, conv_dim)
 
             lateral_conv = Conv2d(
                 in_channels,

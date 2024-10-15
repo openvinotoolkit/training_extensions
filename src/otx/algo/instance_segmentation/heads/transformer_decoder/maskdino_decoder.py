@@ -6,16 +6,17 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
+from torchvision.ops import box_convert
 
+from otx.algo.common.transformers.utils import gen_encoder_output_proposals
 from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.instance_segmentation.heads.transformer_decoder.dino_decoder import (
     DeformableTransformerDecoderLayer,
     TransformerDecoder,
 )
-from otx.algo.instance_segmentation.utils import box_ops
 from otx.algo.instance_segmentation.utils.utils import (
     MLP,
-    gen_encoder_output_proposals,
+    masks_to_boxes,
 )
 
 
@@ -290,8 +291,8 @@ class MaskDINODecoder(nn.Module):
         # convert masks into boxes to better initialize box in the decoder
         flaten_mask = outputs_mask.detach().flatten(0, 1)
         height, width = outputs_mask.shape[-2:]
-        refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0, dtype=flaten_mask.dtype)
-        refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.tensor(
+        refpoint_embed = masks_to_boxes(flaten_mask > 0, dtype=flaten_mask.dtype)
+        refpoint_embed = box_convert(refpoint_embed, in_fmt="xyxy", out_fmt="cxcywh") / torch.tensor(
             [width, height, width, height],
             dtype=flaten_mask.dtype,
             device=device,

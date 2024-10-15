@@ -17,10 +17,10 @@ import torch
 from torch import Tensor, nn
 from torchvision import tv_tensors
 from torchvision.models.detection.image_list import ImageList
+from torchvision.ops import box_convert
 from torchvision.ops.roi_align import RoIAlign
 
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
-from otx.algo.instance_segmentation.utils import box_ops
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -73,7 +73,7 @@ class MaskDINO(nn.Module):
                 norm_shape = torch.tile(torch.tensor(img_info.img_shape, device=img_info.device), (2,))
                 targets.append(
                     {
-                        "boxes": box_ops.box_xyxy_to_cxcywh(bboxes) / norm_shape,
+                        "boxes": box_convert(bboxes, in_fmt="xyxy", out_fmt="cxcywh") / norm_shape,
                         "labels": labels,
                         "masks": tv_tensors.Mask(masks, device=img_info.device, dtype=torch.bool),
                     },
@@ -158,7 +158,7 @@ class MaskDINO(nn.Module):
         )
         pred_scores = scores_per_image * mask_scores_per_image
         pred_classes = labels_per_image.unsqueeze(0)
-        pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)
+        pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_convert(pred_boxes, in_fmt="cxcywh", out_fmt="xyxy")
         pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks)
 
         boxes_with_scores = torch.cat([pred_boxes, pred_scores[:, None]], dim=1)

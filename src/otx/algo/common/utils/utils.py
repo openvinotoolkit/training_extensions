@@ -13,13 +13,14 @@ Reference :
 
 from __future__ import annotations
 
+import copy
 from functools import partial
 from typing import Callable
 
 import numpy as np
 import torch
 import torch.distributed as dist
-from torch import Tensor
+from torch import Tensor, nn
 
 
 def reduce_mean(tensor: Tensor) -> Tensor:
@@ -326,3 +327,16 @@ def cut_mixer(images: Tensor, masks: Tensor) -> tuple[Tensor, Tensor]:
     del images, masks
 
     return mix_data, mix_masks.squeeze(dim=1)
+
+
+def get_clones(module: nn.Module, n: int) -> nn.ModuleList:
+    """Create a list of cloned modules.
+
+    Args:
+        module (nn.Module): The module to be cloned.
+        N (int): The number of clones to create.
+
+    Returns:
+        nn.ModuleList: The list of cloned modules.
+    """
+    return nn.ModuleList([copy.deepcopy(module) for _ in range(n)])

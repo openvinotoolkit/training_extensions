@@ -11,52 +11,8 @@ import torch
 from torch import Tensor, nn
 from torch.nn.init import constant_, normal_, xavier_uniform_
 
-from otx.algo.common.utils.utils import inverse_sigmoid
+from otx.algo.common.utils.utils import get_clones, inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MLP, MSDeformableAttention
-from otx.algo.object_detection_3d.utils.utils import get_clones
-
-
-def gen_sineembed_for_position(pos_tensor: Tensor) -> Tensor:
-    """Generate sine embeddings for position tensor.
-
-    Args:
-        pos_tensor (Tensor): Position tensor of shape (n_query, bs, num_dims).
-
-    Returns:
-        Tensor: Sine embeddings for position tensor of shape (n_query, bs, embedding_dim).
-    """
-    scale = 2 * math.pi
-    dim_t = torch.arange(128, dtype=torch.float32, device=pos_tensor.device)
-    dim_t = 10000 ** (2 * (dim_t // 2) / 128)
-    x_embed = pos_tensor[:, :, 0] * scale
-    y_embed = pos_tensor[:, :, 1] * scale
-    pos_x = x_embed[:, :, None] / dim_t
-    pos_y = y_embed[:, :, None] / dim_t
-    pos_x = torch.stack((pos_x[:, :, 0::2].sin(), pos_x[:, :, 1::2].cos()), dim=3).flatten(2)
-    pos_y = torch.stack((pos_y[:, :, 0::2].sin(), pos_y[:, :, 1::2].cos()), dim=3).flatten(2)
-    if pos_tensor.size(-1) == 2:
-        pos = torch.cat((pos_y, pos_x), dim=2)
-    elif pos_tensor.size(-1) == 4:
-        w_embed = pos_tensor[:, :, 2] * scale
-        pos_w = w_embed[:, :, None] / dim_t
-        pos_w = torch.stack((pos_w[:, :, 0::2].sin(), pos_w[:, :, 1::2].cos()), dim=3).flatten(2)
-
-        h_embed = pos_tensor[:, :, 3] * scale
-        pos_h = h_embed[:, :, None] / dim_t
-        pos_h = torch.stack((pos_h[:, :, 0::2].sin(), pos_h[:, :, 1::2].cos()), dim=3).flatten(2)
-
-        pos = torch.cat((pos_y, pos_x, pos_w, pos_h), dim=2)
-    elif pos_tensor.size(-1) == 6:
-        for i in range(2, 6):  # Compute sine embeds for l, r, t, b
-            embed = pos_tensor[:, :, i] * scale
-            pos_embed = embed[:, :, None] / dim_t
-            pos_embed = torch.stack((pos_embed[:, :, 0::2].sin(), pos_embed[:, :, 1::2].cos()), dim=3).flatten(2)
-            pos = pos_embed if i == 2 else torch.cat((pos, pos_embed), dim=2)
-        pos = torch.cat((pos_y, pos_x, pos), dim=2)
-    else:
-        msg = f"Unknown pos_tensor shape(-1):{pos_tensor.size(-1)}"
-        raise ValueError(msg)
-    return pos
 
 
 class DepthAwareTransformer(nn.Module):
@@ -179,6 +135,8 @@ class DepthAwareTransformer(nn.Module):
             memory (Tensor): Memory tensor of shape (N, S, C).
             memory_padding_mask (Tensor): Memory padding mask tensor of shape (N, S).
             spatial_shapes (List[Tuple[int, int]]): List of spatial shapes.
+
+        TODO: Not used. Remove this function?
 
         Returns:
             Tuple[Tensor, Tensor]: Encoder output tensor of shape (N, S, C) and proposals tensor of shape (N, L, 6).

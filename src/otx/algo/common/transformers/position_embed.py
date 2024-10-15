@@ -122,3 +122,46 @@ class PositionEmbeddingLearned(nn.Module):
         floor_coord = floor_coord.long()
         ceil_coord = (floor_coord + 1).clamp(max=49)
         return embed(floor_coord) * (1 - delta) + embed(ceil_coord) * delta
+
+
+def gen_sineembed_for_position(pos_tensor: torch.Tensor) -> torch.Tensor:
+    """Generate sine embeddings for position tensor.
+
+    Args:
+        pos_tensor (Tensor): Position tensor of shape (n_query, bs, num_dims).
+
+    Returns:
+        Tensor: Sine embeddings for position tensor of shape (n_query, bs, embedding_dim).
+    """
+    scale = 2 * math.pi
+    dim_t = torch.arange(128, dtype=torch.float32, device=pos_tensor.device)
+    dim_t = 10000 ** (2 * (dim_t // 2) / 128)
+    x_embed = pos_tensor[:, :, 0] * scale
+    y_embed = pos_tensor[:, :, 1] * scale
+    pos_x = x_embed[:, :, None] / dim_t
+    pos_y = y_embed[:, :, None] / dim_t
+    pos_x = torch.stack((pos_x[:, :, 0::2].sin(), pos_x[:, :, 1::2].cos()), dim=3).flatten(2)
+    pos_y = torch.stack((pos_y[:, :, 0::2].sin(), pos_y[:, :, 1::2].cos()), dim=3).flatten(2)
+    if pos_tensor.size(-1) == 2:
+        pos = torch.cat((pos_y, pos_x), dim=2)
+    elif pos_tensor.size(-1) == 4:
+        w_embed = pos_tensor[:, :, 2] * scale
+        pos_w = w_embed[:, :, None] / dim_t
+        pos_w = torch.stack((pos_w[:, :, 0::2].sin(), pos_w[:, :, 1::2].cos()), dim=3).flatten(2)
+
+        h_embed = pos_tensor[:, :, 3] * scale
+        pos_h = h_embed[:, :, None] / dim_t
+        pos_h = torch.stack((pos_h[:, :, 0::2].sin(), pos_h[:, :, 1::2].cos()), dim=3).flatten(2)
+
+        pos = torch.cat((pos_y, pos_x, pos_w, pos_h), dim=2)
+    elif pos_tensor.size(-1) == 6:
+        for i in range(2, 6):  # Compute sine embeds for l, r, t, b
+            embed = pos_tensor[:, :, i] * scale
+            pos_embed = embed[:, :, None] / dim_t
+            pos_embed = torch.stack((pos_embed[:, :, 0::2].sin(), pos_embed[:, :, 1::2].cos()), dim=3).flatten(2)
+            pos = pos_embed if i == 2 else torch.cat((pos, pos_embed), dim=2)
+        pos = torch.cat((pos_y, pos_x, pos), dim=2)
+    else:
+        msg = f"Unknown pos_tensor shape(-1):{pos_tensor.size(-1)}"
+        raise ValueError(msg)
+    return pos
