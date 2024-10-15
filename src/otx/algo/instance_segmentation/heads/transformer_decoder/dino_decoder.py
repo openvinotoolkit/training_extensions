@@ -8,10 +8,10 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.transformers.position_embed import gen_sineembed_for_position
+from otx.algo.common.layers.position_embed import gen_sineembed_for_position
+from otx.algo.common.layers.transformer_layers import MLP
+from otx.algo.common.layers.transformer_layers import MSDeformableAttention as MSDeformAttn
 from otx.algo.common.utils.utils import get_clones, inverse_sigmoid
-from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
-from otx.algo.instance_segmentation.utils.utils import MLP
 
 
 class TransformerDecoder(nn.Module):
@@ -24,12 +24,25 @@ class TransformerDecoder(nn.Module):
         norm: nn.Module,
         d_model: int = 256,
         query_dim: int = 4,
+        activation: nn.Module = nn.ReLU,
     ):
+        """Init method.
+
+        TODO(Eugene): Add more details.
+
+        Args:
+            decoder_layer (nn.Module):
+            num_layers (int): _description_
+            norm (nn.Module): _description_
+            d_model (int, optional): _description_. Defaults to 256.
+            query_dim (int, optional): _description_. Defaults to 4.
+            activation (nn.Module, optional): _description_. Defaults to nn.ReLU.
+        """
         super().__init__()
         self.layers = get_clones(decoder_layer, num_layers)
         self.norm = norm
         self.query_dim = query_dim
-        self.ref_point_head = MLP(query_dim // 2 * d_model, d_model, d_model, 2)
+        self.ref_point_head = MLP(query_dim // 2 * d_model, d_model, d_model, 2, activation)
         self.d_model = d_model
         self.bbox_embed = None
         self.class_embed = None

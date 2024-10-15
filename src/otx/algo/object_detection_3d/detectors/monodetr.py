@@ -11,8 +11,8 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional
 
+from otx.algo.common.layers.transformer_layers import MLP
 from otx.algo.common.utils.utils import get_clones, inverse_sigmoid
-from otx.algo.detection.heads.rtdetr_decoder import MLP
 from otx.algo.object_detection_3d.utils.utils import NestedTensor
 
 

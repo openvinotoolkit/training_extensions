@@ -13,8 +13,8 @@ import torch.nn.functional as f
 from torch import Tensor, nn
 from torchvision.ops import box_convert
 
+from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.common.losses import GIoULoss, L1Loss
-from otx.algo.common.transformers.hungarian_matcher import HungarianMatcher
 from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness, point_sample
 
 

@@ -11,7 +11,7 @@ import torchvision
 from torch import nn
 from torchvision.models._utils import IntermediateLayerGetter
 
-from otx.algo.common.transformers.position_embed import PositionEmbeddingLearned, PositionEmbeddingSine
+from otx.algo.common.layers.position_embed import PositionEmbeddingLearned, PositionEmbeddingSine
 from otx.algo.modules.norm import FrozenBatchNorm2d
 from otx.algo.object_detection_3d.utils.utils import NestedTensor
 

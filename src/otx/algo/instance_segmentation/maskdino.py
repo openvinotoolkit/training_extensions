@@ -14,7 +14,7 @@ from torchvision.models import resnet50
 from torchvision.models._utils import IntermediateLayerGetter
 from torchvision.ops import box_convert
 
-from otx.algo.common.transformers.hungarian_matcher import HungarianMatcher
+from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
 from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder

@@ -8,16 +8,13 @@ import torch
 from torch import Tensor, nn
 from torchvision.ops import box_convert
 
-from otx.algo.common.transformers.utils import gen_encoder_output_proposals
-from otx.algo.common.utils.utils import inverse_sigmoid
+from otx.algo.common.layers.transformer_layers import MLP
+from otx.algo.common.utils.utils import gen_encoder_output_proposals, inverse_sigmoid
 from otx.algo.instance_segmentation.heads.transformer_decoder.dino_decoder import (
     DeformableTransformerDecoderLayer,
     TransformerDecoder,
 )
-from otx.algo.instance_segmentation.utils.utils import (
-    MLP,
-    masks_to_boxes,
-)
+from otx.algo.instance_segmentation.utils.utils import masks_to_boxes
 
 
 class MaskDINODecoder(nn.Module):

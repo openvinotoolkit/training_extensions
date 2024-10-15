@@ -130,22 +130,6 @@ def empty_instances(
     return results_list
 
 
-class MLP(nn.Module):
-    """Very simple multi-layer perceptron (also called FFN)."""
-
-    def __init__(self, input_dim: int, hidden_dim: int, output_dim: int, num_layers: int) -> None:
-        super().__init__()
-        self.num_layers = num_layers
-        h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim, *h], [*h, output_dim], strict=True))
-
-    def forward(self, x: Tensor) -> Tensor:
-        """Forward pass."""
-        for i, layer in enumerate(self.layers):
-            x = f.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
-        return x
-
-
 def c2_xavier_fill(module: nn.Module) -> None:
     """Initialize `module.weight` using the "XavierFill" implemented in Caffe2.
 

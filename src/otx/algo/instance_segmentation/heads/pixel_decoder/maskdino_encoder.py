@@ -12,9 +12,9 @@ from torch import Tensor, nn
 from torch.nn import functional as f
 from torch.nn.init import normal_
 
-from otx.algo.common.transformers.position_embed import PositionEmbeddingSine
+from otx.algo.common.layers.position_embed import PositionEmbeddingSine
+from otx.algo.common.layers.transformer_layers import MSDeformableAttention as MSDeformAttn
 from otx.algo.common.utils.utils import get_clones
-from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.instance_segmentation.utils.utils import (
     Conv2d,
     ShapeSpec,
