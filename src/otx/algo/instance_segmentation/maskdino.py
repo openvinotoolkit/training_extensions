@@ -15,11 +15,9 @@ from torchvision.models._utils import IntermediateLayerGetter
 from torchvision.ops import box_convert
 
 from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
-from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
-from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
-from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
+from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
-from otx.algo.instance_segmentation.segmentors import MaskDINO
+from otx.algo.instance_segmentation.segmentors import MaskDINO, MaskDINOHead
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
 from otx.algo.utils.mmengine_utils import load_from_http
@@ -92,14 +90,13 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             channels=[256, 512, 1024, 2048],
         )
 
-        pixel_decoder = MaskDINOEncoder(input_shape=fmap_shape_specs)
-
-        transformer_predictor = MaskDINODecoder(num_classes=num_classes)
+        pixel_decoder = MaskDINOEncoderHead(input_shape=fmap_shape_specs)
+        predictor = MaskDINODecoderHead(num_classes=num_classes)
 
         sem_seg_head = MaskDINOHead(
             num_classes=num_classes,
             pixel_decoder=pixel_decoder,
-            transformer_predictor=transformer_predictor,
+            predictor=predictor,
         )
 
         matcher = HungarianMatcher(

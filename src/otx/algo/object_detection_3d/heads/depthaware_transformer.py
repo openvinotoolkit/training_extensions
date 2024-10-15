@@ -107,6 +107,8 @@ class DepthAwareTransformer(nn.Module):
         Args:
             proposals (Tensor): Proposal tensor of shape (N, L, 6).
 
+        TODO: Not used. Remove this function?
+
         Returns:
             Tensor: Position embeddings for proposal tensor of shape (N, L, embedding_dim).
         """

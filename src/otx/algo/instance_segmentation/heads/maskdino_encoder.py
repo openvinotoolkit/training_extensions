@@ -137,7 +137,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         return memory, spatial_shapes, level_start_index
 
 
-class MaskDINOEncoder(nn.Module):
+class MaskDINOEncoderHead(nn.Module):
     """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models.
 
     Args:

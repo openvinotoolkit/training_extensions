@@ -20,9 +20,39 @@ from torchvision.models.detection.image_list import ImageList
 from torchvision.ops import box_convert
 from torchvision.ops.roi_align import RoIAlign
 
-from otx.algo.instance_segmentation.heads.maskdino_head import MaskDINOHead
+from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
+
+
+class MaskDINOHead(nn.Module):
+    """MaskDINO Head module.
+
+    Args:
+        num_classes (int): number of classes
+        pixel_decoder (MaskDINOEncoder): pixel decoder
+        predictor (MaskDINODecoder): mask transformer predictor
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        pixel_decoder: MaskDINOEncoderHead,
+        predictor: MaskDINODecoderHead,
+    ):
+        super().__init__()
+        self.pixel_decoder = pixel_decoder
+        self.predictor = predictor
+        self.num_classes = num_classes
+
+    def forward(
+        self,
+        features: dict[str, Tensor],
+        targets: list[dict[str, Tensor]] | None = None,
+    ) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
+        """Forward pass."""
+        mask_features, _, multi_scale_features = self.pixel_decoder(features)
+        return self.predictor(multi_scale_features, mask_features, targets=targets)
 
 
 class MaskDINO(nn.Module):
