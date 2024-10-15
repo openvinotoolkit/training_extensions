@@ -246,7 +246,6 @@ class DepthAwareTransformer(nn.Module):
         memory = self.encoder(
             src_flatten,
             spatial_shapes,
-            level_start_index,
             valid_ratios,
             lvl_pos_embed_flatten,
             mask_flatten,

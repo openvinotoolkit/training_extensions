@@ -379,7 +379,7 @@ class Conv2d(nn.Conv2d):
         super().__init__(*args, **kwargs)
 
         self.norm = norm
-        self.activation = activation
+        self.activation = activation() if activation else activation
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward pass."""

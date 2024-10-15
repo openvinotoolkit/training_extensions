@@ -376,7 +376,6 @@ class VisualEncoderLayer(nn.Module):
         pos: Tensor,
         reference_points: Tensor,
         spatial_shapes: list[tuple[int, int]],
-        level_start_index: Tensor,
         padding_mask: Tensor | None = None,
     ) -> Tensor:
         """Forward pass of the VisualEncoderLayer.
@@ -386,7 +385,6 @@ class VisualEncoderLayer(nn.Module):
             pos (Tensor): The position embedding tensor.
             reference_points (Tensor): The reference points tensor.
             spatial_shapes (List[Tuple[int, int]]): The list of spatial shapes.
-            level_start_index (Tensor): The level start index tensor.
             padding_mask (Optional[Tensor]): The padding mask tensor. Defaults to None.
 
         Returns:
@@ -433,8 +431,8 @@ class VisualEncoder(nn.Module):
         reference_points_list = []
         for lvl, (h_, w_) in enumerate(spatial_shapes):
             ref_y, ref_x = torch.meshgrid(
-                torch.linspace(0.5, h_ - 0.5, h_, dtype=torch.float32, device=device),
-                torch.linspace(0.5, w_ - 0.5, w_, dtype=torch.float32, device=device),
+                torch.linspace(0.5, h_ - 0.5, h_, device=device),
+                torch.linspace(0.5, w_ - 0.5, w_, device=device),
             )
             ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * h_)
             ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * w_)
@@ -447,12 +445,9 @@ class VisualEncoder(nn.Module):
         self,
         src: Tensor,
         spatial_shapes: list[tuple[int, int]],
-        level_start_index: Tensor,
         valid_ratios: Tensor,
         pos: Tensor | None = None,
         padding_mask: Tensor | None = None,
-        ref_token_index: int | None = None,
-        ref_token_coord: Tensor | None = None,
     ) -> Tensor:
         """Forward pass of the VisualEncoder module.
 
@@ -471,7 +466,7 @@ class VisualEncoder(nn.Module):
         """
         output = src
         reference_points = self.get_reference_points(spatial_shapes, valid_ratios, device=src.device)
-        for _, layer in enumerate(self.layers):
-            output = layer(output, pos, reference_points, spatial_shapes, level_start_index, padding_mask)
+        for layer in self.layers:
+            output = layer(output, pos, reference_points, spatial_shapes, padding_mask)
 
         return output
