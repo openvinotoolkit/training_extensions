@@ -34,7 +34,7 @@ def register_pytree_node(cls: type[T_OTXDataEntity]) -> type[T_OTXDataEntity]:
     """
     flatten_fn = lambda obj: (list(obj.values()), list(obj.keys()))
     unflatten_fn = lambda values, context: cls(**dict(zip(context, values)))
-    pytree._register_pytree_node(  # noqa: SLF001
+    pytree.register_pytree_node(
         cls,
         flatten_fn=flatten_fn,
         unflatten_fn=unflatten_fn,

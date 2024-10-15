@@ -195,14 +195,6 @@ def test_otx_e2e(
         assert latest_dir.exists()
         assert (latest_dir / export_case.expected_output).exists()
 
-    if "keypoint" in recipe:
-        print("Inference and explain are not supported for keypoint detection")
-        return
-
-    if "monodetr3d" in recipe:
-        print("Inference and explain are not supported for object detection 3d")
-        return
-
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
     ov_files = list(ov_output_dir.rglob("exported*.xml"))
@@ -265,8 +257,13 @@ def test_otx_e2e(
 
     if "yolov9" in model_name:
         return  # RT-DETR currently is not supported.
+
     if "keypoint" in recipe:
         print("Explain is not supported for keypoint detection")
+        return
+
+    if "monodetr3d" in recipe:
+        print("Explain is not supported for object detection 3d")
         return
 
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
