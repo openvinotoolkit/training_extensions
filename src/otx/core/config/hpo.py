@@ -23,7 +23,12 @@ else:
 
 @dataclass
 class HpoConfig:
-    """DTO for HPO configuration."""
+    """DTO for HPO configuration.
+
+    progress_update_callback (Callable[[int | float], None] | None):
+        callback to update progress. If it's given, it's called with progress every second.
+    callbacks_to_exclude (list[str] | str | None): List of name of callbacks to exclude during HPO.
+    """
 
     search_space: dict[str, dict[str, Any]] | str | Path | None = None
     save_path: str | None = None
