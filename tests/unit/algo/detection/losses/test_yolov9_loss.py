@@ -163,6 +163,21 @@ class TestBoxMatcher:
         assert align_targets.shape == torch.Size([1, 3, 14])
         assert valid_masks.shape == torch.Size([1, 3])
 
+    def test_call_with_empty_bbox(self, box_matcher: BoxMatcher) -> None:
+        target = torch.zeros((1, 0, 5))
+
+        predict_cls = torch.rand((1, 8400, 10))
+        predict_bbox = torch.rand((1, 8400, 4))
+        predict = (predict_cls, predict_bbox)
+
+        align_targets, valid_masks = box_matcher(target, predict)
+
+        assert align_targets.shape == (1, 8400, 14)
+        assert torch.all(align_targets == 0)
+
+        assert valid_masks.shape == (1, 8400)
+        assert torch.all(~valid_masks)
+
 
 class TestYOLOv9Criterion:
     @pytest.fixture()

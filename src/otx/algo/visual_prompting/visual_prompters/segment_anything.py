@@ -101,7 +101,7 @@ class SegmentAnything(nn.Module):
                     multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better. # noqa: E501
                 )
                 low_res_masks.append(_low_res_masks)
-                iou_predictions.append(_iou_predictions)
+                iou_predictions.append(_iou_predictions.squeeze(1))
 
             pred_masks.append(torch.cat(low_res_masks, dim=0))
             ious.append(torch.cat(iou_predictions, dim=0))
@@ -614,7 +614,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         ori_shape=ori_shape,
                         is_cascade=is_cascade,
                     )
-                    predicted_masks[label].append(mask * point_score[2])
+                    predicted_masks[label].append(mask)
                     used_points[label].append(point_score)
 
             # check overlapping area between different label masks
