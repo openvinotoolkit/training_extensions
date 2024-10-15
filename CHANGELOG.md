@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3843)
 - Add mAP metric to evaluate multilabel classification
   (https://github.com/openvinotoolkit/training_extensions/pull/3985)
+- Add keypoint detection configurations for converter
+  (https://github.com/openvinotoolkit/training_extensions/pull/4033)
 
 ### Bug fixes
 
