@@ -9,7 +9,7 @@ import pytest
 from datumaro import Dataset as DmDataset
 from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
 from otx.core.data.entity.base import ImageInfo, Points
-from otx.core.data.entity.visual_prompting import ZeroShotVisualPromptingLabel
+from torch import Tensor
 from torchvision.transforms.v2 import Identity, Transform
 from torchvision.tv_tensors import BoundingBoxes, Image, Mask
 
@@ -103,7 +103,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         assert hasattr(entity, "masks")
         assert isinstance(entity.masks, Mask)
         assert hasattr(entity, "labels")
-        assert isinstance(entity.labels, ZeroShotVisualPromptingLabel)
+        assert isinstance(entity.labels, Tensor)
         assert hasattr(entity, "polygons")
         assert isinstance(entity.polygons, list)
         assert hasattr(entity, "prompts")

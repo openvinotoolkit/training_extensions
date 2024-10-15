@@ -107,7 +107,7 @@ class TestSegmentAnything:
             assert results[0][0][0].shape == torch.Size(ori_shapes[0])
 
             # check ious
-            assert results[1][0].ndim == 2
+            assert results[1][0].ndim == 1
 
     @pytest.mark.parametrize(
         "ori_shape",
@@ -406,7 +406,7 @@ class TestZeroShotSegmentAnything:
         mocker.patch.object(
             zero_shot_segment_anything.prompt_getter,
             "get_prompt_candidates",
-            return_value=({0: torch.tensor([[0, 0, 0.5], [1000, 1000, 0.7]])}, {0: torch.tensor([[500, 500]])}),
+            return_value=({0: torch.tensor([[0, 0, 1.0], [1000, 1000, 1.0]])}, {0: torch.tensor([[500, 500]])}),
         )
 
         def _patch_predict_masks(**kwargs) -> Tensor:
