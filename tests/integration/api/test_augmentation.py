@@ -15,7 +15,7 @@ from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import AutoConfigurator
 
 
-def _test_aug_cls(
+def _test_augmentation(
     recipe: str,
     target_dataset_per_task: dict,
     configurable_augs: list[str],
@@ -48,10 +48,13 @@ def _test_aug_cls(
     for switches in itertools.product([True, False], repeat=len(configurable_augs)):
         # Configure on/off
         for aug_name, switch in zip(configurable_augs, switches):
+            aug_found = False
             for aug_config in train_config["transforms"]:
                 if aug_name in aug_config["class_path"]:
                     aug_config["enable"] = switch
+                    aug_found = True
                     break
+            assert aug_found, f"{aug_name} not found in {recipe}"
         # Create dataset
         dataset = OTXDatasetFactory.create(
             task=task,
@@ -68,15 +71,16 @@ def _test_aug_cls(
             assert img_shape == data.img_info.img_shape
 
 
-CLS_RECIPES = [recipe for recipe in pytest.RECIPE_LIST if "_cls" in recipe and "semi" not in recipe]
+CLS_RECIPES = [
+    recipe for recipe in pytest.RECIPE_LIST if "_cls" in recipe and "semi" not in recipe and "tv_" not in recipe
+]
 
 
 @pytest.mark.parametrize(
     "recipe",
     CLS_RECIPES,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
-def test_aug_cls(
+def test_augmentation_cls(
     recipe: str,
     fxt_target_dataset_per_task: dict,
 ):
@@ -87,4 +91,4 @@ def test_aug_cls(
         "GaussianBlur",
         "GaussianNoise",
     ]
-    _test_aug_cls(recipe, fxt_target_dataset_per_task, configurable_augs)
+    _test_augmentation(recipe, fxt_target_dataset_per_task, configurable_augs)
