@@ -1,0 +1,29 @@
+otx.core.optimizer
+==================
+
+.. automodule:: otx.core.optimizer
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OptimizerCallableSupportHPO
+   
+   
+
+   
+   
+   
+
+
+
