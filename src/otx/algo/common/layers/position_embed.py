@@ -53,14 +53,14 @@ class PositionEmbeddingSine(nn.Module):
             msg = f"Unrecognized type {type(tensor_list)}"
             raise TypeError(msg)
         not_mask = ~mask
-        y_embed = not_mask.cumsum(1, dtype=torch.float32)
-        x_embed = not_mask.cumsum(2, dtype=torch.float32)
+        y_embed = not_mask.cumsum(1)
+        x_embed = not_mask.cumsum(2)
         if self.normalize:
             eps = 1e-6
             y_embed = y_embed / (y_embed[:, -1:, :] + eps) * self.scale
             x_embed = x_embed / (x_embed[:, :, -1:] + eps) * self.scale
 
-        dim_t = torch.arange(self.num_pos_feats, dtype=torch.float32, device=x.device)
+        dim_t = torch.arange(self.num_pos_feats, dtype=torch.int64, device=x.device).type_as(x)
         dim_t = self.temperature ** (2 * (dim_t // 2) / self.num_pos_feats)
 
         pos_x = x_embed[:, :, :, None] / dim_t
@@ -134,7 +134,7 @@ def gen_sineembed_for_position(pos_tensor: torch.Tensor) -> torch.Tensor:
         Tensor: Sine embeddings for position tensor of shape (n_query, bs, embedding_dim).
     """
     scale = 2 * math.pi
-    dim_t = torch.arange(128, dtype=torch.float32, device=pos_tensor.device)
+    dim_t = torch.arange(128, dtype=torch.int64, device=pos_tensor.device).type_as(pos_tensor)
     dim_t = 10000 ** (2 * (dim_t // 2) / 128)
     x_embed = pos_tensor[:, :, 0] * scale
     y_embed = pos_tensor[:, :, 1] * scale

@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import numpy as np
 import torch
@@ -156,7 +156,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         return memory, spatial_shapes, level_start_index
 
 
-class MaskDINOEncoderHead(nn.Module):
+class MaskDINOEncoderHeadModule(nn.Module):
     """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models.
 
     Args:
@@ -187,7 +187,7 @@ class MaskDINOEncoderHead(nn.Module):
         num_feature_levels: int = 3,
         total_num_feature_levels: int = 4,
         activation: Callable[..., nn.Module] = nn.ReLU,
-    ):
+    ) -> None:
         super().__init__()
         # this is the input shape of pixel decoder
         input_shape_list = sorted(input_shape.items(), key=lambda x: x[1].stride)  # type: ignore  # noqa: PGH003
@@ -366,3 +366,32 @@ class MaskDINOEncoderHead(nn.Module):
                 multi_scale_features.append(o)
                 num_cur_levels += 1
         return self.mask_features(out[-1]), out[0], multi_scale_features
+
+
+class MaskDINOEncoderHead:
+    """MaskDINO Encoder Head Factory Selector."""
+
+    encoder_head_cfg: ClassVar[dict[str, Any]] = {
+        "resnet50": {},
+    }
+
+    def __new__(
+        cls,
+        model_name: str,
+        input_shape: dict[str, ShapeSpec],
+    ) -> MaskDINOEncoderHeadModule:
+        """Create a new instance of MaskDINOEncoderHeadModule.
+
+        Args:
+            model_name (str): backbone model name
+
+        Raises:
+            ValueError: If the model name is not supported
+
+        Returns:
+            MaskDINOEncoderHeadModule: MaskDINOEncoderHeadModule instance
+        """
+        if model_name not in cls.encoder_head_cfg:
+            msg = f"Model {model_name} not supported"
+            raise ValueError(msg)
+        return MaskDINOEncoderHeadModule(**cls.encoder_head_cfg[model_name], input_shape=input_shape)

@@ -228,7 +228,7 @@ class HungarianMatcher(nn.Module):
         target_mask = target_mask[:, None]
 
         # Sample ground truth and predicted masks
-        point_coordinates = torch.rand(1, num_points, 2, device=out_mask.device)
+        point_coordinates = torch.rand(1, num_points, 2, device=out_mask.device).type_as(out_mask)
 
         # get gt labels
         target_mask = sample_point(

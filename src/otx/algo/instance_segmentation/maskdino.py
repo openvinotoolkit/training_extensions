@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
 from torch import Tensor, nn
@@ -14,29 +14,77 @@ from torchvision.models import resnet50
 from torchvision.models._utils import IntermediateLayerGetter
 from torchvision.ops import box_convert
 
-from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
-from otx.algo.instance_segmentation.segmentors import MaskDINO, MaskDINOHead
+from otx.algo.instance_segmentation.segmentors import MaskDINO as MaskDINOInstanceSeg
+from otx.algo.instance_segmentation.segmentors import MaskDINOHead
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
 from otx.algo.utils.mmengine_utils import load_from_http
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchvision import tv_tensors
 
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
-class MaskDINOR50(ExplainableOTXInstanceSegModel):
-    """OTX MaskDINO model with ResNet50 backbone."""
 
-    load_from = "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
-    mean = (123.675, 116.28, 103.53)
-    std = (58.395, 57.12, 57.375)
+class MaskDINO(ExplainableOTXInstanceSegModel):
+    """OTX MaskDINO Instance Segmentation model."""
+
+    backbone_cfg: ClassVar[dict[str, Any]] = {
+        "resnet50": {
+            "backbone": resnet50(norm_layer=FrozenBatchNorm2d),
+            "return_layers": {
+                "layer1": "res2",
+                "layer2": "res3",
+                "layer3": "res4",
+                "layer4": "res5",
+            },
+            "strides": [4, 8, 16, 32],
+            "channels": [256, 512, 1024, 2048],
+            "weights": (
+                "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/"
+                "maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
+            ),
+        },
+    }
+
+    mean: tuple[float, float, float] = (123.675, 116.28, 103.53)
+    std: tuple[float, float, float] = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        model_name: Literal["resnet50"],
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (1024, 1024),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ):
+        self.load_from: str = self.backbone_cfg[model_name]["weights"]
+        super().__init__(
+            model_name=model_name,
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
 
     def build_fmap_shape_specs(
         self,
@@ -44,7 +92,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         strides: list[int],
         channels: list[int],
     ) -> dict[str, ShapeSpec]:
-        """Build feature map shape specs.
+        """Build feature map shape specs frm backbone config.
 
         Args:
             out_feautres (list[str]): feature map names.
@@ -65,33 +113,40 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             )
         return output_shape_dict
 
+    def _build_backbone(self) -> tuple[nn.Module, dict[str, ShapeSpec]]:
+        """Build backbone.
+
+        Raises:
+            ValueError: If the backbone is not supported.
+
+        Returns:
+            tuple[nn.Module, dict[str, ShapeSpec]]: Backbone and shape specs.
+        """
+        if self.model_name in self.backbone_cfg:
+            backbone_cfg = self.backbone_cfg[self.model_name]
+
+            backbone = IntermediateLayerGetter(
+                backbone_cfg["backbone"],
+                return_layers=backbone_cfg["return_layers"],
+            )
+
+            shape_spec = self.build_fmap_shape_specs(
+                out_feautres=list(backbone_cfg["return_layers"].values()),
+                strides=backbone_cfg["strides"],
+                channels=backbone_cfg["channels"],
+            )
+
+            return backbone, shape_spec
+        msg = f"Backbone {self.model_name} is not supported."
+        raise ValueError(msg)
+
     def _build_model(self, num_classes: int) -> nn.Module:
         """Build a MaskDINO model from a config."""
-        # loss weights
-        cost_class_weight = 4.0
-        cost_dice_weight = 5.0
-        cost_mask_weight = 5.0
-        cost_box_weight = 5.0
-        cost_giou_weight = 2.0
+        backbone, fmap_shape_specs = self._build_backbone()
+        model_name = self.model_name
 
-        backbone = IntermediateLayerGetter(
-            resnet50(norm_layer=FrozenBatchNorm2d),
-            return_layers={
-                "layer1": "res2",
-                "layer2": "res3",
-                "layer3": "res4",
-                "layer4": "res5",
-            },
-        )
-
-        fmap_shape_specs = self.build_fmap_shape_specs(
-            out_feautres=["res2", "res3", "res4", "res5"],
-            strides=[4, 8, 16, 32],
-            channels=[256, 512, 1024, 2048],
-        )
-
-        pixel_decoder = MaskDINOEncoderHead(input_shape=fmap_shape_specs)
-        predictor = MaskDINODecoderHead(num_classes=num_classes)
+        pixel_decoder = MaskDINOEncoderHead(model_name=model_name, input_shape=fmap_shape_specs)
+        predictor = MaskDINODecoderHead(model_name=model_name, num_classes=num_classes)
 
         sem_seg_head = MaskDINOHead(
             num_classes=num_classes,
@@ -99,23 +154,12 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             predictor=predictor,
         )
 
-        matcher = HungarianMatcher(
-            cost_dict={
-                "cost_class": cost_class_weight,
-                "cost_bbox": cost_box_weight,
-                "cost_giou": cost_giou_weight,
-                "cost_mask": cost_mask_weight,
-                "cost_dice": cost_dice_weight,
-            },
-        )
-
         # building criterion
         criterion = MaskDINOCriterion(
             num_classes=num_classes,
-            matcher=matcher,
         )
 
-        return MaskDINO(
+        return MaskDINOInstanceSeg(
             backbone=backbone,
             sem_seg_head=sem_seg_head,
             criterion=criterion,
@@ -126,7 +170,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
     def _create_model(self) -> nn.Module:
         """Create MaskDINO model and load pre-trained weights.
 
-        Detectron R50 coco-pretrained weights have different structure than TV R50 weights,
+        Detectron2 state dict have different layer structure than torchvision state dict,
         so we need to implement custom loading logic.
 
         Returns:
@@ -135,35 +179,27 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         Todo:
             - Implement Unit tests.
         """
+        # TODO(Eugene): make it more general, now it only supports R50.
+
+        # Firstly load all weights on MaskDINO heads.
         detector = super()._create_model()
 
-        # Load pre-trained backbone weights
-        maskdino_pretrained = load_from_http(self.load_from, map_location="cpu")
-        maskdino_pretrained = maskdino_pretrained.pop("model")
-        maskdino_backbone_weights = []
-        maskdino_backbone_shortcut_weights = []
-
-        # Load MaskDINO pre-trained backbone weights
-        for layer_name, weights in maskdino_pretrained.items():
+        # Then, load pre-trained backbone weights.
+        pretrained = load_from_http(self.load_from, map_location="cpu")
+        pretrained = pretrained.pop("model")
+        backbone_weights = []
+        backbone_shortcut_weights = []
+        for layer_name, weights in pretrained.items():
             if layer_name.startswith("backbone"):
                 if "shortcut" in layer_name:
-                    maskdino_backbone_shortcut_weights.append(weights)
+                    backbone_shortcut_weights.append(weights)
                 else:
-                    maskdino_backbone_weights.append(weights)
+                    backbone_weights.append(weights)
 
-        # Load TV backbone
+        # Load pre-trained backbone weights to TV backbone weights.
         tv_model_dict = {}
-        for layer_name, weights in detector.backbone.state_dict().items():
-            if "downsample" in layer_name:
-                w = maskdino_backbone_shortcut_weights.pop(0)
-                if w.shape != weights.shape:
-                    msg = f"Shape mismatch: {layer_name} {w.shape} != {weights.shape}"
-                    raise ValueError(msg)
-            else:
-                w = maskdino_backbone_weights.pop(0)
-                if w.shape != weights.shape:
-                    msg = f"Shape mismatch: {layer_name} {w.shape} != {weights.shape}"
-                    raise ValueError(msg)
+        for layer_name in detector.backbone.state_dict():
+            w = backbone_shortcut_weights.pop(0) if "downsample" in layer_name else backbone_weights.pop(0)
             tv_model_dict[layer_name] = w.clone()
         detector.backbone.load_state_dict(tv_model_dict)
 

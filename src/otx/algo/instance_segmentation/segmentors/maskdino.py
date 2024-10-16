@@ -20,7 +20,7 @@ from torchvision.models.detection.image_list import ImageList
 from torchvision.ops import box_convert
 from torchvision.ops.roi_align import RoIAlign
 
-from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
+from otx.algo.instance_segmentation.heads import MaskDINODecoderHeadModule, MaskDINOEncoderHeadModule
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -30,15 +30,15 @@ class MaskDINOHead(nn.Module):
 
     Args:
         num_classes (int): number of classes
-        pixel_decoder (MaskDINOEncoder): pixel decoder
-        predictor (MaskDINODecoder): mask transformer predictor
+        pixel_decoder (MaskDINOEncoderHeadModule): pixel decoder
+        predictor (MaskDINODecoderHeadModule): mask transformer predictor
     """
 
     def __init__(
         self,
         num_classes: int,
-        pixel_decoder: MaskDINOEncoderHead,
-        predictor: MaskDINODecoderHead,
+        pixel_decoder: MaskDINOEncoderHeadModule,
+        predictor: MaskDINODecoderHeadModule,
     ):
         super().__init__()
         self.pixel_decoder = pixel_decoder

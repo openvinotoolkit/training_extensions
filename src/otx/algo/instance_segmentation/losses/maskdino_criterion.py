@@ -135,7 +135,7 @@ class MaskDINOCriterion(nn.Module):
 
     Args:
         num_classes (int): number of object categories, omitting the special no-object category
-        matcher (HungarianMatcher): module that computes the matching between ground truth and predicted boxes
+        matcher (HungarianMatcher, optional): module that computes the matching between ground truth and predicted boxes
         weight_dict (dict, optional): dict containing key names of the losses and as values their relative weight.
         eos_coef (float): relative classification weight applied to the no-object category
         losses (list): list of all the losses to be applied
@@ -143,28 +143,37 @@ class MaskDINOCriterion(nn.Module):
         oversample_ratio (float): ratio of oversampling for pointwise mask loss
         importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss
         dec_layers (int): number of decoder layers
+        cost_class_weight (float): class loss weight
+        cost_box_weight (float): box loss weight
+        cost_giou_weight (float): giou loss weight
+        cost_mask_weight (float): mask loss weight
+        cost_dice_weight (float): dice loss weight
     """
 
     def __init__(
         self,
         num_classes: int,
-        matcher: HungarianMatcher,
+        matcher: HungarianMatcher | None = None,
         weight_dict: dict[str, float] | None = None,
         eos_coef: float = 0.1,
         num_points: int = 112 * 112,
         oversample_ratio: float = 3.0,
         importance_sample_ratio: float = 0.75,
         dec_layers: int = 9,
+        class_weight: float = 2.0,
+        box_weight: float = 5.0,
+        giou_weight: float = 2.0,
+        mask_weight: float = 5.0,
+        dice_weight: float = 5.0,
     ) -> None:
         super().__init__()
         if weight_dict is None:
-            dec_layers = 9
             weight_dict = {
-                "loss_ce": 4.0,
-                "loss_dice": 5.0,
-                "loss_mask": 5.0,
-                "loss_bbox": 5.0,
-                "loss_giou": 2.0,
+                "loss_ce": class_weight,
+                "loss_dice": dice_weight,
+                "loss_mask": mask_weight,
+                "loss_bbox": box_weight,
+                "loss_giou": giou_weight,
             }
             weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
 
@@ -175,6 +184,17 @@ class MaskDINOCriterion(nn.Module):
             for i in range(dec_layers):
                 aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
             weight_dict.update(aux_weight_dict)
+
+        if matcher is None:
+            matcher = HungarianMatcher(
+                cost_dict={
+                    "cost_class": class_weight,
+                    "cost_bbox": box_weight,
+                    "cost_giou": giou_weight,
+                    "cost_mask": mask_weight,
+                    "cost_dice": dice_weight,
+                },
+            )
 
         self.num_classes = num_classes
         self.matcher = matcher

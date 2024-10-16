@@ -4,6 +4,8 @@
 """MaskDINODecoder module."""
 from __future__ import annotations
 
+from typing import Any, ClassVar
+
 import torch
 from torch import Tensor, nn
 from torchvision.ops import box_convert
@@ -193,7 +195,7 @@ class DeformableTransformerDecoder(nn.Module):
         ]
 
 
-class MaskDINODecoderHead(nn.Module):
+class MaskDINODecoderHeadModule(nn.Module):
     """MaskDINODecoder module.
 
     Args:
@@ -605,3 +607,29 @@ class MaskDINODecoderHead(nn.Module):
             {"pred_logits": a, "pred_masks": b, "pred_boxes": c}
             for a, b, c in zip(outputs_class[:-1], outputs_seg_masks[:-1], out_boxes[:-1], strict=True)
         ]
+
+
+class MaskDINODecoderHead:
+    """MaskDINODecoderHead factory class."""
+
+    decoder_cfg: ClassVar[dict[str, Any]] = {
+        "resnet50": {},
+    }
+
+    def __new__(cls, model_name: str, num_classes: int) -> MaskDINODecoderHeadModule:
+        """Create MaskDINODecoderHeadModule object.
+
+        Args:
+            model_name (str): backbone model name
+            num_classes (int): number of classes
+
+        Raises:
+            ValueError: If model name is not supported
+
+        Returns:
+            MaskDINODecoderHeadModule: MaskDINODecoderHeadModule object
+        """
+        if model_name not in cls.decoder_cfg:
+            msg = f"Model {model_name} not supported"
+            raise ValueError(msg)
+        return MaskDINODecoderHeadModule(**cls.decoder_cfg[model_name], num_classes=num_classes)
