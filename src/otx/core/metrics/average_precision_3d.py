@@ -45,6 +45,7 @@ class KittiMetric(Metric):
         super().reset()
         self.preds: list[dict[str, np.array]] = []
         self.targets: list[dict[str, np.array]] = []
+        self.mean_ap.reset()
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update total predictions and targets from given batch predicitons and targets."""
