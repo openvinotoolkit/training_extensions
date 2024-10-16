@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add YOLOv9 model for Object Detection
-  (https://github.com/openvinotoolkit/training_extensions/pull/3917)
+  (https://github.com/openvinotoolkit/training_extensions/pull/3917, https://github.com/openvinotoolkit/training_extensions/pull/4026)
 - Add OV inference for keypoint detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3970)
 - Add tiling for semantic segmentation
