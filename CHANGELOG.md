@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[Unreleased\]
+
+### New features
+
+- Turn on/off classification augmentations
+  (https://github.com/openvinotoolkit/training_extensions/pull/4039)
+
+### Enhancements
+
+
+### Bug fixes
+
+
 ## \[2.3.0\]
 
 ### New features
