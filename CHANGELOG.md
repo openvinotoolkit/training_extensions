@@ -40,29 +40,29 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add RT-DETR model for Object Detection
-  (https://github.com/openvinotoolkit/training_extensions/pull/3741)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3741>)
 - Add Multi-Label & H-label Classification with torchvision models
-  (https://github.com/openvinotoolkit/training_extensions/pull/3697)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3697>)
 - Add Hugging-Face Model Wrapper for Classification
-  (https://github.com/openvinotoolkit/training_extensions/pull/3710)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3710>)
 - Add LoRA finetuning capability for ViT Architectures
-  (https://github.com/openvinotoolkit/training_extensions/pull/3729)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3729>)
 - Add Hugging-Face Model Wrapper for Object Detection
-  (https://github.com/openvinotoolkit/training_extensions/pull/3747)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3747>)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation
-  (https://github.com/openvinotoolkit/training_extensions/pull/3749)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3749>)
 - Enable torch.compile to work with classification
-  (https://github.com/openvinotoolkit/training_extensions/pull/3758)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3758>)
 - Add `otx benchmark` subcommand
-  (https://github.com/openvinotoolkit/training_extensions/pull/3762)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3762>)
 - Add RTMPose for Keypoint Detection Task
-  (https://github.com/openvinotoolkit/training_extensions/pull/3781)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3781>, <https://github.com/openvinotoolkit/training_extensions/pull/4034>)
 - Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
-  (https://github.com/openvinotoolkit/training_extensions/pull/3801)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3801>)
 - Update head and h-label format for hierarchical label classification
-  (https://github.com/openvinotoolkit/training_extensions/pull/3810)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3810>)
 - Support configurable input size
-  (https://github.com/openvinotoolkit/training_extensions/pull/3788)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3788>)
 
 ### Enhancements
 
@@ -90,6 +90,14 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3968>)
 - Change sematic segmentation to consider bbox only annotations
   (<https://github.com/openvinotoolkit/training_extensions/pull/3996>)
+- Relieve memory usage criteria on batch size 2 during adaptive batch size
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4009>)
+- Remove background label from RT Info for segmentation task
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4011>)
+- Prevent using too low confidence thresholds in detection
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4018>)
+- Update HPO interface
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4035>)
 
 ### Bug fixes
 
@@ -105,6 +113,12 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3946>)
 - Fix config converter for tiling
   (<https://github.com/openvinotoolkit/training_extensions/pull/3973>)
+- Fix `BboxOverlaps2D` handling of empty ground-truth annotations in datasets.
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4010>)
+- Fix num_trials calculation on dataset length less than num_class
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4014>)
+- Fix out_features in HierarchicalCBAMClsHead
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4016>)
 
 ## \[v2.1.0\]
 

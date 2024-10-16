@@ -99,7 +99,7 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         msg = "It is not currently support an ignore index which is more than 255."
         raise ValueError(msg, ignore_index)
 
-    # fill mask with background label if we have Polygon/Ellipse annotations
+    # fill mask with background label if we have Polygon/Ellipse/Bbox annotations
     fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon, Bbox, RotatedBbox)) else ignore_index
     class_mask = np.full(shape=img_shape[:2], fill_value=fill_value, dtype=np.uint8)
 
@@ -180,9 +180,9 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             to_tv_image,
         )
 
-        if self.has_polygons and "background" not in [label_name.lower() for label_name in self.label_info.label_names]:
+        if self.has_polygons:
             # insert background class at index 0 since polygons represent only objects
-            self.label_info.label_names.insert(0, "background")
+            self.label_info.label_names.insert(0, "otx_background_lbl")
 
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,

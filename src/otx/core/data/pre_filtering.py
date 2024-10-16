@@ -40,13 +40,15 @@ def pre_filtering(
     dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
     dataset = remove_unused_labels(dataset, data_format, ignore_index)
     if unannotated_items_ratio > 0:
-        empty_items = [item.id for item in dataset if item.subset == "train" and len(item.annotations) == 0]
+        empty_items = [
+            item.id for item in dataset if item.subset in ("train", "TRAINING") and len(item.annotations) == 0
+        ]
         used_background_items = set(sample(empty_items, int(len(empty_items) * unannotated_items_ratio)))
 
     return DmDataset.filter(
         dataset,
         lambda item: not (
-            item.subset == "train" and len(item.annotations) == 0 and item.id not in used_background_items
+            item.subset in ("train", "TRAINING") and len(item.annotations) == 0 and item.id not in used_background_items
         ),
     )
 
@@ -103,5 +105,4 @@ def remove_unused_labels(
         mapping = {original_categories[idx]: original_categories[idx] for idx in used_labels}
     msg = "There are unused labels in dataset, they will be filtered out before training."
     warnings.warn(msg, stacklevel=2)
-
     return dataset.transform("remap_labels", mapping=mapping, default="delete")

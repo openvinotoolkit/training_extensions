@@ -21,7 +21,7 @@ from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.algo.segmentation.litehrnet import LiteHRNet
 from otx.core.config.data import (
-    SubsetConfig,
+    SamplerConfig,
     TileConfig,
     VisualPromptingConfig,
 )
@@ -33,7 +33,6 @@ from otx.core.data.entity.tile import TileBatchDetDataEntity, TileBatchInstSegDa
 from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
 from otx.core.types.task import OTXTaskType
-from otx.core.types.transformer_libs import TransformLibType
 from torchvision import tv_tensors
 
 from tests.test_helpers import generate_random_bboxes
