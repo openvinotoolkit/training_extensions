@@ -334,16 +334,18 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
 
     def _customize_outputs(
         self,
-        outputs: dict[str, Tensor],  # type: ignore[override]
+        outputs: dict[str, Tensor]  # type: ignore[override]
+        | tuple[list[tv_tensors.BoundingBoxes], list[torch.LongTensor], list[tv_tensors.Mask], list[Tensor]],
         inputs: InstanceSegBatchDataEntity,
     ) -> OTXBatchLossEntity | InstanceSegBatchPredEntity:
-        if self.training:
-            return sum(outputs.values())
+        if self.training and isinstance(outputs, dict):
+            return sum(outputs.values())  # type: ignore[return-value]
 
-        masks = outputs["pred_masks"]
-        bboxes = outputs["pred_boxes"]
-        scores = outputs["pred_scores"]
-        labels = outputs["pred_labels"]
+        batch_bboxes: list[tv_tensors.BoundingBoxes]
+        batch_labels: list[torch.LongTensor]
+        batch_masks: list[tv_tensors.Mask]
+        batch_scores: list[Tensor]
+        batch_bboxes, batch_labels, batch_masks, batch_scores = outputs  # type: ignore[assignment]
 
         if self.explain_mode:
             msg = "Explain mode is not supported yet."
@@ -353,9 +355,9 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             batch_size=inputs.batch_size,
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            masks=masks,
+            scores=batch_scores,
+            bboxes=batch_bboxes,
+            masks=batch_masks,
             polygons=[],
-            labels=labels,
+            labels=batch_labels,
         )

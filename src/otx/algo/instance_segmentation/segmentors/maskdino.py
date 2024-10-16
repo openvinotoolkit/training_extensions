@@ -67,7 +67,7 @@ class MaskDINOHead(nn.Module):
         self,
         features: dict[str, Tensor],
         imgs_info: list[ImageInfo],
-    ) -> dict[str, list[Tensor]]:
+    ) -> tuple[list[tv_tensors.BoundingBoxes], list[torch.LongTensor], list[tv_tensors.Mask], list[Tensor]]:
         """Predict."""
         outputs, _ = self(features)
 
@@ -133,12 +133,7 @@ class MaskDINOHead(nn.Module):
             batch_labels.append(pred_classes[keep])
             batch_scores.append(pred_scores[keep])
 
-        return {
-            "pred_boxes": batch_bboxes,
-            "pred_labels": batch_labels,
-            "pred_masks": batch_masks,
-            "pred_scores": batch_scores,
-        }
+        return batch_bboxes, batch_labels, batch_masks, batch_scores
 
     def calculate_mask_scores(self, mask_pred: Tensor) -> Tensor:
         """Calculate mask scores."""
@@ -174,7 +169,10 @@ class MaskDINO(nn.Module):
         imgs_info: list[ImageInfo],
         targets: list[dict[str, Any]] | None = None,
         mode: str = "tensor",
-    ) -> dict[str, Tensor] | dict[str, list[Tensor]]:
+    ) -> (
+        dict[str, Tensor]
+        | tuple[list[tv_tensors.BoundingBoxes], list[torch.LongTensor], list[tv_tensors.Mask], list[Tensor]]
+    ):
         """Forward pass."""
         features = self.backbone(images.tensors)
 
@@ -257,7 +255,11 @@ class MaskDINO(nn.Module):
         )
         pred_scores = scores_per_image * mask_scores_per_image
         pred_classes = labels_per_image.unsqueeze(0)
-        pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_convert(pred_boxes, in_fmt="cxcywh", out_fmt="xyxy")
+        pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_convert(
+            pred_boxes,
+            in_fmt="cxcywh",
+            out_fmt="xyxy",
+        )
         pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks)
 
         boxes_with_scores = torch.cat([pred_boxes, pred_scores[:, None]], dim=1)
