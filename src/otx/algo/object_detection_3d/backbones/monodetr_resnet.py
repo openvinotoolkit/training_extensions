@@ -33,7 +33,7 @@ class PositionEmbeddingSine(nn.Module):
             num_pos_feats (int): Number of positional features.
             temperature (int): Temperature scaling factor.
             normalize (bool): Flag indicating whether to normalize the position embeddings.
-            scale (Optional[float]): Scaling factor for the position embeddings. If None, default value is used.
+            scale (float | None): Scaling factor for the position embeddings. If None, default value is used.
         """
         super().__init__()
         self.num_pos_feats = num_pos_feats
@@ -132,7 +132,7 @@ class Joiner(nn.Sequential):
 
         Args:
             backbone (nn.Module): The backbone module.
-            position_embedding (Union[PositionEmbeddingSine]): The position embedding module.
+            position_embedding (PositionEmbeddingSine): The position embedding module.
         """
         super().__init__(backbone, position_embedding)
         self.strides = backbone.strides
