@@ -1377,7 +1377,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs.image = img
         inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-        bboxes = inputs.bboxes
+        bboxes = getattr(inputs, "bboxes", [])
         num_bboxes = len(bboxes)
         if num_bboxes:
             bboxes = project_bboxes(bboxes, warp_matrix)

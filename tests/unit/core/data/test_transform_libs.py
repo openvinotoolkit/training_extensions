@@ -3,11 +3,11 @@
 #
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
 import pytest
 import torch
-from copy import deepcopy
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
 from otx.core.config.data import SubsetConfig
