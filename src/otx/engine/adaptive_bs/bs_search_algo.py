@@ -112,8 +112,14 @@ class BsSearchAlgo:
                 break
 
         if available_bs == 0:
-            msg = "Current device can't train model even with 2."
-            raise RuntimeError(msg)
+            if oom:
+                msg = "Current device can't train model even with 2."
+                raise RuntimeError(msg)
+            logger.warning(
+                "Even with a batch size of 2, most of the memory is used, "
+                "which could cause the training to fail midway.",
+            )
+            available_bs = 2
 
         return available_bs
 
@@ -141,8 +147,14 @@ class BsSearchAlgo:
         if oom or bs_mem_usage > self._mem_upper_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
-                msg = "Current device can't train model even with 2."
-                raise RuntimeError(msg)
+                if oom:
+                    msg = "Current device can't train model even with 2."
+                    raise RuntimeError(msg)
+                logger.warning(
+                    "Even with a batch size of 2, most of the memory is used, "
+                    "which could cause the training to fail midway.",
+                )
+                return 2
 
             return self.auto_decrease_batch_size()
 

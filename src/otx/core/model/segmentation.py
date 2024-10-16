@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import logging as log
 from abc import abstractmethod
@@ -173,13 +174,20 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
+        if self.label_info.label_names[0] == "otx_background_lbl":
+            # remove otx background label for export
+            modified_label_info = copy.deepcopy(self.label_info)
+            modified_label_info.label_names.pop(0)
+        else:
+            modified_label_info = self.label_info
+
         return super()._export_parameters.wrap(
             model_type="Segmentation",
             task_type="segmentation",
             return_soft_prediction=True,
             soft_threshold=0.5,
             blur_strength=-1,
-            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
+            label_info=modified_label_info,
         )
 
     @property

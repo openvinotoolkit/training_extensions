@@ -1088,11 +1088,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     def _set_label_info(self, label_info: LabelInfoTypes) -> None:
         """Set this model label information."""
         new_label_info = self._dispatch_label_info(label_info)
-
-        if self._label_info != new_label_info:
-            msg = "OVModel strictly does not allow overwrite label_info if they are different each other."
-            raise ValueError(msg)
-
         self._label_info = new_label_info
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:

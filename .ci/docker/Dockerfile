@@ -5,16 +5,9 @@
 FROM nvidia/cuda:12.1.0-runtime-ubuntu20.04@sha256:c1869c30f46fff478a37ed58d9dace7e08519541274f03424d0b78bd35b2c73a AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
 
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
-ARG NO_PROXY
 ARG uid
 ARG gid
 
-# Setup proxies
-ENV http_proxy=$HTTP_PROXY
-ENV https_proxy=$HTTPS_PROXY
-ENV no_proxy=$NO_PROXY
 ENV DEBIAN_FRONTEND="noninteractive"
 
 # hadolint ignore=DL3008

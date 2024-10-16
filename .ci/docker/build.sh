@@ -53,9 +53,6 @@ fi
 TAG=$1
 
 docker build -f ./Dockerfile \
---build-arg HTTP_PROXY="${http_proxy:?}" \
---build-arg HTTPS_PROXY="${https_proxy:?}" \
---build-arg NO_PROXY="${no_proxy:?}" \
 --build-arg ACTIONS_RUNNER_VER="$ACTIONS_RUNNER_VER" \
 --build-arg gid="$(id -g)" \
 --build-arg uid="$UID" \
