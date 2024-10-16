@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Module for OTX Dice metric used for the OTX semantic segmentation task."""
+
 from __future__ import annotations
 
 from torchmetrics import MetricCollection
@@ -12,6 +13,7 @@ from otx.core.types.label import LabelInfo
 
 
 def _visual_prompting_metric_callable(label_info: LabelInfo) -> MetricCollection:  # noqa: ARG001
+    # TODO (sungchul): consider to use iseg and sseg's metrics
     return MetricCollection(
         metrics={
             "iou": BinaryJaccardIndex(),
