@@ -10,8 +10,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
 from torch import Tensor, nn
+from torchvision import tv_tensors
 from torchvision.models import resnet50
 from torchvision.models._utils import IntermediateLayerGetter
+from torchvision.models.detection.image_list import ImageList
 from torchvision.ops import box_convert
 
 from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
@@ -22,17 +24,17 @@ from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
 from otx.algo.utils.mmengine_utils import load_from_http
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchvision import tv_tensors
 
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
@@ -86,7 +88,7 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             tile_config=tile_config,
         )
 
-    def build_fmap_shape_specs(
+    def _build_fmap_shape_specs(
         self,
         out_feautres: list[str],
         strides: list[int],
@@ -130,7 +132,7 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
                 return_layers=backbone_cfg["return_layers"],
             )
 
-            shape_spec = self.build_fmap_shape_specs(
+            shape_spec = self._build_fmap_shape_specs(
                 out_feautres=list(backbone_cfg["return_layers"].values()),
                 strides=backbone_cfg["strides"],
                 channels=backbone_cfg["channels"],
@@ -152,6 +154,8 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             num_classes=num_classes,
             pixel_decoder=pixel_decoder,
             predictor=predictor,
+            num_queries=300,
+            test_topk_per_image=100,
         )
 
         # building criterion
@@ -163,8 +167,6 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             backbone=backbone,
             sem_seg_head=sem_seg_head,
             criterion=criterion,
-            num_queries=300,
-            test_topk_per_image=100,
         )
 
     def _create_model(self) -> nn.Module:
@@ -300,6 +302,36 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
                 params.append({"params": [value], **hyperparams})
         return params
 
+    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
+        img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
+        images = ImageList(entity.images, img_shapes)
+
+        if self.training:
+            targets = []
+            for img_info, bboxes, labels, polygons, gt_masks in zip(
+                entity.imgs_info,
+                entity.bboxes,
+                entity.labels,
+                entity.polygons,
+                entity.masks,
+            ):
+                masks = polygon_to_bitmap(polygons, *img_info.img_shape) if len(polygons) else gt_masks
+                norm_shape = torch.tile(torch.tensor(img_info.img_shape, device=img_info.device), (2,))
+                targets.append(
+                    {
+                        "boxes": box_convert(bboxes, in_fmt="xyxy", out_fmt="cxcywh") / norm_shape,
+                        "labels": labels,
+                        "masks": tv_tensors.Mask(masks, device=img_info.device, dtype=torch.bool),
+                    },
+                )
+
+        return {
+            "images": images,
+            "imgs_info": entity.imgs_info,
+            "targets": targets if self.training else None,
+            "mode": "loss" if self.training else "predict",
+        }
+
     def _customize_outputs(
         self,
         outputs: dict[str, Tensor],  # type: ignore[override]
@@ -308,10 +340,10 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
         if self.training:
             return sum(outputs.values())
 
-        masks, bboxes, labels, scores = self.post_process_instance_segmentation(
-            outputs,
-            inputs.imgs_info,
-        )
+        masks = outputs["pred_masks"]
+        bboxes = outputs["pred_boxes"]
+        scores = outputs["pred_scores"]
+        labels = outputs["pred_labels"]
 
         if self.explain_mode:
             msg = "Explain mode is not supported yet."
@@ -327,80 +359,3 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             polygons=[],
             labels=labels,
         )
-
-    def post_process_instance_segmentation(
-        self,
-        outputs: dict[str, Tensor],
-        imgs_info: list[ImageInfo],
-    ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Post-process MaskDINO outputs."""
-        class_queries_logits = outputs["pred_logits"]
-        masks_queries_logits = outputs["pred_masks"]
-        mask_box_results = outputs["pred_boxes"]
-
-        device = masks_queries_logits.device
-        num_classes = self.model.sem_seg_head.num_classes
-        num_queries = self.model.num_queries
-        test_topk_per_image = self.model.test_topk_per_image
-
-        batch_scores: list[Tensor] = []
-        batch_bboxes: list[tv_tensors.BoundingBoxes] = []
-        batch_labels: list[torch.LongTensor] = []
-        batch_masks: list[tv_tensors.Mask] = []
-
-        for mask_pred, mask_cls, pred_boxes, img_info in zip(
-            masks_queries_logits,
-            class_queries_logits,
-            mask_box_results,
-            imgs_info,
-        ):
-            ori_h, ori_w = img_info.ori_shape
-            scores = mask_cls.sigmoid()
-            labels = torch.arange(num_classes, device=device).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
-
-            scores_per_image, topk_indices = scores.flatten(0, 1).topk(test_topk_per_image, sorted=False)
-            labels_per_image = labels[topk_indices]
-
-            topk_indices = topk_indices // num_classes
-
-            mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
-            pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
-            pred_scores = scores_per_image * self.calculate_mask_scores(mask_pred)
-            pred_classes = labels_per_image
-
-            pred_masks = (
-                (
-                    torch.nn.functional.interpolate(
-                        mask_pred.unsqueeze(0),
-                        size=(ori_h, ori_w),
-                        mode="bilinear",
-                        align_corners=False,
-                    )[0]
-                )
-                > 0
-            )
-
-            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_convert(  # noqa: PLW2901
-                pred_boxes,
-                in_fmt="cxcywh",
-                out_fmt="xyxy",
-            )
-            pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
-            pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)
-
-            area = (pred_boxes[:, 2] - pred_boxes[:, 0]) * (pred_boxes[:, 3] - pred_boxes[:, 1])
-            keep = (pred_masks.sum((1, 2)) > 5) & (area > 10) & (pred_scores > 0.05)
-
-            batch_masks.append(pred_masks[keep])
-            batch_bboxes.append(pred_boxes[keep])
-            batch_labels.append(pred_classes[keep])
-            batch_scores.append(pred_scores[keep])
-
-        return batch_masks, batch_bboxes, batch_labels, batch_scores
-
-    def calculate_mask_scores(self, mask_pred: Tensor) -> Tensor:
-        """Calculate mask scores."""
-        pred_masks = (mask_pred > 0).to(mask_pred)
-
-        # Calculate average mask prob
-        return (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (pred_masks.flatten(1).sum(1) + 1e-6)

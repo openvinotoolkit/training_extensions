@@ -13,16 +13,19 @@ Implementation modified from:
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import torch
 from torch import Tensor, nn
-from torchvision import tv_tensors
-from torchvision.models.detection.image_list import ImageList
 from torchvision.ops import box_convert
 from torchvision.ops.roi_align import RoIAlign
 
 from otx.algo.instance_segmentation.heads import MaskDINODecoderHeadModule, MaskDINOEncoderHeadModule
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
-from otx.core.utils.mask_util import polygon_to_bitmap
+from otx.core.data.entity.base import ImageInfo
+
+if TYPE_CHECKING:
+    from torchvision import tv_tensors
+    from torchvision.models.detection.image_list import ImageList
 
 
 class MaskDINOHead(nn.Module):
@@ -32,6 +35,8 @@ class MaskDINOHead(nn.Module):
         num_classes (int): number of classes
         pixel_decoder (MaskDINOEncoderHeadModule): pixel decoder
         predictor (MaskDINODecoderHeadModule): mask transformer predictor
+        num_queries (int): number of queries
+        test_topk_per_image (int): number of topk per image
     """
 
     def __init__(
@@ -39,11 +44,15 @@ class MaskDINOHead(nn.Module):
         num_classes: int,
         pixel_decoder: MaskDINOEncoderHeadModule,
         predictor: MaskDINODecoderHeadModule,
+        num_queries: int = 300,
+        test_topk_per_image: int = 100,
     ):
         super().__init__()
         self.pixel_decoder = pixel_decoder
         self.predictor = predictor
         self.num_classes = num_classes
+        self.num_queries = num_queries
+        self.test_topk_per_image = test_topk_per_image
 
     def forward(
         self,
@@ -54,6 +63,90 @@ class MaskDINOHead(nn.Module):
         mask_features, _, multi_scale_features = self.pixel_decoder(features)
         return self.predictor(multi_scale_features, mask_features, targets=targets)
 
+    def predict(
+        self,
+        features: dict[str, Tensor],
+        imgs_info: list[ImageInfo],
+    ) -> dict[str, list[Tensor]]:
+        """Predict."""
+        outputs, _ = self(features)
+
+        class_queries_logits = outputs["pred_logits"]
+        masks_queries_logits = outputs["pred_masks"]
+        mask_box_results = outputs["pred_boxes"]
+
+        device = masks_queries_logits.device
+        num_classes = self.num_classes
+        num_queries = self.num_queries
+        test_topk_per_image = self.test_topk_per_image
+
+        batch_scores: list[Tensor] = []
+        batch_bboxes: list[tv_tensors.BoundingBoxes] = []
+        batch_labels: list[torch.LongTensor] = []
+        batch_masks: list[tv_tensors.Mask] = []
+
+        for mask_pred, mask_cls, pred_boxes, img_info in zip(
+            masks_queries_logits,
+            class_queries_logits,
+            mask_box_results,
+            imgs_info,
+        ):
+            ori_h, ori_w = img_info.ori_shape
+            scores = mask_cls.sigmoid()
+            labels = torch.arange(num_classes, device=device).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
+
+            scores_per_image, topk_indices = scores.flatten(0, 1).topk(test_topk_per_image, sorted=False)
+            labels_per_image = labels[topk_indices]
+
+            topk_indices = topk_indices // num_classes
+
+            mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
+            pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
+            pred_scores = scores_per_image * self.calculate_mask_scores(mask_pred)
+            pred_classes = labels_per_image
+
+            pred_masks = (
+                (
+                    torch.nn.functional.interpolate(
+                        mask_pred.unsqueeze(0),
+                        size=(ori_h, ori_w),
+                        mode="bilinear",
+                        align_corners=False,
+                    )[0]
+                )
+                > 0
+            )
+
+            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_convert(  # noqa: PLW2901
+                pred_boxes,
+                in_fmt="cxcywh",
+                out_fmt="xyxy",
+            )
+            pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
+            pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)
+
+            area = (pred_boxes[:, 2] - pred_boxes[:, 0]) * (pred_boxes[:, 3] - pred_boxes[:, 1])
+            keep = (pred_masks.sum((1, 2)) > 5) & (area > 10) & (pred_scores > 0.05)
+
+            batch_masks.append(pred_masks[keep])
+            batch_bboxes.append(pred_boxes[keep])
+            batch_labels.append(pred_classes[keep])
+            batch_scores.append(pred_scores[keep])
+
+        return {
+            "pred_boxes": batch_bboxes,
+            "pred_labels": batch_labels,
+            "pred_masks": batch_masks,
+            "pred_scores": batch_scores,
+        }
+
+    def calculate_mask_scores(self, mask_pred: Tensor) -> Tensor:
+        """Calculate mask scores."""
+        pred_masks = (mask_pred > 0).to(mask_pred)
+
+        # Calculate average mask prob
+        return (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (pred_masks.flatten(1).sum(1) + 1e-6)
+
 
 class MaskDINO(nn.Module):
     """Main class for mask classification semantic segmentation architectures."""
@@ -63,15 +156,11 @@ class MaskDINO(nn.Module):
         backbone: nn.Module,
         sem_seg_head: MaskDINOHead,
         criterion: nn.Module,
-        num_queries: int = 300,
-        test_topk_per_image: int = 100,
     ):
         super().__init__()
         self.backbone = backbone
         self.sem_seg_head = sem_seg_head
         self.criterion = criterion
-        self.num_queries = num_queries
-        self.test_topk_per_image = test_topk_per_image
         self.roi_align = RoIAlign(
             output_size=(28, 28),
             sampling_ratio=0,
@@ -81,42 +170,22 @@ class MaskDINO(nn.Module):
 
     def forward(
         self,
-        entity: InstanceSegBatchDataEntity,
+        images: ImageList,
+        imgs_info: list[ImageInfo],
+        targets: list[dict[str, Any]] | None = None,
         mode: str = "tensor",
-    ) -> dict[str, Tensor]:
+    ) -> dict[str, Tensor] | dict[str, list[Tensor]]:
         """Forward pass."""
-        img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
-        images = ImageList(entity.images, img_shapes)
-
         features = self.backbone(images.tensors)
 
         if self.training:
-            targets = []
-            for img_info, bboxes, labels, polygons, gt_masks in zip(
-                entity.imgs_info,
-                entity.bboxes,
-                entity.labels,
-                entity.polygons,
-                entity.masks,
-            ):
-                masks = polygon_to_bitmap(polygons, *img_info.img_shape) if len(polygons) else gt_masks
-                norm_shape = torch.tile(torch.tensor(img_info.img_shape, device=img_info.device), (2,))
-                targets.append(
-                    {
-                        "boxes": box_convert(bboxes, in_fmt="xyxy", out_fmt="cxcywh") / norm_shape,
-                        "labels": labels,
-                        "masks": tv_tensors.Mask(masks, device=img_info.device, dtype=torch.bool),
-                    },
-                )
-
             outputs, mask_dict = self.sem_seg_head(features, targets=targets)
             losses = self.criterion(outputs, targets, mask_dict)
             for k in list(losses.keys()):
                 losses[k] *= self.criterion.weight_dict[k]
             return losses
 
-        outputs, _ = self.sem_seg_head(features)
-        return outputs
+        return self.sem_seg_head.predict(features, imgs_info)
 
     def roi_mask_extraction(
         self,
