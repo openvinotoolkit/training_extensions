@@ -64,7 +64,7 @@ def mask_target_single(
     meta_info: dict,
 ) -> Tensor:
     """Compute mask target for each positive proposal in the image."""
-    mask_size = _pair(cfg["mask_size"])
+    mask_size = _pair(mask_size)
     if len(gt_masks) == 0:
         warnings.warn("No ground truth masks are provided!", stacklevel=2)
         return pos_proposals.new_zeros((0, *mask_size))
@@ -78,7 +78,6 @@ def mask_target_single(
         return pos_proposals.new_zeros((0, *mask_size))
 
     device = pos_proposals.device
-    mask_size = _pair(mask_size)
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
         proposals_np = pos_proposals.cpu().numpy()
