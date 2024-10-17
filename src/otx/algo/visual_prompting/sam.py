@@ -10,12 +10,12 @@ import pickle  # nosec  B403   used pickle for dumping object
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
 import torchvision.transforms.v2 as tvt_v2
 from torch import Tensor, nn
-from torchvision.tv_tensors import BoundingBoxes, Image, Mask
+from torchvision.tv_tensors import BoundingBoxes, Image
 
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
@@ -23,6 +23,7 @@ from otx.algo.visual_prompting.losses.sam_loss import SAMCriterion
 from otx.algo.visual_prompting.visual_prompters import SegmentAnything, ZeroShotSegmentAnything
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
+    ZeroShotPromptType,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
@@ -34,7 +35,6 @@ from otx.core.types.label import LabelInfoTypes, NullLabelInfo
 
 if TYPE_CHECKING:
     import numpy as np
-    from datumaro import Polygon as dmPolygon
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
@@ -56,30 +56,54 @@ class CommonSettingMixin:
         "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
         "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
     }
-    load_state_dict: Callable[[dict[str, Tensor]], None]
 
-    def load_checkpoint(self, load_from: str | None) -> None:
+    def load_state_dict(
+        self,
+        state_dict: dict[str, Any] | None = None,
+        strict: bool = True,
+        assign: bool = False,
+        load_from: str | None = None,
+    ) -> None:
         """Load checkpoint for SAM.
 
+        This method loads a pre-trained state dictionary for the SAM model. It can load from
+        a provided state dictionary or from a URL specified in the `load_from` parameter.
+
         Args:
-            load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
+            state_dict (dict[str, Any] | None, optional): The state dictionary to load.
+                Defaults to None.
+            strict (bool, optional): Whether to strictly enforce that the keys in state_dict
+                match the keys returned by this module's state_dict() function. Defaults to True.
+            assign (bool, optional): Whether to copy parameters instead of moving them.
+                Defaults to False.
+            load_from (str | None, optional): URL to load the checkpoint from. If provided,
+                this will be used instead of the state_dict argument. Defaults to None.
+
+        Raises:
+            ValueError: If the checkpoint format is not desirable for torch.hub.load_state_dict_from_url.
+
+        Note:
+            If loading from a URL, some keys are removed from the loaded state dictionary
+            and a 'model.' prefix is added to all remaining keys.
         """
         try:
-            state_dict = torch.hub.load_state_dict_from_url(str(load_from))
-            for key in [
-                "image_encoder.norm_head.weight",
-                "image_encoder.norm_head.bias",
-                "image_encoder.head.weight",
-                "image_encoder.head.bias",
-            ]:
-                if key in state_dict:
-                    state_dict.pop(key)
+            if load_from is not None:
+                _state_dict: dict[str, Any] = torch.hub.load_state_dict_from_url(str(load_from))
+                for key in [
+                    "image_encoder.norm_head.weight",
+                    "image_encoder.norm_head.bias",
+                    "image_encoder.head.weight",
+                    "image_encoder.head.bias",
+                ]:
+                    if key in _state_dict:
+                        _state_dict.pop(key)
 
-            # add prefix 'model.' to all keys
-            for key in list(state_dict.keys()):
-                state_dict["model." + key] = state_dict.pop(key)
+                # add prefix 'model.' to all keys
+                for key in list(_state_dict.keys()):
+                    _state_dict["model." + key] = _state_dict.pop(key)
 
-            self.load_state_dict(state_dict)
+                state_dict = _state_dict
+            super().load_state_dict(state_dict, strict, assign)  # type: ignore[misc]
 
         except (ValueError, RuntimeError) as e:
             log.info(
@@ -151,7 +175,7 @@ class CommonSettingMixin:
         )
 
 
-class SAM(OTXVisualPromptingModel, CommonSettingMixin):
+class SAM(CommonSettingMixin, OTXVisualPromptingModel):  # type: ignore[misc]
     """OTX visual prompting model class for Segment Anything Model (SAM)."""
 
     input_size_multiplier = 16
@@ -195,7 +219,7 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
             torch_compile=torch_compile,
         )
 
-        self.load_checkpoint(load_from=self.load_from[backbone_type])
+        self.load_state_dict(load_from=self.load_from[backbone_type])
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
     def _build_model(self) -> nn.Module:
@@ -219,7 +243,7 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
         )
 
 
-class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
+class ZeroShotSAM(CommonSettingMixin, OTXZeroShotVisualPromptingModel):  # type: ignore[misc]
     """Zero-Shot Visual Prompting model."""
 
     def __init__(  # noqa: PLR0913
@@ -276,7 +300,7 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
             freeze_prompt_encoder = True
             freeze_mask_decoder = True
 
-        self.load_checkpoint(load_from=self.load_from[backbone_type])
+        self.load_state_dict(load_from=self.load_from[backbone_type])
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
         self.save_outputs = save_outputs
@@ -359,23 +383,13 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
     def _gather_prompts_with_labels(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
-    ) -> list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]]:
+    ) -> list[dict[int, list[ZeroShotPromptType]]]:
         """Gather prompts according to labels."""
-        total_processed_prompts: list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]] = []
-        for batch, batch_labels in enumerate(inputs.labels):
+        total_processed_prompts: list[dict[int, list[ZeroShotPromptType]]] = []
+        for prompts, labels in zip(inputs.prompts, inputs.labels):
             processed_prompts = defaultdict(list)
-            for prompt_type in ["prompts", "polygons", "masks"]:
-                _prompts = getattr(inputs, prompt_type, None)
-                prompt_labels = getattr(batch_labels, prompt_type, None)
-                if _prompts is None or prompt_labels is None:
-                    continue
-
-                for idx, _label in enumerate(prompt_labels):
-                    if prompt_type in ("prompts", "polygons"):
-                        processed_prompts[int(_label)].append(_prompts[batch][idx])
-                    else:
-                        # for mask
-                        processed_prompts[int(_label)].append(Mask(_prompts[batch][idx]))
+            for prompt, label in zip(prompts, labels):
+                processed_prompts[int(label)].append(prompt)
 
             sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(sorted_processed_prompts)
@@ -411,19 +425,18 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
 
     def apply_prompts(
         self,
-        prompts: list[Points | BoundingBoxes],
+        prompts: list[ZeroShotPromptType],
         ori_shape: tuple[int, ...],
         target_length: int = 1024,
-    ) -> list[Points | BoundingBoxes]:
+    ) -> list[ZeroShotPromptType]:
         """Preprocess prompts to be used in the model."""
-        transformed_prompts: list[Points | BoundingBoxes] = []
+        transformed_prompts: list[ZeroShotPromptType] = []
         for prompt in prompts:
             if isinstance(prompt, Points):
                 transformed_prompts.append(self.apply_points(prompt, ori_shape, target_length))
             elif isinstance(prompt, BoundingBoxes):
                 transformed_prompts.append(self.apply_boxes(prompt, ori_shape, target_length))
             else:
-                log.info(f"Current prompt ({prompt.__class__.__name__}) is not supported, saved as it is.")
                 transformed_prompts.append(prompt)
         return transformed_prompts
 
@@ -452,9 +465,6 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
                 self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
                 for prompt, info in zip(entity.prompts, entity.imgs_info)
             ],
-            masks=entity.masks,
-            polygons=entity.polygons,
-            labels=entity.labels,
         )
 
     def initialize_reference_info(self) -> None:
