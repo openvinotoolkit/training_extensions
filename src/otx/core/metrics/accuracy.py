@@ -288,7 +288,9 @@ class MixedHLabelAccuracy(Metric):
         ]
 
         # Multilabel classification accuracy metrics
-        if self.num_multilabel_classes > 0:
+        # https://github.com/Lightning-AI/torchmetrics/blob/6377aa5b6fe2863761839e6b8b5a857ef1b8acfa/src/torchmetrics/functional/classification/stat_scores.py#L583-L584
+        # MultilabelAccuracy is available when num_multilabel_classes is greater than 2.
+        if self.num_multilabel_classes > 1:
             self.multilabel_accuracy = TorchmetricMultilabelAcc(
                 num_labels=self.num_multilabel_classes,
                 threshold=0.5,
@@ -303,7 +305,7 @@ class MixedHLabelAccuracy(Metric):
             )
             for acc in self.multiclass_head_accuracy
         ]
-        if self.num_multilabel_classes > 0:
+        if hasattr(self, "multilabel_accuracy"):
             self.multilabel_accuracy = self.multilabel_accuracy._apply(fn, exclude_state)  # noqa: SLF001
         return self
 
@@ -322,7 +324,7 @@ class MixedHLabelAccuracy(Metric):
                     target_multiclass[multiclass_mask],
                 )
 
-        if self.num_multilabel_classes > 0:
+        if hasattr(self, "multilabel_accuracy"):
             # Split preds into multiclass and multilabel parts
             preds_multilabel = preds[:, self.num_multiclass_heads :]
             target_multilabel = target[:, self.num_multiclass_heads :]
@@ -337,7 +339,7 @@ class MixedHLabelAccuracy(Metric):
             ),
         )
 
-        if self.num_multilabel_classes > 0:
+        if hasattr(self, "multilabel_accuracy"):
             multilabel_acc = self.multilabel_accuracy.compute()
 
             return (multiclass_accs + multilabel_acc) / 2
