@@ -26,11 +26,18 @@ if TYPE_CHECKING:
 @register_pytree_node
 @dataclass
 class Det3DDataEntity(OTXDataEntity):
-    """Data entity for detection task.
+    """Data entity for 3d object detection task.
 
-    :param bboxes: Bbox annotations as top-left-bottom-right
-        (x1, y1, x2, y2) format with absolute coordinate values
-    :param labels: Bbox labels as integer indices
+    : param boxes (tv_tensors.BoundingBoxes): The bounding boxes for the objects in the image.
+    : param calib_matrix (Tensor): The calibration matrix for the 3D object detection.
+    : param boxes_3d (Tensor): The 3D bounding boxes for the objects.
+    : param size_2d (Tensor): The 2D size of the objects.
+    : param size_3d (Tensor): The 3D size of the objects.
+    : param depth (Tensor): The depth of the objects.
+    : param heading_angle (Tensor): The heading angle of the objects.
+    : param labels (LongTensor): The labels of the objects.
+    : param original_kitti_format (list[dict[str, Any]] | None): The original KITTI format of the objects, if available.
+
     """
 
     @property
@@ -51,17 +58,24 @@ class Det3DDataEntity(OTXDataEntity):
 
 @dataclass
 class Det3DPredEntity(OTXPredEntity, Det3DDataEntity):
-    """Data entity to represent the detection model output prediction."""
+    """Data entity to represent the 3d object detection model output prediction."""
 
 
 @dataclass
 class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
-    """Data entity for detection task.
+    """Data entity for 3d object detection task.
 
-    :param bboxes: A list of bbox annotations as top-left-bottom-right
-        (x1, y1, x2, y2) format with absolute coordinate values
-    :param labels: A list of bbox labels as integer indices
-    """  # TODO(Kirill): UPDATE!
+    : param boxes list[tv_tensors.BoundingBoxes]: The bounding boxes for the objects in the image.
+    : param calib_matrix list[Tensor]: The calibration matrix for the 3D object detection.
+    : param boxes_3d list[Tensor]: The 3D bounding boxes for the objects.
+    : param size_2d list[Tensor]: The 2D size of the objects.
+    : param size_3d list[Tensor]: The 3D size of the objects.
+    : param depth list[Tensor]: The depth of the objects.
+    : param heading_angle list[Tensor]: The heading angle of the objects.
+    : param labels list[LongTensor]: The labels of the objects.
+    : param original_kitti_format list[list[dict[str, Any]] | None]: The original KITTI format of the objects,
+        if available. Needed for validation and KITTI metric.
+    """
 
     images: Tensor
     boxes: list[tv_tensors.BoundingBoxes]
@@ -135,7 +149,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
 
 @dataclass
 class Det3DBatchPredEntity(OTXBatchPredEntity, Det3DBatchDataEntity):
-    """Data entity to represent model output predictions for detection task."""
+    """Data entity to represent model output predictions for 3d object detection task."""
 
     boxes: tv_tensors.BoundingBoxes
     scores: Tensor
