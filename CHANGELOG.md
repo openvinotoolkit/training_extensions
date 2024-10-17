@@ -86,6 +86,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4014>)
 - Fix out_features in HierarchicalCBAMClsHead
   (<https://github.com/openvinotoolkit/training_extensions/pull/4016>)
+- Fix multilabel_accuracy of MixedHLabelAccuracy
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4042>)
 
 ## \[v2.1.0\]
 
