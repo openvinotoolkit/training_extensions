@@ -29,10 +29,10 @@ class MonoDETRCriterion(nn.Module):
         """MonoDETRCriterion.
 
         Args:
-            num_classes (int): number of object categories, omitting the special no-object category
+            num_classes (int): number of object categories, omitting the special no-object category.
             weight_dict (dict): dict containing as key the names of the losses and as values their relative weight.
-            focal_alpha (float): alpha in Focal Loss
-            group_num (int): number of groups for data parallelism
+            focal_alpha (float): alpha in Focal Loss.
+            group_num (int): number of groups for data parallelism.
         """
         super().__init__()
         self.num_classes = num_classes
@@ -49,11 +49,11 @@ class MonoDETRCriterion(nn.Module):
         """Classification loss.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         src_logits = outputs["scores"]
 
@@ -86,11 +86,11 @@ class MonoDETRCriterion(nn.Module):
         """Compute the loss for the 3D center prediction.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         idx = self._get_src_permutation_idx(indices)
         src_3dcenter = outputs["boxes_3d"][:, :, 0:2][idx]
@@ -103,11 +103,11 @@ class MonoDETRCriterion(nn.Module):
         """Compute l1 loss.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         idx = self._get_src_permutation_idx(indices)
         src_2dboxes = outputs["boxes_3d"][:, :, 2:6][idx]
@@ -121,11 +121,11 @@ class MonoDETRCriterion(nn.Module):
         """Compute the GIoU loss.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         # giou
         idx = self._get_src_permutation_idx(indices)
@@ -138,9 +138,9 @@ class MonoDETRCriterion(nn.Module):
         """Compute the loss for the depth prediction.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
             num_boxes (int): number of boxes in the batch
         """
@@ -159,11 +159,11 @@ class MonoDETRCriterion(nn.Module):
         """Compute the loss for the dimension prediction.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         idx = self._get_src_permutation_idx(indices)
         src_dims = outputs["size_3d"][idx]
@@ -181,11 +181,11 @@ class MonoDETRCriterion(nn.Module):
         """Compute the loss for the angle prediction.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         idx = self._get_src_permutation_idx(indices)
         heading_input = outputs["heading_angle"][idx]
@@ -216,11 +216,11 @@ class MonoDETRCriterion(nn.Module):
         """Depth map loss.
 
         Args:
-            outputs (dict): dict of tensors, see the output specification of the model for the format
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
             targets (list): list of dicts, such that len(targets) == batch_size.
-                   The expected keys in each dict depends on the losses applied, see each loss' doc
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
             indices (list): list of tuples, such that len(indices) == batch_size.
-            num_boxes (int): number of boxes in the batch
+            num_boxes (int): number of boxes in the batch.
         """
         depth_map_logits = outputs["pred_depth_map_logits"]
 
@@ -275,9 +275,9 @@ class MonoDETRCriterion(nn.Module):
         """This performs the loss computation.
 
         Args:
-             outputs (dict): dict of tensors, see the output specification of the model for the format
+             outputs (dict): dict of tensors, see the output specification of the model for the format.
              targets (list): list of dicts, such that len(targets) == batch_size.
-                      The expected keys in each dict depends on the losses applied, see each loss' doc
+                      The expected keys in each dict depends on the losses applied, see each loss' doc.
         """
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
         group_num = self.group_num if self.training else 1
