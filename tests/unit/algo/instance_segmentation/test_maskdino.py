@@ -6,6 +6,7 @@ import pytest
 import torch
 from otx.algo.instance_segmentation.maskdino import MaskDINO
 from otx.algo.instance_segmentation.segmentors.maskdino import MaskDINOHead
+from otx.algo.utils.mmengine_utils import load_from_http
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 
@@ -64,3 +65,33 @@ class TestMaskDINO:
         assert len(batch_bboxes_scores[0]) == len(batch_labels[0]) == len(batch_masks[0])
         assert batch_masks[0].shape[-2:] == (320, 320)
         assert batch_bboxes_scores[0].shape[-1:] == (5,)
+
+    @pytest.mark.parametrize("model", [MaskDINO(label_info=3, model_name="resnet50")])
+    def test_build_shape_specs(self, model):
+        out_features = ["res2", "res3", "res4", "res5"]
+        strides = [4, 8, 16, 32]
+        channels = [256, 512, 1024, 2048]
+
+        shape_specs = model._build_fmap_shape_specs(
+            out_features=out_features,
+            strides=strides,
+            channels=channels,
+        )
+        assert len(shape_specs) == 4
+
+        for out_feature, stride, channel in zip(out_features, strides, channels):
+            assert out_feature in shape_specs
+            shape_spec = shape_specs[out_feature]
+            assert shape_spec.stride == stride
+            assert shape_spec.channels == channel
+
+    @pytest.mark.parametrize("model", [MaskDINO(label_info=3, model_name="resnet50")])
+    def test_backbone_weight_loading(self, model):
+        pretrained = load_from_http(model.load_from, map_location="cpu")
+        tv_backbone = model.model.backbone
+
+        assert torch.allclose(tv_backbone.conv1.weight, pretrained["model"]["backbone.stem.conv1.weight"])
+        assert torch.allclose(
+            tv_backbone.layer1[0].downsample[0].weight,
+            pretrained["model"]["backbone.res2.0.shortcut.weight"],
+        )

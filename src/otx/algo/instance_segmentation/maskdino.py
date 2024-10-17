@@ -90,25 +90,22 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
 
     def _build_fmap_shape_specs(
         self,
-        out_feautres: list[str],
+        out_features: list[str],
         strides: list[int],
         channels: list[int],
     ) -> dict[str, ShapeSpec]:
         """Build feature map shape specs frm backbone config.
 
         Args:
-            out_feautres (list[str]): feature map names.
+            out_features (list[str]): feature map names.
             strides (list[int]): stride of each feature map.
-            channels (list[int]): number of channels for each feature map.
-
-        Todo:
-            - Implement Unit tests.
+            channels (list[int]): number of out channels for each feature map.
 
         Returns:
             dict[str, ShapeSpec]: feature map shape specs.
         """
         output_shape_dict = {}
-        for out_feature, stride, channel in zip(out_feautres, strides, channels, strict=True):
+        for out_feature, stride, channel in zip(out_features, strides, channels, strict=True):
             output_shape_dict[out_feature] = ShapeSpec(
                 channels=channel,
                 stride=stride,
@@ -133,7 +130,7 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             )
 
             shape_spec = self._build_fmap_shape_specs(
-                out_feautres=list(backbone_cfg["return_layers"].values()),
+                out_features=list(backbone_cfg["return_layers"].values()),
                 strides=backbone_cfg["strides"],
                 channels=backbone_cfg["channels"],
             )
@@ -184,9 +181,6 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
 
         Returns:
             nn.Module: MaskDINO model.
-
-        Todo:
-            - Implement Unit tests.
         """
         # TODO(Eugene): make it more general, now it only supports R50.
 
