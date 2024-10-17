@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import itertools
-from pathlib import Path
 
 import pytest
 from datumaro import Dataset as DmDataset
