@@ -26,7 +26,7 @@ class ImageCaptionDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.IMAGE_CAPTIONING
 
-    captions: list[list[str]] | list[str]
+    captions: list[str] | str
 
 
 @dataclass
