@@ -17,7 +17,16 @@ from otx.algo.instance_segmentation.utils.structures.mask.mask_target import mas
 
 
 class DeformableTransformerDecoderLayer(nn.Module):
-    """Deformable transformer decoder layer module."""
+    """Deformable transformer decoder layer module.
+
+    Args:
+        d_model (int): hidden dimension
+        d_ffn (int): feature dimension in feedforward network
+        dropout (float): dropout rate
+        n_levels (int): number of feature levels
+        n_heads (int): number of attention heads
+        n_points (int): number of sampling
+    """
 
     def __init__(
         self,
@@ -67,11 +76,9 @@ class DeformableTransformerDecoderLayer(nn.Module):
 
     def forward(
         self,
-        # for tgt
         tgt: Tensor,
         tgt_query_pos: Tensor,
         tgt_reference_points: Tensor,
-        # for memory
         memory: Tensor,
         memory_key_padding_mask: Tensor,
         memory_spatial_shapes: Tensor,

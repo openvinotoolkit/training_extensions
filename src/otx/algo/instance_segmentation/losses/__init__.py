@@ -5,7 +5,7 @@
 
 from .accuracy import accuracy
 from .dice_loss import DiceLoss
-from .maskdino_criterion import MaskDINOCriterion
+from .maskdino_loss import MaskDINOCriterion
 from .roi_loss import ROICriterion
 from .rpn_loss import RPNCriterion
 from .rtmdet_inst_loss import RTMDetInstCriterion

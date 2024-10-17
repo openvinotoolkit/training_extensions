@@ -63,6 +63,17 @@ class HungarianMatcher(nn.Module):
     For efficiency reasons, the targets don't include the no_object. Because of this, in general,
     there are more predictions than targets. In this case, we do a 1-to-1 matching of the best predictions,
     while the others are un-matched (and thus treated as non-objects).
+
+    Args:
+        cost_dict (dict[str, float | int]): A dictionary containing the cost for each annotation type.
+            The dictionary may have the following keys:
+            - "cost_class" (float | int): The weight for the class cost.
+            - "cost_bbox" (float | int): The weight for the bounding box cost.
+            - "cost_giou" (float | int): The weight for the generalized intersection over union (IoU) cost.
+            - "cost_mask" (float | int): The weight for the mask cost.
+            - "cost_dice" (float | int): The weight for the dice cost.
+        alpha (float, optional): The alpha parameter for the cost computation. Defaults to 0.25.
+        gamma (float, optional): The gamma parameter for the cost computation. Defaults to 2.0.
     """
 
     def __init__(
@@ -71,19 +82,6 @@ class HungarianMatcher(nn.Module):
         alpha: float = 0.25,
         gamma: float = 2.0,
     ):
-        """Creates the matcher.
-
-        Args:
-            cost_dict (dict[str, float | int]): A dictionary containing the cost for each annotation type.
-                The dictionary may have the following keys:
-                - "cost_class" (float | int): The weight for the class cost.
-                - "cost_bbox" (float | int): The weight for the bounding box cost.
-                - "cost_giou" (float | int): The weight for the generalized intersection over union (IoU) cost.
-                - "cost_mask" (float | int): The weight for the mask cost.
-                - "cost_dice" (float | int): The weight for the dice cost.
-            alpha (float, optional): The alpha parameter for the cost computation. Defaults to 0.25.
-            gamma (float, optional): The gamma parameter for the cost computation. Defaults to 2.0.
-        """
         super().__init__()
         self.cost_functions = self.build_cost_functions(cost_dict)
         self.alpha = alpha

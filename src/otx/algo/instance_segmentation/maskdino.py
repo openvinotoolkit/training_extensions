@@ -142,8 +142,15 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
         msg = f"Backbone {self.model_name} is not supported."
         raise ValueError(msg)
 
-    def _build_model(self, num_classes: int) -> nn.Module:
-        """Build a MaskDINO model from a config."""
+    def _build_model(self, num_classes: int) -> MaskDINOInstanceSeg:
+        """Build MaskDINO model.
+
+        Args:
+            num_classes (int): Number of classes.
+
+        Returns:
+            MaskDINOInstanceSeg: MaskDINO model.
+        """
         backbone, fmap_shape_specs = self._build_backbone()
         model_name = self.model_name
 
@@ -303,6 +310,14 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
         return params
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
+        """Customize inputs for MaskDINO model.
+
+        Args:
+            entity (InstanceSegBatchDataEntity): InstanceSegBatchDataEntity object.
+
+        Returns:
+            dict[str, Any]: Customized inputs for MaskDINO model.
+        """
         img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
         images = ImageList(entity.images, img_shapes)
 
@@ -329,23 +344,41 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             "images": images,
             "imgs_info": entity.imgs_info,
             "targets": targets if self.training else None,
-            "mode": "loss" if self.training else "predict",
         }
 
     def _customize_outputs(
         self,
         outputs: dict[str, Tensor]  # type: ignore[override]
-        | tuple[list[tv_tensors.BoundingBoxes], list[torch.LongTensor], list[tv_tensors.Mask], list[Tensor]],
+        | tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]],
         inputs: InstanceSegBatchDataEntity,
     ) -> OTXBatchLossEntity | InstanceSegBatchPredEntity:
+        """Customize outputs for MaskDINO model.
+
+        Args:
+            outputs (dict[str, Tensor] | tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]):
+                dict[str, Tensor]: dictionary of losses in training mode.
+                tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]: tuple of outputs in inference mode.
+                    list[Tensor]: bounding boxes and scores with shape [N, 5]
+                    list[torch.LongTensor]: labels with shape [N]
+                    list[tv_tensors.Mask]: masks with shape [N, H, W]
+            inputs (InstanceSegBatchDataEntity): InstanceSegBatchDataEntity object.
+
+        Raises:
+            NotImplementedError: If explain mode is not supported yet.
+
+        Returns:
+            OTXBatchLossEntity | InstanceSegBatchPredEntity: Customized outputs for MaskDINO model.
+        """
         if self.training and isinstance(outputs, dict):
             return sum(outputs.values())  # type: ignore[return-value]
 
-        batch_bboxes: list[tv_tensors.BoundingBoxes]
+        batch_bboxes_scores: list[Tensor]
         batch_labels: list[torch.LongTensor]
         batch_masks: list[tv_tensors.Mask]
-        batch_scores: list[Tensor]
-        batch_bboxes, batch_labels, batch_masks, batch_scores = outputs  # type: ignore[assignment]
+        batch_bboxes_scores, batch_labels, batch_masks = outputs  # type: ignore[assignment]
+
+        batch_bboxes = [bboxes_scores[:, :4] for bboxes_scores in batch_bboxes_scores]
+        batch_scores = [bboxes_scores[:, 4] for bboxes_scores in batch_bboxes_scores]
 
         if self.explain_mode:
             msg = "Explain mode is not supported yet."

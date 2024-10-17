@@ -170,6 +170,7 @@ class MaskDINOEncoderHeadModule(nn.Module):
         norm (str): normalization for all conv layers
         num_feature_levels (int): feature scales used
         total_num_feature_levels (int): total feautre scales used (include the downsampled features)
+        activation (Callable[..., nn.Module]): activation function
     """
 
     def __init__(
