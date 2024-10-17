@@ -13,7 +13,7 @@ from otx.core.metrics.accuracy import (
     MultilabelAccuracywithLabelGroup,
 )
 from otx.core.types.label import HLabelInfo, LabelInfo
-from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy
+from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 
 
 class TestAccuracy:
@@ -120,3 +120,28 @@ class TestMixedHLabelAccuracy:
                 head_logits_info={"head1": (0, 5), "head2": (5, 10)},
                 threshold_multilabel=0.5,
             )
+
+    def test_multilabel_accuracy(self, hlabel_accuracy) -> None:
+        # Normal Case: num_multilabel_classes > 1 -> MultilabelAccuracy
+        assert hlabel_accuracy.num_multilabel_classes == 3
+        assert isinstance(hlabel_accuracy.multilabel_accuracy, MultilabelAccuracy)
+
+        # Edge Case: num_multilabel_classes = 1 -> BinaryAccuracy
+        acc = MixedHLabelAccuracy(
+            num_multiclass_heads=2,
+            num_multilabel_classes=1,
+            head_logits_info={"head1": (0, 5), "head2": (5, 10)},
+            threshold_multilabel=0.5,
+        )
+        assert acc.num_multilabel_classes == 1
+        assert isinstance(acc.multilabel_accuracy, BinaryAccuracy)
+
+        # None Case: num_multilabel_classes = 0 -> None
+        acc = MixedHLabelAccuracy(
+            num_multiclass_heads=2,
+            num_multilabel_classes=0,
+            head_logits_info={"head1": (0, 5), "head2": (5, 10)},
+            threshold_multilabel=0.5,
+        )
+        assert acc.num_multilabel_classes == 0
+        assert acc.multilabel_accuracy is None
