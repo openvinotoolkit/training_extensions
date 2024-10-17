@@ -20,12 +20,12 @@ class DeformableTransformerDecoderLayer(nn.Module):
     """Deformable transformer decoder layer module.
 
     Args:
-        d_model (int): hidden dimension
-        d_ffn (int): feature dimension in feedforward network
-        dropout (float): dropout rate
-        n_levels (int): number of feature levels
-        n_heads (int): number of attention heads
-        n_points (int): number of sampling
+        d_model (int): hidden dimension. Defaults to 256.
+        d_ffn (int): feature dimension in feedforward network. Defaults to 1024.
+        dropout (float): dropout rate. Defaults to 0.1.
+        n_levels (int): number of feature levels. Defaults to 4.
+        n_heads (int): number of attention heads. Defaults to 8.
+        n_points (int): number of sampling. Defaults to 4.
     """
 
     def __init__(
@@ -65,7 +65,15 @@ class DeformableTransformerDecoderLayer(nn.Module):
 
     @staticmethod
     def with_pos_embed(tensor: Tensor, pos: Tensor) -> Tensor:
-        """Add positional embedding to tensor."""
+        """Add position embedding to tensor.
+
+        Args:
+            tensor (Tensor): input tensor
+            pos (Tensor): position tensor
+
+        Returns:
+            Tensor: tensor with position embedding
+        """
         return tensor if pos is None else tensor + pos
 
     def forward_ffn(self, tgt: Tensor) -> Tensor:
@@ -206,20 +214,20 @@ class MaskDINODecoderHeadModule(nn.Module):
     """MaskDINODecoder module.
 
     Args:
-        num_classes: number of classes
-        hidden_dim: Transformer feature dimension
-        num_queries: number of queries
-        nheads: number of heads
-        dim_feedforward: feature dimension in feedforward network
-        dec_layers: number of Transformer decoder layers
-        mask_dim: mask feature dimension
-        noise_scale: noise scale
-        dn_num: number of denoising queries
-        total_num_feature_levels: total number of feature levels
-        dropout: dropout rate
-        nhead: num heads in multi-head attention
-        dec_n_points: number of sampling points in decoder
-        query_dim: 4 -> (x, y, w, h)
+        num_classes (int): number of classes.
+        hidden_dim (int): Transformer feature dimension. Defaults to 256.
+        num_queries (int): number of queries. Defaults to 300.
+        nheads (int): number of heads. Defaults to 8.
+        dim_feedforward (int): feature dimension in feedforward network. Defaults to 2048.
+        dec_layers (int): number of Transformer decoder layers. Defaults to 9.
+        mask_dim (int): mask feature dimension. Defaults to 256.
+        noise_scale (float): noise scale. Defaults to 0.4.
+        dn_num (int): number of denoising queries. Defaults to 100.
+        total_num_feature_levels (int): total number of feature levels. Defaults to 4.
+        dropout (float): dropout rate. Defaults to 0.0.
+        nhead (int): num heads in multi-head attention. Defaults to 8.
+        dec_n_points (int): number of sampling points in decoder. Defaults to 4.
+        query_dim (int): box query dimension. Defaults to 4.
     """
 
     def __init__(

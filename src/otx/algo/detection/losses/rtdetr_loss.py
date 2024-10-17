@@ -11,8 +11,8 @@ import torch
 from torch import nn
 from torchvision.ops import box_convert
 
-from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.common.losses import GIoULoss, L1Loss
+from otx.algo.common.utils.assigners.hungarian_matcher import HungarianMatcher
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 
 

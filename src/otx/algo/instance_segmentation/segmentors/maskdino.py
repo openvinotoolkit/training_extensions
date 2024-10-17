@@ -113,6 +113,7 @@ class MaskDINOHead(nn.Module):
         self,
         features: dict[str, Tensor],
         imgs_info: list[ImageInfo] | list[dict[str, Any]],
+        export: bool = False,
     ) -> tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]]:
         """Predict function.
 
@@ -121,6 +122,7 @@ class MaskDINOHead(nn.Module):
             imgs_info (list[ImageInfo] | list[dict[str, Any]]):
                 list[ImageInfo]: image info (i.e ori_shape) list regarding original images used for training
                 list[dict[str, Any]]: image info (i.e img_shape) used for exporting
+            export (bool, optional): whether to export the model. Defaults to False.
 
         Returns:
             tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]]:
@@ -149,7 +151,7 @@ class MaskDINOHead(nn.Module):
             mask_box_results,
             imgs_info,
         ):
-            h, w = img_info["img_shape"] if torch.onnx.is_in_onnx_export() else img_info.ori_shape  # type: ignore[index, attr-defined]
+            h, w = img_info["img_shape"] if export else img_info.ori_shape  # type: ignore[index, attr-defined]
             scores = mask_cls.sigmoid()
             labels = torch.arange(num_classes, device=device).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
 
@@ -179,7 +181,7 @@ class MaskDINOHead(nn.Module):
             pred_boxes[:, 1::2].clamp_(min=0, max=h - 1)
 
             # Extract masks from RoI for exporting the model
-            if torch.onnx.is_in_onnx_export():
+            if export:
                 pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks)
                 # Create dummy filter as Model API has its own filtering mechanism.
                 keep = pred_scores >= 0.0
@@ -200,9 +202,9 @@ class MaskDINO(nn.Module):
     """Main class for mask classification semantic segmentation architectures.
 
     Args:
-            backbone (nn.Module): backbone network
-            sem_seg_head (MaskDINOHead): MaskDINO head including pixel decoder and predictor
-            criterion (MaskDINOCriterion): MaskDINO loss criterion
+        backbone (nn.Module): backbone network
+        sem_seg_head (MaskDINOHead): MaskDINO head including pixel decoder and predictor
+        criterion (MaskDINOCriterion): MaskDINO loss criterion
     """
 
     def __init__(
@@ -226,12 +228,16 @@ class MaskDINO(nn.Module):
 
         Args:
             images (ImageList): input images
-            imgs_info (list[ImageInfo]): image info (i.e ori_shape, padding. etc) list regarding original images
+            imgs_info (list[ImageInfo]): image info (i.e ori_shape) list regarding original images
             targets (list[dict[str, Any]] | None, optional): ground-truth annotations. Defaults to None.
 
         Returns:
             dict[str, Tensor] | tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]]:
-
+                dict[str, Tensor]: loss values
+                tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]]: prediction results
+                    list[Tensor]: bounding boxes and scores with shape [N, 5]
+                    list[torch.LongTensor]: labels with shape [N]
+                    list[tv_tensors.Mask]: masks with shape [N, H, W]
         """
         features = self.backbone(images.tensors)
 
@@ -255,4 +261,4 @@ class MaskDINO(nn.Module):
             raise ValueError(msg)
 
         features = self.backbone(batch_inputs)
-        return self.sem_seg_head.predict(features, batch_img_metas)
+        return self.sem_seg_head.predict(features, batch_img_metas, export=True)

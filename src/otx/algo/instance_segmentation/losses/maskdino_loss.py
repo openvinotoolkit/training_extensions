@@ -13,8 +13,8 @@ import torch.nn.functional as f
 from torch import Tensor, nn
 from torchvision.ops import box_convert
 
-from otx.algo.common.layers.hungarian_matcher import HungarianMatcher
 from otx.algo.common.losses import GIoULoss, L1Loss
+from otx.algo.common.utils.assigners.hungarian_matcher import HungarianMatcher
 from otx.algo.common.utils.utils import sample_point
 from otx.algo.instance_segmentation.utils.utils import sample_points_using_uncertainty
 
@@ -137,17 +137,16 @@ class MaskDINOCriterion(nn.Module):
         num_classes (int): number of object categories, omitting the special no-object category
         matcher (HungarianMatcher, optional): module that computes the matching between ground truth and predicted boxes
         weight_dict (dict, optional): dict containing key names of the losses and as values their relative weight.
-        eos_coef (float): relative classification weight applied to the no-object category
-        losses (list): list of all the losses to be applied
-        num_points (int): number of points to sample for pointwise mask loss
-        oversample_ratio (float): ratio of oversampling for pointwise mask loss
-        importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss
-        dec_layers (int): number of decoder layers
-        cost_class_weight (float): class loss weight
-        cost_box_weight (float): box loss weight
-        cost_giou_weight (float): giou loss weight
-        cost_mask_weight (float): mask loss weight
-        cost_dice_weight (float): dice loss weight
+        focal_alpha (float): alpha value for focal loss. Default to 0.25.
+        num_points (int): number of points to sample for pointwise mask loss. Default to 112 * 112.
+        oversample_ratio (float): ratio of oversampling for pointwise mask loss. Default to 3.0.
+        importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss. Default to 0.75.
+        dec_layers (int): number of decoder layers. Default to 9.
+        cost_class_weight (float): class loss weight. Default to 2.0.
+        cost_box_weight (float): box loss weight. Default to 5.0.
+        cost_giou_weight (float): giou loss weight. Default to 2.0.
+        cost_mask_weight (float): mask loss weight. Default to 5.0.
+        cost_dice_weight (float): dice loss weight. Default to 5.0.
     """
 
     def __init__(
@@ -155,7 +154,7 @@ class MaskDINOCriterion(nn.Module):
         num_classes: int,
         matcher: HungarianMatcher | None = None,
         weight_dict: dict[str, float] | None = None,
-        eos_coef: float = 0.1,
+        focal_alpha: float = 0.25,
         num_points: int = 112 * 112,
         oversample_ratio: float = 3.0,
         importance_sample_ratio: float = 0.75,
@@ -199,11 +198,6 @@ class MaskDINOCriterion(nn.Module):
         self.num_classes = num_classes
         self.matcher = matcher
         self.weight_dict = weight_dict
-        self.eos_coef = eos_coef
-        empty_weight = torch.ones(self.num_classes + 1)
-        empty_weight[-1] = self.eos_coef
-        self.register_buffer("empty_weight", empty_weight)
-
         loss_bbox_weight = weight_dict["loss_bbox"] if "loss_bbox" in weight_dict else 1.0
         loss_giou_weight = weight_dict["loss_giou"] if "loss_giou" in weight_dict else 1.0
         self.lossl1 = L1Loss(loss_weight=loss_bbox_weight)
@@ -213,7 +207,7 @@ class MaskDINOCriterion(nn.Module):
         self.num_points = num_points
         self.oversample_ratio = oversample_ratio
         self.importance_sample_ratio = importance_sample_ratio
-        self.focal_alpha = 0.25
+        self.focal_alpha = focal_alpha
 
     def loss_labels(
         self,
@@ -399,14 +393,14 @@ class MaskDINOCriterion(nn.Module):
         self,
         outputs: dict[str, Tensor],
         targets: list[dict[str, Tensor]],
-        mask_dict: dict,
+        mask_dict: dict | None = None,
     ) -> dict[str, Tensor]:
         """Compute the losses.
 
         Args:
             outputs (dict[str, Tensor]): dict of model outputs.
             targets (list[dict[str, Tensor]]): list of targets.
-            mask_dict (dict): dict containing denoise annotation information.
+            mask_dict (dict | None): dict containing denoise annotation information.
 
         Returns:
             dict[str, Tensor]: dict containing the computed losses.
