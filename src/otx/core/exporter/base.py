@@ -45,6 +45,9 @@ class OTXModelExporter:
         output_names (list[str] | None, optional): Names for model's outputs, which would be
         embedded into resulting model. Note, that order of the output names should be the same,
         as in the target model.
+        input_names (list[str] | None, optional): Names for model's inputs, which would be
+        embedded into resulting model. Note, that order of the input names should be the same,
+        as in the target model.
     """
 
     def __init__(

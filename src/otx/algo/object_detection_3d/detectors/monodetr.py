@@ -149,12 +149,17 @@ class MonoDETR(nn.Module):
         """Forward method of the MonoDETR model.
 
         Args:
-            images (list[Tensor]): images for each sample
-            calibs (Tensor): camera matrices for each sample
-            img_sizes (Tensor): image sizes for each sample
-            targets (list[dict[Tensor]): ground truth boxes and labels for each
-                sample
+            images (Tensor): images for each sample.
+            calibs (Tensor): camera matrices for each sample.
+            img_sizes (Tensor): image sizes for each sample.
+            targets (list[dict[str, Tensor]): ground truth boxes and labels for each
+                sample. Defaults to None.
             mode (str): The mode of operation. Defaults to "predict".
+
+        Returns:
+                dict[str, Tensor]: A dictionary of tensors. If mode is "loss", the
+                tensors are the loss values. If mode is "predict", the tensors are
+                the logits.
         """
         features, pos = self.backbone(images)
 

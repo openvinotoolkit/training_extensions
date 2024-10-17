@@ -32,6 +32,8 @@ class DepthPredictor(nn.Module):
             depth_min (float): The minimum depth value.
             depth_max (float): The maximum depth value.
             hidden_dim (int): The dimension of the hidden layer.
+            activation (Callable[..., nn.Module], optional): The activation function.
+                Defaults to nn.ReLU.
         """
         super().__init__()
         self.depth_max = depth_max
