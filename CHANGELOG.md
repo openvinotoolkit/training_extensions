@@ -88,6 +88,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4016>)
 - Fix multilabel_accuracy of MixedHLabelAccuracy
   (<https://github.com/openvinotoolkit/training_extensions/pull/4042>)
+- Fix wrong indices setting in HLabelInfo
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4044>)
 
 ## \[v2.1.0\]
 

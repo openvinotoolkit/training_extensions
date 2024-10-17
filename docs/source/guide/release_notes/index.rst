@@ -54,6 +54,7 @@ Bug fixes
 - Fix num_trials calculation on dataset length less than num_class
 - Fix out_features in HierarchicalCBAMClsHead
 - Fix multilabel_accuracy of MixedHLabelAccuracy
+- Fix wrong indices setting in HLabelInfo
 
 v2.1.0 (2024.07)
 ----------------
