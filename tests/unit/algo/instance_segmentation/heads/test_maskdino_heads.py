@@ -4,13 +4,13 @@
 """Test for various MaskDINO heads."""
 import pytest
 import torch
-from otx.algo.instance_segmentation.maskdino import MaskDINO
-from otx.algo.instance_segmentation.heads import MaskDINOEncoderHead, MaskDINODecoderHead
+from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
+from otx.algo.instance_segmentation.maskdino import MaskDINO
 
 
 class TestMaskDINOTransformerHeads:
-    @pytest.fixture
+    @pytest.fixture()
     def fxt_shape_spec(self):
         model = MaskDINO(label_info=3, model_name="resnet50")
         _, specs = model._build_backbone()
@@ -32,7 +32,7 @@ class TestMaskDINOTransformerHeads:
                 "boxes": torch.randn(10, 4),
                 "labels": torch.randint(0, num_classes, (10,)),
                 "masks": torch.ones(10, 512, 512),
-            }
+            },
         ]
 
         mask_features, _, multi_scale_features = maskdino_encoder_head(features)
