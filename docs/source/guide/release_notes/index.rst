@@ -53,6 +53,7 @@ Bug fixes
 - Fix config converter for tiling
 - Fix num_trials calculation on dataset length less than num_class
 - Fix out_features in HierarchicalCBAMClsHead
+- Fix multilabel_accuracy of MixedHLabelAccuracy
 
 v2.1.0 (2024.07)
 ----------------

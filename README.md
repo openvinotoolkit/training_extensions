@@ -211,6 +211,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Fix config converter for tiling
 - Fix num_trials calculation on dataset length less than num_class
 - Fix out_features in HierarchicalCBAMClsHead
+- Fix multilabel_accuracy of MixedHLabelAccuracy
 
 ### Known issues
 
