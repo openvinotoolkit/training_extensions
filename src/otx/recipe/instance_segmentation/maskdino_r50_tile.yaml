@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskdino.MaskDINOR50
+  class_path: otx.algo.instance_segmentation.maskdino.MaskDINOR
   init_args:
     model_name: resnet50
     label_info: 80
