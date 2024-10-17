@@ -264,6 +264,8 @@ class HLabelInfo(LabelInfo):
             single_label_group_info["class_to_idx"],
         )
 
+        label_to_idx = {lbl: i for i, lbl in enumerate(merged_class_to_idx.keys())}
+
         return HLabelInfo(
             label_names=label_names,
             label_groups=all_groups,
@@ -273,7 +275,7 @@ class HLabelInfo(LabelInfo):
             num_single_label_classes=exclusive_group_info["num_single_label_classes"],
             class_to_group_idx=merged_class_to_idx,
             all_groups=all_groups,
-            label_to_idx=dm_label_categories._indices,  # noqa: SLF001
+            label_to_idx=label_to_idx,
             label_tree_edges=get_label_tree_edges(dm_label_categories.items),
             empty_multiclass_head_indices=[],  # consider the label removing case
         )
