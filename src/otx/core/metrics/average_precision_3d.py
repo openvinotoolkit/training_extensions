@@ -63,7 +63,7 @@ class KittiMetric(Metric):
             self.preds,
             current_classes=[curcls.lower() for curcls in current_classes],
         )
-        # Average across all calsses.
+        # Average across all classes.
         return {
             "AP_3d@0.5": Tensor([ap_3d[0]]),
             "AP_2d@0.5": ap_bbox_coco["map_50"],

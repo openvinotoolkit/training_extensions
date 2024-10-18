@@ -22,13 +22,13 @@ def compute_fg_mask(
     """Compute foreground mask for images.
 
     Args:
-        gt_boxes2d (torch.Tensor(B, N, 4)): 2D box labels
-        shape (Tuple[int, int]): Foreground mask desired shape
-        downsample_factor (int): Downsample factor for image
-        device (torch.device): Foreground mask desired device
+        gt_boxes2d (torch.Tensor): 2D box labels.
+        shape (Tuple[int, int]): Foreground mask desired shape.
+        downsample_factor (int): Downsample factor for image.
+        device (torch.device): Foreground mask desired device.
 
     Returns:
-        fg_mask (torch.Tensor(shape)]: Foreground mask
+        fg_mask (torch.Tensor(shape)]: Foreground mask.
     """
     if device is None:
         device = torch.device("cpu")
@@ -58,9 +58,9 @@ class Balancer(nn.Module):
         """Initialize fixed foreground/background loss balancer.
 
         Args:
-            fg_weight (float): Foreground loss weight
-            bg_weight (float): Background loss weight
-            downsample_factor (int): Depth map downsample factor
+            fg_weight (float): Foreground loss weight.
+            bg_weight (float): Background loss weight.
+            downsample_factor (int): Depth map downsample factor.
         """
         super().__init__()
         self.fg_weight = fg_weight
@@ -76,11 +76,11 @@ class Balancer(nn.Module):
         """Forward pass.
 
         Args:
-            loss (torch.Tensor(B, H, W)): Pixel-wise loss
-            gt_boxes2d (torch.Tensor (B, N, 4)): 2D box labels for foreground/background balancing
+            loss (torch.Tensor): Pixel-wise loss.
+            gt_boxes2d (torch.Tensor): 2D box labels for foreground/background balancing.
 
         Returns:
-            loss (torch.Tensor(1)): Total loss after foreground/background balancing
+            loss (torch.Tensor): Total loss after foreground/background balancing.
         """
         # Compute masks
         fg_mask = compute_fg_mask(
@@ -119,11 +119,11 @@ class DDNLoss(nn.Module):
         """Initializes DDNLoss module.
 
         Args:
-            alpha (float): Alpha value for Focal Loss
-            gamma (float): Gamma value for Focal Loss
-            fg_weight (float): Foreground loss weight
-            bg_weight (float): Background loss weight
-            downsample_factor (int): Depth map downsample factor
+            alpha (float): Alpha value for Focal Loss.
+            gamma (float): Gamma value for Focal Loss.
+            fg_weight (float): Foreground loss weight.
+            bg_weight (float): Background loss weight.
+            downsample_factor (int): Depth map downsample factor.
         """
         super().__init__()
         self.balancer = Balancer(downsample_factor=downsample_factor, fg_weight=fg_weight, bg_weight=bg_weight)
@@ -143,10 +143,10 @@ class DDNLoss(nn.Module):
         """Builds target depth map from 3D center depth.
 
         Args:
-            depth_logits: (torch.Tensor(B, D+1, H, W)): Predicted depth logits
-            gt_boxes2d (torch.Tensor (B, N, 4)): 2D box labels for foreground/background balancing
-            gt_center_depth (torch.Tensor(B, N)): 3D center depth
-            num_gt_per_img: (int): Number of ground truth boxes per image
+            depth_logits: (torch.Tensor): Predicted depth logits.
+            gt_boxes2d (torch.Tensor)): 2D box labels for foreground/background balancing.
+            gt_center_depth (torch.Tensor): 3D center depth.
+            num_gt_per_img: (int): Number of ground truth boxes per image.
         """
         b, _, h, w = depth_logits.shape
         depth_maps = torch.zeros((b, h, w), device=depth_logits.device, dtype=depth_logits.dtype)
@@ -182,18 +182,18 @@ class DDNLoss(nn.Module):
         """Converts depth map into bin indices.
 
         Args:
-            depth_map (torch.Tensor(H, W)): Depth Map
-            mode (string): Discretiziation mode (See https://arxiv.org/pdf/2005.13423.pdf for more details)
-                UD: Uniform discretiziation
-                LID: Linear increasing discretiziation
-                SID: Spacing increasing discretiziation
-            depth_min (float): Minimum depth value
-            depth_max (float): Maximum depth value
-            num_bins (int): Number of depth bins
-            target (bool): Whether the depth bins indices will be used for a target tensor in loss comparison
+            depth_map (torch.Tensor): Depth Map.
+            mode (string): Discretiziation mode (See https://arxiv.org/pdf/2005.13423.pdf for more details).
+                UD: Uniform discretiziation.
+                LID: Linear increasing discretiziation.
+                SID: Spacing increasing discretiziation.
+            depth_min (float): Minimum depth value.
+            depth_max (float): Maximum depth value.
+            num_bins (int): Number of depth bins.
+            target (bool): Whether the depth bins indices will be used for a target tensor in loss comparison.
 
         Returns:
-            indices (torch.Tensor(H, W)): Depth bin indices
+            indices (torch.Tensor): Depth bin indices.
         """
         if mode == "UD":
             bin_size = (depth_max - depth_min) / num_bins
@@ -230,13 +230,13 @@ class DDNLoss(nn.Module):
         """Gets depth_map loss.
 
         Args:
-            depth_logits: (torch.Tensor(B, D+1, H, W)): Predicted depth logits
-            gt_boxes2d (torch.Tensor (B, N, 4)): 2D box labels for foreground/background balancing
-            num_gt_per_img: (int): Number of ground truth boxes per image
-            gt_center_depth: (torch.Tensor(B, N)): 3D center depth
+            depth_logits: (torch.Tensor): Predicted depth logits.
+            gt_boxes2d (torch.Tensor): 2D box labels for foreground/background balancing.
+            num_gt_per_img: (int): Number of ground truth boxes per image.
+            gt_center_depth: (torch.Tensor): 3D center depth.
 
         Returns:
-            loss (torch.Tensor(1)): Depth classification network loss
+            loss (torch.Tensor): Depth classification network loss.
         """
         # Bin depth map to create target
         depth_maps = self.build_target_depth_from_3dcenter(depth_logits, gt_boxes2d, gt_center_depth, num_gt_per_img)
