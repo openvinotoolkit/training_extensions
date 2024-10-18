@@ -362,7 +362,7 @@ class Conv3dModule(ConvModule):
     _conv_nd = nn.Conv3d
 
 
-class Conv2d(nn.Conv2d):
+class Conv2dWithNormActivation(nn.Conv2d):
     """A wrapper around torch.nn.Conv2d to support empty inputs and more features."""
 
     def __init__(self, *args, **kwargs) -> None:

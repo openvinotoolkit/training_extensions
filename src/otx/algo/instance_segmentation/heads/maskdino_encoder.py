@@ -20,7 +20,7 @@ from otx.algo.instance_segmentation.utils.utils import (
     ShapeSpec,
     c2_xavier_fill,
 )
-from otx.algo.modules.conv_module import Conv2d
+from otx.algo.modules.conv_module import Conv2dWithNormActivation
 
 
 class MSDeformAttnTransformerEncoderOnly(nn.Module):
@@ -32,6 +32,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         num_encoder_layers (int, optional): number of sub-encoder-layers in the encoder. Defaults to 6.
         dim_feedforward (int, optional): dimension of the feedforward network model. Defaults to 1024.
         dropout (float, optional): dropout value. Defaults to 0.1.
+        activation (Callable[..., nn.Module], optional): the activation function. Defaults to nn.ReLU.
         num_feature_levels (int, optional): number of feature levels. Defaults to 4.
         enc_n_points (int, optional): number of points for MSDeformableAttention. Defaults to 4.
     """
@@ -169,6 +170,9 @@ class MaskDINOEncoderHeadModule(nn.Module):
         mask_dim (int): number of output channels for the final conv layer.
         norm (str): normalization for all conv layers
         num_feature_levels (int): feature scales used
+        transformer_in_features (tuple[str, str, str]): names of the input features to the transformer.
+        common_stride (int): stride of the common feature level.
+        num_feature_levels (int): number of feature levels used in the transformer.
         total_num_feature_levels (int): total feautre scales used (include the downsampled features)
         activation (Callable[..., nn.Module]): activation function
     """
@@ -255,7 +259,7 @@ class MaskDINOEncoderHeadModule(nn.Module):
 
         self.mask_dim = mask_dim
         # use 1x1 conv instead
-        self.mask_features = Conv2d(
+        self.mask_features = Conv2dWithNormActivation(
             conv_dim,
             mask_dim,
             kernel_size=1,
@@ -276,7 +280,7 @@ class MaskDINOEncoderHeadModule(nn.Module):
             lateral_norm = nn.GroupNorm(32, conv_dim)
             output_norm = nn.GroupNorm(32, conv_dim)
 
-            lateral_conv = Conv2d(
+            lateral_conv = Conv2dWithNormActivation(
                 in_channels,
                 conv_dim,
                 kernel_size=1,
@@ -284,7 +288,7 @@ class MaskDINOEncoderHeadModule(nn.Module):
                 norm=lateral_norm,
                 activation=activation,
             )
-            output_conv = Conv2d(
+            output_conv = Conv2dWithNormActivation(
                 conv_dim,
                 conv_dim,
                 kernel_size=3,

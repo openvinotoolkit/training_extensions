@@ -26,6 +26,7 @@ from otx.algo.utils.mmengine_utils import load_from_http
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
@@ -312,6 +313,8 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
         Returns:
             dict[str, Any]: Customized inputs for MaskDINO model.
         """
+        if isinstance(entity.images, list):
+            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
         images = ImageList(entity.images, img_shapes)
 

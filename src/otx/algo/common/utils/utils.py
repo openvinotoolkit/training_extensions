@@ -336,7 +336,7 @@ def get_clones(module: nn.Module, n: int) -> nn.ModuleList:
 
     Args:
         module (nn.Module): The module to be cloned.
-        N (int): The number of clones to create.
+        n (int): The number of clones to create.
 
     Returns:
         nn.ModuleList: The list of cloned modules.
