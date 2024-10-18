@@ -54,8 +54,6 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         stack_images: bool = True,
         to_tv_image: bool = False,
         max_objects: int = 50,
-        depth_threshold: int = 65,
-        resolution: tuple[int, int] = (1280, 384),  # (W, H)
     ) -> None:
         super().__init__(
             dm_subset,
@@ -68,62 +66,45 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
             to_tv_image,
         )
         self.max_objects = max_objects
-        self.depth_threshold = depth_threshold
-        self.resolution = np.array(resolution)  # TODO(Kirill): make it configurable
         self.subset_type = list(self.dm_subset.get_subset_info())[-1].split(":")[0]
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
         entity = self.dm_subset[index]
         image = entity.media_as(Image)
-        image = self._get_img_data_and_shape(image)[0]
+        image, ori_img_shape = self._get_img_data_and_shape(image)
         calib = get_calib_from_file(entity.attributes["calib_path"])
-        original_kitti_format = None  # don't use for training
-        if self.subset_type != "train":
-            # TODO (Kirill): remove this or duplication of the inputs
-            annotations_copy = deepcopy(entity.annotations)
-            original_kitti_format = [obj.attributes for obj in annotations_copy]
-            # decode original kitti format for metric calculation
-            for i, anno_dict in enumerate(original_kitti_format):
-                anno_dict["name"] = self.label_info.label_names[annotations_copy[i].label]
-                anno_dict["bbox"] = annotations_copy[i].points
-                dimension = anno_dict["dimensions"]
-                anno_dict["dimensions"] = [dimension[2], dimension[0], dimension[1]]
-            original_kitti_format = self._reformate_for_kitti_metric(original_kitti_format)
-        # decode labels for training
-        inputs, targets, ori_img_shape = self._decode_item(
-            PILImage.fromarray(image),
-            entity.annotations,
-            calib,
-        )
-        # normilize image
-        inputs = self._apply_transforms(torch.as_tensor(inputs, dtype=torch.float32))
-        return Det3DDataEntity(
-            image=inputs,
+        annotations_copy = deepcopy(entity.annotations)
+        original_kitti_format = [obj.attributes for obj in annotations_copy]
+        # decode original kitti format for metric calculation
+        for i, anno_dict in enumerate(original_kitti_format):
+            anno_dict["name"] = (self.label_info.label_names[annotations_copy[i].label]
+                                 if self.subset_type != "train" else annotations_copy[i].label)
+            anno_dict["bbox"] = annotations_copy[i].points
+            dimension = anno_dict["dimensions"]
+            anno_dict["dimensions"] = [dimension[2], dimension[0], dimension[1]]
+        original_kitti_format = self._reformate_for_kitti_metric(original_kitti_format)
+
+        entity = Det3DDataEntity(
+            image=image,
             img_info=ImageInfo(
                 img_idx=index,
-                img_shape=inputs.shape[1:],
+                img_shape=ori_img_shape,
                 ori_shape=ori_img_shape,  # TODO(Kirill): curently we use WxH here, make it HxW
                 image_color_channel=self.image_color_channel,
                 ignored_labels=[],
             ),
-            boxes=tv_tensors.BoundingBoxes(
-                targets["boxes"],
-                format=tv_tensors.BoundingBoxFormat.XYXY,
-                canvas_size=inputs.shape[1:],
-                dtype=torch.float32,
-            ),
-            labels=torch.as_tensor(targets["labels"], dtype=torch.long),
-            calib_matrix=torch.as_tensor(calib, dtype=torch.float32),
-            boxes_3d=torch.as_tensor(targets["boxes_3d"], dtype=torch.float32),
-            size_2d=torch.as_tensor(targets["size_2d"], dtype=torch.float32),
-            size_3d=torch.as_tensor(targets["size_3d"], dtype=torch.float32),
-            depth=torch.as_tensor(targets["depth"], dtype=torch.float32),
-            heading_angle=torch.as_tensor(
-                np.concatenate([targets["heading_bin"], targets["heading_res"]], axis=1),
-                dtype=torch.float32,
-            ),
+            boxes=np.zeros((self.max_objects, 4), dtype=np.float32),
+            labels=np.zeros((self.max_objects), dtype=np.int8),
+            calib_matrix=calib,
+            boxes_3d=np.zeros((self.max_objects, 6), dtype=np.float32),
+            size_2d=np.zeros((self.max_objects, 2), dtype=np.float32),
+            size_3d=np.zeros((self.max_objects, 3), dtype=np.float32),
+            depth=np.zeros((self.max_objects, 1), dtype=np.float32),
+            heading_angle=np.zeros((self.max_objects, 2), dtype=np.float32),
             original_kitti_format=original_kitti_format,
         )
+
+        return self._apply_transforms(entity)
 
     @property
     def collate_fn(self) -> Callable:
@@ -138,7 +119,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         center = img_size / 2
         crop_size, crop_scale = img_size, 1
         random_flip_flag = False
-        # TODO(Kirill): add data augmentation for 3d, remove them from here.
+
         if self.subset_type == "train":
             if np.random.random() < 0.5:
                 random_flip_flag = True
