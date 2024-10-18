@@ -125,7 +125,7 @@ class SSDHeadModule(AnchorHead):
         Returns:
             dict: A dictionary of components for loss calculation.
         """
-        cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(x, entity)
+        (cls_scores, bbox_preds), batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(x, entity)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 
         device = cls_scores[0].device

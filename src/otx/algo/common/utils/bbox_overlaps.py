@@ -152,11 +152,9 @@ def bbox_overlaps(
         msg = "bboxes2 must have a last dimension of size 4 or be an empty tensor."
         raise ValueError(msg)
 
-    if bboxes1.shape[:-2] != bboxes2.shape[:-2]:
+    if bboxes1.size()[:-2] != bboxes2.size()[:-2]:
         msg = "The batch dimension of bboxes must be the same."
         raise ValueError(msg)
-
-    batch_shape = bboxes1.shape[:-2]
 
     rows = bboxes1.size(-2)
     cols = bboxes2.size(-2)
@@ -164,8 +162,8 @@ def bbox_overlaps(
     if rows * cols == 0:
         warnings.warn("No bboxes are provided! Returning empty boxes!", stacklevel=2)
         if is_aligned:
-            return bboxes1.new(batch_shape + (rows,))  # noqa: RUF005
-        return bboxes1.new(batch_shape + (rows, cols))  # noqa: RUF005
+            return bboxes1.new(bboxes1.shape[:-2] + (rows,))
+        return bboxes1.new(bboxes1.shape[:-2] + (rows, cols))
 
     area1 = (bboxes1[..., 2] - bboxes1[..., 0]) * (bboxes1[..., 3] - bboxes1[..., 1])
     area2 = (bboxes2[..., 2] - bboxes2[..., 0]) * (bboxes2[..., 3] - bboxes2[..., 1])

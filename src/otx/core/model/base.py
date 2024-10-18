@@ -280,7 +280,16 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         :param stage: Either `"fit"`, `"validate"`, `"test"`, or `"predict"`.
         """
         if self.torch_compile and stage == "fit":
+            # Set the log_level of this to error due to the numerous warning messages from compile.
+            torch._logging.set_logs(dynamo=logging.ERROR)  # noqa: SLF001
             self.model = torch.compile(self.model)
+            warnings.warn(
+                (
+                    "torch model compile has been applied. It may be slower than usual because "
+                    "it builds the graph in the initial training."
+                ),
+                stacklevel=1,
+            )
 
     def configure_optimizers(self) -> OptimizerLRScheduler:
         """Configure an optimizer and learning-rate schedulers.

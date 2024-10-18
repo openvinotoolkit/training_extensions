@@ -298,7 +298,7 @@ class RandomSampler(BaseSampler):
         if self.add_gt_as_proposals and len(gt_bboxes) > 0:
             priors = torch.cat([gt_bboxes, priors], dim=0)
             assign_result.add_gt_(gt_labels)
-            gt_ones = priors.new_ones(gt_bboxes.shape[0], dtype=torch.uint8)
+            gt_ones = priors.new_ones(len(gt_bboxes), dtype=torch.uint8)
             gt_flags = torch.cat([gt_ones, gt_flags])
 
         num_expected_pos = int(self.num * self.pos_fraction)
@@ -311,8 +311,7 @@ class RandomSampler(BaseSampler):
         if self.neg_pos_ub >= 0:
             _pos = max(1, num_sampled_pos)
             neg_upper_bound = int(self.neg_pos_ub * _pos)
-            if num_expected_neg > neg_upper_bound:
-                num_expected_neg = neg_upper_bound
+            num_expected_neg = min(num_expected_neg, neg_upper_bound)
         neg_inds = self.neg_sampler._sample_neg(assign_result, num_expected_neg, bboxes=priors, **kwargs)  # noqa: SLF001
         neg_inds = neg_inds.unique()
 

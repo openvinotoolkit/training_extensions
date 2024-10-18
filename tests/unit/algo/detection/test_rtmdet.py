@@ -10,6 +10,7 @@ from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPNModule
 from otx.algo.detection.rtmdet import RTMDet
 from otx.core.data.entity.detection import DetBatchPredEntity
 from otx.core.exporter.native import OTXNativeModelExporter
+from torch._dynamo.testing import CompileCounter
 
 
 class TestRTMDet:
@@ -51,3 +52,22 @@ class TestRTMDet:
         model.explain_mode = True
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 4
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            RTMDet(model_name="rtmdet_tiny", label_info=3),
+        ],
+    )
+    def test_compiled_model(self, model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        model.model = torch.compile(model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, *model.input_size)
+        model.model(x)
+        assert cnt.frame_count == 1

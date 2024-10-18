@@ -10,6 +10,7 @@ from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPNModule
 from otx.algo.detection.yolox import YOLOX
 from otx.core.data.entity.detection import DetBatchPredEntity
 from otx.core.exporter.native import OTXNativeModelExporter
+from torch._dynamo.testing import CompileCounter
 
 
 class TestYOLOX:
@@ -87,3 +88,25 @@ class TestYOLOX:
         model.explain_mode = True
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 4
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            YOLOX(model_name="yolox_tiny", label_info=3),
+            YOLOX(model_name="yolox_s", label_info=3),
+            YOLOX(model_name="yolox_l", label_info=3),
+            YOLOX(model_name="yolox_x", label_info=3),
+        ],
+    )
+    def test_compiled_model(self, model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        model.model = torch.compile(model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, *model.input_size)
+        model.model(x)
+        assert cnt.frame_count == 4

@@ -3,12 +3,14 @@
 #
 """Test of RTDETR."""
 
+import pytest
 import torch
 from otx.algo.detection.rtdetr import RTDETR
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.types import LabelInfo
 from torch import nn
+from torch._dynamo.testing import CompileCounter
 
 
 class TestRTDETR:
@@ -102,3 +104,25 @@ class TestRTDETR:
             assert not torch.is_nonzero((p1.data - p2.data).sum())
         assert params[0]["lr"] == 0.01  # conv
         assert params[1]["lr"] == 0.001  # fc
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            RTDETR(model_name="rtdetr_18", label_info=3),
+            RTDETR(model_name="rtdetr_50", label_info=3),
+            RTDETR(model_name="rtdetr_101", label_info=3),
+        ],
+    )
+    def test_compiled_model(self, model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        model.model = torch.compile(model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, *model.input_size)
+        model.model.training = False  # do not calculate loss
+        model.model(x)
+        assert cnt.frame_count == 1

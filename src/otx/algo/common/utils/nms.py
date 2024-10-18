@@ -10,6 +10,7 @@ Reference :
 
 from __future__ import annotations
 
+import warnings
 from typing import Any, Callable
 
 import numpy as np
@@ -59,6 +60,7 @@ def nms(
     offset: int = 0,
     score_threshold: float = 0,
     max_num: int = -1,
+    **kwargs,
 ) -> tuple[Tensor | np.ndarray, Tensor | np.ndarray]:
     """Dispatch to either CPU or GPU NMS implementations.
 
@@ -92,6 +94,8 @@ def nms(
         >>> dets, inds = nms(boxes, scores, iou_threshold)
         >>> assert len(inds) == len(dets) == 3
     """
+    if kwargs:
+        warnings.warn(f"nms_cfg: {kwargs} will be skiped in nms", stacklevel=2)
     is_numpy = False
     if isinstance(boxes, np.ndarray):
         is_numpy = True
