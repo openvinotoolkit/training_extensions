@@ -161,4 +161,9 @@ class OTXDatasetFactory:
 
             return OTX3DObjectDetectionDataset(**common_kwargs)
 
+        if task == OTXTaskType.IMAGE_CAPTIONING:
+            from .dataset.image_caption import ImageCaptionDataset
+
+            return ImageCaptionDataset(**common_kwargs)
+
         raise NotImplementedError(task)
