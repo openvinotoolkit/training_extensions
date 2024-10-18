@@ -80,6 +80,73 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
             task_type="3d_detection",
         )
 
+    def _customize_inputs(
+        self,
+        entity: Det3DBatchDataEntity,
+    ) -> dict[str, Any]:
+        # prepare bboxes for the model
+        targets_list = []
+        img_sizes = torch.from_numpy(np.array([img_info.ori_shape for img_info in entity.imgs_info])).to(
+            device=entity.images.device,
+        )
+        key_list = ["labels", "boxes", "depth", "size_3d", "heading_angle", "boxes_3d"]
+        for bz in range(len(entity.imgs_info)):
+            target_dict = {}
+            for key in key_list:
+                target_dict[key] = getattr(entity, key)[bz]
+            targets_list.append(target_dict)
+
+        return {
+            "images": entity.images,
+            "calibs": torch.cat([p2.unsqueeze(0) for p2 in entity.calib_matrix], dim=0),
+            "targets": targets_list,
+            "img_sizes": img_sizes,
+            "mode": "loss" if self.training else "predict",
+        }
+
+    def _customize_outputs(
+        self,
+        outputs: dict[str, torch.Tensor],
+        inputs: Det3DBatchDataEntity,
+    ) -> Det3DBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
+            return losses
+
+        labels, scores, size_3d, heading_angle, boxes_3d, depth = self.extract_dets_from_outputs(outputs)
+        # bbox 2d decoding
+        boxes_2d = box_cxcylrtb_to_xyxy(boxes_3d)
+        xywh_2d = box_convert(boxes_2d, "xyxy", "cxcywh")
+        # size 2d decoding
+        size_2d = xywh_2d[:, :, 2:4]
+
+        return Det3DBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            calib_matrix=inputs.calib_matrix,
+            boxes=boxes_2d,
+            labels=labels,
+            boxes_3d=boxes_3d,
+            size_2d=size_2d,
+            size_3d=size_3d,
+            depth=depth,
+            heading_angle=heading_angle,
+            scores=scores,
+            original_kitti_format=[None],
+        )
+
     def _convert_pred_entity_to_compute_metric(
         self,
         preds: Det3DBatchPredEntity,

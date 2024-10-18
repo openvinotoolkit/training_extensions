@@ -29,11 +29,10 @@ class MonoDETRCriterion(nn.Module):
         """MonoDETRCriterion.
 
         Args:
-            num_classes: number of object categories, omitting the special no-object category
-            matcher: module able to compute a matching between targets and proposals
-            weight_dict: dict containing as key the names of the losses and as values their relative weight.
-            focal_alpha: alpha in Focal Loss
-            group_num: number of groups for data parallelism
+            num_classes (int): number of object categories, omitting the special no-object category.
+            weight_dict (dict): dict containing as key the names of the losses and as values their relative weight.
+            focal_alpha (float): alpha in Focal Loss.
+            group_num (int): number of groups for data parallelism.
         """
         super().__init__()
         self.num_classes = num_classes
@@ -47,7 +46,15 @@ class MonoDETRCriterion(nn.Module):
         self.group_num = group_num
 
     def loss_labels(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Classification loss."""
+        """Classification loss.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         src_logits = outputs["scores"]
 
         idx = self._get_src_permutation_idx(indices)
@@ -76,7 +83,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_ce": loss_ce}
 
     def loss_3dcenter(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Compute the loss for the 3D center prediction."""
+        """Compute the loss for the 3D center prediction.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         idx = self._get_src_permutation_idx(indices)
         src_3dcenter = outputs["boxes_3d"][:, :, 0:2][idx]
         target_3dcenter = torch.cat([t["boxes_3d"][:, 0:2][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -85,7 +100,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_center": loss_3dcenter.sum() / num_boxes}
 
     def loss_boxes(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Compute l1 loss."""
+        """Compute l1 loss.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         idx = self._get_src_permutation_idx(indices)
         src_2dboxes = outputs["boxes_3d"][:, :, 2:6][idx]
         target_2dboxes = torch.cat([t["boxes_3d"][:, 2:6][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -95,7 +118,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_bbox": loss_bbox.sum() / num_boxes}
 
     def loss_giou(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Compute the GIoU loss."""
+        """Compute the GIoU loss.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         # giou
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs["boxes_3d"][idx]
@@ -104,7 +135,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_giou": loss_giou}
 
     def loss_depths(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Compute the loss for the depth prediction."""
+        """Compute the loss for the depth prediction.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch
+        """
         idx = self._get_src_permutation_idx(indices)
 
         src_depths = outputs["depth"][idx]
@@ -117,7 +156,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_depth": depth_loss.sum() / num_boxes}
 
     def loss_dims(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Compute the loss for the dimension prediction."""
+        """Compute the loss for the dimension prediction.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         idx = self._get_src_permutation_idx(indices)
         src_dims = outputs["size_3d"][idx]
         target_dims = torch.cat([t["size_3d"][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -131,7 +178,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_dim": dim_loss.sum() / num_boxes}
 
     def loss_angles(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Compute the loss for the angle prediction."""
+        """Compute the loss for the angle prediction.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         idx = self._get_src_permutation_idx(indices)
         heading_input = outputs["heading_angle"][idx]
         target_heading_angle = torch.cat([t["heading_angle"][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -158,7 +213,15 @@ class MonoDETRCriterion(nn.Module):
         return {"loss_angle": angle_loss.sum() / num_boxes}
 
     def loss_depth_map(self, outputs: dict, targets: list, indices: list, num_boxes: int) -> dict[str, Tensor]:
-        """Depth map loss."""
+        """Depth map loss.
+
+        Args:
+            outputs (dict): dict of tensors, see the output specification of the model for the format.
+            targets (list): list of dicts, such that len(targets) == batch_size.
+                   The expected keys in each dict depends on the losses applied, see each loss' doc.
+            indices (list): list of tuples, such that len(indices) == batch_size.
+            num_boxes (int): number of boxes in the batch.
+        """
         depth_map_logits = outputs["pred_depth_map_logits"]
 
         num_gt_per_img = [len(t["boxes"]) for t in targets]
@@ -174,6 +237,7 @@ class MonoDETRCriterion(nn.Module):
         self,
         indices: list[tuple[torch.Tensor, torch.Tensor]],
     ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Get the indices necessary to compute the loss."""
         # permute predictions following indices
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
@@ -183,6 +247,7 @@ class MonoDETRCriterion(nn.Module):
         self,
         indices: list[tuple[torch.Tensor, torch.Tensor]],
     ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Get the indices necessary to compute the loss."""
         # permute targets following indices
         batch_idx = torch.cat([torch.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
         tgt_idx = torch.cat([tgt for (_, tgt) in indices])
@@ -210,9 +275,9 @@ class MonoDETRCriterion(nn.Module):
         """This performs the loss computation.
 
         Args:
-             outputs: dict of tensors, see the output specification of the model for the format
-             targets: list of dicts, such that len(targets) == batch_size.
-                      The expected keys in each dict depends on the losses applied, see each loss' doc
+             outputs (dict): dict of tensors, see the output specification of the model for the format.
+             targets (list): list of dicts, such that len(targets) == batch_size.
+                      The expected keys in each dict depends on the losses applied, see each loss' doc.
         """
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
         group_num = self.group_num if self.training else 1
