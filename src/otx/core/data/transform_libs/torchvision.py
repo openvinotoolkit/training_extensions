@@ -3483,15 +3483,27 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         crop_size, crop_scale = ori_img_size, 1
         random_flip_flag = False
 
-        if self.random_crop and (np.random.random() < self.p_crop):
-            crop_scale = np.clip(np.random.randn() * self.random_scale + 1, 1 - self.random_scale, 1 + self.random_scale)
-            crop_size = ori_img_size * crop_scale
-            center[0] += ori_img_size[0] * np.clip(np.random.randn() * self.random_shift, -2 * self.random_shift, 2 * self.random_shift)
-            center[1] += ori_img_size[1] * np.clip(np.random.randn() * self.random_shift, -2 * self.random_shift, 2 * self.random_shift)
+        # if self.random_crop and (np.random.random() < self.p_crop):
+        #     crop_scale = np.clip(
+        #         np.random.randn() * self.random_scale + 1,
+        #         1 - self.random_scale,
+        #         1 + self.random_scale,
+        #     )
+        #     crop_size = ori_img_size * crop_scale
+        #     center[0] += ori_img_size[0] * np.clip(
+        #         np.random.randn() * self.random_shift,
+        #         -2 * self.random_shift,
+        #         2 * self.random_shift,
+        #     )
+        #     center[1] += ori_img_size[1] * np.clip(
+        #         np.random.randn() * self.random_shift,
+        #         -2 * self.random_shift,
+        #         2 * self.random_shift,
+        #     )
 
-        if self.random_horizontal_flip and (np.random.random() < 0.5):
-            random_flip_flag = True
-            image = np.fliplr(image)
+        # if self.random_horizontal_flip and (np.random.random() < 0.5):
+        #     random_flip_flag = True
+        #     image = np.fliplr(image)
 
         trans = self._get_warp_matrix(center, crop_size, 0, warp_size)
         inputs.image = self._get_warp_image(image, trans, warp_size)
@@ -3507,7 +3519,10 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         if random_flip_flag:
             for i in range(len(annotations_list["bbox"])):
                 [x1, _, x2, _] = annotations_list["bbox"][i]
-                annotations_list["bbox"][i][0], annotations_list["bbox"][i][2] = ori_img_size[0] - x2, ori_img_size[0] - x1
+                annotations_list["bbox"][i][0], annotations_list["bbox"][i][2] = (
+                    ori_img_size[0] - x2,
+                    ori_img_size[0] - x1,
+                )
                 annotations_list["alpha"][i] = np.pi - annotations_list["alpha"][i]
                 annotations_list["rotation_y"][i] = np.pi - annotations_list["rotation_y"][i]
                 if annotations_list["alpha"][i] > np.pi:
@@ -3519,7 +3534,9 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
                 if annotations_list["rotation_y"][i] < -np.pi:
                     annotations_list["rotation_y"][i] += 2 * np.pi
 
-        object_num = len(annotations_list["bbox"]) if len(annotations_list["bbox"]) < self.max_objects else self.max_objects
+        object_num = (
+            len(annotations_list["bbox"]) if len(annotations_list["bbox"]) < self.max_objects else self.max_objects
+        )
         for i in range(object_num):
             # ignore the samples beyond the threshold [hard encoding]
             if annotations_list["location"][i][-1] > self.depth_threshold and annotations_list["location"][i][-1] < 2:
@@ -3593,7 +3610,11 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
             inputs.depth[i] = annotations_list["location"][i][-1] * crop_scale
 
             # encoding heading angle
-            heading_angle = self.ry2alpha(inputs.calib_matrix, annotations_list["rotation_y"][i], (annotations_list["bbox"][i][0] + annotations_list["bbox"][i][2]) / 2)
+            heading_angle = self.ry2alpha(
+                inputs.calib_matrix,
+                annotations_list["rotation_y"][i],
+                (annotations_list["bbox"][i][0] + annotations_list["bbox"][i][2]) / 2,
+            )
             if heading_angle > np.pi:
                 heading_angle -= 2 * np.pi  # check range
             if heading_angle < -np.pi:
@@ -3601,7 +3622,14 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
             inputs.heading_angle[i] = self.angle2class(heading_angle)
 
             # encoding size_3d
-            src_size_3d[i] = np.array([annotations_list["dimensions"][i][1], annotations_list["dimensions"][i][2], annotations_list["dimensions"][i][0]], dtype=np.float32)
+            src_size_3d[i] = np.array(
+                [
+                    annotations_list["dimensions"][i][1],
+                    annotations_list["dimensions"][i][2],
+                    annotations_list["dimensions"][i][0],
+                ],
+                dtype=np.float32,
+            )
             inputs.size_3d[i] = src_size_3d[i]
 
             # filter out the samples with truncated or occluded
@@ -3631,6 +3659,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         Returns:
             np.ndarray: Image coordinates with shape (N, 2).
         """
+
         def cart_to_hom(pts: np.ndarray) -> np.ndarray:
             """Convert Cartesian coordinates to homogeneous coordinates.
 
@@ -3649,7 +3678,6 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         pts_img = (pts_2d_hom[:, 0:2].T / pts_rect_hom[:, 2]).T  # (N, 2)
         pts_rect_depth = pts_2d_hom[:, 2] - p2.T[3, 2]  # depth in rect camera coord
         return pts_img, pts_rect_depth
-
 
     @staticmethod
     def ry2alpha(p2: np.ndarray, ry: np.ndarray, u: np.ndarray) -> np.ndarray:

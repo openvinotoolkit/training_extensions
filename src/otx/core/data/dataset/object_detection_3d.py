@@ -12,10 +12,8 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Callable, List, Union
 
 import numpy as np
-import torch
 from datumaro import Image
 from PIL import Image as PILImage
-from torchvision import tv_tensors
 
 from otx.core.data.dataset.utils.kitti_utils import (
     affine_transform,
@@ -67,6 +65,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         )
         self.max_objects = max_objects
         self.subset_type = list(self.dm_subset.get_subset_info())[-1].split(":")[0]
+        self.resolution = np.array([1280, 384])
 
     def _get_item_impl(self, index: int) -> Det3DDataEntity | None:
         entity = self.dm_subset[index]
@@ -77,12 +76,17 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         original_kitti_format = [obj.attributes for obj in annotations_copy]
         # decode original kitti format for metric calculation
         for i, anno_dict in enumerate(original_kitti_format):
-            anno_dict["name"] = (self.label_info.label_names[annotations_copy[i].label]
-                                 if self.subset_type != "train" else annotations_copy[i].label)
+            anno_dict["name"] = (
+                self.label_info.label_names[annotations_copy[i].label]
+                if self.subset_type != "train"
+                else annotations_copy[i].label
+            )
             anno_dict["bbox"] = annotations_copy[i].points
             dimension = anno_dict["dimensions"]
             anno_dict["dimensions"] = [dimension[2], dimension[0], dimension[1]]
         original_kitti_format = self._reformate_for_kitti_metric(original_kitti_format)
+
+        # image2, annotations, calib2 = self._decode_item(PILImage.fromarray(deepcopy(image)), deepcopy(entity.annotations), deepcopy(calib))
 
         entity = Det3DDataEntity(
             image=image,
@@ -120,18 +124,18 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         crop_size, crop_scale = img_size, 1
         random_flip_flag = False
 
-        if self.subset_type == "train":
-            if np.random.random() < 0.5:
-                random_flip_flag = True
-                img = img.transpose(PILImage.FLIP_LEFT_RIGHT)
+        # if self.subset_type == "train":
+        #     if np.random.random() < 0.5:
+        #         random_flip_flag = True
+        #         img = img.transpose(PILImage.FLIP_LEFT_RIGHT)
 
-            if np.random.random() < 0.5:
-                scale = 0.05
-                shift = 0.05
-                crop_scale = np.clip(np.random.randn() * scale + 1, 1 - scale, 1 + scale)
-                crop_size = img_size * crop_scale
-                center[0] += img_size[0] * np.clip(np.random.randn() * shift, -2 * shift, 2 * shift)
-                center[1] += img_size[1] * np.clip(np.random.randn() * shift, -2 * shift, 2 * shift)
+        #     if np.random.random() < 0.5:
+        #         scale = 0.05
+        #         shift = 0.05
+        #         crop_scale = np.clip(np.random.randn() * scale + 1, 1 - scale, 1 + scale)
+        #         crop_size = img_size * crop_scale
+        #         center[0] += img_size[0] * np.clip(np.random.randn() * shift, -2 * shift, 2 * shift)
+        #         center[1] += img_size[1] * np.clip(np.random.randn() * shift, -2 * shift, 2 * shift)
 
         # add affine transformation for 2d images.
         trans, trans_inv = get_affine_transform(center, crop_size, 0, self.resolution, inv=1)
@@ -181,7 +185,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         for i in range(object_num):
             cur_obj = annotations_list[i]
             # ignore the samples beyond the threshold [hard encoding]
-            if cur_obj["location"][-1] > self.depth_threshold and cur_obj["location"][-1] < 2:
+            if cur_obj["location"][-1] > 65 and cur_obj["location"][-1] < 2:
                 continue
 
             # process 2d bbox & get 2d center
