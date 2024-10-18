@@ -494,3 +494,75 @@ algo_backend:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
+
+augmentation:
+  type: PARAMETER_GROUP
+  header: Augmentation
+  description: Configure Data Augmentations
+  visible_in_ui: true
+  horizontal_flip:
+    type: BOOLEAN
+    header: Random Horizontal Flip
+    description: Enable this operation to include horizontally flipped images randomly.
+    default_value: true
+    editable: false
+    affects_outcome_of: TRAINING
+  vertical_flip:
+    type: BOOLEAN
+    header: Random Vertical Flip
+    description: Enable this operation to include vertically flipped images randomly.
+    default_value: false
+    affects_outcome_of: TRAINING
+  vertical_flip_prob:
+    type: FLOAT
+    header: Random Vertical Flip Probability
+    description: Configure the probaility of random vertical flip.
+    default_value: 0.5
+    min_value: 0.0
+    max_value: 1.0
+    ui_rules:
+      type: UI_RULES
+      rules:
+        - parameter: vertical_flip
+          value: false
+      action: HIDE
+    affects_outcome_of: TRAINING
+  photometric_distortion:
+    type: PARAMETER_GROUP
+    header: Photometric Distortion
+    description: Configure random photometric pixel color augmentation
+    visible_in_ui: true
+    photometric_distortion_0_enable:
+      type: BOOLEAN
+      header: Enable Photometric Distortion
+      description: Enable this operation to include color-jittered images randomly.
+      default_value: false
+      affects_outcome_of: TRAINING
+    photometric_distortion_1_brightness:
+      type: INTEGER
+      header: Random Brightness
+      description: Configure the maximum +/- change of brightness in pixel value (0~255).
+      default_value: 32
+      min_value: 0
+      max_value: 64
+      ui_rules:
+        type: UI_RULES
+        rules:
+          - parameter: photometric_distortion_0_enable
+            value: false
+        action: HIDE
+      affects_outcome_of: TRAINING
+    photometric_distortion_2_hue:
+      type: INTEGER
+      header: Random Hue
+      description: Configure the maximum +/- change of Hue in degree.
+      default_value: 18
+      min_value: 0
+      max_value: 32
+      ui_rules:
+        type: UI_RULES
+        rules:
+          - parameter: photometric_distortion_0_enable
+            value: false
+        action: HIDE
+      affects_outcome_of: TRAINING
