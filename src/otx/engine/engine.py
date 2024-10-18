@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import copy
 import csv
 import inspect
 import logging
@@ -370,14 +371,22 @@ class Engine:
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
         if model.label_info != self.datamodule.label_info:
-            msg = (
-                "To launch a test pipeline, the label information should be same "
-                "between the training and testing datasets. "
-                "Please check whether you use the same dataset: "
-                f"model.label_info={model.label_info}, "
-                f"datamodule.label_info={self.datamodule.label_info}"
-            )
-            raise ValueError(msg)
+            if (
+                self.task == "SEMANTIC_SEGMENTATION"
+                and "otx_background_lbl" in self.datamodule.label_info.label_names
+                and (len(self.datamodule.label_info.label_names) - len(model.label_info.label_names) == 1)
+            ):
+                # workaround for background label
+                model.label_info = copy.deepcopy(self.datamodule.label_info)
+            else:
+                msg = (
+                    "To launch a test pipeline, the label information should be same "
+                    "between the training and testing datasets. "
+                    "Please check whether you use the same dataset: "
+                    f"model.label_info={model.label_info}, "
+                    f"datamodule.label_info={self.datamodule.label_info}"
+                )
+                raise ValueError(msg)
 
         self._build_trainer(**kwargs)
 

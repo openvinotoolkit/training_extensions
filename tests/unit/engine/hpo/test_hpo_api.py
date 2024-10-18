@@ -119,12 +119,25 @@ def mock_find_trial_file(mocker) -> MagicMock:
 
 @pytest.fixture()
 def hpo_config() -> HpoConfig:
-    return HpoConfig(metric_name="val/accuracy")
+    return HpoConfig(metric_name="val/accuracy", callbacks_to_exclude="UselessCallback")
 
 
 @pytest.fixture()
 def mock_progress_update_callback() -> MagicMock:
     return MagicMock()
+
+
+class UsefullCallback:
+    pass
+
+
+class UselessCallback:
+    pass
+
+
+@pytest.fixture()
+def mock_callback() -> list:
+    return [UsefullCallback(), UselessCallback()]
 
 
 def test_execute_hpo(
@@ -138,12 +151,14 @@ def test_execute_hpo(
     mock_get_best_hpo_weight: MagicMock,
     mock_find_trial_file: MagicMock,
     mock_progress_update_callback: MagicMock,
+    mock_callback: list,
 ):
+    hpo_config.progress_update_callback = mock_progress_update_callback
     best_config, best_hpo_weight = execute_hpo(
         engine=mock_engine,
         max_epochs=10,
         hpo_config=hpo_config,
-        progress_update_callback=mock_progress_update_callback,
+        callbacks=mock_callback,
     )
 
     # check hpo workdir exists
@@ -152,12 +167,16 @@ def test_execute_hpo(
     # check a case where progress_update_callback exists
     mock_thread.assert_called_once()
     assert mock_thread.call_args.kwargs["target"] == _update_hpo_progress
-    assert mock_thread.call_args.kwargs["args"][0] == mock_progress_update_callback
     assert mock_thread.call_args.kwargs["daemon"] is True
     mock_thread.return_value.start.assert_called_once()
     # check whether run_hpo_loop is called well
     mock_run_hpo_loop.assert_called_once()
     assert mock_run_hpo_loop.call_args.args[0] == mock_hpo_algo
+    # check UselessCallback is excluded
+    for callback in mock_run_hpo_loop.call_args.args[1].keywords["callbacks"]:
+        assert not isinstance(callback, UselessCallback)
+    # check origincal callback lists isn't changed.
+    assert len(mock_callback) == 2
     # print_result is called after HPO is done
     mock_hpo_algo.print_result.assert_called_once()
     # best_config and best_hpo_weight are returned well
