@@ -162,7 +162,6 @@ class MaskDINOHead(nn.Module):
 
             mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
             pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
-            pred_scores = scores_per_image * self.calculate_object_scores(mask_pred)
             pred_classes = labels_per_image
 
             pred_masks = torch.nn.functional.interpolate(
@@ -172,6 +171,7 @@ class MaskDINOHead(nn.Module):
                 align_corners=False,
             )[0]
 
+            pred_scores = scores_per_image * self.calculate_object_scores(pred_masks)
             pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_convert(  # noqa: PLW2901
                 pred_boxes,
                 in_fmt="cxcywh",
