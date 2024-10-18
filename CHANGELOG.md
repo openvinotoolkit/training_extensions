@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## \[Unreleased\]
 
+### New features
+
+- Turn on/off classification augmentations
+  (https://github.com/openvinotoolkit/training_extensions/pull/4039)
+
 ### Enhancements
 
 - Update visual prompting pipeline for multi-label zero-shot learning support
