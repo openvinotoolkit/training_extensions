@@ -83,7 +83,7 @@ class FrozenBatchNorm2d(nn.Module):
         return "{num_features}, eps={eps}".format(**self.__dict__)
 
 
-AVAILABLE_NORMALIZATION_LIST = [
+AVAILABLE_NORMALIZATION_LIST = (
     nn.BatchNorm1d,
     nn.BatchNorm2d,
     nn.BatchNorm3d,
@@ -94,7 +94,7 @@ AVAILABLE_NORMALIZATION_LIST = [
     nn.InstanceNorm2d,
     nn.InstanceNorm3d,
     FrozenBatchNorm2d,
-]
+)
 
 
 def infer_abbr(class_type: type) -> str:

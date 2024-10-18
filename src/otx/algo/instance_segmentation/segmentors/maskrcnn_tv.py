@@ -1,7 +1,7 @@
-"""Torchvision MaskRCNN model with forward method accepting InstanceSegBatchDataEntity."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Torchvision MaskRCNN model with forward method accepting InstanceSegBatchDataEntity."""
 
 from __future__ import annotations
 
