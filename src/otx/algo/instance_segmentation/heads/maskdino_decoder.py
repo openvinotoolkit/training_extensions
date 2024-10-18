@@ -228,6 +228,7 @@ class MaskDINODecoderHeadModule(nn.Module):
         nhead (int): num heads in multi-head attention. Defaults to 8.
         dec_n_points (int): number of sampling points in decoder. Defaults to 4.
         query_dim (int): box query dimension. Defaults to 4.
+        activation (nn.Module): activation function. Defaults to nn.ReLU.
     """
 
     def __init__(
