@@ -14,7 +14,6 @@ from torchvision.ops import box_convert
 
 from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.algo.utils.mmengine_utils import load_checkpoint
-from otx.core.data.dataset.utils.kitti_utils import class2angle
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
@@ -86,7 +85,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     ) -> dict[str, Any]:
         # prepare bboxes for the model
         targets_list = []
-        img_sizes = torch.from_numpy(np.array([img_info.ori_shape for img_info in entity.imgs_info])).to(
+        img_sizes = torch.from_numpy(np.array([img_info.ori_shape[::-1] for img_info in entity.imgs_info])).to(
             device=entity.images.device,
         )
         key_list = ["labels", "boxes", "depth", "size_3d", "heading_angle", "boxes_3d"]
@@ -165,7 +164,34 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         """Decode the detection results for KITTI format."""
 
         def _get_heading_angle(heading: np.ndarray) -> np.ndarray:
-            """Get heading angle from the prediction."""
+            """Get heading angle from the prediction.
+
+            Args:
+                heading (np.ndarray): The heading prediction.
+
+            Returns:
+                np.ndarray: The heading angle in label format.
+            """
+
+            def class2angle(cls: int, residual: float, to_label_format: bool = False) -> float:
+                """Inverse function to angle2class.
+
+                Args:
+                    cls (int): The class index.
+                    residual (float): The residual angle.
+                    to_label_format (bool): Whether to return the angle in label format.
+
+                Returns:
+                    float: The angle in label format.
+                """
+                num_heading_bin = 12
+                angle_per_class = 2 * np.pi / float(num_heading_bin)
+                angle_center = cls * angle_per_class
+                angle = angle_center + residual
+                if to_label_format and angle > np.pi:
+                    angle = angle - 2 * np.pi
+                return angle
+
             heading_bin, heading_res = heading[0:12], heading[12:24]
             cls = np.argmax(heading_bin)
             res = heading_res[cls]
@@ -397,7 +423,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         self,
         entity: Det3DBatchDataEntity,
     ) -> dict[str, Any]:
-        img_sizes = np.array([img_info.ori_shape for img_info in entity.imgs_info])
+        img_sizes = np.array([img_info.ori_shape[::-1] for img_info in entity.imgs_info])
         images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
 
         return {
@@ -583,7 +609,7 @@ def _convert_pred_entity_to_compute_metric(
         .numpy()
     )
 
-    img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
+    img_sizes = np.array([img_info.ori_shape[::-1] for img_info in inputs.imgs_info])  # HxW -> WxH
     calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
     result_list = OTX3DDetectionModel.decode_detections_for_kitti_format(
         detections,

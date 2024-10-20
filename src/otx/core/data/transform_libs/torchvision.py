@@ -3450,6 +3450,22 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
 
 
 class Decode3DInputsAffineTransforms(TopdownAffine):
+    """Transform function for 3D Object Detection to affine image through warp matrix.
+
+    This transform decode the input annotations and apply affine transforms.
+
+    Args:
+        input_size (tuple[int, int]): Input image size.
+        random_horizontal_flip (bool): Randomly flip the image horizontally.
+        random_crop (bool): Randomly crop the image.
+        decode_annotations (bool): Whether to decode the annotations.
+        p_crop (float): Probability of cropping.
+        random_scale (float): Randomly scale the image.
+        random_shift (float): Randomly shift the image.
+        depth_threshold (int): Threshold of depth.
+        max_objects (int): Maximum number of objects.
+    """
+
     def __init__(
         self,
         input_size: tuple[int, int],  # (H, W),
@@ -3457,7 +3473,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         random_crop: bool = False,
         decode_annotations: bool = True,
         p_crop: float = 0.5,
-        random_scale: int = 0.05,
+        random_scale: float = 0.05,
         random_shift: float = 0.05,
         depth_threshold: int = 65,
         max_objects: int = 50,
@@ -3473,6 +3489,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         self.max_objects = max_objects
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform __call__ function to affine image through warp matrix."""
         inputs = _inputs[0]
         ori_img_size = np.array(inputs.img_info.ori_shape)[::-1]
         annotations_list = inputs.original_kitti_format
@@ -3483,27 +3500,27 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         crop_size, crop_scale = ori_img_size, 1
         random_flip_flag = False
 
-        # if self.random_crop and (np.random.random() < self.p_crop):
-        #     crop_scale = np.clip(
-        #         np.random.randn() * self.random_scale + 1,
-        #         1 - self.random_scale,
-        #         1 + self.random_scale,
-        #     )
-        #     crop_size = ori_img_size * crop_scale
-        #     center[0] += ori_img_size[0] * np.clip(
-        #         np.random.randn() * self.random_shift,
-        #         -2 * self.random_shift,
-        #         2 * self.random_shift,
-        #     )
-        #     center[1] += ori_img_size[1] * np.clip(
-        #         np.random.randn() * self.random_shift,
-        #         -2 * self.random_shift,
-        #         2 * self.random_shift,
-        #     )
+        if self.random_crop and (np.random.random() < self.p_crop):
+            crop_scale = np.clip(
+                np.random.randn() * self.random_scale + 1,
+                1 - self.random_scale,
+                1 + self.random_scale,
+            )
+            crop_size = ori_img_size * crop_scale
+            center[0] += ori_img_size[0] * np.clip(
+                np.random.randn() * self.random_shift,
+                -2 * self.random_shift,
+                2 * self.random_shift,
+            )
+            center[1] += ori_img_size[1] * np.clip(
+                np.random.randn() * self.random_shift,
+                -2 * self.random_shift,
+                2 * self.random_shift,
+            )
 
-        # if self.random_horizontal_flip and (np.random.random() < 0.5):
-        #     random_flip_flag = True
-        #     image = np.fliplr(image)
+        if self.random_horizontal_flip and (np.random.random() < 0.5):
+            random_flip_flag = True
+            image = np.fliplr(image)
 
         trans = self._get_warp_matrix(center, crop_size, 0, warp_size)
         inputs.image = self._get_warp_image(image, trans, warp_size)
@@ -3513,6 +3530,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         src_size_3d = np.zeros((self.max_objects, 3), dtype=np.float32)
 
         if not self.decode_annotations:
+            inputs.img_info.img_shape = self.input_size
             return self.convert(inputs, mask_2d)
 
         # decode annotations
@@ -3715,7 +3733,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         residual_angle = shifted_angle - (class_id * angle_per_class + angle_per_class / 2)
         return class_id, residual_angle
 
-    def convert(self, inputs: T_OTXDataEntity, mask_2d: np.ndarray) -> T_OTXDataEntity:
+    def convert(self, inputs: T_OTXDataEntity, mask_2d: np.ndarray) -> T_OTXDataEntity:  # type: ignore[override]
         """Convert the data entity to torchvision format."""
         inputs.labels = torch.as_tensor(inputs.labels[mask_2d], dtype=torch.long)
         inputs.boxes = tv_tensors.BoundingBoxes(inputs.boxes[mask_2d], format="XYXY", canvas_size=self.input_size)
@@ -3755,9 +3773,7 @@ class TorchVisionTransformLib:
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
-        if not getattr(config, "as_list", False):
-            return Compose(transforms)
-        return transforms
+        return Compose(transforms)
 
     @classmethod
     def _configure_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
