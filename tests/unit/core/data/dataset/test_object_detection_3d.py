@@ -5,12 +5,11 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
 from datumaro import Dataset as DmDataset
 from otx.core.data.dataset.object_detection_3d import OTX3DObjectDetectionDataset
 from otx.core.data.entity.base import ImageInfo
-from torch import Tensor
-from torchvision import tv_tensors
 from torchvision.transforms.v2 import Identity, Transform
 
 
@@ -38,26 +37,22 @@ class TestOTXObjectDetection3DDataset:
         entity = dataset._get_item_impl(0)
 
         assert hasattr(entity, "image")
-        assert isinstance(entity.image, Tensor)
+        assert isinstance(entity.image, np.ndarray)
         assert hasattr(entity, "img_info")
         assert isinstance(entity.img_info, ImageInfo)
         assert hasattr(entity, "calib_matrix")
-        assert isinstance(entity.calib_matrix, Tensor)
+        assert isinstance(entity.calib_matrix, np.ndarray)
         assert hasattr(entity, "boxes_3d")
-        assert isinstance(entity.boxes_3d, Tensor)
+        assert isinstance(entity.boxes_3d, np.ndarray)
         assert hasattr(entity, "boxes")
-        assert isinstance(entity.boxes, tv_tensors.BoundingBoxes)
+        assert isinstance(entity.boxes, np.ndarray)
         assert hasattr(entity, "size_2d")
-        assert isinstance(entity.boxes_3d, Tensor)
+        assert isinstance(entity.boxes_3d, np.ndarray)
         assert hasattr(entity, "size_3d")
-        assert isinstance(entity.boxes_3d, Tensor)
+        assert isinstance(entity.boxes_3d, np.ndarray)
         assert hasattr(entity, "heading_angle")
-        assert isinstance(entity.boxes_3d, Tensor)
+        assert isinstance(entity.boxes_3d, np.ndarray)
         assert hasattr(entity, "depth")
-        assert isinstance(entity.boxes_3d, Tensor)
+        assert isinstance(entity.boxes_3d, np.ndarray)
         assert hasattr(entity, "original_kitti_format")
-        assert (
-            entity.original_kitti_format is None
-            if subset == "train"
-            else isinstance(entity.original_kitti_format, dict)
-        )
+        assert isinstance(entity.original_kitti_format, dict)

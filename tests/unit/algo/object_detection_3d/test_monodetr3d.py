@@ -10,7 +10,7 @@ from otx.core.exporter.detection_3d import OTXObjectDetection3DExporter
 from otx.core.types.export import TaskLevelExportParameters
 
 
-class TestATSS:
+class TestMonoDETR3D:
     @pytest.fixture()
     def model(self):
         return MonoDETR3D(model_name="monodetr_50", label_info=2, input_size=(1280, 384))
