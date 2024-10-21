@@ -24,10 +24,6 @@ if TYPE_CHECKING:
 
 
 XPU_AVAILABLE = None
-try:
-    import intel_extension_for_pytorch  # noqa: F401
-except ImportError:
-    XPU_AVAILABLE = False
 
 
 def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401
