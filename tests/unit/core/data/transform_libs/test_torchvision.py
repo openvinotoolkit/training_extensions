@@ -17,10 +17,12 @@ from otx.core.data.entity.base import BboxInfo, ImageInfo, OTXDataEntity, VideoI
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.data.entity.keypoint_detection import KeypointDetDataEntity
+from otx.core.data.entity.object_detection_3d import Det3DDataEntity
 from otx.core.data.transform_libs.torchvision import (
     CachedMixUp,
     CachedMosaic,
     Compose,
+    Decode3DInputsAffineTransforms,
     DecodeVideo,
     FilterAnnotations,
     GetBBoxCenterScale,
@@ -918,3 +920,72 @@ class TestTopdownAffine:
         assert np.array_equal(results.bbox_info.center, np.array([3.5, 3.5]))
         assert np.array_equal(results.bbox_info.scale, np.array([8.75, 8.75]))
         assert results.keypoints.shape == (4, 2)
+
+
+class TestDecode3DInputsAffineTransforms:
+    @pytest.fixture()
+    def decode_transform(self) -> Decode3DInputsAffineTransforms:
+        return Decode3DInputsAffineTransforms(input_size=(380, 1280), decode_annotations=True)
+
+    @pytest.fixture()
+    def original_kitti_format(self) -> dict[str, np.array]:
+        return {
+            "name": np.array([0]),
+            "alpha": np.array([1.55]),
+            "bbox": np.array([[614.23999023, 181.77999878, 727.30999756, 284.76998901]]),
+            "dimensions": np.array([[4.15, 1.57, 1.73]]),
+            "location": np.array([[1.0, 1.75, 13.22]]),
+            "rotation_y": np.array([1.62]),
+            "occluded": np.array([0]),
+            "truncated": np.array([0.0]),
+        }
+
+    @pytest.fixture()
+    def det_3d_data_entity(self, original_kitti_format) -> Det3DDataEntity:
+        return Det3DDataEntity(
+            image=np.random.rand(725, 1920, 3),
+            img_info=ImageInfo(
+                img_idx=0,
+                img_shape=(380, 1280),
+                ori_shape=(725, 1920),
+                image_color_channel=True,
+                ignored_labels=[],
+            ),
+            boxes=np.zeros((50, 4), dtype=np.float32),
+            labels=np.zeros((50), dtype=np.int8),
+            calib_matrix=np.array(
+                [
+                    [721.5377, 0.0, 609.5593, 44.85728],
+                    [0.0, 721.5377, 172.854, 0.2163791],
+                    [0.0, 0.0, 1.0, 0.002745884],
+                ],
+            ),
+            boxes_3d=np.zeros((50, 6), dtype=np.float32),
+            size_2d=np.zeros((50, 2), dtype=np.float32),
+            size_3d=np.zeros((50, 3), dtype=np.float32),
+            depth=np.zeros((50, 1), dtype=np.float32),
+            heading_angle=np.zeros((50, 2), dtype=np.float32),
+            original_kitti_format=deepcopy(original_kitti_format),
+        )
+
+    def test_call(
+        self,
+        decode_transform: Decode3DInputsAffineTransforms,
+        det_3d_data_entity: Det3DDataEntity,
+        original_kitti_format: dict[str, np.array],
+    ) -> None:
+        """Test __call__."""
+        results = decode_transform(det_3d_data_entity)
+
+        assert results.image.shape == (3, 380, 1280)
+        assert results.labels.dtype == torch.long
+        assert isinstance(results.boxes, tv_tensors.BoundingBoxes)
+        assert results.boxes.format == tv_tensors.BoundingBoxFormat.XYXY
+        assert results.boxes_3d.dtype == torch.float32
+        assert results.boxes_3d.shape == (1, 6)
+        assert results.size_2d.dtype == torch.float32
+        assert results.size_3d.dtype == torch.float32
+        assert results.depth.dtype == torch.float32
+        assert results.heading_angle.dtype == torch.float32
+        assert results.calib_matrix.shape == (3, 4)
+        assert original_kitti_format["dimensions"][0, 0] == results.size_3d[0, 2]

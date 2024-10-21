@@ -3,8 +3,6 @@
 #
 """Module for OTX3DObjectDetectionDataset."""
 
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 from copy import deepcopy
@@ -63,10 +61,10 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         image, ori_img_shape = self._get_img_data_and_shape(image)
         calib = self.get_calib_from_file(entity.attributes["calib_path"])
         annotations_copy = deepcopy(entity.annotations)
-        original_kitti_format = [obj.attributes for obj in annotations_copy]
+        datumaro_kitti_format = [obj.attributes for obj in annotations_copy]
 
         # decode original kitti format for metric calculation
-        for i, anno_dict in enumerate(original_kitti_format):
+        for i, anno_dict in enumerate(datumaro_kitti_format):
             anno_dict["name"] = (
                 self.label_info.label_names[annotations_copy[i].label]
                 if self.subset_type != "train"
@@ -75,7 +73,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
             anno_dict["bbox"] = annotations_copy[i].points
             dimension = anno_dict["dimensions"]
             anno_dict["dimensions"] = [dimension[2], dimension[0], dimension[1]]
-        original_kitti_format = self._reformate_for_kitti_metric(original_kitti_format)
+        original_kitti_format = self._reformate_for_kitti_metric(datumaro_kitti_format)
 
         entity = Det3DDataEntity(
             image=image,
@@ -104,7 +102,7 @@ class OTX3DObjectDetectionDataset(OTXDataset[Det3DDataEntity]):
         """Collection function to collect DetDataEntity into DetBatchDataEntity in data loader."""
         return partial(Det3DBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
-    def _reformate_for_kitti_metric(self, annotations: dict[str, Any]) -> dict[str, np.array]:
+    def _reformate_for_kitti_metric(self, annotations: list[Any]) -> dict[str, np.array]:
         """Reformat the annotation for KITTI metric."""
         return {
             "name": np.array([obj["name"] for obj in annotations]),

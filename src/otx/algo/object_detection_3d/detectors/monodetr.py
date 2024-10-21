@@ -235,7 +235,7 @@ class MonoDETR(nn.Module):
 
             # depth_geo
             box2d_height_norm = outputs_coord[:, :, 4] + outputs_coord[:, :, 5]
-            box2d_height = torch.clamp(box2d_height_norm * img_sizes[:, 1:2], min=1.0)
+            box2d_height = torch.clamp(box2d_height_norm * img_sizes[:, :1], min=1.0)
             depth_geo = size3d[:, :, 0] / box2d_height * calibs[:, 0, 0].unsqueeze(1)
 
             # depth_reg

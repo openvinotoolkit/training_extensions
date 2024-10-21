@@ -85,7 +85,7 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
     ) -> dict[str, Any]:
         # prepare bboxes for the model
         targets_list = []
-        img_sizes = torch.from_numpy(np.array([img_info.ori_shape[::-1] for img_info in entity.imgs_info])).to(
+        img_sizes = torch.from_numpy(np.array([img_info.ori_shape for img_info in entity.imgs_info])).to(
             device=entity.images.device,
         )
         key_list = ["labels", "boxes", "depth", "size_3d", "heading_angle", "boxes_3d"]
@@ -241,10 +241,10 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                     continue
 
                 # 2d bboxs decoding
-                x = dets[i, j, 2] * img_size[i][0]
-                y = dets[i, j, 3] * img_size[i][1]
-                w = dets[i, j, 4] * img_size[i][0]
-                h = dets[i, j, 5] * img_size[i][1]
+                x = dets[i, j, 2] * img_size[i][1]
+                y = dets[i, j, 3] * img_size[i][0]
+                w = dets[i, j, 4] * img_size[i][1]
+                h = dets[i, j, 5] * img_size[i][0]
                 bbox = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]
 
                 # 3d bboxs decoding
@@ -255,8 +255,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 dimension = dets[i, j, 31:34]
 
                 # positions decoding
-                x3d = dets[i, j, 34] * img_size[i][0]
-                y3d = dets[i, j, 35] * img_size[i][1]
+                x3d = dets[i, j, 34] * img_size[i][1]
+                y3d = dets[i, j, 35] * img_size[i][0]
                 location = _img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
                 location[1] += dimension[0] / 2
 
@@ -342,7 +342,7 @@ class MonoDETRModel(ImageModel):
             "img_sizes": inputs["img_size"][None],
         }, {
             "original_shape": inputs["image"].shape,
-            "resized_shape": (self.w, self.h, self.c),
+            "resized_shape": (self.h, self.w, self.c),
         }
 
     def _get_inputs(self) -> tuple[list[Any], list[Any]]:
@@ -423,7 +423,7 @@ class OV3DDetectionModel(OVModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         self,
         entity: Det3DBatchDataEntity,
     ) -> dict[str, Any]:
-        img_sizes = np.array([img_info.ori_shape[::-1] for img_info in entity.imgs_info])
+        img_sizes = np.array([img_info.ori_shape for img_info in entity.imgs_info])
         images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
 
         return {
@@ -609,7 +609,7 @@ def _convert_pred_entity_to_compute_metric(
         .numpy()
     )
 
-    img_sizes = np.array([img_info.ori_shape[::-1] for img_info in inputs.imgs_info])  # HxW -> WxH
+    img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])  # HxW -> WxH
     calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
     result_list = OTX3DDetectionModel.decode_detections_for_kitti_format(
         detections,

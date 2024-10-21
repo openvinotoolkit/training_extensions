@@ -3468,7 +3468,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
 
     def __init__(
         self,
-        input_size: tuple[int, int],  # (H, W),
+        input_size: tuple[int, int] | None = None,  # (H, W),
         random_horizontal_flip: bool = False,
         random_crop: bool = False,
         decode_annotations: bool = True,
@@ -3478,7 +3478,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         depth_threshold: int = 65,
         max_objects: int = 50,
     ) -> None:
-        super().__init__(input_size)
+        self.input_size = input_size  # type: ignore[assignment]
         self.random_horizontal_flip = random_horizontal_flip
         self.random_crop = random_crop
         self.decode_annotations = decode_annotations
@@ -3488,18 +3488,15 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         self.depth_threshold = depth_threshold
         self.max_objects = max_objects
 
-    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        """Transform __call__ function to affine image through warp matrix."""
-        inputs = _inputs[0]
-        ori_img_size = np.array(inputs.img_info.ori_shape)[::-1]
-        annotations_list = inputs.original_kitti_format
-        image = inputs.image
+    def _affine_transforms(
+        self,
+        image: np.ndarray,
+        ori_img_size: np.ndarray,
+        warp_size: tuple[int, int],
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
         center = ori_img_size / 2
-        h, w = self.input_size
-        warp_size = (int(w), int(h))
         crop_size, crop_scale = ori_img_size, 1
         random_flip_flag = False
-
         if self.random_crop and (np.random.random() < self.p_crop):
             crop_scale = np.clip(
                 np.random.randn() * self.random_scale + 1,
@@ -3523,13 +3520,32 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
             image = np.fliplr(image)
 
         trans = self._get_warp_matrix(center, crop_size, 0, warp_size)
-        inputs.image = self._get_warp_image(image, trans, warp_size)
+        return self._get_warp_image(image, trans, warp_size), crop_scale, trans, random_flip_flag
 
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform __call__ function to affine image through warp matrix."""
+        inputs = _inputs[0]
+        ori_img_size = np.array(inputs.img_info.ori_shape)[::-1]
         # labels encoding
-        mask_2d = np.zeros((self.max_objects), dtype=bool)
         src_size_3d = np.zeros((self.max_objects, 3), dtype=np.float32)
+        mask_2d = np.zeros((self.max_objects), dtype=bool)
+        if self.input_size is None:
+            # No need to resize (OV IR)
+            inputs.img_info.img_shape = ori_img_size
+            return self.convert(inputs, mask_2d, image_to_tensor=True)
+
+        annotations_list = inputs.original_kitti_format
+        h, w = self.input_size
+        warp_size = (int(w), int(h))
+        # transform image
+        inputs.image, crop_scale, trans, random_flip_flag = self._affine_transforms(
+            inputs.image,
+            ori_img_size,
+            warp_size,
+        )
 
         if not self.decode_annotations:
+            # resize only (val/test)
             inputs.img_info.img_shape = self.input_size
             return self.convert(inputs, mask_2d)
 
@@ -3733,8 +3749,10 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         residual_angle = shifted_angle - (class_id * angle_per_class + angle_per_class / 2)
         return class_id, residual_angle
 
-    def convert(self, inputs: T_OTXDataEntity, mask_2d: np.ndarray) -> T_OTXDataEntity:  # type: ignore[override]
+    def convert(self, inputs: T_OTXDataEntity, mask_2d: np.ndarray, image_to_tensor: bool = False) -> T_OTXDataEntity:  # type: ignore[override]
         """Convert the data entity to torchvision format."""
+        if image_to_tensor:
+            inputs.image = torch.from_numpy(inputs.image).permute(2, 0, 1)
         inputs.labels = torch.as_tensor(inputs.labels[mask_2d], dtype=torch.long)
         inputs.boxes = tv_tensors.BoundingBoxes(inputs.boxes[mask_2d], format="XYXY", canvas_size=self.input_size)
         inputs.boxes_3d = torch.as_tensor(inputs.boxes_3d[mask_2d], dtype=torch.float32)
