@@ -3494,6 +3494,16 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         ori_img_size: np.ndarray,
         warp_size: tuple[int, int],
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+        """ Get affine matrix and warp image.
+
+        Args:
+            image (np.ndarray): Input image.
+            ori_img_size (np.ndarray): Original image size.
+            warp_size (tuple[int, int]): Output image size.
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+                Affine matrix, warped image, and random flip flag.
+        """
         center = ori_img_size / 2
         crop_size, crop_scale = ori_img_size, 1
         random_flip_flag = False
