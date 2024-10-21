@@ -81,7 +81,7 @@ def remove_unused_labels(
 ) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
-    used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
+    used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations if hasattr(ann, "label")})
     if ignore_index is not None:
         used_labels = list(filter(lambda x: x != ignore_index, used_labels))
     if data_format == "ava":

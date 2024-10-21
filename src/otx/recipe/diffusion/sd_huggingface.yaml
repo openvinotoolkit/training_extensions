@@ -1,0 +1,31 @@
+model:
+  class_path: otx.algo.diffusion.huggingface_model.HuggingFaceModelForDiffusion
+  init_args:
+    model_name_or_path: CompVis/stable-diffusion-v1-4
+
+    optimizer:
+      class_path: torch.optim.AdamW
+      init_args:
+        lr: 1e-5
+        betas: [0.9, 0.999]
+        weight_decay: 1e-2
+        eps: 1e-08
+
+    scheduler:
+      class_path: torch.optim.lr_scheduler.ConstantLR
+      init_args:
+        factor: 1.0
+
+engine:
+  task: DIFFUSION
+  device: auto
+
+callback_monitor: val/fid
+
+data: ../_base_/data/diffusion.yaml
+max_steps: 60000
+min_steps: 60000
+
+overrides:
+  gradient_clip_val: 1.0
+  num_sanity_val_steps: 0

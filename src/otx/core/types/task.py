@@ -41,6 +41,9 @@ class OTXTaskType(str, Enum):
     VISUAL_PROMPTING = "VISUAL_PROMPTING"
     ZERO_SHOT_VISUAL_PROMPTING = "ZERO_SHOT_VISUAL_PROMPTING"
 
+    # Diffusion
+    DIFFUSION = "DIFFUSION"
+
 
 class OTXTrainType(str, Enum):
     """OTX train type definition."""
