@@ -29,6 +29,8 @@ class SubsetConfig:
             (`TransformLibType.MMCV`, `TransformLibType.MMPRETRAIN`, ...).
         transform_lib_type (TransformLibType): Transform library type used by this subset.
         num_workers (int): Number of workers for the dataloader of this subset.
+        sampler (SamplerConfig | None): Sampler configuration for the dataloader of this subset.
+        to_tv_image (bool): Whether to convert image to torch tensor.
         input_size (int | tuple[int, int] | None) :
             input size model expects. If $(input_size) exists in transforms, it will be replaced with this value.
 

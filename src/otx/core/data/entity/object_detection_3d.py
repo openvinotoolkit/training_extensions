@@ -20,6 +20,7 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from numpy import ndarray
     from torch import LongTensor, Tensor
 
 
@@ -45,15 +46,15 @@ class Det3DDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.OBJECT_DETECTION_3D
 
-    boxes: tv_tensors.BoundingBoxes
-    calib_matrix: Tensor
-    boxes_3d: Tensor
-    size_2d: Tensor
-    size_3d: Tensor
-    depth: Tensor
-    heading_angle: Tensor
-    labels: LongTensor
-    original_kitti_format: list[dict[str, Any]] | None
+    boxes: tv_tensors.BoundingBoxes | ndarray
+    calib_matrix: Tensor | ndarray
+    boxes_3d: Tensor | ndarray
+    size_2d: Tensor | ndarray
+    size_3d: Tensor | ndarray
+    depth: Tensor | ndarray
+    heading_angle: Tensor | ndarray
+    labels: LongTensor | ndarray
+    original_kitti_format: dict[str, Any] | None
 
 
 @dataclass
@@ -86,7 +87,7 @@ class Det3DBatchDataEntity(OTXBatchDataEntity[Det3DDataEntity]):
     depth: list[Tensor]
     heading_angle: list[Tensor]
     labels: list[LongTensor]
-    original_kitti_format: list[list[dict[str, Any]] | None]
+    original_kitti_format: list[dict[str, Any] | None]
 
     @property
     def task(self) -> OTXTaskType:
