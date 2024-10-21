@@ -89,7 +89,7 @@ class MixedPrecisionXPUPlugin(Precision):
     @contextmanager
     def forward_context(self) -> Generator[None, None, None]:
         """Enable autocast context."""
-        with torch.xpu.autocast(True):
+        with torch.autocast(device_type="xpu"):
             yield
 
     def state_dict(self) -> dict[str, Any]:
