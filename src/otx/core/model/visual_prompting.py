@@ -31,7 +31,6 @@ from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
-    ZeroShotVisualPromptingLabel,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
@@ -59,7 +58,10 @@ def _convert_pred_entity_to_compute_metric(
     preds: VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
     inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
 ) -> MetricInput:
-    """Convert the prediction entity to the format required by the compute metric function."""
+    """Convert the prediction entity to the format required by the compute metric function.
+
+    TODO (sungchul): consider to use iseg and sseg's metrics
+    """
     pred_info = []
     target_info = []
 
@@ -82,10 +84,14 @@ def _convert_pred_entity_to_compute_metric(
         inputs.polygons,
         inputs.labels,
     ):
-        bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
+        bit_masks = (
+            masks
+            if len(masks)
+            else tv_tensors.Mask(polygon_to_bitmap(polygons, *imgs_info.ori_shape), dtype=torch.uint8)
+        )
         target_info.append(
             {
-                "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
+                "masks": bit_masks.data,
                 "labels": torch.cat(list(labels.values())) if isinstance(labels, dict) else labels,
             },
         )
@@ -94,48 +100,18 @@ def _convert_pred_entity_to_compute_metric(
 
 
 def _inference_step(
-    model: OTXVisualPromptingModel | OVVisualPromptingModel,
+    model: OTXVisualPromptingModel
+    | OVVisualPromptingModel
+    | OTXZeroShotVisualPromptingModel
+    | OVZeroShotVisualPromptingModel,
     metric: MetricCollection,
-    inputs: VisualPromptingBatchDataEntity,
+    inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
 ) -> None:
     """Perform a single inference step on a batch of data from the inference set."""
-    preds = model.forward(inputs)
+    preds = model.forward(inputs)  # type: ignore[arg-type]
 
-    if not isinstance(preds, VisualPromptingBatchPredEntity):
+    if not isinstance(preds, (VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchPredEntity)):
         raise TypeError(preds)
-
-    converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
-
-    for _name, _metric in metric.items():
-        if _name == "mAP":
-            # MeanAveragePrecision
-            _preds = [
-                {k: v > 0.5 if k == "masks" else v.squeeze(1) if k == "scores" else v for k, v in ett.items()}
-                for ett in converted_entities["preds"]
-            ]
-            _target = converted_entities["target"]
-            _metric.update(preds=_preds, target=_target)
-        elif _name in ["iou", "f1-score", "dice"]:
-            # BinaryJaccardIndex, BinaryF1Score, Dice
-            for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                _metric.update(cvt_preds["masks"], cvt_target["masks"])
-
-
-def _inference_step_for_zero_shot(
-    model: OTXZeroShotVisualPromptingModel | OVZeroShotVisualPromptingModel,
-    metric: MetricCollection,
-    inputs: ZeroShotVisualPromptingBatchDataEntity,
-) -> None:
-    """Perform a single inference step on a batch of data from the inference set."""
-    preds = model.forward(inputs)
-
-    if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
-        raise TypeError(preds)
-
-    # filter labels using corresponding ground truth
-    inputs.labels = [
-        label.masks if inputs.masks and label.masks is not None else label.polygons for label in inputs.labels
-    ]
 
     converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
 
@@ -150,11 +126,23 @@ def _inference_step_for_zero_shot(
             _metric.update(preds=_preds, target=_target)
         elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
+            # TODO (sungchul): change to multi-class metric
+            # Currently, label_info is NullLabelInfo and it is required to be changed for multi-label support.
+            # But huge changes is required, it will be changed in the near future.
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                _metric.update(
-                    cvt_preds["masks"].sum(dim=0).clamp(0, 1),
-                    cvt_target["masks"].sum(dim=0).clamp(0, 1),
-                )
+                max_label = torch.cat((cvt_preds["labels"], cvt_target["labels"])).max()
+                for label in range(max_label + 1):
+                    mask_preds = cvt_preds["masks"][cvt_preds["labels"] == label]
+                    mask_target = cvt_target["masks"][cvt_target["labels"] == label]
+                    if len(mask_preds) == 0:
+                        mask_preds = torch.zeros((1, *mask_target.shape[1:]), device=model.device)
+                    if len(mask_target) == 0:
+                        mask_target = torch.zeros((1, *mask_preds.shape[1:]), device=model.device, dtype=torch.uint8)
+
+                    _metric.update(
+                        mask_preds.sum(dim=0).clamp(0, 1).float().flatten(),
+                        mask_target.sum(dim=0).clamp(0, 1).flatten(),
+                    )
 
 
 class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]):
@@ -162,7 +150,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
     def __init__(
         self,
-        label_info: LabelInfoTypes = NullLabelInfo(),
+        label_info: LabelInfoTypes = NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
         input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -172,7 +160,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         msg = f"Given label_info={label_info} has no effect."
         log.debug(msg)
         super().__init__(
-            label_info=NullLabelInfo(),
+            label_info=NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
             input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -348,7 +336,7 @@ class OTXZeroShotVisualPromptingModel(
     def __init__(
         self,
         input_size: tuple[int, int],
-        label_info: LabelInfoTypes = NullLabelInfo(),
+        label_info: LabelInfoTypes = NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -357,7 +345,7 @@ class OTXZeroShotVisualPromptingModel(
         msg = f"Given label_info={label_info} has no effect."
         log.debug(msg)
         super().__init__(
-            label_info=NullLabelInfo(),
+            label_info=NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
             input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -579,7 +567,7 @@ class OTXZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchDataEntity.
         """
-        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -596,7 +584,7 @@ class OTXZeroShotVisualPromptingModel(
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
         """Returns a dummy input for ZSL VPT model."""
         images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
-        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
@@ -768,7 +756,7 @@ class OVVisualPromptingModel(
         labels: list[Tensor] = []
         for image_output in outputs:
             masks.append(tv_tensors.Mask(np.concatenate(image_output.hard_predictions), device=self.device))
-            scores.append(torch.as_tensor(np.concatenate(image_output.scores), device=self.device))
+            scores.append(torch.as_tensor(np.concatenate(image_output.scores)[:, 0], device=self.device))
             labels.append(torch.as_tensor(image_output.labels, device=self.device))
 
         return VisualPromptingBatchPredEntity(
@@ -934,7 +922,7 @@ class OVVisualPromptingModel(
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:
         """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
-        return NullLabelInfo()
+        return NullLabelInfo()  # TODO (sungchul): update label_info for multi-label support
 
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
@@ -1125,10 +1113,9 @@ class OVZeroShotVisualPromptingModel(
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
 
-        for image, prompts, polygons, labels in zip(
+        for image, prompts, labels in zip(
             entity.images,
             entity.prompts,
-            entity.polygons,
             entity.labels,
         ):
             # preprocess image encoder inputs
@@ -1136,25 +1123,28 @@ class OVZeroShotVisualPromptingModel(
             images.append(numpy_image)
 
             if self.training:
-                _bboxes: list[Prompt] = []
+                _boxes: list[Prompt] = []
                 _points: list[Prompt] = []
                 _polygons: list[Prompt] = []
-                for prompt, label in zip(prompts, labels.prompts):  # type: ignore[arg-type]
+                for prompt, label in zip(prompts, labels):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
-                        _bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                        _boxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
                         _points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                    elif isinstance(prompt, dmPolygon):
+                        _polygons.extend(
+                            [
+                                Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy())
+                                for polygon in prompt
+                            ],
+                        )
 
-                if polygons and labels.polygons is not None:
-                    for polygon, label in zip(polygons, labels.polygons):
-                        _polygons.append(Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy()))
-
-                # TODO (sungchul, sovrasov): support mask?
+                    # TODO (sungchul, sovrasov): support mask?
 
                 # preprocess decoder inputs
                 processed_prompts.append(
                     {
-                        "boxes": _bboxes,
+                        "boxes": _boxes,
                         "points": _points,
                         "polygons": _polygons,
                     },
@@ -1269,7 +1259,7 @@ class OVZeroShotVisualPromptingModel(
             _labels: dict[str, list[int]] = defaultdict(list)
 
             # use only the first prompt
-            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0].prompts):  # type: ignore[arg-type]
+            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0]):
                 if isinstance(prompt, tv_tensors.BoundingBoxes):
                     bboxes.append(prompt.cpu().numpy())
                     _labels["bboxes"].append(label.cpu().numpy())
@@ -1521,7 +1511,7 @@ class OVZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -1533,7 +1523,7 @@ class OVZeroShotVisualPromptingModel(
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:
         """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
-        return NullLabelInfo()
+        return NullLabelInfo()  # TODO (sungchul): update label_info for multi-label support
 
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
@@ -1543,7 +1533,7 @@ class OVZeroShotVisualPromptingModel(
         """Returns a dummy input for classification OV model."""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        labels = [torch.LongTensor([0] * batch_size)] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):

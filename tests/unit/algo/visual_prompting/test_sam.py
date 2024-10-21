@@ -19,11 +19,8 @@ from torchvision import tv_tensors
 
 
 class TestCommonSettingMixin:
-    def test_load_checkpoint_success(self, mocker) -> None:
-        # Mock torch.hub.load_state_dict_from_url
+    def test_load_state_dict_success(self, mocker) -> None:
         mock_load_state_dict_from_url = mocker.patch("torch.hub.load_state_dict_from_url")
-
-        # Mock state dictionary returned by load_state_dict_from_url
         mock_state_dict = {
             "image_encoder.norm_head.weight": torch.tensor([1.0]),
             "image_encoder.norm_head.bias": torch.tensor([1.0]),
@@ -33,18 +30,39 @@ class TestCommonSettingMixin:
         }
         mock_load_state_dict_from_url.return_value = mock_state_dict
 
-        # Create an instance of CommonSettingMixin and set the mock model
-        mixin = CommonSettingMixin()
-        mixin.load_state_dict = mock.Mock()
+        # Mock only nn.Module's load_state_dict
+        mock_module_load_state_dict = mocker.patch.object(nn.Module, "load_state_dict")
 
-        # Call the load_checkpoint method
-        mixin.load_checkpoint("https://example.com/checkpoint.pth")
+        # Create a test class that inherits from nn.Module and CommonSettingMixin
+        class TestMixin(CommonSettingMixin, nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.some_param = nn.Parameter(torch.randn(1))
 
-        # Assertions
+        # Create an instance of the test class
+        test_mixin = TestMixin()
+
+        # Call load_state_dict (this will use CommonSettingMixin's implementation)
+        test_mixin.load_state_dict(state_dict=None, load_from="https://example.com/checkpoint.pth")
+
+        # Verify that load_state_dict_from_url was called
         mock_load_state_dict_from_url.assert_called_once_with("https://example.com/checkpoint.pth")
-        mixin.load_state_dict.assert_called_once_with(mock_state_dict)
 
-    def test_load_checkpoint_failure(self, mocker) -> None:
+        # Verify that nn.Module's load_state_dict was called with the expected arguments
+        expected_state_dict = {
+            k: v
+            for k, v in mock_state_dict.items()
+            if k
+            not in [
+                "image_encoder.norm_head.weight",
+                "image_encoder.norm_head.bias",
+                "image_encoder.head.weight",
+                "image_encoder.head.bias",
+            ]
+        }
+        mock_module_load_state_dict.assert_called_once_with(expected_state_dict, True, False)
+
+    def test_load_state_dict_failure(self, mocker) -> None:
         mock_load_state_dict_from_url = mocker.patch(
             "torch.hub.load_state_dict_from_url",
             side_effect=ValueError("Invalid URL"),
@@ -52,13 +70,10 @@ class TestCommonSettingMixin:
         mock_log_info = mocker.patch("logging.info")
 
         mixin = CommonSettingMixin()
-        mixin.load_checkpoint("invalid_url")
+        mixin.load_state_dict(load_from="invalid_url")
 
         mock_load_state_dict_from_url.assert_called_once_with("invalid_url")
-        mock_log_info.assert_called_once_with(
-            "Invalid URL: invalid_url is not desirable format for torch.hub.load_state_dict_from_url. "
-            "To manually load invalid_url, try to set it to trainer.checkpoint.",
-        )
+        mock_log_info.assert_called_once()
 
     @pytest.mark.parametrize("freeze_image_encoder", [True, False])
     @pytest.mark.parametrize("freeze_prompt_encoder", [True, False])
@@ -132,7 +147,7 @@ class TestSAM:
 
     def test_initialization(self, mocker) -> None:
         mock_freeze_networks = mocker.patch.object(CommonSettingMixin, "freeze_networks")
-        mock_load_checkpoint = mocker.patch.object(CommonSettingMixin, "load_checkpoint")
+        mock_load_state_dict = mocker.patch.object(CommonSettingMixin, "load_state_dict")
 
         sam = SAM(backbone_type="tiny_vit")
 
@@ -144,7 +159,7 @@ class TestSAM:
         assert sam.return_extra_metrics is False
         assert sam.stability_score_offset == 1.0
 
-        mock_load_checkpoint.assert_called_once_with(load_from=sam.load_from["tiny_vit"])
+        mock_load_state_dict.assert_called_once_with(load_from=sam.load_from["tiny_vit"])
         mock_freeze_networks.assert_called_once_with(True, True, False)
 
     def test_build_model(self, sam: SAM) -> None:
@@ -251,9 +266,7 @@ class TestZeroShotSAM:
         results = zero_shot_sam._gather_prompts_with_labels(entity)
 
         assert torch.all(results[0][1][0] == entity.prompts[0][0])
-        assert torch.all(results[0][1][1] == entity.masks[0])
         assert torch.all(results[0][2][0] == entity.prompts[0][1])
-        assert results[0][2][1] == entity.polygons[0][0]
 
     @pytest.mark.parametrize(
         ("image", "expected"),

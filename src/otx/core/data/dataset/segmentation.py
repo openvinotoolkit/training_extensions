@@ -11,10 +11,9 @@ from typing import TYPE_CHECKING, Callable
 import cv2
 import numpy as np
 import torch
-from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
+from datumaro.components.annotation import Bbox, Ellipse, Image, Mask, Polygon, RotatedBbox
 from torchvision import tv_tensors
 
-from otx.core.data.dataset.base import Transforms
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
@@ -26,6 +25,8 @@ from .base import OTXDataset
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
     from datumaro import DatasetItem
+
+    from otx.core.data.dataset.base import Transforms
 
 
 # NOTE: It is copied from https://github.com/openvinotoolkit/datumaro/pull/1409
@@ -99,11 +100,11 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         raise ValueError(msg, ignore_index)
 
     # fill mask with background label if we have Polygon/Ellipse annotations
-    fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon)) else ignore_index
+    fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon, Bbox, RotatedBbox)) else ignore_index
     class_mask = np.full(shape=img_shape[:2], fill_value=fill_value, dtype=np.uint8)
 
     for mask in sorted(
-        [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon))],
+        [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon, Bbox, RotatedBbox))],
         key=lambda ann: ann.z_order,
     ):
         index = mask.label
@@ -112,7 +113,7 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
             msg = "Mask's label index should not be None."
             raise ValueError(msg)
 
-        if isinstance(mask, (Ellipse, Polygon)):
+        if isinstance(mask, (Ellipse, Polygon, Bbox, RotatedBbox)):
             polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
             class_index = index + 1  # NOTE: disregard the background index. Objects start from index=1
             this_class_mask = cv2.drawContours(
@@ -193,8 +194,8 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     @property
     def has_polygons(self) -> bool:
         """Check if the dataset has polygons in annotations."""
-        ann_types = {str(ann_type).split(".")[-1] for ann_type in self.dm_subset.ann_types()}
-        if ann_types & {"polygon", "ellipse"}:
+        # all polygon-like format should be considered as polygons
+        if {ann_type.name for ann_type in self.dm_subset.ann_types()} & {"polygon", "ellipse", "bbox", "rotated_bbox"}:
             return True
         return False
 

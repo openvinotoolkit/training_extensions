@@ -1377,7 +1377,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs.image = img
         inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-        bboxes = inputs.bboxes
+        bboxes = getattr(inputs, "bboxes", [])
         num_bboxes = len(bboxes)
         if num_bboxes:
             bboxes = project_bboxes(bboxes, warp_matrix)
@@ -3471,6 +3471,8 @@ class TorchVisionTransformLib:
         transforms = []
         for cfg_transform in config.transforms:
             if isinstance(cfg_transform, (dict, DictConfig)):
+                if not cfg_transform.get("enable", True):  # Optional "enable: false" flag would remove the transform
+                    continue
                 cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)

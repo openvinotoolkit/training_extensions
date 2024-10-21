@@ -161,4 +161,9 @@ class OTXDatasetFactory:
 
             return OTXDiffusionDataset(**common_kwargs)
 
+        if task == OTXTaskType.OBJECT_DETECTION_3D:
+            from .dataset.object_detection_3d import OTX3DObjectDetectionDataset
+
+            return OTX3DObjectDetectionDataset(**common_kwargs)
+
         raise NotImplementedError(task)

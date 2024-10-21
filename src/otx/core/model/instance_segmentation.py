@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import copy
 import logging as log
 import types
 from contextlib import contextmanager
@@ -30,7 +31,7 @@ from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.label import LabelInfoTypes
+from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
 
@@ -274,12 +275,17 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
+        modified_label_info = copy.deepcopy(self.label_info)
+        # Instance segmentation needs to add empty label to satisfy MAPI wrapper requirements
+        modified_label_info.label_names.insert(0, "otx_empty_lbl")
+
         return super()._export_parameters.wrap(
             model_type="MaskRCNN",
             task_type="instance_segmentation",
             confidence_threshold=self.hparams.get("best_confidence_threshold", 0.05),
             iou_threshold=0.5,
             tile_config=self.tile_config if self.tile_config.enable_tiler else None,
+            label_info=modified_label_info,
         )
 
     def on_load_checkpoint(self, ckpt: dict[str, Any]) -> None:
@@ -739,3 +745,17 @@ class OVInstanceSegmentationModel(
         best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
         compute_kwargs = {"best_confidence_threshold": best_confidence_threshold}
         return super()._log_metrics(meter, key, **compute_kwargs)
+
+    def _create_label_info_from_ov_ir(self) -> LabelInfo:
+        ov_model = self.model.get_model()
+
+        if ov_model.has_rt_info(["model_info", "label_info"]):
+            serialized = ov_model.get_rt_info(["model_info", "label_info"]).value
+            ir_label_info = LabelInfo.from_json(serialized)
+            # workaround to hide extra otx_empty_lbl
+            if ir_label_info.label_names[0] == "otx_empty_lbl":
+                ir_label_info.label_names.pop(0)
+                ir_label_info.label_groups[0].pop(0)
+            return ir_label_info
+
+        return super()._create_label_info_from_ov_ir()
