@@ -609,7 +609,7 @@ def _convert_pred_entity_to_compute_metric(
         .numpy()
     )
 
-    img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])  # HxW -> WxH
+    img_sizes = np.array([img_info.ori_shape for img_info in inputs.imgs_info])
     calib_matrix = [p2.detach().cpu().numpy() for p2 in inputs.calib_matrix]
     result_list = OTX3DDetectionModel.decode_detections_for_kitti_format(
         detections,
