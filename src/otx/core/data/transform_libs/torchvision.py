@@ -3702,7 +3702,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
             pts_rect (np.ndarray): Rectangular coordinates with shape (N, 4).
 
         Returns:
-            np.ndarray: Image coordinates with shape (N, 2).
+            tuple[np.ndarray, np.ndarray]: Image coordinates with shape (N, 2).
         """
 
         def cart_to_hom(pts: np.ndarray) -> np.ndarray:
