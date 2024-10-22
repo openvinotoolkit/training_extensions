@@ -17,8 +17,8 @@ from warnings import warn
 
 import torch
 from lightning import Trainer, seed_everything
+from lightning.pytorch.plugins.precision import MixedPrecision
 
-from otx.algo.plugins import MixedPrecisionXPUPlugin
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
@@ -1105,6 +1105,16 @@ class Engine:
             # set up xpu device
             if self._device.accelerator == DeviceType.xpu:
                 self._cache.update(strategy="xpu_single")
+                # add plugin for Automatic Mixed Precision on XPU
+                if self._cache.args.get("precision", 32) == 16:
+                    self._cache.update(plugins=[
+                        MixedPrecision(
+                            precision="bf16-mixed",
+                            device="xpu",
+                            # scaler=torch.amp.GradScaler(device="xpu"),
+                        )
+                    ])
+                    self._cache.args["precision"] = None
 
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)

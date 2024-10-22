@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
-from torch.cuda.amp import autocast
+from torch.amp import autocast
 
 from otx.algo.common.utils.utils import inverse_sigmoid
 from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
@@ -151,7 +151,6 @@ class DeformableTransformerDecoderLayer(nn.Module):
         tgt = tgt + self.dropout4(tgt2)
         return self.norm3(tgt)
 
-    @autocast(enabled=False)
     def forward(
         self,
         # for tgt
@@ -165,24 +164,25 @@ class DeformableTransformerDecoderLayer(nn.Module):
         self_attn_mask: Tensor,
     ) -> Tensor:
         """Forward pass."""
-        # self attention
-        if self.self_attn is not None:
-            q = k = self.with_pos_embed(tgt, tgt_query_pos)
-            tgt2 = self.self_attn(q, k, tgt, attn_mask=self_attn_mask)[0]
-            tgt = tgt + self.dropout2(tgt2)
-            tgt = self.norm2(tgt)
+        with autocast(device_type=tgt.device.type, enabled=False):
+            # self attention
+            if self.self_attn is not None:
+                q = k = self.with_pos_embed(tgt, tgt_query_pos)
+                tgt2 = self.self_attn(q, k, tgt, attn_mask=self_attn_mask)[0]
+                tgt = tgt + self.dropout2(tgt2)
+                tgt = self.norm2(tgt)
 
-        # cross attention
-        tgt2 = self.cross_attn(
-            self.with_pos_embed(tgt, tgt_query_pos).transpose(0, 1),
-            tgt_reference_points.transpose(0, 1).contiguous(),
-            memory.transpose(0, 1),
-            memory_spatial_shapes,
-            memory_key_padding_mask,
-        ).transpose(0, 1)
+            # cross attention
+            tgt2 = self.cross_attn(
+                self.with_pos_embed(tgt, tgt_query_pos).transpose(0, 1),
+                tgt_reference_points.transpose(0, 1).contiguous(),
+                memory.transpose(0, 1),
+                memory_spatial_shapes,
+                memory_key_padding_mask,
+            ).transpose(0, 1)
 
-        tgt = tgt + self.dropout1(tgt2)
-        tgt = self.norm1(tgt)
+            tgt = tgt + self.dropout1(tgt2)
+            tgt = self.norm1(tgt)
 
-        # ffn
-        return self.forward_ffn(tgt)
+            # ffn
+            return self.forward_ffn(tgt)

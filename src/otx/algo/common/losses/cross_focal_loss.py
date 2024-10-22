@@ -8,9 +8,19 @@ from __future__ import annotations
 import torch
 import torch.nn.functional
 from torch import Tensor, nn
-from torch.cuda.amp import custom_fwd
+from torch.amp import custom_fwd
+
+from otx.utils.utils import is_xpu_available
 
 from .focal_loss import py_sigmoid_focal_loss
+
+
+if is_xpu_available:
+    _DEVICE_TYPE = "xpu"
+elif torch.cuda.is_available():
+    _DEVICE_TYPE = "cuda"
+else:
+    _DEVICE_TYPE = "cpu"
 
 
 def cross_sigmoid_focal_loss(
@@ -79,7 +89,7 @@ class CrossSigmoidFocalLoss(nn.Module):
 
         self.cls_criterion = cross_sigmoid_focal_loss
 
-    @custom_fwd(cast_inputs=torch.float32)
+    @custom_fwd(device_type=_DEVICE_TYPE, cast_inputs=torch.float32)
     def forward(
         self,
         pred: Tensor,

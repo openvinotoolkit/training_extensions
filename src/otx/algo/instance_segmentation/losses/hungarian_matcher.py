@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as f
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor, nn
-from torch.cuda.amp import autocast
+from torch.amp import autocast
 
 from otx.algo.instance_segmentation.utils.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 from otx.algo.instance_segmentation.utils.utils import point_sample
@@ -106,6 +106,7 @@ class HungarianMatcher(nn.Module):
         """More memory-friendly matching. Change cost to compute only certain loss in matching."""
         bs, num_queries = outputs["pred_logits"].shape[:2]
 
+        device = outputs["pred_logits"].device.type
         indices = []
 
         # Iterate through batch size
@@ -149,7 +150,7 @@ class HungarianMatcher(nn.Module):
                 align_corners=False,
             ).squeeze(1)
 
-            with autocast(enabled=False):
+            with autocast(device_type=device, enabled=False):
                 out_mask = out_mask.float()
                 tgt_mask = tgt_mask.float()
                 # If there's no annotations
