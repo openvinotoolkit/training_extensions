@@ -45,10 +45,7 @@ def is_ckpt_for_finetuning(ckpt: dict) -> bool:
 
 def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:
     """Measure appropriate num_workers value and return it."""
-    if is_xpu_available():
-        num_devices = torch.xpu.device_count()
-    else:
-        num_devices = torch.cuda.device_count()
+    num_devices = torch.xpu.device_count() if is_xpu_available() else torch.cuda.device_count()
     if num_devices == 0:
         return None
     return min(cpu_count() // (num_dataloader * num_devices), 8)  # max available num_workers is 8

@@ -119,7 +119,7 @@ class SimOTAAssigner:
 
         valid_pred_scores = valid_pred_scores.unsqueeze(1).repeat(1, num_gt, 1)
         # disable AMP autocast and calculate BCE with FP32 to avoid overflow
-        with torch.amp.autocast(device_type=device ,enabled=False):
+        with torch.amp.autocast(device_type=device, enabled=False):
             cls_cost = (
                 F.binary_cross_entropy(
                     valid_pred_scores.to(dtype=torch.float32),

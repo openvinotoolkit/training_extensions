@@ -7,15 +7,13 @@ from __future__ import annotations
 
 import torch
 import torch.nn.functional
+from otx.utils.utils import is_xpu_available
 from torch import Tensor, nn
 from torch.amp import custom_fwd
 
-from otx.utils.utils import is_xpu_available
-
 from .focal_loss import py_sigmoid_focal_loss
 
-
-if is_xpu_available:
+if is_xpu_available():
     _DEVICE_TYPE = "xpu"
 elif torch.cuda.is_available():
     _DEVICE_TYPE = "cuda"
