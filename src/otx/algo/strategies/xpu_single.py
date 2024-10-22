@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import torch
 from lightning.pytorch.strategies import StrategyRegistry
 from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
 from lightning.pytorch.utilities.exceptions import MisconfigurationException
@@ -44,11 +43,6 @@ class SingleXPUStrategy(SingleDeviceStrategy):
             checkpoint_io=checkpoint_io,
             precision_plugin=precision_plugin,
         )
-
-    @property
-    def is_distributed(self) -> bool:
-        """Returns true if the strategy supports distributed training."""
-        return False
 
 
 StrategyRegistry.register(
