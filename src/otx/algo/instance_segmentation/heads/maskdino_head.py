@@ -181,7 +181,7 @@ class MaskDINOHead(BaseModule):
 
             # Extract masks from RoI for exporting the model
             if export:
-                pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks) > 0
+                pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks)
                 # Create dummy filter as Model API has its own filtering mechanism.
                 keep = pred_scores > 0.05
             else:
