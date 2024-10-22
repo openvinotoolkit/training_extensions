@@ -1111,9 +1111,9 @@ class Engine:
                     self._cache.update(
                         plugins=[
                             MixedPrecision(
-                                precision="16-mixed",
+                                precision="bf16-mixed",
                                 device="xpu",
-                                scaler=torch.amp.GradScaler(device="xpu"),
+                                # scaler=torch.amp.GradScaler(device="xpu"),
                             ),
                         ],
                     )
