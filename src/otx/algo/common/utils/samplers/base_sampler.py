@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import torch
 from otx.algo.common.utils.structures import AssignResult, SamplingResult
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import get_available_device
 
 if TYPE_CHECKING:
     from otx.algo.utils.mmengine_utils import InstanceData
@@ -219,12 +219,7 @@ class RandomSampler(BaseSampler):
             raise ValueError(msg)
 
         is_tensor = isinstance(gallery, torch.Tensor)
-        if is_xpu_available():
-            device = "xpu"
-        elif torch.cuda.is_available():
-            device = "cuda"
-        else:
-            device = "cpu"
+        device = get_available_device()
 
         _gallery: torch.Tensor = torch.tensor(gallery, dtype=torch.long, device=device) if not is_tensor else gallery
         perm = torch.randperm(_gallery.numel())[:num].to(device=_gallery.device)

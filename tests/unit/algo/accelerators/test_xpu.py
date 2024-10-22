@@ -7,7 +7,7 @@
 import pytest
 import torch
 from otx.algo.accelerators import XPUAccelerator
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 
 class TestXPUAccelerator:

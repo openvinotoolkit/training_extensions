@@ -10,7 +10,7 @@ import torch
 from lightning.pytorch.accelerators import AcceleratorRegistry
 from lightning.pytorch.accelerators.accelerator import Accelerator
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 
 class XPUAccelerator(Accelerator):

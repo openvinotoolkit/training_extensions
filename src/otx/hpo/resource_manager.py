@@ -14,7 +14,7 @@ import torch
 
 from otx.core.types.device import DeviceType
 from otx.hpo.utils import check_positive
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 if TYPE_CHECKING:
     from collections.abc import Hashable

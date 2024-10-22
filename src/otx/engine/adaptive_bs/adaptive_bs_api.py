@@ -15,7 +15,7 @@ from lightning.pytorch.loggers.logger import DummyLogger
 from torch.cuda import is_available as is_cuda_available
 
 from otx.core.types.task import OTXTaskType
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 from .bs_search_algo import BsSearchAlgo
 

@@ -30,7 +30,8 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.utils.utils import is_xpu_available, measure_flops
+from otx.utils.device import is_xpu_available
+from otx.utils.utils import measure_flops
 
 from .adaptive_bs import adapt_batch_size
 from .hpo import execute_hpo, update_hyper_parameter

@@ -12,7 +12,7 @@ from lightning.pytorch.strategies import StrategyRegistry
 from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
 from lightning.pytorch.utilities.exceptions import MisconfigurationException
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 if TYPE_CHECKING:
     import lightning.pytorch as pl

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from datumaro.components.annotation import AnnotationType, LabelCategories
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset

@@ -11,7 +11,7 @@ from typing import Any, Callable
 
 import torch
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 logger = logging.getLogger(__name__)
 
