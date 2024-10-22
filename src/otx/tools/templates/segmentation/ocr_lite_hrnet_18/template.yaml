@@ -4,7 +4,7 @@ name: Lite-HRNet-18
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Semantic Segmentation with middle-sized architecture which based on the Lite-HRNet backbone for the balance between the fast inference and long training. (DISCONTINUED, please use Lite-HRNet-18-mod2 instead)
+summary: Class-Incremental Semantic Segmentation with middle-sized architecture which based on the Lite-HRNet backbone for the balance between the fast inference and long training. (OBSOLETE, please use Lite-HRNet-18-mod2 instead)
 application: ~
 
 # Algo backend.
@@ -43,4 +43,4 @@ gigaflops: 3.45
 size: 4.5
 
 # Model spec
-model_status: DISCONTINUED
+model_status: OBSOLETE
