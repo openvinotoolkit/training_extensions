@@ -1108,12 +1108,13 @@ class Engine:
                 self._cache.update(strategy="xpu_single")
                 # add plugin for Automatic Mixed Precision on XPU
                 if self._cache.args.get("precision", 32) == 16:
+                    msg = "XPU doesn't support fp16 now, so bfp16 will be used instead."
+                    warn(msg, stacklevel=1)
                     self._cache.update(
                         plugins=[
                             MixedPrecision(
                                 precision="bf16-mixed",
                                 device="xpu",
-                                # scaler=torch.amp.GradScaler(device="xpu"),
                             ),
                         ],
                     )
