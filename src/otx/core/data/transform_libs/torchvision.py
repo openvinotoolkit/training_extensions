@@ -3406,7 +3406,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> torch.Tensor:
         numpy_image: np.ndarray = to_np_image(image)
         warped_image = cv2.warpAffine(numpy_image, warp_mat, warp_size, flags=cv2.INTER_LINEAR)
-        return torch.from_numpy(warped_image).permute(2, 0, 1)
+        return torch.from_numpy(warped_image).to(dtype=torch.float32).permute(2, 0, 1)
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to affine image through warp matrix."""
@@ -3473,6 +3473,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         random_crop: bool = False,
         decode_annotations: bool = True,
         p_crop: float = 0.5,
+        p_flip: float = 0.5,
         random_scale: float = 0.05,
         random_shift: float = 0.05,
         depth_threshold: int = 65,
@@ -3483,6 +3484,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         self.random_crop = random_crop
         self.decode_annotations = decode_annotations
         self.p_crop = p_crop
+        self.p_flip = p_flip
         self.random_scale = random_scale
         self.random_shift = random_shift
         self.depth_threshold = depth_threshold
@@ -3508,7 +3510,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
         center = ori_img_size / 2
         crop_size, crop_scale = ori_img_size, 1
         random_flip_flag = False
-        if self.random_crop and (np.random.random() < self.p_crop):
+        if self.random_crop and (np.random.random() <= self.p_crop):
             crop_scale = np.clip(
                 np.random.randn() * self.random_scale + 1,
                 1 - self.random_scale,
@@ -3526,7 +3528,7 @@ class Decode3DInputsAffineTransforms(TopdownAffine):
                 2 * self.random_shift,
             )
 
-        if self.random_horizontal_flip and (np.random.random() < 0.5):
+        if self.random_horizontal_flip and (np.random.random() <= self.p_flip):
             random_flip_flag = True
             image = np.fliplr(image)
 
