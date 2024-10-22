@@ -162,4 +162,8 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
 
     def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
         """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            msg = "Explain mode is not supported for this model."
+            raise NotImplementedError(msg)
+
         return self.model(image)

@@ -124,7 +124,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.input_size = input_size
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
-        self._explain_mode = False
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
         self.metric_callable = ensure_callable(metric)

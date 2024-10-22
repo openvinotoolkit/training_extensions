@@ -119,7 +119,12 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         """
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
-        mode = "loss" if self.training else "predict"
+        if self.training:
+            mode = "loss"
+        elif self.explain_mode:
+            mode = "explain"
+        else:
+            mode = "predict"
 
         if self.train_type == OTXTrainType.SEMI_SUPERVISED and mode == "loss":
             if not isinstance(entity, dict):
@@ -154,6 +159,16 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             for k, v in outputs.items():
                 losses[k] = v
             return losses
+
+        if self.explain_mode:
+            return SegBatchPredEntity(
+                batch_size=len(outputs["preds"]),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=[],
+                masks=outputs["preds"],
+                feature_vector=outputs["feature_vector"],
+            )
 
         return SegBatchPredEntity(
             batch_size=len(outputs),
@@ -199,7 +214,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
-            output_names=None,
+            output_names=["preds", "feature_vector"] if self.explain_mode else None,
         )
 
     def _convert_pred_entity_to_compute_metric(
@@ -207,6 +222,16 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> MetricInput:
+        """Convert prediction and input entities to a format suitable for metric computation.
+
+        Args:
+            preds (SegBatchPredEntity): The predicted segmentation batch entity containing predicted masks.
+            inputs (SegBatchDataEntity): The input segmentation batch entity containing ground truth masks.
+
+        Returns:
+            MetricInput: A list of dictionaries where each dictionary contains 'preds' and 'target' keys
+            corresponding to the predicted and target masks for metric evaluation.
+        """
         return [
             {
                 "preds": pred_mask,
@@ -228,8 +253,26 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
-        raw_outputs = self.model(inputs=image, mode="tensor")
-        return torch.softmax(raw_outputs, dim=1)
+        if self.explain_mode:
+            outputs = self.model(inputs=image, mode="explain")
+            outputs["preds"] = torch.softmax(outputs["preds"], dim=1)
+            return outputs
+
+        outputs = self.model(inputs=image, mode="tensor")
+        return torch.softmax(outputs, dim=1)
+
+    def forward_explain(self, inputs: SegBatchDataEntity) -> SegBatchPredEntity:
+        """Model forward explain function."""
+        outputs = self.model(inputs=inputs.images, mode="explain")
+
+        return SegBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=[],
+            masks=outputs["preds"],
+            feature_vector=outputs["feature_vector"],
+        )
 
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
         """Returns a dummy input for semantic segmentation model."""
@@ -308,25 +351,17 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         outputs: list[ImageResultWithSoftPrediction],
         inputs: SegBatchDataEntity,
     ) -> SegBatchPredEntity | OTXBatchLossEntity:
-        if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_f_vectors = [out.feature_vector for out in outputs]
-            return SegBatchPredEntity(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=[],
-                masks=[tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs],
-                saliency_map=predicted_s_maps,
-                feature_vector=predicted_f_vectors,
-            )
-
+        masks = [tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs]
+        predicted_f_vectors = (
+            [out.feature_vector for out in outputs] if outputs and outputs[0].feature_vector.size != 1 else []
+        )
         return SegBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],
-            masks=[tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs],
+            masks=masks,
+            feature_vector=predicted_f_vectors,
         )
 
     def _convert_pred_entity_to_compute_metric(
@@ -334,6 +369,16 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> MetricInput:
+        """Convert prediction and input entities to a format suitable for metric computation.
+
+        Args:
+            preds (SegBatchPredEntity): The predicted segmentation batch entity containing predicted masks.
+            inputs (SegBatchDataEntity): The input segmentation batch entity containing ground truth masks.
+
+        Returns:
+            MetricInput: A list of dictionaries where each dictionary contains 'preds' and 'target' keys
+            corresponding to the predicted and target masks for metric evaluation.
+        """
         return [
             {
                 "preds": pred_mask,
