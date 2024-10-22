@@ -1,0 +1,62 @@
+task: DIFFUSION
+data_format: coco_captions
+train_subset:
+  batch_size: 1
+  subset_name: train
+  num_workers: 23
+  transforms:
+    - class_path: torchvision.transforms.v2.Resize
+      init_args:
+        size: [512, 512]
+        antialias: true
+    - class_path: torchvision.transforms.v2.CenterCrop
+      init_args:
+        size: [512]
+    - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+    - class_path: torchvision.transforms.v2.ToImage
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+        scale: true
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [0.5, 0.5, 0.5]
+        std: [0.5, 0.5, 0.5]
+val_subset:
+  batch_size: 1
+  subset_name: val
+  transforms:
+    - class_path: torchvision.transforms.v2.Resize
+      init_args:
+        size: [512, 512]
+        antialias: true
+    - class_path: torchvision.transforms.v2.CenterCrop
+      init_args:
+        size: [512]
+    - class_path: torchvision.transforms.v2.ToImage
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [0.5, 0.5, 0.5]
+        std: [0.5, 0.5, 0.5]
+test_subset:
+  batch_size: 1
+  subset_name: test
+  transforms:
+    - class_path: torchvision.transforms.v2.Resize
+      init_args:
+        size: [512, 512]
+        antialias: true
+    - class_path: torchvision.transforms.v2.CenterCrop
+      init_args:
+        size: [512]
+    - class_path: torchvision.transforms.v2.ToImage
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [0.5, 0.5, 0.5]
+        std: [0.5, 0.5, 0.5]

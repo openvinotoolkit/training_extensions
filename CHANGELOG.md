@@ -71,6 +71,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3810)
 - Support configurable input size
   (https://github.com/openvinotoolkit/training_extensions/pull/3788)
+- Add diffusion task
+  (https://github.com/openvinotoolkit/training_extensions/pull/3875)
 
 ### Enhancements
 

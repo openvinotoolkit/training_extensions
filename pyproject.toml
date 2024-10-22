@@ -104,6 +104,8 @@ base = [
 
 transformers = [
     "transformers==4.44.2",
+    "diffusers==0.30.0",
+    "torchmetrics[image]>=0.7.0"
 ]
 
 mmlab = [

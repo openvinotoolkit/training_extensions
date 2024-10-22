@@ -3,8 +3,9 @@
 import sys
 
 import atheris
-from helper import FuzzingHelper
 from otx.cli import main as cli_main
+
+from .helper import FuzzingHelper
 
 
 @atheris.instrument_func
