@@ -138,7 +138,7 @@ class DepthAwareTransformer(nn.Module):
             memory_padding_mask (Tensor): Memory padding mask tensor of shape (N, S).
             spatial_shapes (List[Tuple[int, int]]): List of spatial shapes.
 
-        TODO: Not used. Remove this function?
+        TODO (Kirill): Not used. Remove this function?
 
         Returns:
             Tuple[Tensor, Tensor]: Encoder output tensor of shape (N, S, C) and proposals tensor of shape (N, L, 6).
