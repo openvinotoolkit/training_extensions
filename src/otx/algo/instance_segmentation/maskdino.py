@@ -247,6 +247,7 @@ class MaskDINO(nn.Module):
         self,
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
+        explain_mode: bool = False,
     ) -> tuple[Tensor, Tensor, Tensor]:
         """Export the model."""
         b, _, h, w = batch_inputs.size()
