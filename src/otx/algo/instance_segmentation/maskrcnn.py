@@ -327,7 +327,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
                 "opset_version": 11,
                 "autograd_inlining": False,
             },
-            output_names=["bboxes", "labels", "masks"],
+            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

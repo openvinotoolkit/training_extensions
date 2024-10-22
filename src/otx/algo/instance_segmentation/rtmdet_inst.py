@@ -130,6 +130,7 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
                 "opset_version": 11,
                 "autograd_inlining": False,
             },
+            # TODO(Eugene): Add XAI support for RTMDetInst
             output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
