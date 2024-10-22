@@ -3,8 +3,8 @@
 #
 """Module for OTX instance segmentation segmentors."""
 
-from .maskdino import MaskDINO, MaskDINOHead
+from .maskdino import MaskDINOModule
 from .maskrcnn_tv import MaskRCNN
 from .two_stage import TwoStageDetector
 
-__all__ = ["MaskRCNN", "TwoStageDetector", "MaskDINO", "MaskDINOHead"]
+__all__ = ["MaskRCNN", "TwoStageDetector", "MaskDINOModule"]

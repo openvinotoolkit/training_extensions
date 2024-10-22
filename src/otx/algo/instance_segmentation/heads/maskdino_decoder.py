@@ -14,9 +14,10 @@ from otx.algo.common.layers.position_embed import gen_sineembed_for_position
 from otx.algo.common.layers.transformer_layers import MLP, MSDeformableAttention
 from otx.algo.common.utils.utils import gen_encoder_output_proposals, get_clones, inverse_sigmoid
 from otx.algo.instance_segmentation.utils.structures.mask.mask_target import masks_to_boxes
+from otx.algo.modules.base_module import BaseModule
 
 
-class DeformableTransformerDecoderLayer(nn.Module):
+class DeformableTransformerDecoderLayer(BaseModule):
     """Deformable transformer decoder layer module.
 
     Args:
@@ -210,7 +211,7 @@ class DeformableTransformerDecoder(nn.Module):
         ]
 
 
-class MaskDINODecoderHeadModule(nn.Module):
+class MaskDINODecoderHeadModule(BaseModule):
     """MaskDINODecoder module.
 
     Args:

@@ -18,12 +18,12 @@ from otx.algo.common.layers.position_embed import PositionEmbeddingSine
 from otx.algo.common.layers.transformer_layers import MSDeformableAttention, VisualEncoder, VisualEncoderLayer
 from otx.algo.instance_segmentation.utils.utils import (
     ShapeSpec,
-    c2_xavier_fill,
 )
-from otx.algo.modules.conv_module import Conv2dWithNormActivation
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 
-class MSDeformAttnTransformerEncoderOnly(nn.Module):
+class MSDeformAttnTransformerEncoder(BaseModule):
     """MSDeformAttnTransformerEncoderOnly consisting of num layers * multi-scale deformable attention encoder layers.
 
     Args:
@@ -157,7 +157,7 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         return memory, spatial_shapes, level_start_index
 
 
-class MaskDINOEncoderHeadModule(nn.Module):
+class MaskDINOEncoderHeadModule(BaseModule):
     """This is the multi-scale encoder in detection models, also named as pixel decoder in segmentation models.
 
     Args:
@@ -247,7 +247,7 @@ class MaskDINOEncoderHeadModule(nn.Module):
             nn.init.xavier_uniform_(proj[0].weight, gain=1)
             nn.init.constant_(proj[0].bias, 0)
 
-        self.transformer = MSDeformAttnTransformerEncoderOnly(
+        self.transformer = MSDeformAttnTransformerEncoder(
             d_model=conv_dim,
             dropout=transformer_dropout,
             nhead=transformer_nheads,
@@ -259,7 +259,7 @@ class MaskDINOEncoderHeadModule(nn.Module):
 
         self.mask_dim = mask_dim
         # use 1x1 conv instead
-        self.mask_features = Conv2dWithNormActivation(
+        self.mask_features = Conv2dModule(
             conv_dim,
             mask_dim,
             kernel_size=1,
@@ -267,7 +267,6 @@ class MaskDINOEncoderHeadModule(nn.Module):
             padding=0,
             activation=activation,
         )
-        c2_xavier_fill(self.mask_features)
         # extra fpn levels
         stride = min(self.transformer_feature_strides)
         self.num_fpn_levels = max(int(np.log2(stride) - np.log2(self.common_stride)), 1)
@@ -280,26 +279,24 @@ class MaskDINOEncoderHeadModule(nn.Module):
             lateral_norm = nn.GroupNorm(32, conv_dim)
             output_norm = nn.GroupNorm(32, conv_dim)
 
-            lateral_conv = Conv2dWithNormActivation(
+            lateral_conv = Conv2dModule(
                 in_channels,
                 conv_dim,
                 kernel_size=1,
                 bias=use_bias,
-                norm=lateral_norm,
+                normalization=lateral_norm,
                 activation=activation,
             )
-            output_conv = Conv2dWithNormActivation(
+            output_conv = Conv2dModule(
                 conv_dim,
                 conv_dim,
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 bias=use_bias,
-                norm=output_norm,
+                normalization=output_norm,
                 activation=activation,
             )
-            c2_xavier_fill(lateral_conv)
-            c2_xavier_fill(output_conv)
             self.add_module(f"adapter_{idx + 1}", lateral_conv)
             self.add_module(f"layer_{idx + 1}", output_conv)
 

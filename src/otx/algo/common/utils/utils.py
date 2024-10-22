@@ -356,7 +356,7 @@ def gen_encoder_output_proposals(
     Args:
         memory (Tensor): Memory tensor of shape (N, S, C).
         memory_padding_mask (Tensor): Memory padding mask tensor of shape (N, S).
-        spatial_shapes (List[Tuple[int, int]]): List of spatial shapes.
+        spatial_shapes (Tensor): Spatial shapes tensor of shape (L, 2).
 
     Returns:
         Tuple[Tensor, Tensor]: Encoder output tensor of shape (N, S, C) and proposals tensor of shape (N, L, 6).
@@ -394,8 +394,8 @@ def gen_encoder_output_proposals(
 
 
 def sample_point(
-    input_features: torch.Tensor,
-    point_coordinates: torch.Tensor,
+    input_features: Tensor,
+    point_coordinates: Tensor,
     add_dim: bool = False,
     **kwargs,
 ) -> Tensor:
@@ -404,12 +404,12 @@ def sample_point(
     Source: https://github.com/facebookresearch/detectron2/blob/main/projects/PointRend/point_rend/point_features.py
 
     Args:
-        input_features (torch.Tensor): A tensor of shape (batch_size, channels, height, width) contains features map
-        point_coordinates (torch.Tensor): A tensor that contains [0, 1] * [0, 1] normalized point coordinates
+        input_features (Tensor): A tensor of shape (batch_size, channels, height, width) contains features map
+        point_coordinates (Tensor): A tensor that contains [0, 1] * [0, 1] normalized point coordinates
         add_dim (bool): boolean value to keep track of added dimension
 
     Returns:
-        point_features (torch.Tensor): A tensor that contains features for points in `point_coordinates`.
+        point_features (Tensor): A tensor that contains features for points in `point_coordinates`.
     """
     if point_coordinates.dim() == 3:
         add_dim = True

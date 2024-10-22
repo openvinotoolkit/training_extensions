@@ -16,10 +16,9 @@ from torchvision.models._utils import IntermediateLayerGetter
 from torchvision.models.detection.image_list import ImageList
 from torchvision.ops import box_convert
 
-from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead
+from otx.algo.instance_segmentation.heads import MaskDINODecoderHead, MaskDINOEncoderHead, MaskDINOHead
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
-from otx.algo.instance_segmentation.segmentors import MaskDINO as MaskDINOInstanceSeg
-from otx.algo.instance_segmentation.segmentors import MaskDINOHead
+from otx.algo.instance_segmentation.segmentors import MaskDINOModule
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
 from otx.algo.utils.mmengine_utils import load_from_http
@@ -140,14 +139,14 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
         msg = f"Backbone {self.model_name} is not supported."
         raise ValueError(msg)
 
-    def _build_model(self, num_classes: int) -> MaskDINOInstanceSeg:
+    def _build_model(self, num_classes: int) -> MaskDINOModule:
         """Build MaskDINO model.
 
         Args:
             num_classes (int): Number of classes.
 
         Returns:
-            MaskDINOInstanceSeg: MaskDINO model.
+            MaskDINOModule: MaskDINO model.
         """
         backbone, fmap_shape_specs = self._build_backbone()
         model_name = self.model_name
@@ -168,7 +167,7 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             num_classes=num_classes,
         )
 
-        return MaskDINOInstanceSeg(
+        return MaskDINOModule(
             backbone=backbone,
             sem_seg_head=sem_seg_head,
             criterion=criterion,
@@ -207,6 +206,36 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             tv_model_dict[layer_name] = w.clone()
         detector.backbone.load_state_dict(tv_model_dict)
 
+        # load conv modules weight
+        conv_modules = [
+            "sem_seg_head.pixel_decoder.mask_features",
+            "sem_seg_head.pixel_decoder.adapter_1",
+            "sem_seg_head.pixel_decoder.layer_1",
+        ]
+        conv_module_dict = {}
+        for conv_module in conv_modules:
+            weight_name = f"{conv_module}.weight"
+            bias_name = f"{conv_module}.bias"
+            norm_name = f"{conv_module}.norm.weight"
+            norm_bias_name = f"{conv_module}.norm.bias"
+
+            if weight_name in pretrained:
+                new_weight_name = f"{conv_module}.conv.weight"
+                conv_module_dict[new_weight_name] = pretrained[weight_name].clone()
+            if bias_name in pretrained:
+                new_bias_name = f"{conv_module}.conv.bias"
+                conv_module_dict[new_bias_name] = pretrained[bias_name].clone()
+            if norm_name in pretrained:
+                new_norm_name = f"{conv_module}.gn.weight"
+                conv_module_dict[new_norm_name] = pretrained[norm_name].clone()
+            if norm_bias_name in pretrained:
+                new_norm_bias_name = f"{conv_module}.gn.bias"
+                conv_module_dict[new_norm_bias_name] = pretrained[norm_bias_name].clone()
+
+        incompatible_keys = detector.load_state_dict(conv_module_dict, strict=False)
+        if len(incompatible_keys.unexpected_keys):
+            msg = f"Unexpected keys: {incompatible_keys.unexpected_keys}"
+            raise ValueError(msg)
         return detector
 
     @property
@@ -297,7 +326,7 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
                     hyperparams["lr"] = hyperparams["lr"] * backbone_multiplier
                 if "relative_position_bias_table" in module_param_name or "absolute_pos_embed" in module_param_name:
                     hyperparams["weight_decay"] = 0.0
-                if isinstance(module, AVAILABLE_NORMALIZATION_LIST):
+                if module.__class__ in AVAILABLE_NORMALIZATION_LIST:
                     hyperparams["weight_decay"] = weight_decay_norm
                 if isinstance(module, torch.nn.Embedding):
                     hyperparams["weight_decay"] = weight_decay_embed

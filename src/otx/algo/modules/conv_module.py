@@ -11,7 +11,6 @@ import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
-import torch.nn.functional as f
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm as BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm as InstanceNorm
@@ -360,40 +359,3 @@ class Conv3dModule(ConvModule):
     """A conv3d block that bundles conv/norm/activation layers."""
 
     _conv_nd = nn.Conv3d
-
-
-class Conv2dWithNormActivation(nn.Conv2d):
-    """A wrapper around torch.nn.Conv2d to support empty inputs and more features."""
-
-    def __init__(self, *args, **kwargs) -> None:
-        """Extra keyword arguments supported in addition to those in `torch.nn.Conv2d`.
-
-        Args:
-            norm (nn.Module, optional): a normalization layer
-            activation (callable(Tensor) -> Tensor): a callable activation function
-
-        It assumes that norm layer is used before activation.
-        """
-        norm = kwargs.pop("norm", None)
-        activation = kwargs.pop("activation", None)
-        super().__init__(*args, **kwargs)
-
-        self.norm = norm
-        self.activation = activation() if activation else activation
-
-    def forward(self, x: Tensor) -> Tensor:
-        """Forward pass."""
-        x = f.conv2d(
-            x,
-            self.weight,
-            self.bias,
-            self.stride,
-            self.padding,
-            self.dilation,
-            self.groups,
-        )
-        if self.norm is not None:
-            x = self.norm(x)
-        if self.activation is not None:
-            x = self.activation(x)
-        return x

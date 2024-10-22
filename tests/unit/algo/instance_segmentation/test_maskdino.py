@@ -4,8 +4,8 @@
 
 import pytest
 import torch
+from otx.algo.instance_segmentation.heads import MaskDINOHead
 from otx.algo.instance_segmentation.maskdino import MaskDINO
-from otx.algo.instance_segmentation.segmentors.maskdino import MaskDINOHead
 from otx.algo.utils.mmengine_utils import load_from_http
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity

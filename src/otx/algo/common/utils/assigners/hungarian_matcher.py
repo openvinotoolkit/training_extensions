@@ -250,7 +250,7 @@ class HungarianMatcher(nn.Module):
         outputs: dict[str, Tensor],
         targets: list[dict[str, Tensor]],
     ) -> list[dict[str, Tensor | None]]:
-        """Prepare annotation and prediction into a list of dictionaries. .
+        """Prepare annotation and prediction into a list of dictionaries.
 
         Args:
             outputs (dict[str, Tensor]): A dictionary containing the model's predictions with the following keys:
