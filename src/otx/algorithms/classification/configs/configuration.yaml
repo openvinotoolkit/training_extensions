@@ -525,6 +525,7 @@ augmentation:
       rules:
         - parameter: vertical_flip
           value: false
+          type: RULE
       action: HIDE
     affects_outcome_of: TRAINING
   photometric_distortion:
@@ -550,6 +551,7 @@ augmentation:
         rules:
           - parameter: photometric_distortion_0_enable
             value: false
+            type: RULE
         action: HIDE
       affects_outcome_of: TRAINING
     photometric_distortion_2_hue:
@@ -564,5 +566,6 @@ augmentation:
         rules:
           - parameter: photometric_distortion_0_enable
             value: false
+            type: RULE
         action: HIDE
       affects_outcome_of: TRAINING
