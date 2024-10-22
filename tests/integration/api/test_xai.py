@@ -115,7 +115,7 @@ def test_predict_with_explain(
 
     if any(keyword in recipe for keyword in ["rtmdet_inst_tiny", "maskdino", "maskrcnn_r50_tv"]):
         # TODO(Eugene): inst-seg models not fully support yet.
-        pytest.skip("There's issue with rtmdet_inst_tiny. Skip for now.")
+        pytest.skip(f"There's issue with inst-seg: {recipe}. Skip for now.")
 
     if "rtmdet_tiny" in recipe:
         # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
