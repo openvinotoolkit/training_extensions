@@ -195,11 +195,3 @@ class ATSS(ExplainableOTXDetModel):
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
-
-    def to(self, *args, **kwargs) -> Self:
-        """Return a model with specified device."""
-        ret = super().to(*args, **kwargs)
-        if self.model_name == "atss_resnext101" and self.device.type == "xpu":
-            msg = f"{type(self).__name__} doesn't support XPU."
-            raise RuntimeError(msg)
-        return ret

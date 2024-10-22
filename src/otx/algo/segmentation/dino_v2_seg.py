@@ -44,11 +44,3 @@ class DinoV2Seg(OTXSegmentationModel):
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for DinoV2Seg."""
         return {"model_type": "transformer"}
-
-    def to(self, *args, **kwargs) -> Self:
-        """Return a model with specified device."""
-        ret = super().to(*args, **kwargs)
-        if self.device.type == "xpu":
-            msg = f"{type(self).__name__} doesn't support XPU."
-            raise RuntimeError(msg)
-        return ret
