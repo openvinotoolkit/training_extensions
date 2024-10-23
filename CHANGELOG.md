@@ -90,6 +90,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4042>)
 - Fix wrong indices setting in HLabelInfo
   (<https://github.com/openvinotoolkit/training_extensions/pull/4044>)
+- Fix MaskRCNN Explain Mode
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4053>)
 
 ## \[v2.1.0\]
 
