@@ -14,7 +14,6 @@ from torchvision.ops import box_convert
 
 from otx.algo.object_detection_3d.utils.utils import box_cxcylrtb_to_xyxy
 from otx.algo.utils.mmengine_utils import load_checkpoint
-from otx.core.data.dataset.utils.kitti_utils import class2angle
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.object_detection_3d import Det3DBatchDataEntity, Det3DBatchPredEntity
 from otx.core.metrics import MetricInput
@@ -165,7 +164,34 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
         """Decode the detection results for KITTI format."""
 
         def _get_heading_angle(heading: np.ndarray) -> np.ndarray:
-            """Get heading angle from the prediction."""
+            """Get heading angle from the prediction.
+
+            Args:
+                heading (np.ndarray): The heading prediction.
+
+            Returns:
+                np.ndarray: The heading angle in label format.
+            """
+
+            def class2angle(cls: int, residual: float, to_label_format: bool = False) -> float:
+                """Inverse function to angle2class.
+
+                Args:
+                    cls (int): The class index.
+                    residual (float): The residual angle.
+                    to_label_format (bool): Whether to return the angle in label format.
+
+                Returns:
+                    float: The angle in label format.
+                """
+                num_heading_bin = 12
+                angle_per_class = 2 * np.pi / float(num_heading_bin)
+                angle_center = cls * angle_per_class
+                angle = angle_center + residual
+                if to_label_format and angle > np.pi:
+                    angle = angle - 2 * np.pi
+                return angle
+
             heading_bin, heading_res = heading[0:12], heading[12:24]
             cls = np.argmax(heading_bin)
             res = heading_res[cls]
@@ -215,10 +241,10 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                     continue
 
                 # 2d bboxs decoding
-                x = dets[i, j, 2] * img_size[i][0]
-                y = dets[i, j, 3] * img_size[i][1]
-                w = dets[i, j, 4] * img_size[i][0]
-                h = dets[i, j, 5] * img_size[i][1]
+                x = dets[i, j, 2] * img_size[i][1]
+                y = dets[i, j, 3] * img_size[i][0]
+                w = dets[i, j, 4] * img_size[i][1]
+                h = dets[i, j, 5] * img_size[i][0]
                 bbox = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]
 
                 # 3d bboxs decoding
@@ -229,8 +255,8 @@ class OTX3DDetectionModel(OTXModel[Det3DBatchDataEntity, Det3DBatchPredEntity]):
                 dimension = dets[i, j, 31:34]
 
                 # positions decoding
-                x3d = dets[i, j, 34] * img_size[i][0]
-                y3d = dets[i, j, 35] * img_size[i][1]
+                x3d = dets[i, j, 34] * img_size[i][1]
+                y3d = dets[i, j, 35] * img_size[i][0]
                 location = _img_to_rect(calib_matrix[i], x3d, y3d, depth).reshape(-1)
                 location[1] += dimension[0] / 2
 
@@ -316,7 +342,7 @@ class MonoDETRModel(ImageModel):
             "img_sizes": inputs["img_size"][None],
         }, {
             "original_shape": inputs["image"].shape,
-            "resized_shape": (self.w, self.h, self.c),
+            "resized_shape": (self.h, self.w, self.c),
         }
 
     def _get_inputs(self) -> tuple[list[Any], list[Any]]:

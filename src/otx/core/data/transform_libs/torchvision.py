@@ -3406,7 +3406,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> torch.Tensor:
         numpy_image: np.ndarray = to_np_image(image)
         warped_image = cv2.warpAffine(numpy_image, warp_mat, warp_size, flags=cv2.INTER_LINEAR)
-        return torch.from_numpy(warped_image).permute(2, 0, 1)
+        return torch.from_numpy(warped_image).to(dtype=torch.float32).permute(2, 0, 1)
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to affine image through warp matrix."""
@@ -3447,6 +3447,335 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"(input_size={self.input_size},"
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})."
         return repr_str
+
+
+class Decode3DInputsAffineTransforms(TopdownAffine):
+    """Transform function for 3D Object Detection to affine image through warp matrix.
+
+    This transform decode the input annotations and apply affine transforms.
+
+    Args:
+        input_size (tuple[int, int]): Input image size.
+        random_horizontal_flip (bool): Randomly flip the image horizontally.
+        random_crop (bool): Randomly crop the image.
+        decode_annotations (bool): Whether to decode the annotations.
+        p_crop (float): Probability of cropping.
+        random_scale (float): Randomly scale the image.
+        random_shift (float): Randomly shift the image.
+        depth_threshold (int): Threshold of depth.
+        max_objects (int): Maximum number of objects.
+    """
+
+    def __init__(
+        self,
+        input_size: tuple[int, int] | None = None,  # (H, W),
+        random_horizontal_flip: bool = False,
+        random_crop: bool = False,
+        decode_annotations: bool = True,
+        p_crop: float = 0.5,
+        p_flip: float = 0.5,
+        random_scale: float = 0.05,
+        random_shift: float = 0.05,
+        depth_threshold: int = 65,
+        max_objects: int = 50,
+    ) -> None:
+        self.input_size = input_size  # type: ignore[assignment]
+        self.random_horizontal_flip = random_horizontal_flip
+        self.random_crop = random_crop
+        self.decode_annotations = decode_annotations
+        self.p_crop = p_crop
+        self.p_flip = p_flip
+        self.random_scale = random_scale
+        self.random_shift = random_shift
+        self.depth_threshold = depth_threshold
+        self.max_objects = max_objects
+
+    def _affine_transforms(
+        self,
+        image: np.ndarray,
+        ori_img_size: np.ndarray,
+        warp_size: tuple[int, int],
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+        """Get affine matrix and warp image.
+
+        Args:
+            image (np.ndarray): Input image.
+            ori_img_size (np.ndarray): Original image size.
+            warp_size (tuple[int, int]): Output image size.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+                Affine matrix, warped image, and random flip flag.
+        """
+        center = ori_img_size / 2
+        crop_size, crop_scale = ori_img_size, 1
+        random_flip_flag = False
+        if self.random_crop and (np.random.random() <= self.p_crop):
+            crop_scale = np.clip(
+                np.random.randn() * self.random_scale + 1,
+                1 - self.random_scale,
+                1 + self.random_scale,
+            )
+            crop_size = ori_img_size * crop_scale
+            center[0] += ori_img_size[0] * np.clip(
+                np.random.randn() * self.random_shift,
+                -2 * self.random_shift,
+                2 * self.random_shift,
+            )
+            center[1] += ori_img_size[1] * np.clip(
+                np.random.randn() * self.random_shift,
+                -2 * self.random_shift,
+                2 * self.random_shift,
+            )
+
+        if self.random_horizontal_flip and (np.random.random() <= self.p_flip):
+            random_flip_flag = True
+            image = np.fliplr(image)
+
+        trans = self._get_warp_matrix(center, crop_size, 0, warp_size)
+        return self._get_warp_image(image, trans, warp_size), crop_scale, trans, random_flip_flag
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform __call__ function to affine image through warp matrix."""
+        inputs = _inputs[0]
+        ori_img_size = np.array(inputs.img_info.ori_shape)[::-1]
+        # labels encoding
+        src_size_3d = np.zeros((self.max_objects, 3), dtype=np.float32)
+        mask_2d = np.zeros((self.max_objects), dtype=bool)
+        if self.input_size is None:
+            # No need to resize (OV IR)
+            inputs.img_info.img_shape = ori_img_size
+            return self.convert(inputs, mask_2d, image_to_tensor=True)
+
+        annotations_list = inputs.original_kitti_format
+        h, w = self.input_size
+        warp_size = (int(w), int(h))
+        # transform image
+        inputs.image, crop_scale, trans, random_flip_flag = self._affine_transforms(
+            inputs.image,
+            ori_img_size,
+            warp_size,
+        )
+
+        if not self.decode_annotations:
+            # resize only (val/test)
+            inputs.img_info.img_shape = self.input_size
+            return self.convert(inputs, mask_2d)
+
+        # decode annotations
+        if random_flip_flag:
+            for i in range(len(annotations_list["bbox"])):
+                [x1, _, x2, _] = annotations_list["bbox"][i]
+                annotations_list["bbox"][i][0], annotations_list["bbox"][i][2] = (
+                    ori_img_size[0] - x2,
+                    ori_img_size[0] - x1,
+                )
+                annotations_list["alpha"][i] = np.pi - annotations_list["alpha"][i]
+                annotations_list["rotation_y"][i] = np.pi - annotations_list["rotation_y"][i]
+                if annotations_list["alpha"][i] > np.pi:
+                    annotations_list["alpha"][i] -= 2 * np.pi  # check range
+                if annotations_list["alpha"][i] < -np.pi:
+                    annotations_list["alpha"][i] += 2 * np.pi
+                if annotations_list["rotation_y"][i] > np.pi:
+                    annotations_list["rotation_y"][i] -= 2 * np.pi
+                if annotations_list["rotation_y"][i] < -np.pi:
+                    annotations_list["rotation_y"][i] += 2 * np.pi
+
+        object_num = (
+            len(annotations_list["bbox"]) if len(annotations_list["bbox"]) < self.max_objects else self.max_objects
+        )
+        for i in range(object_num):
+            # ignore the samples beyond the threshold [hard encoding]
+            if annotations_list["location"][i][-1] > self.depth_threshold and annotations_list["location"][i][-1] < 2:
+                continue
+
+            # process 2d bbox & get 2d center
+            bbox_2d = annotations_list["bbox"][i].copy()
+
+            # add affine transformation for 2d boxes.
+            bbox_2d[:2] = self.affine_transform(bbox_2d[:2], trans)
+            bbox_2d[2:] = self.affine_transform(bbox_2d[2:], trans)
+
+            # process 3d center
+            center_2d = np.array(
+                [(bbox_2d[0] + bbox_2d[2]) / 2, (bbox_2d[1] + bbox_2d[3]) / 2],
+                dtype=np.float32,
+            )  # W * H
+            corner_2d = bbox_2d.copy()
+
+            center_3d = np.array(
+                annotations_list["location"][i]
+                + [
+                    0,
+                    -annotations_list["dimensions"][i][1] / 2,
+                    0,
+                ],
+            )  # real 3D center in 3D space
+            center_3d = center_3d.reshape(-1, 3)  # shape adjustment (N, 3)
+            center_3d, _ = self.rect_to_img(inputs.calib_matrix, center_3d)  # project 3D center to image plane
+            center_3d = center_3d[0]  # shape adjustment
+            if random_flip_flag:  # random flip for center3d
+                center_3d[0] = ori_img_size[0] - center_3d[0]
+            center_3d = self.affine_transform(center_3d.reshape(-1), trans)
+
+            # filter 3d center out of img
+            proj_inside_img = True
+
+            if center_3d[0] < 0 or center_3d[0] >= warp_size[0]:
+                proj_inside_img = False
+            if center_3d[1] < 0 or center_3d[1] >= warp_size[1]:
+                proj_inside_img = False
+
+            if not proj_inside_img:
+                continue
+
+            # class
+            inputs.labels[i] = annotations_list["name"][i]
+
+            # encoding 2d/3d boxes
+            w, h = bbox_2d[2] - bbox_2d[0], bbox_2d[3] - bbox_2d[1]
+            inputs.size_2d[i] = 1.0 * w, 1.0 * h
+
+            center_2d_norm = center_2d / warp_size
+            size_2d_norm = inputs.size_2d[i] / warp_size
+
+            corner_2d_norm = corner_2d
+            corner_2d_norm[0:2] = corner_2d[0:2] / warp_size
+            corner_2d_norm[2:4] = corner_2d[2:4] / warp_size
+            center_3d_norm = center_3d / warp_size
+
+            k, r = center_3d_norm[0] - corner_2d_norm[0], corner_2d_norm[2] - center_3d_norm[0]
+            t, b = center_3d_norm[1] - corner_2d_norm[1], corner_2d_norm[3] - center_3d_norm[1]
+
+            if k < 0 or r < 0 or t < 0 or b < 0:
+                continue
+
+            inputs.boxes[i] = center_2d_norm[0], center_2d_norm[1], size_2d_norm[0], size_2d_norm[1]
+            inputs.boxes_3d[i] = center_3d_norm[0], center_3d_norm[1], k, r, t, b
+
+            # encoding depth
+            inputs.depth[i] = annotations_list["location"][i][-1] * crop_scale
+
+            # encoding heading angle
+            heading_angle = self.ry2alpha(
+                inputs.calib_matrix,
+                annotations_list["rotation_y"][i],
+                (annotations_list["bbox"][i][0] + annotations_list["bbox"][i][2]) / 2,
+            )
+            if heading_angle > np.pi:
+                heading_angle -= 2 * np.pi  # check range
+            if heading_angle < -np.pi:
+                heading_angle += 2 * np.pi
+            inputs.heading_angle[i] = self.angle2class(heading_angle)
+
+            # encoding size_3d
+            src_size_3d[i] = np.array(
+                [
+                    annotations_list["dimensions"][i][1],
+                    annotations_list["dimensions"][i][2],
+                    annotations_list["dimensions"][i][0],
+                ],
+                dtype=np.float32,
+            )
+            inputs.size_3d[i] = src_size_3d[i]
+
+            # filter out the samples with truncated or occluded
+            if annotations_list["truncated"][i] <= 0.5 and annotations_list["occluded"][i] <= 2:
+                mask_2d[i] = 1
+
+        # update img_info
+        inputs.img_info.img_shape = self.input_size
+
+        return self.convert(inputs, mask_2d)
+
+    @staticmethod
+    def affine_transform(pt: np.ndarray, t: np.ndarray) -> np.ndarray:
+        """Apply an affine transformation to the points."""
+        new_pt = np.array([pt[0], pt[1], 1.0], dtype=np.float32).T
+        new_pt = np.dot(t, new_pt)
+        return new_pt[:2]
+
+    @staticmethod
+    def rect_to_img(p2: np.ndarray, pts_rect: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Convert camera coordinates to image coordinates.
+
+        Args:
+            p2 (np.ndarray): Projection matrix with shape (3, 4).
+            pts_rect (np.ndarray): Rectangular coordinates with shape (N, 4).
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: Image coordinates with shape (N, 2).
+        """
+
+        def cart_to_hom(pts: np.ndarray) -> np.ndarray:
+            """Convert Cartesian coordinates to homogeneous coordinates.
+
+            Args:
+                pts (np.ndarray): Array of Cartesian coordinates with shape (N, D),
+                    where N is the number of points and D is the number of dimensions.
+
+            Returns:
+                np.ndarray: Array of homogeneous coordinates with shape (N, D+1),
+                    where N is the number of points and D is the number of dimensions.
+            """
+            return np.hstack((pts, np.ones((pts.shape[0], 1), dtype=np.float32)))
+
+        pts_rect_hom = cart_to_hom(pts_rect)
+        pts_2d_hom = np.dot(pts_rect_hom, p2.T)
+        pts_img = (pts_2d_hom[:, 0:2].T / pts_rect_hom[:, 2]).T  # (N, 2)
+        pts_rect_depth = pts_2d_hom[:, 2] - p2.T[3, 2]  # depth in rect camera coord
+        return pts_img, pts_rect_depth
+
+    @staticmethod
+    def ry2alpha(p2: np.ndarray, ry: np.ndarray, u: np.ndarray) -> np.ndarray:
+        """Get observation angle of object.
+
+        Args:
+            p2 (np.ndarray): Projection matrix with shape (3, 4).
+            ry (np.ndarray): Observation angle of object with shape (N, ).
+            u (np.ndarray): Pixel coordinates with shape (N, 2).
+
+        Returns:
+            np.ndarray: Observation angle of object with shape (N, ).
+        """
+        alpha = ry - np.arctan2(u - p2[0, 2], p2[0, 0])
+
+        if alpha > np.pi:
+            alpha -= 2 * np.pi
+        if alpha < -np.pi:
+            alpha += 2 * np.pi
+
+        return alpha
+
+    @staticmethod
+    def angle2class(angle: float) -> tuple[int, float]:
+        """Convert continuous angle to discrete class and residual."""
+        num_heading_bin = 12
+        angle = angle % (2 * np.pi)
+        if not (angle >= 0 and angle <= 2 * np.pi):
+            msg = "angle not in 0 ~ 2pi"
+            raise ValueError(msg)
+
+        angle_per_class = 2 * np.pi / float(num_heading_bin)
+        shifted_angle = (angle + angle_per_class / 2) % (2 * np.pi)
+        class_id = int(shifted_angle / angle_per_class)
+        residual_angle = shifted_angle - (class_id * angle_per_class + angle_per_class / 2)
+        return class_id, residual_angle
+
+    def convert(self, inputs: T_OTXDataEntity, mask_2d: np.ndarray, image_to_tensor: bool = False) -> T_OTXDataEntity:  # type: ignore[override]
+        """Convert the data entity to torchvision format."""
+        if image_to_tensor:
+            inputs.image = torch.from_numpy(inputs.image).permute(2, 0, 1)
+        inputs.labels = torch.as_tensor(inputs.labels[mask_2d], dtype=torch.long)
+        inputs.boxes = tv_tensors.BoundingBoxes(inputs.boxes[mask_2d], format="XYXY", canvas_size=self.input_size)
+        inputs.boxes_3d = torch.as_tensor(inputs.boxes_3d[mask_2d], dtype=torch.float32)
+        inputs.size_2d = torch.as_tensor(inputs.size_2d[mask_2d], dtype=torch.float32)
+        inputs.size_3d = torch.as_tensor(inputs.size_3d[mask_2d], dtype=torch.float32)
+        inputs.depth = torch.as_tensor(inputs.depth[mask_2d], dtype=torch.float32)
+        inputs.heading_angle = torch.as_tensor(inputs.heading_angle[mask_2d], dtype=torch.float32)
+        inputs.calib_matrix = torch.as_tensor(inputs.calib_matrix, dtype=torch.float32)
+
+        return inputs
 
 
 class TorchVisionTransformLib:
