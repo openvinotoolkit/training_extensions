@@ -1094,8 +1094,10 @@ class RTMDetInstSepBNHead(RTMDetInstHead):
             mask_thr_binary (float): Binarization threshold for masks.
 
         Returns:
-            tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
-                and `labels` of shape [N, num_det].
+            tuple[Tensor, Tensor, Tensor]:
+                det (Tensor): The detection results of shape [N, num_boxes, 5].
+                labels (Tensor): The labels of shape [N, num_boxes].
+                masks (Tensor): The masks of shape [N, num_boxes, H, W].
         """
         dets, labels, inds = multiclass_nms(
             bboxes,

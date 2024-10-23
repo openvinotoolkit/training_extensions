@@ -136,7 +136,9 @@ class MaskRCNNTV(ExplainableOTXInstanceSegModel):
         labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
 
-        for img_info, prediction in zip(inputs.imgs_info, outputs):
+        # XAI wraps prediction under dictionary with key "predictions"
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
             scores.append(prediction["scores"])
             bboxes.append(
                 tv_tensors.BoundingBoxes(
@@ -220,7 +222,7 @@ class MaskRCNNTV(ExplainableOTXInstanceSegModel):
                 "opset_version": 11,
                 "autograd_inlining": False,
             },
-            output_names=["bboxes", "labels", "masks"],
+            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, inputs: Tensor) -> tuple[Tensor, ...]:
@@ -230,4 +232,4 @@ class MaskRCNNTV(ExplainableOTXInstanceSegModel):
             "image_shape": shape,
         }
         meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)

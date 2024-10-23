@@ -12,12 +12,14 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
+import torch
+
+from otx.algo.instance_segmentation.heads.rtmdet_inst_head import RTMDetInstSepBNHead
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
-    import torch
     from torch import Tensor, nn
 
 
@@ -217,6 +219,18 @@ class SingleStageDetector(BaseModule):
             backbone_feat = self.extract_feat(batch_inputs)
             bbox_head_feat = self.bbox_head.forward(backbone_feat)
             feature_vector = self.feature_vector_fn(backbone_feat)
+            if isinstance(self.bbox_head, RTMDetInstSepBNHead):
+                # create dummy saliency map as its implemented in ModelAPI
+                saliency_map = torch.zeros(1)
+                bboxes, labels, masks = self.bbox_head.export(backbone_feat, batch_img_metas, rescale=rescale)  # type: ignore[misc]
+                return {
+                    "bboxes": bboxes,
+                    "labels": labels,
+                    "masks": masks,
+                    "feature_vector": feature_vector,
+                    "saliency_map": saliency_map,
+                }
+
             saliency_map = self.explain_fn(bbox_head_feat[0])
             bboxes, labels = self.bbox_head.export(backbone_feat, batch_img_metas, rescale=rescale)
             return {

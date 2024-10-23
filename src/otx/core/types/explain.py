@@ -10,7 +10,7 @@ from typing import Sequence
 
 import torch
 
-FeatureMapType = torch.Tensor | Sequence[torch.Tensor]
+FeatureMapType = torch.Tensor | Sequence[torch.Tensor] | dict[str, torch.Tensor]
 
 
 class TargetExplainGroup(str, Enum):
