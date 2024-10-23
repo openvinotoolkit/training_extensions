@@ -85,13 +85,37 @@ class TestMaskDINO:
             assert shape_spec.stride == stride
             assert shape_spec.channels == channel
 
-    @pytest.mark.parametrize("model", [MaskDINO(label_info=3, model_name="resnet50")])
-    def test_backbone_weight_loading(self, model):
+    def test_r50_custom_weight_loading(self):
+        model = MaskDINO(label_info=3, model_name="resnet50")
         pretrained = load_from_http(model.load_from, map_location="cpu")
         tv_backbone = model.model.backbone
+        pixel_decoder = model.model.sem_seg_head.pixel_decoder
 
         assert torch.allclose(tv_backbone.conv1.weight, pretrained["model"]["backbone.stem.conv1.weight"])
         assert torch.allclose(
             tv_backbone.layer1[0].downsample[0].weight,
             pretrained["model"]["backbone.res2.0.shortcut.weight"],
+        )
+
+        assert torch.allclose(tv_backbone.conv1.weight, pretrained["model"]["backbone.stem.conv1.weight"])
+        assert torch.allclose(
+            tv_backbone.layer1[0].downsample[0].weight,
+            pretrained["model"]["backbone.res2.0.shortcut.weight"],
+        )
+
+        assert torch.allclose(
+            pixel_decoder.mask_features.conv.weight,
+            pretrained["model"]["sem_seg_head.pixel_decoder.mask_features.weight"],
+        )
+        assert torch.allclose(
+            pixel_decoder.adapter_1.conv.weight,
+            pretrained["model"]["sem_seg_head.pixel_decoder.adapter_1.weight"],
+        )
+        assert torch.allclose(
+            pixel_decoder.adapter_1.gn.weight,
+            pretrained["model"]["sem_seg_head.pixel_decoder.adapter_1.norm.weight"],
+        )
+        assert torch.allclose(
+            pixel_decoder.adapter_1.gn.bias,
+            pretrained["model"]["sem_seg_head.pixel_decoder.adapter_1.norm.bias"],
         )

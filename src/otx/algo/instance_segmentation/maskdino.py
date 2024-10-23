@@ -21,7 +21,6 @@ from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.instance_segmentation.segmentors import MaskDINOModule
 from otx.algo.instance_segmentation.utils.utils import ShapeSpec
 from otx.algo.modules.norm import AVAILABLE_NORMALIZATION_LIST, FrozenBatchNorm2d
-from otx.algo.utils.mmengine_utils import load_from_http
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -172,71 +171,6 @@ class MaskDINO(ExplainableOTXInstanceSegModel):
             sem_seg_head=sem_seg_head,
             criterion=criterion,
         )
-
-    def _create_model(self) -> nn.Module:
-        """Create MaskDINO model and load pre-trained weights.
-
-        Detectron2 state dict have different layer structure than torchvision state dict,
-        so we need to implement custom loading logic.
-
-        Returns:
-            nn.Module: MaskDINO model.
-        """
-        # TODO(Eugene): make it more general, now it only supports R50.
-
-        # Firstly load all weights on MaskDINO heads.
-        detector = super()._create_model()
-
-        # Then, load pre-trained backbone weights.
-        pretrained = load_from_http(self.load_from, map_location="cpu")
-        pretrained = pretrained.pop("model")
-        backbone_weights = []
-        backbone_shortcut_weights = []
-        for layer_name, weights in pretrained.items():
-            if layer_name.startswith("backbone"):
-                if "shortcut" in layer_name:
-                    backbone_shortcut_weights.append(weights)
-                else:
-                    backbone_weights.append(weights)
-
-        # Load pre-trained backbone weights to TV backbone weights.
-        tv_model_dict = {}
-        for layer_name in detector.backbone.state_dict():
-            w = backbone_shortcut_weights.pop(0) if "downsample" in layer_name else backbone_weights.pop(0)
-            tv_model_dict[layer_name] = w.clone()
-        detector.backbone.load_state_dict(tv_model_dict)
-
-        # load conv modules weight
-        conv_modules = [
-            "sem_seg_head.pixel_decoder.mask_features",
-            "sem_seg_head.pixel_decoder.adapter_1",
-            "sem_seg_head.pixel_decoder.layer_1",
-        ]
-        conv_module_dict = {}
-        for conv_module in conv_modules:
-            weight_name = f"{conv_module}.weight"
-            bias_name = f"{conv_module}.bias"
-            norm_name = f"{conv_module}.norm.weight"
-            norm_bias_name = f"{conv_module}.norm.bias"
-
-            if weight_name in pretrained:
-                new_weight_name = f"{conv_module}.conv.weight"
-                conv_module_dict[new_weight_name] = pretrained[weight_name].clone()
-            if bias_name in pretrained:
-                new_bias_name = f"{conv_module}.conv.bias"
-                conv_module_dict[new_bias_name] = pretrained[bias_name].clone()
-            if norm_name in pretrained:
-                new_norm_name = f"{conv_module}.gn.weight"
-                conv_module_dict[new_norm_name] = pretrained[norm_name].clone()
-            if norm_bias_name in pretrained:
-                new_norm_bias_name = f"{conv_module}.gn.bias"
-                conv_module_dict[new_norm_bias_name] = pretrained[norm_bias_name].clone()
-
-        incompatible_keys = detector.load_state_dict(conv_module_dict, strict=False)
-        if len(incompatible_keys.unexpected_keys):
-            msg = f"Unexpected keys: {incompatible_keys.unexpected_keys}"
-            raise ValueError(msg)
-        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:

@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any
 from otx.algo.instance_segmentation.heads import MaskDINOHead
 from otx.algo.instance_segmentation.losses import MaskDINOCriterion
 from otx.algo.modules.base_module import BaseModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.core.data.entity.base import ImageInfo
 
 if TYPE_CHECKING:
@@ -46,6 +47,82 @@ class MaskDINOModule(BaseModule):
         self.backbone = backbone
         self.sem_seg_head = sem_seg_head
         self.criterion = criterion
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict[str, Tensor],
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
+    ) -> None:
+        """Load model weights from state dict.
+
+        Args:
+            state_dict (dict): state dict from pretrained weights.
+            prefix (str): A string prefix that is added to the keys in the state_dict when loading nested modules.
+            local_metadata (dict): This dictionary contains metadata for the local module, used for versioning.
+            strict (bool): If True, it ensures that the keys in state_dict match exactly with the module's parameters.
+            missing_keys (list[str]): A list of str containing the missing keys.
+            unexpected_keys (list[str]): A list of str containing the unexpected keys.
+            error_msgs (list[str]): A list of str containing the error messages.
+        """
+        backbone_weights_name = []
+        backbone_shortcut_weights_name = []
+        conv_module_weights_name = []
+
+        conv_modules = ("mask_features", "adapter_1", "layer_1")
+        # get original layer names
+        for ori_layer_name in state_dict:
+            if ori_layer_name.startswith("backbone"):
+                if "shortcut" in ori_layer_name:
+                    backbone_shortcut_weights_name.append(ori_layer_name)
+                else:
+                    backbone_weights_name.append(ori_layer_name)
+            elif ori_layer_name.startswith("sem_seg_head.pixel_decoder") and any(
+                n in ori_layer_name for n in conv_modules
+            ):
+                conv_module_weights_name.append(ori_layer_name)
+
+        # replace backbone layer names in state_dict
+        for new_layer_name in self.backbone.state_dict():
+            if "downsample" in new_layer_name:
+                ori_layer_name = backbone_shortcut_weights_name.pop(0)
+            else:
+                ori_layer_name = backbone_weights_name.pop(0)
+
+            # check shape
+            if state_dict[ori_layer_name].shape != self.backbone.state_dict()[new_layer_name].shape:
+                msg = "Shape mismatch in backbone weights"
+                raise ValueError(msg)
+            # pop and push
+            state_dict["backbone." + new_layer_name] = state_dict.pop(ori_layer_name)
+
+        # replace conv module layer names in state_dict
+        for module_name, module in self.sem_seg_head.named_modules():
+            if isinstance(module, Conv2dModule):
+                for name in module.state_dict():
+                    new_layer_name = f"sem_seg_head.{module_name}.{name}"
+                    ori_layer_name = conv_module_weights_name.pop(0)
+                    if state_dict[ori_layer_name].shape != module.state_dict()[name].shape:
+                        msg = "Shape mismatch in conv module weights"
+                        raise ValueError(msg)
+                    if new_layer_name not in self.state_dict():
+                        msg = f"Layer {new_layer_name} not found in the model"
+                    # pop and push
+                    state_dict[new_layer_name] = state_dict.pop(ori_layer_name)
+
+        super()._load_from_state_dict(
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+        )
 
     def forward(
         self,
