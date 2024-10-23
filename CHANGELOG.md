@@ -100,6 +100,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4056>)
 - Upgrade MAPI in 2.2
   (<https://github.com/openvinotoolkit/training_extensions/pull/4052>)
+- Fix applying model's hparams when loading model from checkpoint
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4057>)
 
 ## \[v2.1.0\]
 

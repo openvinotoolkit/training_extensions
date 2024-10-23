@@ -367,8 +367,14 @@ class Engine:
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
+            kwargs_user_input: dict[str, Any] = {}
+            if self.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+                # to update user's custom infer_reference_info_root through cli for zero-shot learning
+                # TODO (sungchul): revisit for better solution
+                kwargs_user_input.update(infer_reference_info_root=self.model.infer_reference_info_root)
+
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **kwargs_user_input)
 
         if model.label_info != self.datamodule.label_info:
             if (
@@ -462,8 +468,14 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
+            kwargs_user_input: dict[str, Any] = {}
+            if self.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+                # to update user's custom infer_reference_info_root through cli for zero-shot learning
+                # TODO (sungchul): revisit for better solution
+                kwargs_user_input.update(infer_reference_info_root=self.model.infer_reference_info_root)
+
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **kwargs_user_input)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -574,11 +586,17 @@ class Engine:
             )
 
         if not is_ir_ckpt:
+            kwargs_user_input: dict[str, Any] = {}
+            if self.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+                # to update user's custom infer_reference_info_root through cli for zero-shot learning
+                # TODO (sungchul): revisit for better solution
+                kwargs_user_input.update(infer_reference_info_root=self.model.infer_reference_info_root)
+
             model_cls = self.model.__class__
             self.model = model_cls.load_from_checkpoint(
                 checkpoint_path=checkpoint,
                 map_location="cpu",
-                **self.model.hparams,
+                **kwargs_user_input,
             )
             self.model.eval()
 
@@ -742,8 +760,14 @@ class Engine:
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         if checkpoint is not None and not is_ir_ckpt:
+            kwargs_user_input: dict[str, Any] = {}
+            if self.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+                # to update user's custom infer_reference_info_root through cli for zero-shot learning
+                # TODO (sungchul): revisit for better solution
+                kwargs_user_input.update(infer_reference_info_root=self.model.infer_reference_info_root)
+
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **kwargs_user_input)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -845,11 +869,17 @@ class Engine:
                 )
 
             if not is_ir_ckpt:
+                kwargs_user_input: dict[str, Any] = {}
+                if self.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+                    # to update user's custom infer_reference_info_root through cli for zero-shot learning
+                    # TODO (sungchul): revisit for better solution
+                    kwargs_user_input.update(infer_reference_info_root=self.model.infer_reference_info_root)
+
                 model_cls = self.model.__class__
                 self.model = model_cls.load_from_checkpoint(
                     checkpoint_path=checkpoint,
                     map_location="cpu",
-                    **self.model.hparams,
+                    **kwargs_user_input,
                 )
         elif isinstance(self.model, OVModel):
             msg = "To run benchmark on OV model, checkpoint must be specified."

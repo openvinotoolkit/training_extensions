@@ -223,11 +223,7 @@ class TestEngine:
         checkpoint = "path/to/checkpoint.ckpt"
         fxt_engine.checkpoint = checkpoint
         fxt_engine.export()
-        mock_load_from_checkpoint.assert_called_once_with(
-            checkpoint_path=checkpoint,
-            map_location="cpu",
-            **fxt_engine.model.hparams,
-        )
+        mock_load_from_checkpoint.assert_called_once_with(checkpoint_path=checkpoint, map_location="cpu")
         mock_export.assert_called_once_with(
             output_dir=Path(fxt_engine.work_dir),
             base_name="exported_model",
