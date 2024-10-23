@@ -368,7 +368,7 @@ class Engine:
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
         if model.label_info != self.datamodule.label_info:
             if (
@@ -463,7 +463,7 @@ class Engine:
 
         if checkpoint is not None and not is_ir_ckpt:
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -575,11 +575,7 @@ class Engine:
 
         if not is_ir_ckpt:
             model_cls = self.model.__class__
-            self.model = model_cls.load_from_checkpoint(
-                checkpoint_path=checkpoint,
-                map_location="cpu",
-                **self.model.hparams,
-            )
+            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
             self.model.eval()
 
         self.model.explain_mode = explain
@@ -743,7 +739,7 @@ class Engine:
 
         if checkpoint is not None and not is_ir_ckpt:
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -846,11 +842,7 @@ class Engine:
 
             if not is_ir_ckpt:
                 model_cls = self.model.__class__
-                self.model = model_cls.load_from_checkpoint(
-                    checkpoint_path=checkpoint,
-                    map_location="cpu",
-                    **self.model.hparams,
-                )
+                self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
         elif isinstance(self.model, OVModel):
             msg = "To run benchmark on OV model, checkpoint must be specified."
             raise RuntimeError(msg)
