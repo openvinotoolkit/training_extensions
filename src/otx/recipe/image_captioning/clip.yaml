@@ -27,8 +27,8 @@ callback_monitor: val/clip_score
 data: ../_base_/data/image_captioning.yaml
 
 overrides:
-  max_epochs: 90
+  max_epochs: 200
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
-        patience: 3
+        patience: 10

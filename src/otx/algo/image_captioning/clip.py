@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Hugging-Face pretrained model for the OTX classification."""
+"""CLIP model for the OTX image-captioning task."""
 
 from __future__ import annotations
 
@@ -39,6 +39,33 @@ CLIP_TYPE = Literal[
 
 
 class CLIP(ImageCaptioningModel):
+    """CLIP model for the OTX image-captioning task.
+
+    Args:
+        model_name_or_path (CLIP_TYPE): The name or path of the pretrained model.
+        label_info (LabelInfoTypes): The label information for the classification task.
+        optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (224, 224)
+
+    Example:
+        1. API
+            >>> model = CLIP(
+            ...     model_name_or_path="openai/clip-vit-base-patch32",
+            ...     label_info=<Number-of-classes>,
+            ... )
+        2. CLI with OTX recipe
+            >>> otx train \
+            ... --config src/otx/recipe/image_captioning/clip.yaml
+            ... ...
+        3. CLI
+            >>> otx train \
+            ... --model otx.algo.image_captioning.clip.CLIP \
+            ... --model.model_name_or_path openai/clip-vit-base-patch32
+    """
+
     def __init__(
         self,
         model_name_or_path: CLIP_TYPE,
@@ -100,9 +127,7 @@ class CLIP(ImageCaptioningModel):
             return OTXBatchLossEntity(loss=outputs.loss)
 
         logits_per_image = outputs.logits_per_image
-        # logits_per_text = outputs.logits_per_text
         scores = logits_per_image.softmax(dim=1)
-        # scores = torch.unbind(logits_per_image, 0)
         preds = logits_per_image.argmax(-1, keepdim=True).unbind(0)
 
         return ImageCaptionBatchPredEntity(
@@ -111,12 +136,14 @@ class CLIP(ImageCaptioningModel):
             imgs_info=inputs.imgs_info,
             scores=scores,
             captions=preds,
+            image_embeds=outputs.image_embeds,
+            text_embeds=outputs.text_embeds,
         )
 
     def configure_metric(self) -> None:
         """Configure the metric."""
         metric = MetricCollection(
-            {"clip_score": CLIPScore(model=self.model, processor=self.processor)},
+            {"clip_score": CLIPScore()},
         )
 
         self._metric = metric.to(self.device)
@@ -127,27 +154,7 @@ class CLIP(ImageCaptioningModel):
         inputs: ImageCaptionBatchDataEntity,
     ) -> MetricInput:
         return {
-            "images": inputs.images,
-            "text": inputs.captions,
+            "img_features": preds.image_embeds,  # type: ignore[dict-item]
+            "txt_features": preds.text_embeds,  # type: ignore[dict-item]
+            "n_samples": len(inputs.captions),  # type: ignore[dict-item]
         }
-
-    # def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
-    #     """Model forward function used for the model tracing during model exportation."""
-    #     if self.explain_mode:
-    #         msg = "Explain mode is not supported for this model."
-    #         raise NotImplementedError(msg)
-
-    #     return self.model(pixel_values=image)
-
-
-if __name__ == "__main__":
-    data_root = "/home/harimkan/workspace/repo/otx-regression/otx-workspace-data/flickr8k_split_coco_caption"
-    from otx.engine.utils.auto_configurator import AutoConfigurator
-
-    dm = AutoConfigurator(data_root=data_root, task="IMAGE_CAPTIONING").get_datamodule()
-    clip = CLIP("openai/clip-vit-base-patch32", label_info=dm.label_info)
-
-    from otx.engine import Engine
-
-    engine = Engine(model=clip, datamodule=dm)
-    engine.train()

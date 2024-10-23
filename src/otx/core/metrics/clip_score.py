@@ -1,71 +1,23 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+"""CLIP Score Metric for CLIP fine-tuning."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import torch
 from torch import Tensor
 from torchmetrics import Metric
-from torchmetrics.utilities import rank_zero_warn
 
 if TYPE_CHECKING:
     from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
-    from transformers import CLIPModel, CLIPProcessor
 
 
-# Copy from torchmetrics.functional.multimodal.clip_score.py::_clip_score_update
-def _clip_score_update(
-    images: Tensor | list[Tensor],
-    text: str | list[str],
-    model: CLIPModel,
-    processor: CLIPProcessor,
-) -> tuple[Tensor, int]:
-    if not isinstance(images, list):
-        if images.ndim == 3:
-            images = [images]
-    else:  # unwrap into list
-        images = list(images)
-
-    if not all(i.ndim == 3 for i in images):
-        msg = "Expected all images to be 3d but found image that has either more or less"
-        raise ValueError(msg)
-
-    if not isinstance(text, list):
-        text = [text]
-
-    if len(text) != len(images):
-        msg = f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
-        raise ValueError(msg)
-    device = images[0].device
-
-    # Updated here: Image already preprossed in OTX
-    processed_input = processor(text=text, images=None, return_tensors="pt", padding=True)
-    processed_input["pixel_values"] = images
-
-    img_features = model.get_image_features(processed_input["pixel_values"].to(device))
-    img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
-
-    max_position_embeddings = model.config.text_config.max_position_embeddings
-    if processed_input["attention_mask"].shape[-1] > max_position_embeddings:
-        rank_zero_warn(
-            f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
-            "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
-            "longer sequences",
-            UserWarning,
-        )
-        processed_input["attention_mask"] = processed_input["attention_mask"][..., :max_position_embeddings]
-        processed_input["input_ids"] = processed_input["input_ids"][..., :max_position_embeddings]
-
-    txt_features = model.get_text_features(
-        processed_input["input_ids"].to(device),
-        processed_input["attention_mask"].to(device),
-    )
-    txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
-
-    # cosine similarity between feature vectors
-    score = 100 * (img_features * txt_features).sum(axis=-1)
-    return score, len(text)
-
-
+# Copy from torchmetrics.functional.multimodal.clip_score.py
+# Modified to be more generally available for fine-tuning models.
+# Reduced unnecessary feature pulls and modified to count with features already obtained
 class CLIPScore(Metric):
     r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
 
@@ -82,39 +34,16 @@ class CLIPScore(Metric):
 
     .. note:: Metric is not scriptable
 
-    As input to ``forward`` and ``update`` the metric accepts the following input
-
-    - ``images`` (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-        a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-        ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-    - ``text`` (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
-
     As output of `forward` and `compute` the metric returns the following output
 
     - ``clip_score`` (:class:`~torch.Tensor`): float scalar tensor with mean CLIP score over samples
 
     Args:
-        model_name_or_path: string indicating the version of the CLIP model to use. Available models are:
-
-            - `"openai/clip-vit-base-patch16"`
-            - `"openai/clip-vit-base-patch32"`
-            - `"openai/clip-vit-large-patch14-336"`
-            - `"openai/clip-vit-large-patch14"`
-
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
             If transformers package is not installed or version is lower than 4.10.0
-
-    Example:
-        >>> import torch
-        >>> from torchmetrics.multimodal.clip_score import CLIPScore
-        >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-        >>> score = metric(torch.randint(255, (3, 224, 224), generator=torch.manual_seed(42)), "a photo of a cat")
-        >>> score.detach()
-        tensor(24.4255)
-
     """
 
     is_differentiable: bool = False
@@ -129,17 +58,14 @@ class CLIPScore(Metric):
 
     def __init__(
         self,
-        model: CLIPModel,
-        processor: CLIPProcessor,
-        **kwargs: Any,  # noqa: ANN401
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
-        self.model = model
-        self.processor = processor
+
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, images: Tensor | list[Tensor], text: str | list[str]) -> None:
+    def update(self, img_features: torch.Tensor, txt_features: torch.Tensor, n_samples: int) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:
@@ -153,7 +79,9 @@ class CLIPScore(Metric):
                 If the number of images and captions do not match
 
         """
-        score, n_samples = _clip_score_update(images, text, self.model, self.processor)
+        # Copy from torchmetrics.functional.multimodal.clip_score.py::_clip_score_update
+        # cosine similarity between feature vectors
+        score = 100 * (img_features * txt_features).sum(axis=-1)
         self.score += score.sum(0)
         self.n_samples += n_samples
 

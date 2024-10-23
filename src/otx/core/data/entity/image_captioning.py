@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -16,6 +17,9 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
+
+if TYPE_CHECKING:
+    import torch
 
 
 @register_pytree_node
@@ -55,6 +59,9 @@ class ImageCaptionBatchDataEntity(OTXBatchDataEntity[ImageCaptionDataEntity]):
     ) -> ImageCaptionBatchDataEntity:
         """Collate function for ImageTextBatchDataEntity."""
         batch_data = super().collate_fn(entities, stack_images=stack_images)
+        # Many image captioning datasets contain multiple captions per image.
+        # In those cases, a common strategy is to randomly sample a caption amongst the available ones during training.
+        # from https://huggingface.co/docs/transformers/main/tasks/image_captioning
         captions = [np.random.choice(data.captions) for data in entities]
         return cls(
             batch_size=batch_data.batch_size,
@@ -67,3 +74,6 @@ class ImageCaptionBatchDataEntity(OTXBatchDataEntity[ImageCaptionDataEntity]):
 @dataclass
 class ImageCaptionBatchPredEntity(OTXBatchPredEntity, ImageCaptionBatchDataEntity):
     """Data entity to represent the LANGUAGE-IMAGE model output prediction."""
+
+    image_embeds: torch.FloatTensor | None = None
+    text_embeds: torch.FloatTensor | None = None
