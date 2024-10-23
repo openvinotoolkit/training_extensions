@@ -334,7 +334,7 @@ class InstSegExplainAlgo(BaseExplainAlgo):
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
-            predictions (list[InstanceData]): Predictions of Instance Segmentation model.
+            predictions (list[InstanceData] | list[dict[str, Tensor]): Predictions of Instance Segmentation model.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
