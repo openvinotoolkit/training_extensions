@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy as np
+
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
@@ -26,18 +28,19 @@ class ImageCaptionDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.IMAGE_CAPTIONING
 
-    captions: list[str] | str
+    captions: list[str]
 
 
 @dataclass
 class ImageCaptionPredEntity(OTXPredEntity, ImageCaptionDataEntity):
     """Data entity to represent the LANGUAGE-IMAGE model output prediction."""
 
+
 @dataclass
 class ImageCaptionBatchDataEntity(OTXBatchDataEntity[ImageCaptionDataEntity]):
     """Data entity for LANGUAGE-IMAGE task."""
 
-    captions: list[list[str]] | list[str]
+    captions: list[list[str]]
 
     @property
     def task(self) -> OTXTaskType:
@@ -52,13 +55,14 @@ class ImageCaptionBatchDataEntity(OTXBatchDataEntity[ImageCaptionDataEntity]):
     ) -> ImageCaptionBatchDataEntity:
         """Collate function for ImageTextBatchDataEntity."""
         batch_data = super().collate_fn(entities, stack_images=stack_images)
-        captions = [data.captions for data in batch_data]
+        captions = [np.random.choice(data.captions) for data in entities]
         return cls(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             captions=captions,
         )
+
 
 @dataclass
 class ImageCaptionBatchPredEntity(OTXBatchPredEntity, ImageCaptionBatchDataEntity):

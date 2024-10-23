@@ -8,45 +8,43 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Literal
 
-import torch
-from torch import nn
+from torchmetrics.collections import MetricCollection
 from transformers import CLIPModel, CLIPProcessor
 from transformers.configuration_utils import PretrainedConfig
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import (
-    MulticlassClsBatchDataEntity,
-    MulticlassClsBatchPredEntity,
-)
-from otx.core.metrics.accuracy import MultiClassClsMetricCallable
+from otx.core.data.entity.image_captioning import ImageCaptionBatchDataEntity, ImageCaptionBatchPredEntity
+from otx.core.metrics import MetricInput
+from otx.core.metrics.clip_score import CLIPScore
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.classification import OTXMulticlassClsModel
+from otx.core.model.image_captioning import ImageCaptioningModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
     from transformers.models.clip.modeling_clip import CLIPOutput
-
-    from otx.core.metrics import MetricCallable
 
 
 DEFAULT_INPUT_SIZE = (224, 224)
 logger = logging.getLogger(__name__)
 
 CLIP_TYPE = Literal[
+    "openai/clip-vit-base-patch16",
     "openai/clip-vit-base-patch32",
+    "openai/clip-vit-large-patch14-336",
+    "openai/clip-vit-large-patch14",
 ]
 
 
-class CLIP(OTXMulticlassClsModel):
+class CLIP(ImageCaptioningModel):
     def __init__(
         self,
-        model_name_or_path: CLIP_TYPE,  # https://huggingface.co/models?pipeline_tag=image-classification
+        model_name_or_path: CLIP_TYPE,
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         input_size: tuple[int, int] = DEFAULT_INPUT_SIZE,
     ) -> None:
@@ -56,17 +54,15 @@ class CLIP(OTXMulticlassClsModel):
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
-            metric=metric,
             torch_compile=torch_compile,
             input_size=input_size,
         )
         self.processor = CLIPProcessor.from_pretrained(self.model_name)
-        self.criterion = nn.CrossEntropyLoss()
 
     def _create_model(self) -> nn.Module:
         model_config, _ = PretrainedConfig.get_config_dict(self.model_name)
         kwargs = {}
-        if "image_size" in model_config:
+        if "image_size" in model_config and self.input_size is not None:
             kwargs["image_size"] = self.input_size[0]
         elif self.input_size != DEFAULT_INPUT_SIZE:
             msg = "There is no 'image_size' argument in the model configuration. There may be unexpected results."
@@ -79,12 +75,9 @@ class CLIP(OTXMulticlassClsModel):
             **kwargs,
         )
 
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        # TODO: Need to implement for image, text pair dataset
-        # inputs.labels to be converted to text mapped with self.label_info idx
-        text_prom = [f"{self.label_info.label_names[idx]}" for idx in inputs.labels]
+    def _customize_inputs(self, inputs: ImageCaptionBatchDataEntity) -> dict[str, Any]:
         captions = self.processor(
-            text=text_prom,
+            text=inputs.captions,
             images=None,
             return_tensors="pt",
             padding=True,
@@ -101,8 +94,8 @@ class CLIP(OTXMulticlassClsModel):
     def _customize_outputs(
         self,
         outputs: CLIPOutput,
-        inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
+        inputs: ImageCaptionBatchDataEntity,
+    ) -> ImageCaptionBatchPredEntity | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs.loss)
 
@@ -112,13 +105,31 @@ class CLIP(OTXMulticlassClsModel):
         # scores = torch.unbind(logits_per_image, 0)
         preds = logits_per_image.argmax(-1, keepdim=True).unbind(0)
 
-        return MulticlassClsBatchPredEntity(
+        return ImageCaptionBatchPredEntity(
             batch_size=inputs.batch_size,
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
-            labels=preds,
+            captions=preds,
         )
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        metric = MetricCollection(
+            {"clip_score": CLIPScore(model=self.model, processor=self.processor)},
+        )
+
+        self._metric = metric.to(self.device)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ImageCaptionBatchPredEntity,
+        inputs: ImageCaptionBatchDataEntity,
+    ) -> MetricInput:
+        return {
+            "images": inputs.images,
+            "text": inputs.captions,
+        }
 
     # def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
     #     """Model forward function used for the model tracing during model exportation."""
@@ -130,11 +141,13 @@ class CLIP(OTXMulticlassClsModel):
 
 
 if __name__ == "__main__":
-    data_root = "/home/harimkan/workspace/repo/datasets/otx_v2_dataset/multiclass_classification/multiclass_CUB_medium"
+    data_root = "/home/harimkan/workspace/repo/otx-regression/otx-workspace-data/flickr8k_split_coco_caption"
     from otx.engine.utils.auto_configurator import AutoConfigurator
-    dm = AutoConfigurator(data_root=data_root).get_datamodule()
+
+    dm = AutoConfigurator(data_root=data_root, task="IMAGE_CAPTIONING").get_datamodule()
     clip = CLIP("openai/clip-vit-base-patch32", label_info=dm.label_info)
 
     from otx.engine import Engine
+
     engine = Engine(model=clip, datamodule=dm)
     engine.train()

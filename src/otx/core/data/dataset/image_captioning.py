@@ -12,7 +12,7 @@ from datumaro import Caption, Image
 
 from otx.core.data.dataset.base import OTXDataset
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.image_caption import ImageCaptionBatchDataEntity, ImageCaptionDataEntity
+from otx.core.data.entity.image_captioning import ImageCaptionBatchDataEntity, ImageCaptionDataEntity
 
 
 class ImageCaptionDataset(OTXDataset[ImageCaptionDataEntity]):

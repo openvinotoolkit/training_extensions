@@ -1,0 +1,34 @@
+model:
+  class_path: otx.algo.image_captioning.clip.CLIP
+  init_args:
+    label_info: 1000
+    model_name_or_path: openai/clip-vit-base-patch32
+
+    optimizer:
+      class_path: torch.optim.AdamW
+      init_args:
+        lr: 0.0001
+        weight_decay: 0.05
+
+    scheduler:
+      class_path: lightning.pytorch.cli.ReduceLROnPlateau
+      init_args:
+        mode: max
+        factor: 0.5
+        patience: 1
+        monitor: val/clip_score
+
+engine:
+  task: IMAGE_CAPTIONING
+  device: auto
+
+callback_monitor: val/clip_score
+
+data: ../_base_/data/image_captioning.yaml
+
+overrides:
+  max_epochs: 90
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        patience: 3

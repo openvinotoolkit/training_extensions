@@ -49,6 +49,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.KEYPOINT_DETECTION: RECIPE_PATH / "keypoint_detection" / "rtmpose_tiny.yaml",
     OTXTaskType.OBJECT_DETECTION_3D: RECIPE_PATH / "object_detection_3d" / "monodetr3d.yaml",
+    OTXTaskType.IMAGE_CAPTIONING: RECIPE_PATH / "image_captioning" / "clip.yaml",
 }
 
 TASK_PER_DATA_FORMAT = {
@@ -74,6 +75,7 @@ TASK_PER_DATA_FORMAT = {
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
     ],
+    "coco_captions": [OTXTaskType.IMAGE_CAPTIONING],
 }
 
 OVMODEL_PER_TASK = {
