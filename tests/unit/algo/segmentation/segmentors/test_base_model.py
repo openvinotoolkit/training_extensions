@@ -43,8 +43,10 @@ class TestBaseSegmModel:
     def test_extract_features(self, model, inputs):
         images = inputs[0]
         features = model.extract_features(images)
-        assert isinstance(features, torch.Tensor)
-        assert features.shape == (1, 2, 256, 256)
+        assert isinstance(features, tuple)
+        assert isinstance(features[0], torch.Tensor)
+        assert isinstance(features[1], torch.Tensor)
+        assert features[1].shape == (1, 2, 256, 256)
 
     def test_calculate_loss(self, model, inputs):
         model.criterion.name = "CrossEntropyLoss"

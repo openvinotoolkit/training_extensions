@@ -220,8 +220,8 @@ def test_otx_e2e_cli(
     # 5) otx export with XAI
     if "instance_segmentation/rtmdet_inst_tiny" in recipe:
         return
-    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
-        return  # Supported only for classification, detection and instance segmentation task.
+    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation", "semantic_segmentation"]):
+        return  # Supported only for classification, detection and segmentation tasks.
 
     unsupported_models = ["dino", "rtdetr"]
     if any(model in model_name for model in unsupported_models):

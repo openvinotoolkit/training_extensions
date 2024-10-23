@@ -210,19 +210,44 @@ class TwoStageDetector(BaseModule):
         self,
         batch_inputs: torch.Tensor,
         batch_img_metas: list[dict],
-    ) -> tuple[torch.Tensor, ...]:
-        """Export for two stage detectors."""
-        x = self.extract_feat(batch_inputs)
+        explain_mode: bool,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor] | dict:
+        """Export the model for ONNX/OpenVINO.
 
+        Args:
+            batch_inputs (torch.Tensor): image tensor with shape (N, C, H, W).
+            batch_img_metas (list[dict]): image information.
+            explain_mode (bool): whether to return feature vector.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor] | dict:
+                - bboxes (torch.Tensor): bounding boxes.
+                - labels (torch.Tensor): labels.
+                - masks (torch.Tensor): masks.
+                - feature_vector (torch.Tensor, optional): feature vector.
+                - saliency_map (torch.Tensor, optional): saliency map.
+        """
+        x = self.extract_feat(batch_inputs)
         rpn_results_list = self.rpn_head.export(
             x,
             batch_img_metas,
             rescale=False,
         )
-
-        return self.roi_head.export(
+        bboxes, labels, masks = self.roi_head.export(
             x,
             rpn_results_list,
             batch_img_metas,
             rescale=False,
         )
+
+        if explain_mode:
+            feature_vector = self.feature_vector_fn(x)
+            return {
+                "bboxes": bboxes,
+                "labels": labels,
+                "masks": masks,
+                "feature_vector": feature_vector,
+                # create dummy tensor as model API supports saliency_map
+                "saliency_map": torch.zeros(1),
+            }
+        return bboxes, labels, masks

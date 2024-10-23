@@ -252,7 +252,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             "scale_factor": (1.0, 1.0),
         }
         meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
