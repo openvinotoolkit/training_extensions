@@ -1,5 +1,5 @@
 task: ANOMALY_CLASSIFICATION
-input_size: 256
+input_size: [256, 256]
 data_format: mvtec
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
@@ -15,7 +15,7 @@ train_subset:
   transforms:
     - class_path: torchvision.transforms.v2.Resize
       init_args:
-        size: [256, 256]
+        size: $(input_size)
         antialias: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -37,7 +37,7 @@ val_subset:
   transforms:
     - class_path: torchvision.transforms.v2.Resize
       init_args:
-        size: [256, 256]
+        size: $(input_size)
         antialias: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -59,7 +59,7 @@ test_subset:
   transforms:
     - class_path: torchvision.transforms.v2.Resize
       init_args:
-        size: [256, 256]
+        size: $(input_size)
         antialias: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
