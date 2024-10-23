@@ -100,9 +100,6 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         fxt_benchmark: Benchmark,
         fxt_accelerator: str,
     ):
-        if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
-            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
-
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -182,9 +179,6 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         fxt_benchmark: Benchmark,
         fxt_accelerator: str,
     ):
-        if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
-            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
-
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -258,9 +252,6 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         fxt_benchmark: Benchmark,
         fxt_accelerator: str,
     ):
-        if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
-            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
-
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
