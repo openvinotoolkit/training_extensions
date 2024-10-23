@@ -13,11 +13,10 @@ train_subset:
   batch_size: 32
   num_workers: 4
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+    - class_path: torchvision.transforms.v2.Resize
       init_args:
-        size: $(input_size)
+        size: [256, 256]
         antialias: true
-    - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -36,11 +35,10 @@ val_subset:
   batch_size: 32
   num_workers: 4
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+    - class_path: torchvision.transforms.v2.Resize
       init_args:
-        size: $(input_size)
+        size: [256, 256]
         antialias: true
-    - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -59,11 +57,10 @@ test_subset:
   batch_size: 32
   num_workers: 4
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+    - class_path: torchvision.transforms.v2.Resize
       init_args:
-        size: $(input_size)
+        size: [256, 256]
         antialias: true
-    - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
