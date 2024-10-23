@@ -90,6 +90,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4042>)
 - Fix wrong indices setting in HLabelInfo
   (<https://github.com/openvinotoolkit/training_extensions/pull/4044>)
+- Fix applying model's hparams when loading model from checkpoint
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4057>)
 
 ## \[v2.1.0\]
 
