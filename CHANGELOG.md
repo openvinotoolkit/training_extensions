@@ -98,6 +98,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4055>)
 - Update MRCNN model export to include feature vector and saliency map
   (<https://github.com/openvinotoolkit/training_extensions/pull/4056>)
+- Upgrade MAPI in 2.2
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4052>)
 
 ## \[v2.1.0\]
 
