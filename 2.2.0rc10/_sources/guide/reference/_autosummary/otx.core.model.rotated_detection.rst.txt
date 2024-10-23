@@ -1,0 +1,32 @@
+otx.core.model.rotated\_detection
+=================================
+
+.. automodule:: otx.core.model.rotated_detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OVRotatedDetectionModel
+      RotatedMaskRCNNEfficientNet
+      RotatedMaskRCNNModel
+      RotatedMaskRCNNResNet50
+   
+   
+
+   
+   
+   
+
+
+
