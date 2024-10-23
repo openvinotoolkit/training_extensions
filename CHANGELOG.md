@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 - Update visual prompting pipeline for multi-label zero-shot learning support
   (https://github.com/openvinotoolkit/training_extensions/pull/3993)
-- Fix MaskRCNN Explain Mode
+- Fix MaskRCNN/RTMDet-Inst/MaskRCNNTV Explain Mode
   (https://github.com/openvinotoolkit/training_extensions/pull/4053)
 
 ## \[2.3.0\]
