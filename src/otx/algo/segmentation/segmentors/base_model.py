@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 import torch.nn.functional as f
 from torch import Tensor, nn
 
+from otx.algo.explain.explain_algo import feature_vector_fn
+
 if TYPE_CHECKING:
     from otx.core.data.entity.base import ImageInfo
 
@@ -58,7 +60,7 @@ class BaseSegmModel(nn.Module):
                 - If mode is "predict", returns the predicted outputs.
                 - Otherwise, returns the model outputs after interpolation.
         """
-        outputs = self.extract_features(inputs)
+        enc_feats, outputs = self.extract_features(inputs)
         outputs = f.interpolate(outputs, size=inputs.size()[2:], mode="bilinear", align_corners=True)
 
         if mode == "tensor":
@@ -76,12 +78,19 @@ class BaseSegmModel(nn.Module):
         if mode == "predict":
             return outputs.argmax(dim=1)
 
+        if mode == "explain":
+            feature_vector = feature_vector_fn(enc_feats)
+            return {
+                "preds": outputs,
+                "feature_vector": feature_vector,
+            }
+
         return outputs
 
-    def extract_features(self, inputs: Tensor) -> Tensor:
+    def extract_features(self, inputs: Tensor) -> tuple[Tensor, Tensor]:
         """Extract features from the backbone and head."""
         enc_feats = self.backbone(inputs)
-        return self.decode_head(enc_feats)
+        return enc_feats, self.decode_head(enc_feats)
 
     def calculate_loss(
         self,
