@@ -90,6 +90,16 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4042>)
 - Fix wrong indices setting in HLabelInfo
   (<https://github.com/openvinotoolkit/training_extensions/pull/4044>)
+- Add legacy template LiteHRNet_18 template
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4049>)
+- Model templates: rename model_status value 'DISCONTINUED' to 'OBSOLETE'
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4051>)
+- Enable export of feature vectors for semantic segmentation task
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4055>)
+- Update MRCNN model export to include feature vector and saliency map
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4056>)
+- Upgrade MAPI in 2.2
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4052>)
 
 ## \[v2.1.0\]
 
