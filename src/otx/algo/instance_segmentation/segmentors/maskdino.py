@@ -69,51 +69,52 @@ class MaskDINOModule(BaseModule):
             unexpected_keys (list[str]): A list of str containing the unexpected keys.
             error_msgs (list[str]): A list of str containing the error messages.
         """
-        backbone_weights_name = []
-        backbone_shortcut_weights_name = []
-        conv_module_weights_name = []
+        if not prefix:
+            # load original MaskDINO weights
+            backbone_weights_name = []
+            backbone_shortcut_weights_name = []
+            conv_module_weights_name = []
+            conv_modules = ("mask_features", "adapter_1", "layer_1")
+            # get original layer names
+            for ori_layer_name in state_dict:
+                if ori_layer_name.startswith("backbone"):
+                    if "shortcut" in ori_layer_name:
+                        backbone_shortcut_weights_name.append(ori_layer_name)
+                    else:
+                        backbone_weights_name.append(ori_layer_name)
+                elif ori_layer_name.startswith("sem_seg_head.pixel_decoder") and any(
+                    n in ori_layer_name for n in conv_modules
+                ):
+                    conv_module_weights_name.append(ori_layer_name)
 
-        conv_modules = ("mask_features", "adapter_1", "layer_1")
-        # get original layer names
-        for ori_layer_name in state_dict:
-            if ori_layer_name.startswith("backbone"):
-                if "shortcut" in ori_layer_name:
-                    backbone_shortcut_weights_name.append(ori_layer_name)
+            # replace backbone layer names in state_dict
+            for new_layer_name in self.backbone.state_dict():
+                if "downsample" in new_layer_name:
+                    ori_layer_name = backbone_shortcut_weights_name.pop(0)
                 else:
-                    backbone_weights_name.append(ori_layer_name)
-            elif ori_layer_name.startswith("sem_seg_head.pixel_decoder") and any(
-                n in ori_layer_name for n in conv_modules
-            ):
-                conv_module_weights_name.append(ori_layer_name)
+                    ori_layer_name = backbone_weights_name.pop(0)
 
-        # replace backbone layer names in state_dict
-        for new_layer_name in self.backbone.state_dict():
-            if "downsample" in new_layer_name:
-                ori_layer_name = backbone_shortcut_weights_name.pop(0)
-            else:
-                ori_layer_name = backbone_weights_name.pop(0)
+                # check shape
+                if state_dict[ori_layer_name].shape != self.backbone.state_dict()[new_layer_name].shape:
+                    msg = "Shape mismatch in backbone weights"
+                    raise ValueError(msg)
+                # pop and push
+                state_dict["backbone." + new_layer_name] = state_dict.pop(ori_layer_name)
 
-            # check shape
-            if state_dict[ori_layer_name].shape != self.backbone.state_dict()[new_layer_name].shape:
-                msg = "Shape mismatch in backbone weights"
-                raise ValueError(msg)
-            # pop and push
-            state_dict["backbone." + new_layer_name] = state_dict.pop(ori_layer_name)
-
-        # replace conv module layer names in state_dict
-        for module_name, module in self.sem_seg_head.named_modules():
-            if isinstance(module, Conv2dModule):
-                for name in module.state_dict():
-                    new_layer_name = f"sem_seg_head.{module_name}.{name}"
-                    ori_layer_name = conv_module_weights_name.pop(0)
-                    if state_dict[ori_layer_name].shape != module.state_dict()[name].shape:
-                        msg = "Shape mismatch in conv module weights"
-                        raise ValueError(msg)
-                    if new_layer_name not in self.state_dict():
-                        msg = f"Layer {new_layer_name} not found in the model"
-                        raise ValueError(msg)
-                    # pop and push
-                    state_dict[new_layer_name] = state_dict.pop(ori_layer_name)
+            # replace conv module layer names in state_dict
+            for module_name, module in self.sem_seg_head.named_modules():
+                if isinstance(module, Conv2dModule):
+                    for name in module.state_dict():
+                        new_layer_name = f"sem_seg_head.{module_name}.{name}"
+                        ori_layer_name = conv_module_weights_name.pop(0)
+                        if state_dict[ori_layer_name].shape != module.state_dict()[name].shape:
+                            msg = "Shape mismatch in conv module weights"
+                            raise ValueError(msg)
+                        if new_layer_name not in self.state_dict():
+                            msg = f"Layer {new_layer_name} not found in the model"
+                            raise ValueError(msg)
+                        # pop and push
+                        state_dict[new_layer_name] = state_dict.pop(ori_layer_name)
 
         super()._load_from_state_dict(
             state_dict,
