@@ -111,6 +111,7 @@ class MaskDINOModule(BaseModule):
                         raise ValueError(msg)
                     if new_layer_name not in self.state_dict():
                         msg = f"Layer {new_layer_name} not found in the model"
+                        raise ValueError(msg)
                     # pop and push
                     state_dict[new_layer_name] = state_dict.pop(ori_layer_name)
 
