@@ -65,7 +65,7 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, img_features: torch.Tensor, txt_features: torch.Tensor, n_samples: int) -> None:
+    def update(self, img_features: torch.Tensor, txt_features: torch.Tensor) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:
@@ -83,7 +83,7 @@ class CLIPScore(Metric):
         # cosine similarity between feature vectors
         score = 100 * (img_features * txt_features).sum(axis=-1)
         self.score += score.sum(0)
-        self.n_samples += n_samples
+        self.n_samples += len(txt_features)
 
     def compute(self) -> Tensor:
         """Compute accumulated clip score."""

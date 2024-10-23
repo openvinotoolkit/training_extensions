@@ -156,5 +156,4 @@ class CLIP(ImageCaptioningModel):
         return {
             "img_features": preds.image_embeds,  # type: ignore[dict-item]
             "txt_features": preds.text_embeds,  # type: ignore[dict-item]
-            "n_samples": len(inputs.captions),  # type: ignore[dict-item]
         }
