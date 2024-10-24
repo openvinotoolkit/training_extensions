@@ -8,14 +8,13 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Literal
 
-from torchmetrics.collections import MetricCollection
 from transformers import CLIPModel, CLIPProcessor
 from transformers.configuration_utils import PretrainedConfig
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.image_captioning import ImageCaptionBatchDataEntity, ImageCaptionBatchPredEntity
 from otx.core.metrics import MetricInput
-from otx.core.metrics.clip_score import CLIPScore
+from otx.core.metrics.clip_score import CLIPScoreCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.image_captioning import ImageCaptioningModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -25,6 +24,8 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import nn
     from transformers.models.clip.modeling_clip import CLIPOutput
+
+    from otx.core.metrics import MetricCallable
 
 
 DEFAULT_INPUT_SIZE = (224, 224)
@@ -72,6 +73,7 @@ class CLIPForImageCaptioning(ImageCaptioningModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = CLIPScoreCallable,
         torch_compile: bool = False,
         input_size: tuple[int, int] = DEFAULT_INPUT_SIZE,
     ) -> None:
@@ -81,6 +83,7 @@ class CLIPForImageCaptioning(ImageCaptioningModel):
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
             torch_compile=torch_compile,
             input_size=input_size,
         )
@@ -140,19 +143,13 @@ class CLIPForImageCaptioning(ImageCaptioningModel):
             text_embeds=outputs.text_embeds,
         )
 
-    def configure_metric(self) -> None:
-        """Configure the metric."""
-        metric = MetricCollection(
-            {"clip_score": CLIPScore()},
-        )
-
-        self._metric = metric.to(self.device)
-
     def _convert_pred_entity_to_compute_metric(
         self,
         preds: ImageCaptionBatchPredEntity,
         inputs: ImageCaptionBatchDataEntity,
     ) -> MetricInput:
+        # This is an input that currently depends on otx.core.metric.clip_score.CLIPScore.
+        # If the metric changes, will need to modify this.
         return {
             "img_features": preds.image_embeds,  # type: ignore[dict-item]
             "txt_features": preds.text_embeds,  # type: ignore[dict-item]

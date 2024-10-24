@@ -9,10 +9,14 @@ from typing import TYPE_CHECKING, Sequence
 
 import torch
 from torch import Tensor
-from torchmetrics import Metric
+from torchmetrics import Metric, MetricCollection
+
+from otx.core.metrics.types import MetricCallable
 
 if TYPE_CHECKING:
     from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+    from otx.core.types.label import LabelInfo
 
 
 # Copy from torchmetrics.functional.multimodal.clip_score.py
@@ -67,10 +71,6 @@ class CLIPScore(Metric):
 
     def update(self, img_features: torch.Tensor, txt_features: torch.Tensor) -> None:
         """Update CLIP score on a batch of images and text.
-
-        Args:
-            images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
-            text: Either a single caption or a list of captions
 
         Raises:
             ValueError:
@@ -128,3 +128,12 @@ class CLIPScore(Metric):
 
         """
         return self._plot(val, ax)
+
+
+def _clip_score_callable(label_info: LabelInfo) -> MetricCollection:  # noqa: ARG001
+    return MetricCollection(
+        {"clip_score": CLIPScore()},
+    )
+
+
+CLIPScoreCallable: MetricCallable = _clip_score_callable

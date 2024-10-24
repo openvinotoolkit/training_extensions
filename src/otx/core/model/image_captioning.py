@@ -8,7 +8,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
 from otx.core.data.entity.image_captioning import ImageCaptionBatchDataEntity, ImageCaptionBatchPredEntity
-from otx.core.metrics import NullMetricCallable
+from otx.core.metrics import MetricCallable
+from otx.core.metrics.clip_score import CLIPScoreCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
@@ -27,6 +28,7 @@ class ImageCaptioningModel(OTXModel[ImageCaptionBatchDataEntity, ImageCaptionBat
         input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = CLIPScoreCallable,
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
@@ -35,7 +37,7 @@ class ImageCaptioningModel(OTXModel[ImageCaptionBatchDataEntity, ImageCaptionBat
             input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
-            metric=NullMetricCallable,
+            metric=metric,
             torch_compile=torch_compile,
             train_type=train_type,
         )
