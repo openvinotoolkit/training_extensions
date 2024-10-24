@@ -567,7 +567,16 @@
 <span class="sd">        :param stage: Either `&quot;fit&quot;`, `&quot;validate&quot;`, `&quot;test&quot;`, or `&quot;predict&quot;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">torch_compile</span> <span class="ow">and</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;fit&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span></div>
+            <span class="c1"># Set the log_level of this to error due to the numerous warning messages from compile.</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">_logging</span><span class="o">.</span><span class="n">set_logs</span><span class="p">(</span><span class="n">dynamo</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;torch model compile has been applied. It may be slower than usual because &quot;</span>
+                    <span class="s2">&quot;it builds the graph in the initial training.&quot;</span>
+                <span class="p">),</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXModel.configure_optimizers">
