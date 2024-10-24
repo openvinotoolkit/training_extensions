@@ -156,6 +156,11 @@ class OTXDatasetFactory:
 
             return OTXKeypointDetectionDataset(**common_kwargs)
 
+        if task == OTXTaskType.DIFFUSION:
+            from .dataset.diffusion import OTXDiffusionDataset
+
+            return OTXDiffusionDataset(**common_kwargs)
+
         if task == OTXTaskType.OBJECT_DETECTION_3D:
             from .dataset.object_detection_3d import OTX3DObjectDetectionDataset
 

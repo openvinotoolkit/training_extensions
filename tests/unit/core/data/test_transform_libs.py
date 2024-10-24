@@ -3,6 +3,7 @@
 #
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
 import pytest
@@ -119,7 +120,7 @@ class TestResizetoLongestEdge:
 
 
 class TestTorchVisionTransformLib:
-    @pytest.fixture(params=["from_dict", "from_list", "from_compose"])
+    @pytest.fixture(params=["from_dict", "from_obj", "from_compose"])
     def fxt_config(self, request) -> list[dict[str, Any]]:
         if request.param == "from_compose":
             return v2.Compose(
@@ -185,6 +186,46 @@ class TestTorchVisionTransformLib:
 
         item = dataset[0]
         assert isinstance(item, data_entity_cls)
+
+    def test_transform_enable_flag(self) -> None:
+        prefix = "torchvision.transforms.v2"
+        cfg_str = f"""
+        transforms:
+          - class_path: {prefix}.RandomResizedCrop
+            init_args:
+                size: [224, 224]
+                antialias: True
+          - class_path: {prefix}.RandomHorizontalFlip
+            init_args:
+                p: 0.5
+          - class_path: {prefix}.ToDtype
+            init_args:
+                dtype: ${{as_torch_dtype:torch.float32}}
+                scale: True
+          - class_path: {prefix}.Normalize
+            init_args:
+                mean: [0.485, 0.456, 0.406]
+                std: [0.229, 0.224, 0.225]
+        """
+        cfg_org = OmegaConf.create(cfg_str)
+
+        cfg = deepcopy(cfg_org)
+        cfg.transforms[0].enable = False  # Remove 1st
+        transform = TorchVisionTransformLib.generate(cfg)
+        assert len(transform.transforms) == 3
+        assert "RandomResizedCrop" not in repr(transform)
+
+        cfg = deepcopy(cfg_org)
+        cfg.transforms[1].enable = False  # Remove 2nd
+        transform = TorchVisionTransformLib.generate(cfg)
+        assert len(transform.transforms) == 3
+        assert "RandomHorizontalFlip" not in repr(transform)
+
+        cfg = deepcopy(cfg_org)
+        cfg.transforms[2].enable = True  # No effect
+        transform = TorchVisionTransformLib.generate(cfg)
+        assert len(transform.transforms) == 4
+        assert "ToDtype" in repr(transform)
 
     @pytest.fixture()
     def fxt_config_w_input_size(self) -> list[dict[str, Any]]:

@@ -41,7 +41,11 @@ def find_recipe_folder(base_path: Path, folder_name: str) -> Path:
 
 def get_task_list(task: str) -> list[OTXTaskType]:
     if task == "all":
-        tasks = [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
+        tasks = [
+            task_type
+            for task_type in OTXTaskType
+            if task_type not in (OTXTaskType.DETECTION_SEMI_SL, OTXTaskType.DIFFUSION)
+        ]
     elif task == "multi_cls_classification":
         tasks = [OTXTaskType.MULTI_CLASS_CLS]
     elif task == "multi_label_classification":
