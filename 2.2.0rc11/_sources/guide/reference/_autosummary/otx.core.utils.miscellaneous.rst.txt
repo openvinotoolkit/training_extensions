@@ -1,0 +1,29 @@
+otx.core.utils.miscellaneous
+============================
+
+.. automodule:: otx.core.utils.miscellaneous
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ensure_callable
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

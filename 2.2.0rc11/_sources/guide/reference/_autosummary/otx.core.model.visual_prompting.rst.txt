@@ -1,0 +1,32 @@
+otx.core.model.visual\_prompting
+================================
+
+.. automodule:: otx.core.model.visual_prompting
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXVisualPromptingModel
+      OTXZeroShotVisualPromptingModel
+      OVVisualPromptingModel
+      OVZeroShotVisualPromptingModel
+   
+   
+
+   
+   
+   
+
+
+
