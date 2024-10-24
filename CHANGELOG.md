@@ -68,6 +68,8 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
+- Update anomaly base transforms to use square resizing
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4059>)
 - Fix Combined Dataloader & unlabeled warmup loss in Semi-SL
   (<https://github.com/openvinotoolkit/training_extensions/pull/3723>)
 - Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
