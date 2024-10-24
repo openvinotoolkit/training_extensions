@@ -135,9 +135,10 @@ class ImageTextMeanAveragePrecision(Metric):
             # Sort by predicted scores
             sorted_indices = torch.argsort(similarities, descending=True)
 
-            # Assume ground truth is the diagonal (i.e., i-th image matches i-th text)
+            # Create true_sorted vector
             true_sorted = torch.zeros_like(similarities)
-            true_sorted[sorted_indices == i] = 1
+            true_sorted[i] = 1
+            true_sorted = true_sorted[sorted_indices]
 
             # Calculate precision at each rank
             precisions = []

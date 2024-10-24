@@ -14,6 +14,7 @@ from otx.core.data.dataset.classification import (
     OTXMultilabelClsDataset,
 )
 from otx.core.data.dataset.detection import OTXDetectionDataset
+from otx.core.data.dataset.image_captioning import ImageCaptionDataset
 from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
 from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
@@ -76,6 +77,7 @@ class TestOTXDatasetFactory:
             (OTXTaskType.ANOMALY_CLASSIFICATION, AnomalyDataset),
             (OTXTaskType.ANOMALY_DETECTION, AnomalyDataset),
             (OTXTaskType.ANOMALY_SEGMENTATION, AnomalyDataset),
+            (OTXTaskType.IMAGE_CAPTIONING, ImageCaptionDataset),
         ],
     )
     def test_create(
