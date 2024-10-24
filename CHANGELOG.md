@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Update visual prompting pipeline for multi-label zero-shot learning support
   (https://github.com/openvinotoolkit/training_extensions/pull/3993)
+- Refactor MaskDINO
+  (https://github.com/openvinotoolkit/training_extensions/pull/4006)
 
 ## \[2.3.0\]
 

@@ -63,7 +63,18 @@ def mask_target_single(
     mask_size: list[int],
     meta_info: dict,
 ) -> Tensor:
-    """Compute mask target for each positive proposal in the image."""
+    """Compute mask target for each positive proposal in the image.
+
+    Args:
+        pos_proposals (Tensor): Positive proposals, has shape (num_pos, 4).
+        pos_assigned_gt_inds (Tensor): Assigned GT indices for positive proposals, has shape (num_pos,).
+        gt_masks (list[Polygon] or tv_tensors.Mask): Ground truth masks as list of polygons or tv_tensors.Mask.
+        mask_size (list[int]): The mask size.
+        meta_info (dict): Meta information of the image.
+
+    Returns:
+        Tensor: Mask target, has shape (num_pos, w, h).
+    """
     mask_size = _pair(mask_size)
     if len(gt_masks) == 0:
         warnings.warn("No ground truth masks are provided!", stacklevel=2)
@@ -104,7 +115,9 @@ def masks_to_boxes(masks: Tensor, dtype: torch.dtype) -> Tensor:
 
     The masks should be in format [N, H, W] where N is the number of masks, (H, W) are the spatial dimensions.
 
-    Returns a [N, 4] tensors, with the boxes in xyxy format
+    Args:
+        masks (Tensor): Masks to compute the bounding boxes.
+        dtype (torch.dtype): Data type of the returned tensor.
     """
     if masks.numel() == 0:
         return torch.zeros((0, 4), device=masks.device)
