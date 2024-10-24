@@ -77,7 +77,9 @@ class BaseDenseHead(BaseModule):
         """
         batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 
-        return *self(x), batch_gt_instances, batch_img_metas
+        outputs = self(x)
+
+        return outputs, batch_gt_instances, batch_img_metas
 
     def predict(
         self,

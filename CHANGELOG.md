@@ -4,10 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## \[Unreleased\]
 
+### New features
+
+- Turn on/off classification augmentations
+  (https://github.com/openvinotoolkit/training_extensions/pull/4039)
+
 ### Enhancements
 
 - Update visual prompting pipeline for multi-label zero-shot learning support
   (https://github.com/openvinotoolkit/training_extensions/pull/3993)
+- Update to work torch compile in detection
+  (https://github.com/openvinotoolkit/training_extensions/pull/4003)
 - Refactor MaskDINO
   (https://github.com/openvinotoolkit/training_extensions/pull/4006)
 
@@ -68,6 +75,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3810)
 - Support configurable input size
   (https://github.com/openvinotoolkit/training_extensions/pull/3788)
+- Add diffusion task
+  (https://github.com/openvinotoolkit/training_extensions/pull/3875)
 
 ### Enhancements
 

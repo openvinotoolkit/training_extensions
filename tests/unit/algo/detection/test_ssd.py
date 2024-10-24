@@ -11,6 +11,7 @@ from otx.algo.detection.ssd import SSD
 from otx.core.data.entity.detection import DetBatchPredEntity
 from otx.core.exporter.native import OTXModelExporter
 from otx.core.types.export import TaskLevelExportParameters
+from torch._dynamo.testing import CompileCounter
 
 
 class TestSSD:
@@ -83,3 +84,22 @@ class TestSSD:
         fxt_model.explain_mode = True
         output = fxt_model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 4
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            SSD(model_name="ssd_mobilenetv2", label_info=3),
+        ],
+    )
+    def test_compiled_model(self, model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        model.model = torch.compile(model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, *model.input_size)
+        model.model(x)
+        assert cnt.frame_count == 1
