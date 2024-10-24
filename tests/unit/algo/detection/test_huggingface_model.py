@@ -5,6 +5,7 @@ import pytest
 import torch
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from torch._dynamo.testing import CompileCounter
 from torchvision import tv_tensors
 
 SKIP_TRANSFORMERS_TEST = False
@@ -81,3 +82,16 @@ class TestHuggingFaceModelForDetection:
         assert len(result.bboxes) == 2
         assert len(result.labels) == 2
         assert len(result.scores) == 2
+
+    def test_compiled_model(self, fxt_detection_model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        fxt_detection_model.model = torch.compile(fxt_detection_model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, *fxt_detection_model.input_size)
+        fxt_detection_model.model(x)
+        assert cnt.frame_count == 1

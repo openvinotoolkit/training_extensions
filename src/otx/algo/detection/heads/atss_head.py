@@ -202,9 +202,10 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         Returns:
             dict: A dictionary of components for loss calculation.
         """
-        outs = super().prepare_loss_inputs(x, entity)
-
-        cls_scores, bbox_preds, centernesses, batch_gt_instances, batch_img_metas = outs
+        (cls_scores, bbox_preds, centernesses), batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(
+            x,
+            entity,
+        )
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
             msg = "featmap_sizes and self.prior_generator.num_levels have different levels."

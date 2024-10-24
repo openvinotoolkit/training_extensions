@@ -9,6 +9,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.detection import DetBatchPredEntity
 from otx.core.exporter.native import OTXModelExporter
 from otx.core.types.export import TaskLevelExportParameters
+from torch._dynamo.testing import CompileCounter
 
 
 class TestATSS:
@@ -65,3 +66,23 @@ class TestATSS:
         model.explain_mode = True
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 4
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            ATSS(model_name="atss_mobilenetv2", label_info=3),
+            ATSS(model_name="atss_resnext101", label_info=3),
+        ],
+    )
+    def test_compiled_model(self, model):
+        # Set Compile Counter
+        torch._dynamo.reset()
+        cnt = CompileCounter()
+
+        # Set model compile setting
+        model.model = torch.compile(model.model, backend=cnt)
+
+        # Prepare inputs
+        x = torch.randn(1, 3, *model.input_size)
+        model.model(x)
+        assert cnt.frame_count == 6
