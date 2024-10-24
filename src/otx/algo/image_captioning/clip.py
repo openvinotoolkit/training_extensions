@@ -14,7 +14,7 @@ from transformers.configuration_utils import PretrainedConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.image_captioning import ImageCaptionBatchDataEntity, ImageCaptionBatchPredEntity
 from otx.core.metrics import MetricInput
-from otx.core.metrics.clip_score import CLIPScoreCallable
+from otx.core.metrics.clip_score import CLIPMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.image_captioning import ImageCaptioningModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -73,7 +73,7 @@ class CLIPForImageCaptioning(ImageCaptioningModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = CLIPScoreCallable,
+        metric: MetricCallable = CLIPMetricCallable,
         torch_compile: bool = False,
         input_size: tuple[int, int] = DEFAULT_INPUT_SIZE,
     ) -> None:
@@ -148,9 +148,9 @@ class CLIPForImageCaptioning(ImageCaptioningModel):
         preds: ImageCaptionBatchPredEntity,
         inputs: ImageCaptionBatchDataEntity,
     ) -> MetricInput:
-        # This is an input that currently depends on otx.core.metric.clip_score.CLIPScore.
+        # This is an input that currently depends on otx.core.metric.clip_score.
         # If the metric changes, will need to modify this.
         return {
-            "img_features": preds.image_embeds,  # type: ignore[dict-item]
-            "txt_features": preds.text_embeds,  # type: ignore[dict-item]
+            "image_features": preds.image_embeds,  # type: ignore[dict-item]
+            "text_features": preds.text_embeds,  # type: ignore[dict-item]
         }

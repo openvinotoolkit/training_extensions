@@ -69,21 +69,18 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, img_features: torch.Tensor, txt_features: torch.Tensor) -> None:
+    def update(self, image_features: torch.Tensor, text_features: torch.Tensor) -> None:
         """Update CLIP score on a batch of images and text.
 
-        Raises:
-            ValueError:
-                If not all images have format [C, H, W]
-            ValueError:
-                If the number of images and captions do not match
-
+        Args:
+            image_features: Tensor of shape (N, D) with image embeddings
+            text_features: Tensor of shape (M, D) with text embeddings
         """
         # Copy from torchmetrics.functional.multimodal.clip_score.py::_clip_score_update
         # cosine similarity between feature vectors
-        score = 100 * (img_features * txt_features).sum(axis=-1)
+        score = 100 * (image_features * text_features).sum(axis=-1)
         self.score += score.sum(0)
-        self.n_samples += len(txt_features)
+        self.n_samples += len(text_features)
 
     def compute(self) -> Tensor:
         """Compute accumulated clip score."""
@@ -130,10 +127,80 @@ class CLIPScore(Metric):
         return self._plot(val, ax)
 
 
-def _clip_score_callable(label_info: LabelInfo) -> MetricCollection:  # noqa: ARG001
+class ImageTextMeanAveragePrecision(Metric):
+    """Computes the mean average precision for image-text retrieval."""
+
+    higher_is_better: bool = True
+    full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound = 1.0
+
+    def __init__(self, k: int = 10, dist_sync_on_step: bool = False):
+        super().__init__(dist_sync_on_step=dist_sync_on_step)
+        self.k = k
+        self.add_state("average_precision", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, image_features: Tensor, text_features: Tensor) -> None:
+        """Update function to calculate average precision for image-text retrieval.
+
+        Args:
+            image_features: Tensor of shape (N, D) with image embeddings
+            text_features: Tensor of shape (M, D) with text embeddings
+        """
+        # Calculate cosine similarities between image and text features
+        cosine_similarities = torch.matmul(image_features, text_features.T)
+
+        # Calculate average precision for each image
+        for i in range(cosine_similarities.shape[0]):
+            similarities = cosine_similarities[i]
+
+            # Sort by predicted scores
+            sorted_indices = torch.argsort(similarities, descending=True)
+
+            # Assume ground truth is the diagonal (i.e., i-th image matches i-th text)
+            true_sorted = torch.zeros_like(similarities)
+            true_sorted[i] = 1
+            true_sorted = true_sorted[sorted_indices]
+
+            # Calculate precision at each rank
+            precisions = []
+            num_hits = 0
+            for j in range(min(self.k, len(true_sorted))):
+                if true_sorted[j] == 1:
+                    num_hits += 1
+                    precisions.append(num_hits / (j + 1))
+
+            if precisions:
+                self.average_precision += torch.tensor(precisions).mean()
+                self.total += 1
+
+    def compute(self) -> Tensor:
+        """Computes the clip score.
+
+        Returns:
+            Tensor: The average precision divided by the total if the total is greater than 0,
+                    otherwise returns a tensor with value 0.0.
+        """
+        return self.average_precision / self.total if self.total > 0 else torch.tensor(0.0)
+
+    def reset(self) -> None:
+        """Resets the metrics for average precision and total count.
+
+        This method initializes `self.average_precision` to a tensor with a value of 0.0
+        and `self.total` to a tensor with a value of 0.
+        """
+        self.average_precision = torch.tensor(0.0)
+        self.total = torch.tensor(0)
+
+
+def _clip_metric_callable(label_info: LabelInfo) -> MetricCollection:  # noqa: ARG001
     return MetricCollection(
-        {"clip_score": CLIPScore()},
+        {
+            "clip_score": CLIPScore(),
+            "mAP": ImageTextMeanAveragePrecision(),
+        },
     )
 
 
-CLIPScoreCallable: MetricCallable = _clip_score_callable
+CLIPMetricCallable: MetricCallable = _clip_metric_callable
