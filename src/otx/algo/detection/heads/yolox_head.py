@@ -461,7 +461,7 @@ class YOLOXHeadModule(BaseDenseHead):
         Returns:
             dict: A dictionary of components for loss calculation.
         """
-        cls_scores, bbox_preds, objectnesses, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(
+        (cls_scores, bbox_preds, objectnesses), batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(
             x,
             entity,
         )
