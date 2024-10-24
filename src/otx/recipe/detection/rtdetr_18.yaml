@@ -66,8 +66,6 @@ overrides:
             fill: 0
         - class_path: otx.core.data.transform_libs.torchvision.RandomAffine
           enable: false
-          init_args:
-            is_numpy_to_tvtensor: true
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
             prob: 0.5
