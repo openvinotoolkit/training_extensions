@@ -76,15 +76,15 @@ class CLIPScore(Metric):
             image_features: Tensor of shape (N, D) with image embeddings
             text_features: Tensor of shape (M, D) with text embeddings
         """
-        # Copy from torchmetrics.functional.multimodal.clip_score.py::_clip_score_update
-        # cosine similarity between feature vectors
-        score = 100 * (image_features * text_features).sum(axis=-1)
+        # Calculate cosine similarity between feature vectors
+        cosine_sim = torch.nn.functional.cosine_similarity(image_features, text_features, dim=-1)
+        score = 100 * cosine_sim
         self.score += score.sum(0)
         self.n_samples += len(text_features)
 
     def compute(self) -> Tensor:
         """Compute accumulated clip score."""
-        return torch.max(self.score / self.n_samples, torch.zeros_like(self.score))
+        return torch.clamp(self.score / self.n_samples, min=0.0)
 
     def plot(self, val: Tensor | Sequence[Tensor] | None = None, ax: _AX_TYPE | None = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -100,29 +100,6 @@ class CLIPScore(Metric):
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
-
-        .. plot::
-            :scale: 75
-
-            >>> # Example plotting a single value
-            >>> import torch
-            >>> from torchmetrics.multimodal.clip_score import CLIPScore
-            >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-            >>> metric.update(torch.randint(255, (3, 224, 224)), "a photo of a cat")
-            >>> fig_, ax_ = metric.plot()
-
-        .. plot::
-            :scale: 75
-
-            >>> # Example plotting multiple values
-            >>> import torch
-            >>> from torchmetrics.multimodal.clip_score import CLIPScore
-            >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-            >>> values = [ ]
-            >>> for _ in range(10):
-            ...     values.append(metric(torch.randint(255, (3, 224, 224)), "a photo of a cat"))
-            >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
@@ -160,8 +137,7 @@ class ImageTextMeanAveragePrecision(Metric):
 
             # Assume ground truth is the diagonal (i.e., i-th image matches i-th text)
             true_sorted = torch.zeros_like(similarities)
-            true_sorted[i] = 1
-            true_sorted = true_sorted[sorted_indices]
+            true_sorted[sorted_indices == i] = 1
 
             # Calculate precision at each rank
             precisions = []
