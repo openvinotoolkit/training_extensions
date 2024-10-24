@@ -48,10 +48,18 @@ overrides:
           init_args:
             scale: $(input_size)
             transform_bbox: true
+        - class_path: otx.core.data.transform_libs.torchvision.RandomAffine
+          enable: false
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
             prob: 0.5
             is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.RandomVerticalFlip
+          enable: false
+        - class_path: torchvision.transforms.v2.GaussianBlur
+          enable: false
+          init_args:
+            kernel_size: 5
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
@@ -59,6 +67,8 @@ overrides:
           init_args:
             mean: [0.0, 0.0, 0.0]
             std: [255.0, 255.0, 255.0]
+        - class_path: torchvision.transforms.v2.GaussianNoise
+          enable: false
       sampler:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 

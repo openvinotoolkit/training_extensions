@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Turn on/off classification augmentations
   (https://github.com/openvinotoolkit/training_extensions/pull/4039)
+- Turn on/off detection and instance segmentation augmentations
+  (https://github.com/openvinotoolkit/training_extensions/pull/4066)
 
 ### Enhancements
 
