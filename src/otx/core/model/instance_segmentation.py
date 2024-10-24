@@ -16,8 +16,10 @@ from model_api.tilers import InstanceSegmentationTiler
 from torch import Tensor
 from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
+from torchvision.models.detection.image_list import ImageList
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
+from otx.algo.instance_segmentation.segmentors.maskrcnn_tv import MaskRCNN
 from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
@@ -270,7 +272,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             "scale_factor": (1.0, 1.0),
         }
         meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -473,7 +475,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         mode: str = "tensor",  # noqa: ARG004
     ) -> dict[str, Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
-        x = self.extract_feat(entity.images)
+        x = self.backbone(entity.images) if isinstance(self, MaskRCNN) else self.extract_feat(entity.images)
 
         feature_vector = self.feature_vector_fn(x)
         predictions = self.get_results_from_head(x, entity)
@@ -482,8 +484,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             # Export case, consists of tensors
             # For OV task saliency map are generated on MAPI side
             saliency_map = torch.empty(1, dtype=torch.uint8)
-        elif isinstance(predictions, list) and isinstance(predictions[0], InstanceData):
-            # Predict case, consists of InstanceData
+        elif isinstance(predictions, list) and isinstance(predictions[0], (InstanceData, dict)):
+            # Predict case, consists of InstanceData or dict
             saliency_map = self.explain_fn(predictions)
         else:
             msg = f"Unexpected predictions type: {type(predictions)}"
@@ -499,7 +501,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self,
         x: tuple[Tensor],
         entity: InstanceSegBatchDataEntity,
-    ) -> tuple[Tensor] | list[InstanceData]:
+    ) -> tuple[Tensor, Tensor, Tensor] | list[InstanceData] | list[dict[str, Tensor]]:
         """Get the results from the head of the instance segmentation model.
 
         Args:
@@ -507,10 +509,26 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             data_samples (OptSampleList | None): A list of data samples.
 
         Returns:
-            tuple[Tensor] | list[InstanceData]: The predicted results from the head of the model.
+            tuple[Tensor, Tensor, Tensor] | list[InstanceData]: The predicted results from the head of the model.
             Tuple for the Export case, list for the Predict case.
         """
+        from otx.algo.instance_segmentation.maskrcnn_tv import MaskRCNNTV
         from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
+
+        if isinstance(self, MaskRCNNTV):
+            ori_shapes = [img_info.ori_shape for img_info in entity.imgs_info]
+            img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
+            image_list = ImageList(entity.images, img_shapes)
+            proposals, _ = self.model.rpn(image_list, x)
+            detections, _ = self.model.roi_heads(
+                x,
+                proposals,
+                image_list.image_sizes,
+            )
+            scale_factors = [
+                img_meta.scale_factor if img_meta.scale_factor else (1.0, 1.0) for img_meta in entity.imgs_info
+            ]
+            return self.model.postprocess(detections, ori_shapes, scale_factors)
 
         if isinstance(self, RTMDetInst):
             return self.model.bbox_head.predict(x, entity, rescale=False)

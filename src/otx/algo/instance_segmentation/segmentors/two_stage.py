@@ -20,6 +20,14 @@ class TwoStageDetector(nn.Module):
 
     Two-stage detectors typically consisting of a region proposal network and a
     task-specific regression head.
+
+    Args:
+        backbone (nn.Module): Module that extracts features from the input image.
+        neck (nn.Module): Module that further processes the features and optionally generates. (e.g FPN)
+        rpn_head (nn.Module): Region proposal network head.
+        roi_head (nn.Module): Region of interest head.
+        roi_criterion (nn.Module): Criterion to calculate ROI loss.
+        rpn_criterion (nn.Module): Criterion to calculate RPN loss.
     """
 
     def __init__(
@@ -88,9 +96,9 @@ class TwoStageDetector(nn.Module):
 
     def forward(
         self,
-        entity: torch.Tensor,
+        entity: Tensor,
         mode: str = "tensor",
-    ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
+    ) -> dict[str, Tensor] | list[InstanceData] | tuple[Tensor, ...] | Tensor:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
@@ -106,18 +114,14 @@ class TwoStageDetector(nn.Module):
         parameter update, which are supposed to be done in :meth:`train_step`.
 
         Args:
-            inputs (torch.Tensor): The input tensor with shape
-                (N, C, ...) in general.
-            data_samples (list[:obj:`DetDataSample`], optional): A batch of
-                data samples that contain annotations and predictions.
-                Defaults to None.
+            entity (Tensor): The input tensor with shape (N, C, ...) in general.
             mode (str): Return what kind of value. Defaults to 'tensor'.
 
         Returns:
             The return type depends on ``mode``.
 
             - If ``mode="tensor"``, return a tensor or a tuple of tensor.
-            - If ``mode="predict"``, return a list of :obj:`DetDataSample`.
+            - If ``mode="predict"``, return a list of :obj:`InstanceData`.
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
@@ -142,12 +146,11 @@ class TwoStageDetector(nn.Module):
             x = self.neck(x)
         return x
 
-    def loss(self, batch_inputs: InstanceSegBatchDataEntity) -> dict:
+    def loss(self, batch_inputs: InstanceSegBatchDataEntity) -> dict[str, Tensor]:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
-            batch_inputs (Tensor): Input images of shape (N, C, H, W).
-                These should usually be mean centered and std scaled.
+            batch_inputs (InstanceSegBatchDataEntity): The input data entity.
 
         Returns:
             dict: A dictionary of loss components
@@ -224,21 +227,51 @@ class TwoStageDetector(nn.Module):
 
     def export(
         self,
-        batch_inputs: torch.Tensor,
+        batch_inputs: Tensor,
         batch_img_metas: list[dict],
-    ) -> tuple[torch.Tensor, ...]:
-        """Export for two stage detectors."""
-        x = self.extract_feat(batch_inputs)
+        explain_mode: bool = False,
+    ) -> tuple[Tensor, Tensor, Tensor] | dict[str, Tensor]:
+        """Export the model for ONNX/OpenVINO.
 
+        Args:
+            batch_inputs (Tensor): image tensor with shape (N, C, H, W).
+            batch_img_metas (list[dict]): image information.
+            explain_mode (bool, optional): whether to return feature vector. Defaults to False.
+
+        Returns:
+            dict[str, Tensor]: Return a dictionary when explain mode is ON containing the following items:
+                - bboxes (Tensor): bounding boxes.
+                - labels (Tensor): labels.
+                - masks (Tensor): masks.
+                - feature_vector (Tensor): feature vector.
+                - saliency_map (Tensor): dummy saliency map.
+
+            tuple[Tensor, Tensor, Tensor]: Return a tuple when explain mode is OFF containing the following items:
+                - bboxes (Tensor): bounding boxes.
+                - labels (Tensor): labels.
+                - masks (Tensor): masks.
+        """
+        x = self.extract_feat(batch_inputs)
         rpn_results_list = self.rpn_head.export(
             x,
             batch_img_metas,
             rescale=False,
         )
-
-        return self.roi_head.export(
+        bboxes, labels, masks = self.roi_head.export(
             x,
             rpn_results_list,
             batch_img_metas,
             rescale=False,
         )
+
+        if explain_mode:
+            feature_vector = self.feature_vector_fn(x)
+            return {
+                "bboxes": bboxes,
+                "labels": labels,
+                "masks": masks,
+                "feature_vector": feature_vector,
+                # create dummy tensor as model API supports saliency_map
+                "saliency_map": torch.zeros(1),
+            }
+        return bboxes, labels, masks

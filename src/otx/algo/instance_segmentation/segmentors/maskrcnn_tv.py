@@ -38,22 +38,23 @@ class MaskRCNN(_MaskRCNN):
 
         image_list = ImageList(entity.images, img_shapes)
         targets = []
-        for bboxes, labels, masks, polygons in zip(
-            entity.bboxes,
-            entity.labels,
-            entity.masks,
-            entity.polygons,
-        ):
-            # NOTE: shift labels by 1 as 0 is reserved for background
-            _labels = labels + 1 if len(labels) else labels
-            targets.append(
-                {
-                    "boxes": bboxes,
-                    "labels": _labels,
-                    "masks": masks,
-                    "polygons": polygons,
-                },
-            )
+        if self.training:
+            for bboxes, labels, masks, polygons in zip(
+                entity.bboxes,
+                entity.labels,
+                entity.masks,
+                entity.polygons,
+            ):
+                # NOTE: shift labels by 1 as 0 is reserved for background
+                _labels = labels + 1 if len(labels) else labels
+                targets.append(
+                    {
+                        "boxes": bboxes,
+                        "labels": _labels,
+                        "masks": masks,
+                        "polygons": polygons,
+                    },
+                )
 
         features = self.backbone(image_list.tensors)
         if isinstance(features, Tensor):
@@ -112,14 +113,41 @@ class MaskRCNN(_MaskRCNN):
         self,
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
-    ) -> tuple[list[Tensor], list[Tensor], list[Tensor]]:
-        """Export the model with the given inputs and image metas."""
+        explain_mode: bool = False,
+    ) -> tuple[list[Tensor], list[Tensor], list[Tensor]] | dict[str, Tensor | list[Tensor]]:
+        """Export the model.
+
+        Args:
+            batch_inputs (Tensor): image input tensor.
+            batch_img_metas (list[dict]): image meta information.
+            explain_mode (bool, optional): export feature vector and saliency map. Defaults to False.
+
+        Returns:
+            tuple[list[Tensor], list[Tensor], list[Tensor]] | dict[str, Tensor]:
+                boxes (list[Tensor]): bounding boxes.
+                labels (list[Tensor]): labels.
+                masks_probs (list[Tensor]): masks probabilities.
+                feature_vector (Tensor, optional): feature vector.
+                saliency_map (Tensor, optional): saliency map.
+        """
         img_shapes = [img_meta["image_shape"] for img_meta in batch_img_metas]
         image_list = ImageList(batch_inputs, img_shapes)
         features = self.backbone(batch_inputs)
         proposals, _ = self.rpn(image_list, features)
         boxes, labels, masks_probs = self.roi_heads.export(features, proposals, image_list.image_sizes)
         labels = [label - 1 for label in labels]  # Convert back to 0-indexed labels
+
+        if explain_mode:
+            saliency_map = torch.zeros(1)
+            feature_vector = self.feature_vector_fn(features)
+            return {
+                "boxes": boxes,
+                "labels": labels,
+                "masks": masks_probs,
+                "feature_vector": feature_vector,
+                "saliency_map": saliency_map,
+            }
+
         return boxes, labels, masks_probs
 
 

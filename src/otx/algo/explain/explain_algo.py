@@ -13,6 +13,7 @@ from otx.core.types.explain import FeatureMapType
 
 if TYPE_CHECKING:
     import numpy as np
+    from torch import Tensor
 
     from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -22,7 +23,10 @@ ExplainerForwardFn = HeadForwardFn
 
 def feature_vector_fn(feature_map: FeatureMapType) -> torch.Tensor:
     """Generate the feature vector by average pooling feature maps."""
-    if isinstance(feature_map, (list, tuple)):
+    if isinstance(feature_map, (list, tuple, dict)):
+        if isinstance(feature_map, dict):
+            feature_map = list(feature_map.values())
+
         # aggregate feature maps from Feature Pyramid Network
         feature_vector = [
             # Spatially pooling and flatten, B x C x H x W => B x C'
@@ -324,13 +328,13 @@ class InstSegExplainAlgo(BaseExplainAlgo):
 
     def func(
         self,
-        predictions: list[InstanceData],
+        predictions: list[InstanceData] | list[dict[str, Tensor]],
         _: int = -1,
     ) -> list[np.array]:
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
-            predictions (list[InstanceData]): Predictions of Instance Segmentation model.
+            predictions (list[InstanceData] | list[dict[str, Tensor]): Predictions of Instance Segmentation model.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
