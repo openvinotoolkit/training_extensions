@@ -17,8 +17,8 @@ from warnings import warn
 
 import torch
 from lightning import Trainer, seed_everything
+from lightning.pytorch.plugins.precision import MixedPrecision
 
-from otx.algo.plugins import MixedPrecisionXPUPlugin
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
@@ -30,7 +30,8 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.utils.utils import is_xpu_available, measure_flops
+from otx.utils.device import is_xpu_available
+from otx.utils.utils import measure_flops
 
 from .adaptive_bs import adapt_batch_size
 from .hpo import execute_hpo, update_hyper_parameter
@@ -1107,7 +1108,16 @@ class Engine:
                 self._cache.update(strategy="xpu_single")
                 # add plugin for Automatic Mixed Precision on XPU
                 if self._cache.args.get("precision", 32) == 16:
-                    self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
+                    msg = "XPU doesn't support fp16 now, so bfp16 will be used instead."
+                    warn(msg, stacklevel=1)
+                    self._cache.update(
+                        plugins=[
+                            MixedPrecision(
+                                precision="bf16-mixed",
+                                device="xpu",
+                            ),
+                        ],
+                    )
                     self._cache.args["precision"] = None
 
             kwargs = self._cache.args

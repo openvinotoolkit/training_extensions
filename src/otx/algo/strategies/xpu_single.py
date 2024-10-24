@@ -8,12 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import torch
 from lightning.pytorch.strategies import StrategyRegistry
 from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
 from lightning.pytorch.utilities.exceptions import MisconfigurationException
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 if TYPE_CHECKING:
     import lightning.pytorch as pl
@@ -44,26 +43,6 @@ class SingleXPUStrategy(SingleDeviceStrategy):
             checkpoint_io=checkpoint_io,
             precision_plugin=precision_plugin,
         )
-
-    @property
-    def is_distributed(self) -> bool:
-        """Returns true if the strategy supports distributed training."""
-        return False
-
-    def setup_optimizers(self, trainer: pl.Trainer) -> None:
-        """Sets up optimizers."""
-        super().setup_optimizers(trainer)
-        if len(self.optimizers) > 1:  # type: ignore[has-type]
-            msg = "XPU strategy doesn't support multiple optimizers"
-            raise RuntimeError(msg)
-        if trainer.task != "SEMANTIC_SEGMENTATION":
-            if len(self.optimizers) == 1:  # type: ignore[has-type]
-                model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
-                self.optimizers = [optimizer]
-                self.model = model
-            else:  # for inference
-                trainer.model.eval()
-                self.model = torch.xpu.optimize(trainer.model)
 
 
 StrategyRegistry.register(

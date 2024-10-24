@@ -90,6 +90,8 @@ class SimOTAAssigner:
         priors = pred_instances.priors  # type: ignore[attr-defined]
         num_bboxes = decoded_bboxes.size(0)
 
+        device = gt_bboxes.device.type
+
         # assign 0 by default
         assigned_gt_inds = decoded_bboxes.new_full((num_bboxes,), 0, dtype=torch.long)
         if num_gt == 0 or num_bboxes == 0:
@@ -117,7 +119,7 @@ class SimOTAAssigner:
 
         valid_pred_scores = valid_pred_scores.unsqueeze(1).repeat(1, num_gt, 1)
         # disable AMP autocast and calculate BCE with FP32 to avoid overflow
-        with torch.cuda.amp.autocast(enabled=False):
+        with torch.amp.autocast(device_type=device, enabled=False):
             cls_cost = (
                 F.binary_cross_entropy(
                     valid_pred_scores.to(dtype=torch.float32),

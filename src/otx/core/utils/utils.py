@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Any
 import torch
 from datumaro.components.annotation import AnnotationType, LabelCategories
 
+from otx.utils.device import is_xpu_available
+
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
 
@@ -43,10 +45,10 @@ def is_ckpt_for_finetuning(ckpt: dict) -> bool:
 
 def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:
     """Measure appropriate num_workers value and return it."""
-    num_gpus = torch.cuda.device_count()
-    if num_gpus == 0:
+    num_devices = torch.xpu.device_count() if is_xpu_available() else torch.cuda.device_count()
+    if num_devices == 0:
         return None
-    return min(cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
+    return min(cpu_count() // (num_dataloader * num_devices), 8)  # max available num_workers is 8
 
 
 def get_idx_list_per_classes(dm_dataset: DmDataset, use_string_label: bool = False) -> dict[int | str, list[int]]:

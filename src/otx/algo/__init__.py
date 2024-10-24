@@ -5,12 +5,10 @@
 
 from . import (
     accelerators,
-    plugins,
     strategies,
 )
 
 __all__ = [
     "strategies",
     "accelerators",
-    "plugins",
 ]

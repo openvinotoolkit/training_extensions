@@ -24,10 +24,10 @@ from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.engine.adaptive_bs import adapt_batch_size
 from otx.hpo import HyperBand, run_hpo_loop
+from otx.utils.device import is_xpu_available
 from otx.utils.utils import (
     get_decimal_point,
     get_using_dot_delimited_key,
-    is_xpu_available,
     remove_matched_files,
 )
 

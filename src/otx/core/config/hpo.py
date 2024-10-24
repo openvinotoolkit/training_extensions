@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 import torch
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.device import is_xpu_available
 
 if torch.cuda.is_available():
     num_workers = torch.cuda.device_count()
