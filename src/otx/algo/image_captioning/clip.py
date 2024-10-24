@@ -38,7 +38,7 @@ CLIP_TYPE = Literal[
 ]
 
 
-class CLIP(ImageCaptioningModel):
+class CLIPForImageCaptioning(ImageCaptioningModel):
     """CLIP model for the OTX image-captioning task.
 
     Args:
@@ -52,17 +52,17 @@ class CLIP(ImageCaptioningModel):
 
     Example:
         1. API
-            >>> model = CLIP(
+            >>> model = CLIPForImageCaptioning(
             ...     model_name_or_path="openai/clip-vit-base-patch32",
             ...     label_info=<Number-of-classes>,
             ... )
         2. CLI with OTX recipe
             >>> otx train \
-            ... --config src/otx/recipe/image_captioning/clip.yaml
+            ... --config src/otx/recipe/image_captioning/clip_vit_base_patch32.yaml
             ... ...
         3. CLI
             >>> otx train \
-            ... --model otx.algo.image_captioning.clip.CLIP \
+            ... --model otx.algo.image_captioning.clip.CLIPForImageCaptioning \
             ... --model.model_name_or_path openai/clip-vit-base-patch32
     """
 

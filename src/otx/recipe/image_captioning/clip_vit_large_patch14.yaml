@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.image_captioning.clip.CLIP
+  class_path: otx.algo.image_captioning.clip.CLIPForImageCaptioning
   init_args:
     label_info: 1000
     model_name_or_path: openai/clip-vit-base-patch32
