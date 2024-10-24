@@ -4,7 +4,8 @@
 """Custom assigner implementations."""
 
 from .dynamic_soft_label_assigner import DynamicSoftLabelAssigner
+from .hungarian_matcher import HungarianMatcher
 from .iou2d_calculator import BboxOverlaps2D
 from .max_iou_assigner import MaxIoUAssigner
 
-__all__ = ["DynamicSoftLabelAssigner", "BboxOverlaps2D", "MaxIoUAssigner"]
+__all__ = ["DynamicSoftLabelAssigner", "BboxOverlaps2D", "MaxIoUAssigner", "HungarianMatcher"]

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""This implementation modified ConvModule of mmcv.cnn.bricks.ConvModule."""
+"""This implementation includes various Convolutional Module."""
 
 from __future__ import annotations
 

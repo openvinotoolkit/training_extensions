@@ -2,17 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""MaskFormer criterion."""
+"""MaskDINO criterion."""
 from __future__ import annotations
+
+from typing import Callable
 
 import torch
 import torch.distributed
 import torch.nn.functional as f
 from torch import Tensor, nn
+from torchvision.ops import box_convert
 
-from otx.algo.instance_segmentation.losses import HungarianMatcher
-from otx.algo.instance_segmentation.utils import box_ops
-from otx.algo.instance_segmentation.utils.utils import get_uncertain_point_coords_with_randomness, point_sample
+from otx.algo.common.losses import GIoULoss, L1Loss
+from otx.algo.common.utils.assigners.hungarian_matcher import HungarianMatcher
+from otx.algo.common.utils.utils import sample_point
+from otx.algo.instance_segmentation.utils.utils import sample_points_using_uncertainty
 
 
 def sigmoid_focal_loss(
@@ -70,11 +74,6 @@ def dice_loss(
     return loss.sum() / num_masks
 
 
-dice_loss_jit = torch.jit.script(
-    dice_loss,
-)  # type: torch.jit.ScriptModule
-
-
 def sigmoid_ce_loss(
     inputs: Tensor,
     targets: Tensor,
@@ -91,11 +90,6 @@ def sigmoid_ce_loss(
     """
     loss = f.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
     return loss.mean(1).sum() / num_masks
-
-
-sigmoid_ce_loss_jit = torch.jit.script(
-    sigmoid_ce_loss,
-)  # type: torch.jit.ScriptModule
 
 
 def calculate_uncertainty(logits: Tensor) -> Tensor:
@@ -132,7 +126,7 @@ def select_masks(tgt_idx: Tensor, mask_labels: Tensor) -> Tensor:
     return torch.cat(gt_masks, dim=0)
 
 
-class SetCriterion(nn.Module):
+class MaskDINOCriterion(nn.Module):
     """This class computes the loss for MaskDINO.
 
     The process happens in two steps:
@@ -141,44 +135,79 @@ class SetCriterion(nn.Module):
 
     Args:
         num_classes (int): number of object categories, omitting the special no-object category
-        matcher (HungarianMatcher): module that computes the matching between ground truth and predicted boxes
-        weight_dict (dict): dict containing as key the names of the losses and as values their relative weight.
-        eos_coef (float): relative classification weight applied to the no-object category
-        losses (list): list of all the losses to be applied
-        num_points (int): number of points to sample for pointwise mask loss
-        oversample_ratio (float): ratio of oversampling for pointwise mask loss
-        importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss
-        dn_losses (list): list of all the denoise losses to be applied
+        matcher (HungarianMatcher, optional): module that computes the matching between ground truth and predicted boxes
+        weight_dict (dict, optional): dict containing key names of the losses and as values their relative weight.
+        focal_alpha (float): alpha value for focal loss. Default to 0.25.
+        num_points (int): number of points to sample for pointwise mask loss. Default to 112 * 112.
+        oversample_ratio (float): ratio of oversampling for pointwise mask loss. Default to 3.0.
+        importance_sample_ratio (float): ratio of importance sampling for pointwise mask loss. Default to 0.75.
+        dec_layers (int): number of decoder layers. Default to 9.
+        cost_class_weight (float): class loss weight. Default to 2.0.
+        cost_box_weight (float): box loss weight. Default to 5.0.
+        cost_giou_weight (float): giou loss weight. Default to 2.0.
+        cost_mask_weight (float): mask loss weight. Default to 5.0.
+        cost_dice_weight (float): dice loss weight. Default to 5.0.
     """
 
     def __init__(
         self,
         num_classes: int,
-        matcher: HungarianMatcher,
-        weight_dict: dict[str, float],
-        eos_coef: float,
-        losses: list[str],
-        num_points: int,
-        oversample_ratio: float,
-        importance_sample_ratio: float,
-        dn_losses: list[str],
+        matcher: HungarianMatcher | None = None,
+        weight_dict: dict[str, float] | None = None,
+        focal_alpha: float = 0.25,
+        num_points: int = 112 * 112,
+        oversample_ratio: float = 3.0,
+        importance_sample_ratio: float = 0.75,
+        dec_layers: int = 9,
+        class_weight: float = 2.0,
+        box_weight: float = 5.0,
+        giou_weight: float = 2.0,
+        mask_weight: float = 5.0,
+        dice_weight: float = 5.0,
     ) -> None:
         super().__init__()
+        if weight_dict is None:
+            weight_dict = {
+                "loss_ce": class_weight,
+                "loss_dice": dice_weight,
+                "loss_mask": mask_weight,
+                "loss_bbox": box_weight,
+                "loss_giou": giou_weight,
+            }
+            weight_dict.update({k + "_interm": v for k, v in weight_dict.items()})
+
+            # denoising training
+            weight_dict.update({k + "_dn": v for k, v in weight_dict.items()})
+
+            aux_weight_dict = {}
+            for i in range(dec_layers):
+                aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+            weight_dict.update(aux_weight_dict)
+
+        if matcher is None:
+            matcher = HungarianMatcher(
+                cost_dict={
+                    "cost_class": class_weight,
+                    "cost_bbox": box_weight,
+                    "cost_giou": giou_weight,
+                    "cost_mask": mask_weight,
+                    "cost_dice": dice_weight,
+                },
+            )
+
         self.num_classes = num_classes
         self.matcher = matcher
         self.weight_dict = weight_dict
-        self.eos_coef = eos_coef
-        self.losses = losses
-        self.dn_losses = dn_losses
-        empty_weight = torch.ones(self.num_classes + 1)
-        empty_weight[-1] = self.eos_coef
-        self.register_buffer("empty_weight", empty_weight)
+        loss_bbox_weight = weight_dict["loss_bbox"] if "loss_bbox" in weight_dict else 1.0
+        loss_giou_weight = weight_dict["loss_giou"] if "loss_giou" in weight_dict else 1.0
+        self.lossl1 = L1Loss(loss_weight=loss_bbox_weight)
+        self.giou = GIoULoss(loss_weight=loss_giou_weight)
 
         # pointwise mask loss parameters
         self.num_points = num_points
         self.oversample_ratio = oversample_ratio
         self.importance_sample_ratio = importance_sample_ratio
-        self.focal_alpha = 0.25
+        self.focal_alpha = focal_alpha
 
     def loss_labels(
         self,
@@ -242,17 +271,16 @@ class SetCriterion(nn.Module):
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices, strict=True)], dim=0)
 
-        loss_bbox = f.l1_loss(src_boxes, target_boxes, reduction="none")
         losses = {}
-        losses["loss_bbox"] = loss_bbox.sum() / num_boxes
 
-        loss_giou = 1 - torch.diag(
-            box_ops.generalized_box_iou(
-                box_ops.box_cxcywh_to_xyxy(src_boxes),
-                box_ops.box_cxcywh_to_xyxy(target_boxes),
-            ),
+        loss_bbox = self.lossl1(src_boxes, target_boxes, avg_factor=num_boxes)
+        loss_giou = self.giou(
+            box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            avg_factor=num_boxes,
         )
-        losses["loss_giou"] = loss_giou.sum() / num_boxes
+        losses["loss_giou"] = loss_giou
+        losses["loss_bbox"] = loss_bbox
 
         return losses
 
@@ -276,49 +304,63 @@ class SetCriterion(nn.Module):
         """
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices)
-        src_masks = outputs["pred_masks"]
-        src_masks = src_masks[src_idx]
+        pred_masks = outputs["pred_masks"]
+        pred_masks = pred_masks[src_idx]
         masks = [t["masks"] for t in targets]
         target_masks = select_masks(tgt_idx, masks)
 
         # No need to upsample predictions as we are using normalized coordinates :)
         # N x 1 x H x W
-        src_masks = src_masks[:, None]
+        pred_masks = pred_masks[:, None]
         target_masks = target_masks[:, None]
 
         with torch.no_grad():
             # sample point_coords
-            point_coords = get_uncertain_point_coords_with_randomness(
-                src_masks,
+            point_coords = sample_points_using_uncertainty(
+                pred_masks,
                 lambda logits: calculate_uncertainty(logits),
                 self.num_points,
                 self.oversample_ratio,
                 self.importance_sample_ratio,
             )
             # get gt labels
-            point_labels = point_sample(
-                target_masks.float(),
+            point_labels = sample_point(
+                target_masks.to(pred_masks),
                 point_coords,
                 align_corners=False,
             ).squeeze(1)
 
-        point_logits = point_sample(
-            src_masks,
+        point_logits = sample_point(
+            pred_masks,
             point_coords,
             align_corners=False,
         ).squeeze(1)
 
         losses = {
-            "loss_mask": sigmoid_ce_loss_jit(point_logits, point_labels, num_masks),
-            "loss_dice": dice_loss_jit(point_logits, point_labels, num_masks),
+            "loss_mask": sigmoid_ce_loss(point_logits, point_labels, num_masks),
+            "loss_dice": dice_loss(point_logits, point_labels, num_masks),
         }
 
-        del src_masks
+        del pred_masks
         del target_masks
         return losses
 
     def prep_for_dn(self, mask_dict: dict) -> tuple[dict[str, Tensor], int, int, int]:
-        """Prepare outputs for denoise training loss."""
+        """Prepare denoised output for denoise loss computation.
+
+        Args:
+            mask_dict (dict): denoise output information.
+
+        Raises:
+            ValueError: pad_size must be divisible by scalar.
+
+        Returns:
+            tuple[dict[str, Tensor], int, int, int]: output_known_lbs_bboxes, num_tgt, single_pad, scalar.
+                - output_known_lbs_bboxes: output known labels and bboxes.
+                - num_tgt: number of targets.
+                - single_pad: single pad size.
+                - scalar: scalar value.
+        """
         output_known_lbs_bboxes = mask_dict["output_known_lbs_bboxes"]
 
         known_indice = mask_dict["known_indice"]
@@ -343,29 +385,26 @@ class SetCriterion(nn.Module):
         tgt_idx = torch.cat([tgt for (_, tgt) in indices])
         return batch_idx, tgt_idx
 
-    def get_loss(
-        self,
-        loss: str,
-        outputs: dict[str, Tensor],
-        targets: list[dict[str, Tensor]],
-        indices: list[tuple[Tensor, Tensor]],
-        num_masks: float,
-    ) -> dict[str, Tensor]:
-        """Compute the loss for each output."""
-        loss_map = {
-            "labels": self.loss_labels,
-            "masks": self.loss_masks,
-            "boxes": self.loss_boxes,
-        }
-        return loss_map[loss](outputs, targets, indices, num_masks)
+    @property
+    def _available_losses(self) -> tuple[Callable]:
+        return (self.loss_labels, self.loss_boxes, self.loss_masks)  # type: ignore[return-value]
 
     def forward(
         self,
         outputs: dict[str, Tensor],
         targets: list[dict[str, Tensor]],
-        mask_dict: dict,
+        mask_dict: dict | None = None,
     ) -> dict[str, Tensor]:
-        """This function performs the loss computation."""
+        """Compute the losses.
+
+        Args:
+            outputs (dict[str, Tensor]): dict of model outputs.
+            targets (list[dict[str, Tensor]]): list of targets.
+            mask_dict (dict | None): dict containing denoise annotation information.
+
+        Returns:
+            dict[str, Tensor]: dict containing the computed losses.
+        """
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
 
         # Retrieve the matching between the outputs of the last layer and the targets
@@ -400,13 +439,13 @@ class SetCriterion(nn.Module):
 
         # Compute all the requested losses
         losses = {}
-        for loss in self.losses:
-            losses.update(self.get_loss(loss, outputs, targets, indices, num_masks))
+        for loss in self._available_losses:
+            losses.update(loss(outputs, targets, indices, num_masks))
 
         if mask_dict is not None:
             l_dict = {}
-            for loss in self.dn_losses:
-                l_dict.update(self.get_loss(loss, output_known_lbs_bboxes, targets, exc_idx, num_masks * scalar))
+            for loss in self._available_losses:
+                l_dict.update(loss(output_known_lbs_bboxes, targets, exc_idx, num_masks * scalar))
             l_dict = {k + "_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
@@ -419,12 +458,12 @@ class SetCriterion(nn.Module):
             }
             losses.update(l_dict)
 
-        # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
+        # In case of auxiliary losses, this repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets)
-                for loss in self.losses:
-                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_masks)
+                for loss in self._available_losses:
+                    l_dict = loss(aux_outputs, targets, indices, num_masks)
                     l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
                 start = 0 if "interm_outputs" in outputs else 1
@@ -432,8 +471,8 @@ class SetCriterion(nn.Module):
                     if mask_dict is not None:
                         out_ = output_known_lbs_bboxes["aux_outputs"][i]
                         l_dict = {}
-                        for loss in self.dn_losses:
-                            l_dict.update(self.get_loss(loss, out_, targets, exc_idx, num_masks * scalar))
+                        for loss in self._available_losses:
+                            l_dict.update(loss(out_, targets, exc_idx, num_masks * scalar))
                         l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
                         losses.update(l_dict)
                     else:
@@ -446,12 +485,12 @@ class SetCriterion(nn.Module):
                         }
                         losses.update(l_dict)
 
-        # interm_outputs loss
+        # intermediate losses
         if "interm_outputs" in outputs:
             interm_outputs = outputs["interm_outputs"]
             indices = self.matcher(interm_outputs, targets)
-            for loss in self.losses:
-                l_dict = self.get_loss(loss, interm_outputs, targets, indices, num_masks)
+            for loss in self._available_losses:
+                l_dict = loss(interm_outputs, targets, indices, num_masks)
                 l_dict = {k + "_interm": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 

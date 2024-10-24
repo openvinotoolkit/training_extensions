@@ -4,10 +4,8 @@
 """utils for object detection 3D models."""
 from __future__ import annotations
 
-import copy
-
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
 
 # TODO(Kirill): try to remove this class
@@ -51,16 +49,3 @@ def box_cxcylrtb_to_xyxy(x: Tensor) -> Tensor:
     x_c, y_c, k, r, t, b = x.unbind(-1)
     bb = [(x_c - k), (y_c - t), (x_c + r), (y_c + b)]
     return torch.stack(bb, dim=-1)
-
-
-def get_clones(module: nn.Module, n: int) -> nn.ModuleList:
-    """Create a list of cloned modules.
-
-    Args:
-        module (nn.Module): The module to be cloned.
-        N (int): The number of clones to create.
-
-    Returns:
-        nn.ModuleList: The list of cloned modules.
-    """
-    return nn.ModuleList([copy.deepcopy(module) for _ in range(n)])

@@ -4,6 +4,9 @@
 
 from .bbox_head import ConvFCBBoxHead
 from .fcn_mask_head import FCNMaskHead
+from .maskdino_decoder import MaskDINODecoderHead, MaskDINODecoderHeadModule
+from .maskdino_encoder import MaskDINOEncoderHead, MaskDINOEncoderHeadModule
+from .maskdino_head import MaskDINOHead
 from .roi_head import RoIHead
 from .roi_head_tv import TVRoIHeads
 from .rpn_head import RPNHead
@@ -16,4 +19,9 @@ __all__ = [
     "TVRoIHeads",
     "RPNHead",
     "RTMDetInstSepBNHead",
+    "MaskDINODecoderHead",
+    "MaskDINOEncoderHead",
+    "MaskDINODecoderHeadModule",
+    "MaskDINOEncoderHeadModule",
+    "MaskDINOHead",
 ]

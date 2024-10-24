@@ -1,36 +1,102 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-"""MaskDINO Head module."""
+# ------------------------------------------------------------------------
+# Copyright (c) 2022 IDEA. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
+# ------------------------------------------------------------------------
+"""MaskDINO Head Module.
+
+Implementation modified from:
+    * https://github.com/IDEA-Research/MaskDINO
+    * https://github.com/facebookresearch/Mask2Former
+"""
 
 from __future__ import annotations
 
-from torch import Tensor, nn
+from typing import TYPE_CHECKING, Any
 
-from otx.algo.instance_segmentation.heads.pixel_decoder.maskdino_encoder import MaskDINOEncoder
-from otx.algo.instance_segmentation.heads.transformer_decoder.maskdino_decoder import MaskDINODecoder
+import torch
+from torch import Tensor
+from torchvision.ops import box_convert
+from torchvision.ops.roi_align import RoIAlign
+
+from otx.algo.instance_segmentation.heads import MaskDINODecoderHeadModule, MaskDINOEncoderHeadModule
+from otx.algo.modules.base_module import BaseModule
+from otx.core.data.entity.base import ImageInfo
+
+if TYPE_CHECKING:
+    from torchvision import tv_tensors
 
 
-class MaskDINOHead(nn.Module):
-    """MaskDINO Head module."""
+class MaskDINOHead(BaseModule):
+    """MaskDINO Head module.
+
+    Args:
+        num_classes (int): number of classes
+        pixel_decoder (MaskDINOEncoderHeadModule): pixel decoder
+        predictor (MaskDINODecoderHeadModule): mask transformer predictor
+        num_queries (int): number of queries
+        test_topk_per_image (int): number of topk per image
+    """
 
     def __init__(
         self,
         num_classes: int,
-        pixel_decoder: MaskDINOEncoder,
-        loss_weight: float,
-        ignore_value: int,
-        transformer_predictor: MaskDINODecoder,
+        pixel_decoder: MaskDINOEncoderHeadModule,
+        predictor: MaskDINODecoderHeadModule,
+        num_queries: int = 300,
+        test_topk_per_image: int = 100,
     ):
         super().__init__()
-        self.ignore_value = ignore_value
-        self.common_stride = 4
-        self.loss_weight = loss_weight
-
         self.pixel_decoder = pixel_decoder
-        self.predictor = transformer_predictor
-
+        self.predictor = predictor
         self.num_classes = num_classes
+        self.num_queries = num_queries
+        self.test_topk_per_image = test_topk_per_image
+        self.roi_align = RoIAlign(
+            output_size=(28, 28),
+            sampling_ratio=0,
+            aligned=True,
+            spatial_scale=1.0,
+        )
+
+    def roi_mask_extraction(
+        self,
+        bboxes: Tensor,
+        masks: Tensor,
+    ) -> Tensor:
+        """Extract masks from RoI (Region of Interest).
+
+        This function is used for exporting the model, as it extracts same-size square masks from RoI for speed.
+
+        Args:
+            bboxes (Tensor): Bounding boxes with shape (N, 4), where N is the number of bounding boxes.
+            masks (Tensor): Masks with shape (H, W), where H and W are the height and width of the mask.
+
+        Returns:
+            Tensor: Extracted masks with shape (1, N, H', W'), where H' and W'
+                are the height and width of the extracted masks.
+        """
+        bboxes = bboxes.unsqueeze(0)
+        batch_index = torch.arange(bboxes.size(0)).float().view(-1, 1, 1).expand(bboxes.size(0), bboxes.size(1), 1)
+        rois = torch.cat([batch_index, bboxes], dim=-1)
+        cropped_masks = self.roi_align(masks.unsqueeze(0), rois[0])
+        cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
+        return cropped_masks > 0
+
+    def calculate_object_scores(self, mask_pred: Tensor) -> Tensor:
+        """Calculate object scores from mask prediction.
+
+        Args:
+            mask_pred (Tensor): logits of mask prediction
+
+        Returns:
+            Tensor: object scores
+        """
+        pred_masks = (mask_pred > 0).to(mask_pred)
+
+        # Calculate average mask prob
+        return (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (pred_masks.flatten(1).sum(1) + 1e-6)
 
     def forward(
         self,
@@ -38,5 +104,94 @@ class MaskDINOHead(nn.Module):
         targets: list[dict[str, Tensor]] | None = None,
     ) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
         """Forward pass."""
-        mask_features, _, multi_scale_features = self.pixel_decoder.forward_features(features)
+        mask_features, _, multi_scale_features = self.pixel_decoder(features)
         return self.predictor(multi_scale_features, mask_features, targets=targets)
+
+    @torch.no_grad()
+    def predict(
+        self,
+        features: dict[str, Tensor],
+        imgs_info: list[ImageInfo] | list[dict[str, Any]],
+        export: bool = False,
+    ) -> tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]]:
+        """Predict function.
+
+        Args:
+            features (dict[str, Tensor]): feature maps
+            imgs_info (list[ImageInfo] | list[dict[str, Any]]):
+                list[ImageInfo]: image info (i.e ori_shape) list regarding original images used for training
+                list[dict[str, Any]]: image info (i.e img_shape) used for exporting
+            export (bool, optional): whether to export the model. Defaults to False.
+
+        Returns:
+            tuple[list[Tensor], list[torch.LongTensor], list[tv_tensors.Mask]]:
+                list[Tensor]: bounding boxes and scores with shape [N, 5]
+                list[torch.LongTensor]: labels with shape [N]
+                list[tv_tensors.Mask]: masks with shape [N, H, W]
+        """
+        outputs, _ = self(features)
+
+        class_queries_logits = outputs["pred_logits"]
+        masks_queries_logits = outputs["pred_masks"]
+        mask_box_results = outputs["pred_boxes"]
+
+        device = masks_queries_logits.device
+        num_classes = self.num_classes
+        num_queries = self.num_queries
+        test_topk_per_image = self.test_topk_per_image
+
+        batch_bboxes_scores: list[Tensor] = []
+        batch_labels: list[torch.LongTensor] = []
+        batch_masks: list[tv_tensors.Mask] = []
+
+        for mask_pred, mask_cls, pred_boxes, img_info in zip(
+            masks_queries_logits,
+            class_queries_logits,
+            mask_box_results,
+            imgs_info,
+        ):
+            h, w = img_info["img_shape"] if export else img_info.ori_shape  # type: ignore[index, attr-defined]
+            scores = mask_cls.sigmoid()
+            labels = torch.arange(num_classes, device=device).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
+
+            scores_per_image, topk_indices = scores.flatten(0, 1).topk(test_topk_per_image, sorted=False)
+            labels_per_image = labels[topk_indices]
+
+            topk_indices = topk_indices // num_classes
+
+            mask_pred = mask_pred[topk_indices]  # noqa: PLW2901
+            pred_boxes = pred_boxes[topk_indices]  # noqa: PLW2901
+            pred_classes = labels_per_image
+
+            pred_masks = torch.nn.functional.interpolate(
+                mask_pred.unsqueeze(0),
+                size=(h, w),
+                mode="bilinear",
+                align_corners=False,
+            )[0]
+
+            pred_scores = scores_per_image * self.calculate_object_scores(pred_masks)
+            pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_convert(  # noqa: PLW2901
+                pred_boxes,
+                in_fmt="cxcywh",
+                out_fmt="xyxy",
+            )
+            pred_boxes[:, 0::2].clamp_(min=0, max=w - 1)
+            pred_boxes[:, 1::2].clamp_(min=0, max=h - 1)
+
+            # Extract masks from RoI for exporting the model
+            if export:
+                pred_masks = self.roi_mask_extraction(pred_boxes, pred_masks)
+                # Create dummy filter as Model API has its own filtering mechanism.
+                keep = pred_scores > 0.05
+            else:
+                pred_masks = pred_masks > 0
+                area = (pred_boxes[:, 2] - pred_boxes[:, 0]) * (pred_boxes[:, 3] - pred_boxes[:, 1])
+                keep = (pred_masks.sum((1, 2)) > 5) & (area > 10) & (pred_scores > 0.05)
+
+            boxes_scores = torch.cat([pred_boxes, pred_scores[:, None]], dim=1)
+            batch_masks.append(pred_masks[keep])
+            batch_bboxes_scores.append(boxes_scores[keep])
+            batch_labels.append(pred_classes[keep])
+
+        return batch_bboxes_scores, batch_labels, batch_masks

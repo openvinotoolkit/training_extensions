@@ -4,57 +4,251 @@
 """MaskDINODecoder module."""
 from __future__ import annotations
 
+from typing import Any, ClassVar
+
 import torch
 from torch import Tensor, nn
+from torchvision.ops import box_convert
 
-from otx.algo.common.utils.utils import inverse_sigmoid
-from otx.algo.instance_segmentation.heads.transformer_decoder.dino_decoder import (
-    DeformableTransformerDecoderLayer,
-    TransformerDecoder,
-)
-from otx.algo.instance_segmentation.utils import box_ops
-from otx.algo.instance_segmentation.utils.utils import (
-    MLP,
-    gen_encoder_output_proposals,
-)
+from otx.algo.common.layers.position_embed import gen_sineembed_for_position
+from otx.algo.common.layers.transformer_layers import MLP, MSDeformableAttention
+from otx.algo.common.utils.utils import gen_encoder_output_proposals, get_clones, inverse_sigmoid
+from otx.algo.instance_segmentation.utils.structures.mask.mask_target import masks_to_boxes
+from otx.algo.modules.base_module import BaseModule
 
 
-class MaskDINODecoder(nn.Module):
+class DeformableTransformerDecoderLayer(BaseModule):
+    """Deformable transformer decoder layer module.
+
+    Args:
+        d_model (int): hidden dimension. Defaults to 256.
+        d_ffn (int): feature dimension in feedforward network. Defaults to 1024.
+        dropout (float): dropout rate. Defaults to 0.1.
+        n_levels (int): number of feature levels. Defaults to 4.
+        n_heads (int): number of attention heads. Defaults to 8.
+        n_points (int): number of sampling. Defaults to 4.
+    """
+
+    def __init__(
+        self,
+        d_model: int = 256,
+        d_ffn: int = 1024,
+        dropout: float = 0.1,
+        n_levels: int = 4,
+        n_heads: int = 8,
+        n_points: int = 4,
+    ):
+        super().__init__()
+
+        # cross attention
+        self.cross_attn = MSDeformableAttention(
+            embed_dim=d_model,
+            num_levels=n_levels,
+            num_heads=n_heads,
+            num_points=n_points,
+        )
+
+        self.dropout1 = nn.Dropout(dropout)
+        self.norm1 = nn.LayerNorm(d_model)
+
+        # self attention
+        self.self_attn = nn.MultiheadAttention(d_model, n_heads, dropout=dropout)
+        self.dropout2 = nn.Dropout(dropout)
+        self.norm2 = nn.LayerNorm(d_model)
+
+        # ffn
+        self.linear1 = nn.Linear(d_model, d_ffn)
+        self.activation = nn.ReLU()
+        self.dropout3 = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(d_ffn, d_model)
+        self.dropout4 = nn.Dropout(dropout)
+        self.norm3 = nn.LayerNorm(d_model)
+
+    @staticmethod
+    def with_pos_embed(tensor: Tensor, pos: Tensor) -> Tensor:
+        """Add position embedding to tensor.
+
+        Args:
+            tensor (Tensor): input tensor
+            pos (Tensor): position tensor
+
+        Returns:
+            Tensor: tensor with position embedding
+        """
+        return tensor if pos is None else tensor + pos
+
+    def forward_ffn(self, tgt: Tensor) -> Tensor:
+        """Forward pass for feed forward network."""
+        tgt2 = self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
+        tgt = tgt + self.dropout4(tgt2)
+        return self.norm3(tgt)
+
+    def forward(
+        self,
+        tgt: Tensor,
+        tgt_query_pos: Tensor,
+        tgt_reference_points: Tensor,
+        memory: Tensor,
+        memory_key_padding_mask: Tensor,
+        memory_spatial_shapes: Tensor,
+        self_attn_mask: Tensor,
+    ) -> Tensor:
+        """Forward pass."""
+        # self attention
+        if self.self_attn is not None:
+            q = k = self.with_pos_embed(tgt, tgt_query_pos)
+            tgt2 = self.self_attn(q, k, tgt, attn_mask=self_attn_mask)[0]
+            tgt = tgt + self.dropout2(tgt2)
+            tgt = self.norm2(tgt)
+
+        # cross attention
+        tgt2 = self.cross_attn(
+            self.with_pos_embed(tgt, tgt_query_pos).transpose(0, 1),
+            tgt_reference_points.transpose(0, 1).contiguous(),
+            memory.transpose(0, 1),
+            memory_spatial_shapes,
+            memory_key_padding_mask,
+        ).transpose(0, 1)
+
+        tgt = tgt + self.dropout1(tgt2)
+        tgt = self.norm1(tgt)
+
+        # ffn
+        return self.forward_ffn(tgt)
+
+
+class DeformableTransformerDecoder(nn.Module):
+    """DeformableTransformerDecoder module containing multiple DeformableTransformerDecoderLayer layers.
+
+    Args:
+        decoder_layer (DeformableTransformerDecoderLayer): Deformable transformer decoder layer.
+        num_layers (int): Number of DeformableTransformerDecoderLayer layers.
+        norm (nn.Module): Normalization layer.
+        d_model (int, optional): Hidden dimension. Defaults to 256.
+        query_dim (int, optional): Box query dimension. Defaults to 4.
+        activation (nn.Module, optional): Activation function. Defaults to nn.ReLU.
+    """
+
+    def __init__(
+        self,
+        decoder_layer: DeformableTransformerDecoderLayer,
+        num_layers: int,
+        norm: nn.Module,
+        d_model: int = 256,
+        query_dim: int = 4,
+        activation: nn.Module = nn.ReLU,
+    ):
+        super().__init__()
+        self.layers = get_clones(decoder_layer, num_layers)
+        self.norm = norm
+        self.query_dim = query_dim
+        self.ref_point_head = MLP(query_dim // 2 * d_model, d_model, d_model, 2, activation)
+        self.d_model = d_model
+        self.bbox_embed = None
+        self.class_embed = None
+        self._reset_parameters()
+
+    def _reset_parameters(self) -> None:
+        """Init weights."""
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+        for m in self.modules():
+            if isinstance(m, MSDeformableAttention):
+                m._reset_parameters()  # noqa: SLF001
+
+    def forward(
+        self,
+        tgt: Tensor,
+        memory: Tensor,
+        tgt_mask: Tensor,
+        memory_key_padding_mask: Tensor,
+        refpoints_unsigmoid: Tensor,
+        spatial_shapes: Tensor,
+        valid_ratios: Tensor,
+    ) -> list[list[Tensor]]:
+        """Forward pass."""
+        output = tgt
+        device = tgt.device
+
+        intermediate = []
+        reference_points = refpoints_unsigmoid.sigmoid().to(device)
+        ref_points = [reference_points]
+
+        for layer_id, layer in enumerate(self.layers):
+            reference_points_input = (
+                reference_points[:, :, None] * torch.cat([valid_ratios, valid_ratios], -1)[None, :]
+            )  # nq, bs, nlevel, 4
+            query_sine_embed = gen_sineembed_for_position(reference_points_input[:, :, 0, :])  # nq, bs, 256*2
+
+            raw_query_pos = self.ref_point_head(query_sine_embed)  # nq, bs, 256
+            output = layer(
+                tgt=output,
+                tgt_query_pos=raw_query_pos,
+                tgt_reference_points=reference_points_input,
+                memory=memory,
+                memory_key_padding_mask=memory_key_padding_mask,
+                memory_spatial_shapes=spatial_shapes,
+                self_attn_mask=tgt_mask,
+            )
+
+            # iter update
+            if self.bbox_embed is not None:
+                reference_before_sigmoid = inverse_sigmoid(reference_points)
+                delta_unsig = self.bbox_embed[layer_id](output).to(device)
+                outputs_unsig = delta_unsig + reference_before_sigmoid
+                new_reference_points = outputs_unsig.sigmoid()
+
+                reference_points = new_reference_points.detach()
+                # if layer_id != self.num_layers - 1:
+                ref_points.append(new_reference_points)
+
+            intermediate.append(self.norm(output))
+
+        return [
+            [itm_out.transpose(0, 1) for itm_out in intermediate],
+            [itm_refpoint.transpose(0, 1) for itm_refpoint in ref_points],
+        ]
+
+
+class MaskDINODecoderHeadModule(BaseModule):
     """MaskDINODecoder module.
 
     Args:
-        num_classes: number of classes
-        hidden_dim: Transformer feature dimension
-        num_queries: number of queries
-        nheads: number of heads
-        dim_feedforward: feature dimension in feedforward network
-        dec_layers: number of Transformer decoder layers
-        mask_dim: mask feature dimension
-        noise_scale: noise scale
-        dn_num: number of denoising queries
-        total_num_feature_levels: total number of feature levels
-        dropout: dropout rate
-        nhead: num heads in multi-head attention
-        dec_n_points: number of sampling points in decoder
-        query_dim: 4 -> (x, y, w, h)
+        num_classes (int): number of classes.
+        hidden_dim (int): Transformer feature dimension. Defaults to 256.
+        num_queries (int): number of queries. Defaults to 300.
+        nheads (int): number of heads. Defaults to 8.
+        dim_feedforward (int): feature dimension in feedforward network. Defaults to 2048.
+        dec_layers (int): number of Transformer decoder layers. Defaults to 9.
+        mask_dim (int): mask feature dimension. Defaults to 256.
+        noise_scale (float): noise scale. Defaults to 0.4.
+        dn_num (int): number of denoising queries. Defaults to 100.
+        total_num_feature_levels (int): total number of feature levels. Defaults to 4.
+        dropout (float): dropout rate. Defaults to 0.0.
+        nhead (int): num heads in multi-head attention. Defaults to 8.
+        dec_n_points (int): number of sampling points in decoder. Defaults to 4.
+        query_dim (int): box query dimension. Defaults to 4.
+        activation (nn.Module): activation function. Defaults to nn.ReLU.
     """
 
     def __init__(
         self,
         num_classes: int,
-        hidden_dim: int,
-        num_queries: int,
-        nheads: int,
-        dim_feedforward: int,
-        dec_layers: int,
-        mask_dim: int,
-        noise_scale: float,
-        dn_num: int,
+        hidden_dim: int = 256,
+        num_queries: int = 300,
+        nheads: int = 8,
+        dim_feedforward: int = 2048,
+        dec_layers: int = 9,
+        mask_dim: int = 256,
+        noise_scale: float = 0.4,
+        dn_num: int = 100,
         total_num_feature_levels: int = 4,
         dropout: float = 0.0,
         nhead: int = 8,
         dec_n_points: int = 4,
         query_dim: int = 4,
+        activation: nn.Module = nn.ReLU,
     ) -> None:
         super().__init__()
         self.num_feature_levels = total_num_feature_levels
@@ -77,7 +271,7 @@ class MaskDINODecoder(nn.Module):
         # output FFNs
         self.class_embed = nn.Linear(hidden_dim, num_classes)
         self.label_enc = nn.Embedding(num_classes, hidden_dim)
-        self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3)
+        self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3, activation)
 
         # init decoder
         self.decoder_norm = decoder_norm = nn.LayerNorm(hidden_dim)
@@ -89,7 +283,7 @@ class MaskDINODecoder(nn.Module):
             nhead,
             dec_n_points,
         )
-        self.decoder = TransformerDecoder(
+        self.decoder = DeformableTransformerDecoder(
             decoder_layer,
             self.num_layers,
             decoder_norm,
@@ -98,7 +292,7 @@ class MaskDINODecoder(nn.Module):
         )
 
         self.hidden_dim = hidden_dim
-        self._bbox_embed = _bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self._bbox_embed = _bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3, activation)
         nn.init.constant_(_bbox_embed.layers[-1].weight.data, 0)
         nn.init.constant_(_bbox_embed.layers[-1].bias.data, 0)
         box_embed_layerlist = [_bbox_embed for i in range(self.num_layers)]  # share box prediction each layer
@@ -141,7 +335,7 @@ class MaskDINODecoder(nn.Module):
             known_bbox_expand = known_bboxs.clone()
 
             # noise on the label
-            p = torch.rand_like(known_labels_expaned.float())
+            p = torch.rand_like(torch.tensor(known_labels_expaned, dtype=known_bbox_expand.dtype))
             chosen_indice = torch.nonzero(p < (noise_scale * 0.5)).view(-1)  # half of bbox prob
             new_label = torch.randint_like(chosen_indice, 0, self.num_classes)  # randomly put a new one here
             known_labels_expaned.scatter_(0, chosen_indice, new_label)
@@ -224,12 +418,19 @@ class MaskDINODecoder(nn.Module):
         return outputs_class, outputs_coord, outputs_mask
 
     def get_valid_ratio(self, mask: Tensor) -> Tensor:
-        """Get the valid ratio of the mask."""
+        """Calculate the valid ratio of the mask.
+
+        Args:
+            mask (Tensor): The mask tensor.
+
+        Returns:
+            Tensor: The valid ratio tensor.
+        """
         _, height, width = mask.shape
         valid_height = torch.sum(~mask[:, :, 0], 1)
         valid_width = torch.sum(~mask[:, 0, :], 1)
-        valid_ratio_h = valid_height.float() / height
-        valid_ratio_w = valid_width.float() / width
+        valid_ratio_h = valid_height / height
+        valid_ratio_w = valid_width / width
         return torch.stack([valid_ratio_w, valid_ratio_h], -1)
 
     def pred_box(self, reference: Tensor, hs: list[Tensor], ref0: Tensor | None = None) -> Tensor:
@@ -290,11 +491,12 @@ class MaskDINODecoder(nn.Module):
         # convert masks into boxes to better initialize box in the decoder
         flaten_mask = outputs_mask.detach().flatten(0, 1)
         height, width = outputs_mask.shape[-2:]
-        refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0).to(device)
-        refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.as_tensor(
+        refpoint_embed = masks_to_boxes(flaten_mask > 0, dtype=flaten_mask.dtype)
+        refpoint_embed = box_convert(refpoint_embed, in_fmt="xyxy", out_fmt="cxcywh") / torch.tensor(
             [width, height, width, height],
-            dtype=torch.float,
-        ).to(device)
+            dtype=flaten_mask.dtype,
+            device=device,
+        )
         refpoint_embed = refpoint_embed.reshape(outputs_mask.shape[0], outputs_mask.shape[1], 4)
         refpoint_embed = inverse_sigmoid(refpoint_embed)
 
@@ -361,14 +563,16 @@ class MaskDINODecoder(nn.Module):
             "pred_logits": predictions_class[-1],
             "pred_masks": predictions_mask[-1],
             "pred_boxes": out_boxes[-1],
-            "aux_outputs": self._set_aux_loss(
-                predictions_class,
-                predictions_mask,
-                out_boxes,
-            ),
-            "interm_outputs": interm_outputs,
         }
 
+        # Add auxiliary outputs and intermediate output in training for loss computation.
+        if self.training:
+            out.update(
+                {
+                    "aux_outputs": self._set_aux_loss(predictions_class, predictions_mask, out_boxes),
+                    "interm_outputs": interm_outputs,
+                },
+            )
         return out, mask_dict
 
     def flatten_and_concat_features(
@@ -420,3 +624,29 @@ class MaskDINODecoder(nn.Module):
             {"pred_logits": a, "pred_masks": b, "pred_boxes": c}
             for a, b, c in zip(outputs_class[:-1], outputs_seg_masks[:-1], out_boxes[:-1], strict=True)
         ]
+
+
+class MaskDINODecoderHead:
+    """MaskDINODecoderHead factory class."""
+
+    decoder_cfg: ClassVar[dict[str, Any]] = {
+        "resnet50": {},
+    }
+
+    def __new__(cls, model_name: str, num_classes: int) -> MaskDINODecoderHeadModule:
+        """Create MaskDINODecoderHeadModule object.
+
+        Args:
+            model_name (str): backbone model name
+            num_classes (int): number of classes
+
+        Raises:
+            ValueError: If model name is not supported
+
+        Returns:
+            MaskDINODecoderHeadModule: MaskDINODecoderHeadModule object
+        """
+        if model_name not in cls.decoder_cfg:
+            msg = f"Model {model_name} not supported"
+            raise ValueError(msg)
+        return MaskDINODecoderHeadModule(**cls.decoder_cfg[model_name], num_classes=num_classes)
