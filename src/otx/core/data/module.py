@@ -115,7 +115,7 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         dataset = DmDataset.import_from(self.data_root, format=self.data_format)
-        if self.task != "H_LABEL_CLS":
+        if self.task not in ("H_LABEL_CLS", "IMAGE_CAPTIONING"):
             dataset = pre_filtering(
                 dataset,
                 self.data_format,

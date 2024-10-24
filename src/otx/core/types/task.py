@@ -43,6 +43,8 @@ class OTXTaskType(str, Enum):
 
     # Diffusion
     DIFFUSION = "DIFFUSION"
+    # Multi Modal Tasks.
+    IMAGE_CAPTIONING = "IMAGE_CAPTIONING"
 
 
 class OTXTrainType(str, Enum):

@@ -50,6 +50,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.KEYPOINT_DETECTION: RECIPE_PATH / "keypoint_detection" / "rtmpose_tiny.yaml",
     OTXTaskType.DIFFUSION: RECIPE_PATH / "diffusion" / "sd_huggingface.yaml",
     OTXTaskType.OBJECT_DETECTION_3D: RECIPE_PATH / "object_detection_3d" / "monodetr3d.yaml",
+    OTXTaskType.IMAGE_CAPTIONING: RECIPE_PATH / "image_captioning" / "clip_vit_base_patch32.yaml",
 }
 
 TASK_PER_DATA_FORMAT = {
@@ -67,7 +68,7 @@ TASK_PER_DATA_FORMAT = {
         OTXTaskType.INSTANCE_SEGMENTATION,
         OTXTaskType.VISUAL_PROMPTING,
     ],
-    "coco_captions": [OTXTaskType.DIFFUSION],
+    "coco_captions": [OTXTaskType.DIFFUSION, OTXTaskType.IMAGE_CAPTIONING],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "mvtec": [
