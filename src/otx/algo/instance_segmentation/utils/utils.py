@@ -165,7 +165,7 @@ def sample_points_using_uncertainty(
         importance_sample_ratio (float): Ratio of points that are sampled via importance sampling.
 
     Returns:
-        point_coordinates (torch.Tensor): Coordinates for P sampled points.
+        point_coordinates (Tensor): Coordinates for P sampled points.
     """
     num_boxes = logits.shape[0]
     num_points_sampled = int(num_points * oversample_ratio)
