@@ -169,10 +169,8 @@ class HLabelInfo(LabelInfo):
             dm_label_categories (LabelCategories): the label categories of datumaro.
         """
 
-        def get_exclusive_group_info(all_groups: list[Label | list[Label]]) -> dict[str, Any]:
+        def get_exclusive_group_info(exclusive_groups: list[Label | list[Label]]) -> dict[str, Any]:
             """Get exclusive group information."""
-            exclusive_groups = [g for g in all_groups if len(g) > 1]
-
             last_logits_pos = 0
             num_single_label_classes = 0
             head_idx_to_logits_range = {}
@@ -193,12 +191,10 @@ class HLabelInfo(LabelInfo):
             }
 
         def get_single_label_group_info(
-            all_groups: list[Label | list[Label]],
+            single_label_groups: list[Label | list[Label]],
             num_exclusive_groups: int,
         ) -> dict[str, Any]:
             """Get single label group information."""
-            single_label_groups = [g for g in all_groups if len(g) == 1]
-
             class_to_idx = {}
 
             for i, group in enumerate(single_label_groups):
@@ -256,8 +252,13 @@ class HLabelInfo(LabelInfo):
         label_names = [item.name for item in dm_label_categories.items]
         all_groups = convert_labels_if_needed(dm_label_categories, label_names)
 
-        exclusive_group_info = get_exclusive_group_info(all_groups)
-        single_label_group_info = get_single_label_group_info(all_groups, exclusive_group_info["num_multiclass_heads"])
+        exclusive_groups = [g for g in all_groups if len(g) > 1]
+        exclusive_group_info = get_exclusive_group_info(exclusive_groups)
+        single_label_groups = [g for g in all_groups if len(g) == 1]
+        single_label_group_info = get_single_label_group_info(
+            single_label_groups,
+            exclusive_group_info["num_multiclass_heads"],
+        )
 
         merged_class_to_idx = merge_class_to_idx(
             exclusive_group_info["class_to_idx"],
@@ -274,7 +275,7 @@ class HLabelInfo(LabelInfo):
             head_idx_to_logits_range=exclusive_group_info["head_idx_to_logits_range"],
             num_single_label_classes=exclusive_group_info["num_single_label_classes"],
             class_to_group_idx=merged_class_to_idx,
-            all_groups=all_groups,
+            all_groups=exclusive_groups + single_label_groups,
             label_to_idx=label_to_idx,
             label_tree_edges=get_label_tree_edges(dm_label_categories.items),
             empty_multiclass_head_indices=[],  # consider the label removing case
