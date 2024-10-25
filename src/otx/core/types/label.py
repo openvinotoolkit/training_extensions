@@ -269,7 +269,7 @@ class HLabelInfo(LabelInfo):
 
         return HLabelInfo(
             label_names=label_names,
-            label_groups=all_groups,
+            label_groups=exclusive_groups + single_label_groups,
             num_multiclass_heads=exclusive_group_info["num_multiclass_heads"],
             num_multilabel_classes=single_label_group_info["num_multilabel_classes"],
             head_idx_to_logits_range=exclusive_group_info["head_idx_to_logits_range"],
