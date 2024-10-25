@@ -65,6 +65,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4018>)
 - Update HPO interface
   (<https://github.com/openvinotoolkit/training_extensions/pull/4035>)
+- Bump onnx to 1.17.0 to omit CVE-2024-5187
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4063>)
 
 ### Bug fixes
 
@@ -104,6 +106,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/4052>)
 - Fix applying model's hparams when loading model from checkpoint
   (<https://github.com/openvinotoolkit/training_extensions/pull/4057>)
+- Fix incorrect all_groups order configuration in HLabelInfo
+  (<https://github.com/openvinotoolkit/training_extensions/pull/4067>)
 
 ## \[v2.1.0\]
 
