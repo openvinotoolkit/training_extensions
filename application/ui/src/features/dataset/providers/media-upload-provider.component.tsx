@@ -21,7 +21,7 @@ const TOAST_UPDATE_INTERVAL_MS = 300;
 // toolbar) do not re-render once per uploaded file.
 const MediaUploadStateContext = createContext<MediaUploadState | null>(null);
 const MediaUploadDispatchContext = createContext<Dispatch<Action> | null>(null);
-const IsUploadingContext = createContext(false);
+const IsUploadingContext = createContext<boolean | null>(null);
 
 const buildProgressDetail = (succeeded: number, failed: number): string => {
     const parts = [succeeded > 0 ? `${succeeded} succeeded` : null, failed > 0 ? `${failed} failed` : null].filter(
@@ -142,4 +142,12 @@ export const useMediaUploadDispatch = (): Dispatch<Action> => {
     return context;
 };
 
-export const useIsUploading = (): boolean => useContext(IsUploadingContext);
+export const useIsUploading = (): boolean => {
+    const context = useContext(IsUploadingContext);
+
+    if (context === null) {
+        throw new Error('useIsUploading was used outside of MediaUploadProvider');
+    }
+
+    return context;
+};
