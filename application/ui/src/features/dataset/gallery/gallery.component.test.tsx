@@ -13,6 +13,7 @@ import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
+import { MediaUploadProvider } from '../providers/media-upload-provider.component';
 import { SelectedDataProvider, useSelectedData } from '../providers/selected-data-provider.component';
 import { Gallery } from './gallery.component';
 
@@ -70,17 +71,19 @@ describe('Gallery drag-and-drop upload', () => {
         );
 
         render(
-            <SelectedDataProvider>
-                <Gallery
-                    items={[]}
-                    viewMode={ViewModes.LARGE}
-                    isPending={false}
-                    hasActiveFilter={false}
-                    isFetchingNextPage={false}
-                    fetchNextPage={vi.fn()}
-                    isMediaItemReviewedById={() => false}
-                />
-            </SelectedDataProvider>
+            <MediaUploadProvider>
+                <SelectedDataProvider>
+                    <Gallery
+                        items={[]}
+                        viewMode={ViewModes.LARGE}
+                        isPending={false}
+                        hasActiveFilter={false}
+                        isFetchingNextPage={false}
+                        fetchNextPage={vi.fn()}
+                        isMediaItemReviewedById={() => false}
+                    />
+                </SelectedDataProvider>
+            </MediaUploadProvider>
         );
 
         await waitForElementToBeRemoved(() => screen.queryByRole('progressbar'));
@@ -134,9 +137,11 @@ describe('Gallery item deletion and selection', () => {
         );
 
         render(
-            <SelectedDataProvider>
-                <GalleryWithSelectionCount items={items} />
-            </SelectedDataProvider>
+            <MediaUploadProvider>
+                <SelectedDataProvider>
+                    <GalleryWithSelectionCount items={items} />
+                </SelectedDataProvider>
+            </MediaUploadProvider>
         );
 
         await waitForElementToBeRemoved(() => screen.queryByRole('progressbar'));
