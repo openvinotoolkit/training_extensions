@@ -9,14 +9,15 @@ import { v4 as uuid } from 'uuid';
 
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
-import { MediaUploadProvider, useMediaUploadContext } from '../providers/media-upload-provider.component';
+import { MediaUploadProvider, useMediaUploadState } from '../providers/media-upload-provider.component';
+import { computeSummary } from '../providers/media-upload-reducer';
 import { MEDIA_UPLOAD_CONCURRENCY, useMediaUpload } from './use-media-upload';
 
 const useMediaUploadProgress = () => {
     const upload = useMediaUpload();
-    const { state } = useMediaUploadContext();
+    const state = useMediaUploadState();
 
-    return { upload, state };
+    return { upload, state, uploadProgress: computeSummary(state.items, state.isUploading) };
 };
 
 const renderUpload = () => renderHook(() => useMediaUploadProgress(), { wrapper: MediaUploadProvider });
@@ -60,7 +61,7 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             files,
-            () => result.current.upload.uploadProgress.isUploading
+            () => result.current.uploadProgress.isUploading
         );
 
         expect(uploadedFileNames).toEqual(['image-1.jpg', 'image-2.jpg']);
@@ -95,11 +96,11 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             mockFiles,
-            () => result.current.upload.uploadProgress.isUploading
+            () => result.current.uploadProgress.isUploading
         );
 
         expect(maxRunningUploads).toBeLessThanOrEqual(MEDIA_UPLOAD_CONCURRENCY);
-        expect(result.current.upload.uploadProgress.completed).toBe(12);
+        expect(result.current.uploadProgress.completed).toBe(12);
     });
 
     it('tracks upload progress counters', async () => {
@@ -129,10 +130,10 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             files,
-            () => result.current.upload.uploadProgress.isUploading
+            () => result.current.uploadProgress.isUploading
         );
 
-        expect(result.current.upload.uploadProgress).toEqual({
+        expect(result.current.uploadProgress).toEqual({
             total: 2,
             completed: 2,
             succeeded: 1,
@@ -167,7 +168,7 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             files,
-            () => result.current.upload.uploadProgress.isUploading
+            () => result.current.uploadProgress.isUploading
         );
 
         const items = result.current.state.items;

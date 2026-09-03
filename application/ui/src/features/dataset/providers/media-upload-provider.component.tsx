@@ -1,7 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, Dispatch, ReactNode, useContext, useEffect, useMemo, useReducer } from 'react';
+import { createContext, Dispatch, ReactNode, useContext, useEffect, useReducer, useRef } from 'react';
 
 import { removeToast, toast } from '@/components/toast/toast.component';
 import { Button, Flex, Loading } from '@geti-ui/ui';
@@ -13,12 +13,15 @@ import { Action, computeSummary, INITIAL_STATE, MediaUploadState, reducer } from
 const UPLOAD_TOAST_ID = 'upload-progress-notification';
 const UPLOAD_TOAST_FONT_SIZE = 'var(--spectrum-global-dimension-font-size-75)';
 
-type MediaUploadContextValue = {
-    state: MediaUploadState;
-    dispatch: Dispatch<Action>;
-};
+// Sonner re-renders the toaster synchronously (flushSync) on every update, so refreshing the
+// toast for each of a few thousand files would stall the page for no visible benefit.
+const TOAST_UPDATE_INTERVAL_MS = 300;
 
-const MediaUploadContext = createContext<MediaUploadContextValue | null>(null);
+// State and dispatch are kept apart so components that only trigger uploads (the gallery, the
+// toolbar) do not re-render once per uploaded file.
+const MediaUploadStateContext = createContext<MediaUploadState | null>(null);
+const MediaUploadDispatchContext = createContext<Dispatch<Action> | null>(null);
+const IsUploadingContext = createContext(false);
 
 const buildProgressDetail = (succeeded: number, failed: number): string => {
     const parts = [succeeded > 0 ? `${succeeded} succeeded` : null, failed > 0 ? `${failed} failed` : null].filter(
@@ -75,6 +78,7 @@ const showFinalToast = (succeeded: number, failed: number, openDialog: () => voi
 
 export const MediaUploadProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+    const lastToastUpdateRef = useRef(0);
 
     useEffect(() => {
         return () => removeToast(UPLOAD_TOAST_ID);
@@ -86,29 +90,56 @@ export const MediaUploadProvider = ({ children }: { children: ReactNode }) => {
         const openDialog = () => dispatch({ type: 'OPEN_DIALOG' });
         const summary = computeSummary(state.items, state.isUploading);
 
-        if (state.isUploading) {
-            showInProgressToast(summary.total, summary.succeeded, summary.failed, openDialog);
-        } else {
+        if (!state.isUploading) {
+            lastToastUpdateRef.current = 0;
             showFinalToast(summary.succeeded, summary.failed, openDialog);
+
+            return;
         }
+
+        const showProgress = () => {
+            lastToastUpdateRef.current = Date.now();
+            showInProgressToast(summary.total, summary.succeeded, summary.failed, openDialog);
+        };
+
+        const timeoutId = setTimeout(
+            showProgress,
+            Math.max(0, TOAST_UPDATE_INTERVAL_MS - (Date.now() - lastToastUpdateRef.current))
+        );
+
+        return () => clearTimeout(timeoutId);
     }, [state.items, state.isUploading]);
 
-    const value = useMemo<MediaUploadContextValue>(() => ({ state, dispatch }), [state]);
-
     return (
-        <MediaUploadContext.Provider value={value}>
-            {children}
-            <UploadDetailsDialog />
-        </MediaUploadContext.Provider>
+        <MediaUploadDispatchContext.Provider value={dispatch}>
+            <IsUploadingContext.Provider value={state.isUploading}>
+                <MediaUploadStateContext.Provider value={state}>
+                    {children}
+                    <UploadDetailsDialog />
+                </MediaUploadStateContext.Provider>
+            </IsUploadingContext.Provider>
+        </MediaUploadDispatchContext.Provider>
     );
 };
 
-export const useMediaUploadContext = (): MediaUploadContextValue => {
-    const context = useContext(MediaUploadContext);
+export const useMediaUploadState = (): MediaUploadState => {
+    const context = useContext(MediaUploadStateContext);
 
     if (context === null) {
-        throw new Error('useMediaUploadContext was used outside of MediaUploadProvider');
+        throw new Error('useMediaUploadState was used outside of MediaUploadProvider');
     }
 
     return context;
 };
+
+export const useMediaUploadDispatch = (): Dispatch<Action> => {
+    const context = useContext(MediaUploadDispatchContext);
+
+    if (context === null) {
+        throw new Error('useMediaUploadDispatch was used outside of MediaUploadProvider');
+    }
+
+    return context;
+};
+
+export const useIsUploading = (): boolean => useContext(IsUploadingContext);
