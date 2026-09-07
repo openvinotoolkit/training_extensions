@@ -10,7 +10,6 @@ from .instance_segmentation import UltralyticsInstSegModel
 from .semantic_segmentation import UltralyticsSemanticSegModel
 from .yolo_detr import UltralyticsYoloDetrModel
 
-
 __all__ = [
     "UltralyticsDetectionModel",
     "UltralyticsInstSegModel",

@@ -10,7 +10,6 @@ from .instance_segmentation import SegmentationTrainer
 from .semantic_segmentation import SemanticSegmentationTrainer
 from .yolo_detr import YoloDetrTrainer
 
-
 __all__ = [
     "ClassificationTrainer",
     "DetectionTrainer",
@@ -20,4 +19,3 @@ __all__ = [
     "SemanticSegmentationTrainer",
     "YoloDetrTrainer",
 ]
-

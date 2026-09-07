@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from copy import copy
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from ultralytics.models.rtdetr.train import RTDETRTrainer as _RTDETRTrainer
 from ultralytics.models.yolodetr.train import YOLODETRTrainer as _YOLODETRTrainer
@@ -18,6 +18,9 @@ from getitune.backend.ultralytics.plugins.xpu_mixin import XPUAwareTrainerMixin
 from getitune.backend.ultralytics.validators.yolo_detr import YoloDetrValidator
 
 from .base import GetiTuneBaseTrainer
+
+if TYPE_CHECKING:
+    from torch import nn
 
 
 class YoloDetrTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _YOLODETRTrainer):
@@ -45,7 +48,8 @@ class YoloDetrTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _YOLODETRTraine
         if not self._use_getitune_data:
             return super().get_validator()
 
-        head_name = type(unwrap_model(self.model).model[-1]).__name__
+        model_layers = cast("nn.Sequential", unwrap_model(self.model).model)
+        head_name = type(model_layers[-1]).__name__
         self.loss_names = ["giou_loss", "cls_loss", "l1_loss"]
         if head_name == "DeimDecoder":
             self.loss_names += ["fgl_loss", "ddf_loss"]
