@@ -45,8 +45,12 @@ class TestRTMDetInst:
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 3
 
-        # TODO(Eugene): Explain should return proper output.
-        # After enabling explain for maskrcnn, below codes shuold be passed
-        # model.explain_mode = True  # noqa: ERA001
-        # output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))  # noqa: ERA001
-        # assert len(output) == 5  # noqa: ERA001
+    def test_export_parameters_disable_runtime_nms(self):
+        model = RTMDetInst(
+            label_info=3,
+            model_name="rtmdet_inst_tiny",
+            data_input_params=DataInputParams((640, 640), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+            pretrained=False,
+        )
+
+        assert model._export_parameters.nms_execute is False
