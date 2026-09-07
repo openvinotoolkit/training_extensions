@@ -42,3 +42,36 @@ class TrainingProgressCallback(Callback):
         self._update_total_steps(trainer)
         self._current_step += 1
         self._emit_progress()
+
+
+class EvaluationHeartbeatCallback(Callback):
+    """Emit a liveness heartbeat while a Lightning test loop is running.
+
+    The "Evaluate Model" step reports progress only when it starts and when it ends.
+    A test loop that runs longer than the control plane's stale-job threshold would
+    otherwise be mistaken for a hung job and terminated by a signal, killing the
+    process without any Python-level error and leaving the job log truncated.
+
+    Args:
+        on_heartbeat: Called periodically to signal liveness.
+        every_n_batches: Emit at most one heartbeat every N test batches, to avoid
+            flooding the IPC channel on fast (e.g. GPU) evaluations.
+    """
+
+    def __init__(self, on_heartbeat: Callable[[], None], every_n_batches: int = 10) -> None:
+        self._on_heartbeat = on_heartbeat
+        self._every_n_batches = max(1, every_n_batches)
+        self._seen = 0
+
+    def on_test_batch_end(
+        self,
+        trainer: LightningTrainer,
+        pl_module: LightningModule,
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> None:
+        self._seen += 1
+        if self._seen % self._every_n_batches == 0:
+            self._on_heartbeat()

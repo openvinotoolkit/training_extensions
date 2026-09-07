@@ -64,8 +64,24 @@ class ThreadRun(Runner[Job, ExecutionEvent]):
                 # Continue polling if no events available
                 continue
 
-    async def stop(self, graceful_timeout: float = 6.0, term_timeout: float = 3.0, kill_timeout: float = 1.0) -> None:
-        """Stop the runner by setting the cancellation event."""
+    async def stop(
+        self,
+        graceful_timeout: float = 6.0,
+        term_timeout: float = 3.0,
+        kill_timeout: float = 1.0,
+        reason: str | None = None,
+    ) -> None:
+        """Stop the runner by setting the cancellation event.
+
+        Args:
+            graceful_timeout: How long to wait for the execution thread to finish.
+            term_timeout: Unused - the thread runner cannot escalate beyond cooperative
+                cancellation; included for Runner protocol compatibility.
+            kill_timeout: Unused - included for Runner protocol compatibility.
+            reason: Why the runner is being stopped. Unused here because a thread is
+                always cancelled cooperatively and therefore reports its own outcome;
+                included for Runner protocol compatibility.
+        """
         self._cancel_event.set()
 
         if self._execution_thread and self._execution_thread.is_alive():

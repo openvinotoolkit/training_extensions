@@ -31,7 +31,11 @@ class Runner(Protocol[T, E]):
     def start(self) -> "Runner[T, E]": ...
     def events(self) -> Iterator[E]: ...
     async def stop(
-        self, graceful_timeout: float = 6.0, term_timeout: float = 3.0, kill_timeout: float = 1.0
+        self,
+        graceful_timeout: float = 6.0,
+        term_timeout: float = 3.0,
+        kill_timeout: float = 1.0,
+        reason: str | None = None,
     ) -> None: ...
 
 

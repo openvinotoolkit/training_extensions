@@ -41,14 +41,24 @@ class JobController:
         max_parallel_jobs: Maximum number of capacity-managed jobs that can execute simultaneously
     """
 
-    def __init__(self, jobs_queue: JobQueue, runner_factory: RunnerFactory, max_parallel_jobs: int) -> None:
+    def __init__(
+        self,
+        jobs_queue: JobQueue,
+        runner_factory: RunnerFactory,
+        max_parallel_jobs: int,
+        stale_threshold_seconds: int = 3600,
+        stale_check_interval_seconds: int = 60,
+    ) -> None:
         self._jobs_q = jobs_queue
         self._runner_factory = runner_factory
         self._capacity = Capacity(max_parallel_jobs)
         self._running = False
+        self._stale_threshold = stale_threshold_seconds
+        self._stale_check_interval = stale_check_interval_seconds
         self._supervisor_task: asyncio.Task | None = None
         self._stale_monitor_task: asyncio.Task | None = None
         self._tasks: set[asyncio.Task] = set()
+        self._stale_job_ids: set = set()
 
     async def start(self) -> None:
         self._running = True
@@ -75,20 +85,25 @@ class JobController:
                 logger.exception("Exception during supervise loop")
 
     async def _monitor_stale_loop(self) -> None:
-        """Monitor running jobs and terminate those that haven't updated in 1 hour."""
-        stale_threshold = 3600  # 1 hour inactivity threshold
-        check_interval = 60  # Check every minute
+        """Terminate running jobs that have not reported any progress for too long.
 
+        A job is only considered stale when its ``updated_at`` stops moving. Steps that
+        do long, non-incremental work must therefore emit a heartbeat, otherwise a
+        healthy-but-slow job is killed here by signal, which leaves no trace in the
+        job's own log (see ProcessRun._log_abnormal_exit).
+        """
         while self._running:
             try:
-                await asyncio.sleep(check_interval)
-                stale_jobs = self._jobs_q.list_stale_jobs(stale_threshold)
+                await asyncio.sleep(self._stale_check_interval)
+                stale_jobs = self._jobs_q.list_stale_jobs(self._stale_threshold)
 
                 for job in stale_jobs:
+                    self._stale_job_ids.add(job.id)
                     logger.warning(
-                        "Job {} has not updated in {} seconds, marking as stale and scheduling termination",
+                        "Job {} has not reported progress in {} seconds, marking as stale and scheduling termination. "
+                        "If the job was still making progress, the running step is missing a heartbeat.",
                         job.id,
-                        stale_threshold,
+                        self._stale_threshold,
                     )
                     _, result = self._jobs_q.cancel(job.id)
                     logger.info("Cancelling job with ID {} and result {}", job.id, result)
@@ -123,6 +138,7 @@ class JobController:
                 with contextlib.suppress(asyncio.CancelledError):
                     await cancel_task
                 self._jobs_q.cleanup_cancellation_event(job.id)
+                self._stale_job_ids.discard(job.id)
 
             logger.success("Job completed, job_id: {}", job.id)
 
@@ -139,7 +155,13 @@ class JobController:
             """Watch for job cancellation requests and trigger graceful shutdown."""
             event = self._jobs_q.get_cancellation_event(job.id)
             await event.wait()
-            await job_run.stop()
+            reason = None
+            if job.id in self._stale_job_ids:
+                reason = (
+                    f"the stale-job monitor, because the job reported no progress for more than "
+                    f"{self._stale_threshold}s"
+                )
+            await job_run.stop(reason=reason)
 
         threading.Thread(target=_pump, daemon=True).start()
         cancel_task = asyncio.create_task(_cancel())

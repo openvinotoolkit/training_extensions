@@ -115,6 +115,22 @@ class Execution(Runnable, ABC, Generic[JobParamsT]):
         """Update the current progress metadata without changing the message or percentage."""
         self._report_progress(metadata=metadata)
 
+    def heartbeat(self) -> None:
+        """Signal that the job is still alive, without changing the message or percentage.
+
+        A step only reports progress when it starts and when it finishes. Any step that
+        runs longer than the control plane's stale-job threshold without reporting is
+        therefore misclassified as hung and gets terminated with SIGTERM/SIGKILL -- which
+        kills the process without running any Python exception handler, so the job log
+        simply stops mid-way with no error.
+
+        Long-running, non-incremental work (model evaluation in particular, which runs on
+        CPU for the OpenVINO and ONNX variants and can take hours) must call this
+        periodically. It also makes such work cooperatively cancellable, because the
+        reporting hook raises when a cancellation has been requested.
+        """
+        self._report_progress()
+
     def _report_progress(
         self, msg: str = "", percent: float = 0.0, metadata: dict[str, Any] | None = None, level: str = "INFO"
     ) -> None:

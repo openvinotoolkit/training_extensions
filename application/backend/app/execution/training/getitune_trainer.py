@@ -546,40 +546,77 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         - PyTorch (.ckpt) variants are evaluated with the LightningEngine used for training.
         - OpenVINO (.xml) and ONNX (.onnx) variants are evaluated with OVEngine, which
           natively supports both checkpoint types.
+
+        Every variant reports a heartbeat while it runs. Evaluation is the longest
+        non-incremental part of a training job (the OpenVINO and ONNX variants run on
+        CPU and can take hours for large, high-resolution models such as MaskRCNN
+        SwinT), and the surrounding ``@step`` decorator only reports progress when the
+        step starts and ends. Without the heartbeat the control plane sees a job whose
+        ``updated_at`` never moves, declares it stale and terminates the process with
+        SIGTERM/SIGKILL -- which runs no Python exception handler, so the job log ends
+        mid-evaluation with no error at all.
         """
         from getitune.backend.openvino.engine import OVEngine
+
+        from .progress import EvaluationHeartbeatCallback
 
         metric_callable = get_metric_by_task(task)
         ov_work_dir_base = Path(getitune_engine.work_dir)
         datamodule = getitune_engine.datamodule
 
         for variant in model_variants:
-            logger.info("Evaluating the {} model...", variant.format.value)
+            self.update_message(f"Evaluating the {variant.format.value} model...")
+            test_kwargs: dict[str, Any] = {"metric": metric_callable}
             match variant.format:
                 case ModelFormat.PYTORCH:
                     engine = getitune_engine
+                    test_kwargs["callbacks"] = [EvaluationHeartbeatCallback(self.heartbeat)]
                 case ModelFormat.OPENVINO:
                     engine = OVEngine(
                         model=variant.path,
                         data=datamodule,
                         work_dir=ov_work_dir_base / "ov_eval",
                     )
+                    test_kwargs["progress_callback"] = self._evaluation_progress_callback(variant.format.value)
                 case ModelFormat.ONNX:
                     engine = OVEngine(
                         model=variant.path,
                         data=datamodule,
                         work_dir=ov_work_dir_base / "onnx_eval",
                     )
+                    test_kwargs["progress_callback"] = self._evaluation_progress_callback(variant.format.value)
                 case _:
                     raise ExecutionErr(f"Unsupported model variant format for evaluation: {variant.format}")
 
-            metrics = engine.test(metric=metric_callable)
+            metrics = engine.test(**test_kwargs)
             self._save_evaluation_result(
                 metrics=metrics,
                 model_revision_id=model_revision_id,
                 model_variant_id=variant.id,
                 dataset_revision_id=dataset_revision_id,
             )
+
+    def _evaluation_progress_callback(self, variant_name: str) -> Callable[[int, int], None]:
+        """Build the per-batch callback used to keep a long OpenVINO evaluation observable.
+
+        Besides emitting the heartbeat that prevents the job from being declared stale,
+        it logs the batch counter at a coarse interval so a slow evaluation is visible in
+        the job log instead of looking like a hang.
+
+        Args:
+            variant_name: Model variant being evaluated, used in the log message.
+
+        Returns:
+            Callable accepting ``(completed_batches, total_batches)``.
+        """
+        log_every = 10
+
+        def _on_batch(completed: int, total: int) -> None:
+            self.heartbeat()
+            if completed == total or completed % log_every == 0:
+                logger.info("Evaluating the {} model: batch {}/{}", variant_name, completed, total)
+
+        return _on_batch
 
     def _save_evaluation_result(
         self,

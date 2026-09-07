@@ -144,6 +144,64 @@ class TestEngine:
         ):
             fxt_engine.test()
 
+    def test_test_reports_batch_progress(self, fxt_engine, mocker: MockerFixture) -> None:
+        """``test`` invokes ``progress_callback`` once per batch.
+
+        OpenVINO evaluation is a single long-running, silent loop. Embedding
+        applications rely on this callback to prove the evaluation is alive; without
+        it a slow-but-healthy evaluation is indistinguishable from a hung one.
+        """
+        mocker.patch(
+            "getitune.backend.openvino.engine.AutoConfigurator.update_ov_subset_pipeline",
+            return_value=fxt_engine.datamodule,
+        )
+        mock_get_ov_model = mocker.patch("getitune.backend.openvino.engine.AutoConfigurator.get_ov_model")
+        fxt_engine._derive_task_from_ir = MagicMock(return_value="MULTI_LABEL_CLS")
+        mock_model = MagicMock()
+        mock_get_ov_model.return_value = mock_model
+        fxt_engine._model = fxt_engine._auto_configurator.get_ov_model("model.xml")
+
+        mock_dataloader = MagicMock()
+        mock_dataloader.__iter__ = MagicMock(return_value=iter([MagicMock() for _ in range(3)]))
+        mock_dataloader.__len__ = MagicMock(return_value=3)
+        mocker.patch.object(fxt_engine.datamodule, "test_dataloader", return_value=mock_dataloader)
+
+        mock_model.label_info = fxt_engine.datamodule.label_info
+        mock_model.prepare_metric_inputs = mocker.MagicMock(return_value={"preds": [1], "target": [1]})
+        mock_model.compute_metrics = mocker.MagicMock(return_value={})
+
+        seen: list[tuple[int, int]] = []
+        fxt_engine.test(metric=MagicMock(), progress_callback=lambda done, total: seen.append((done, total)))
+
+        assert seen == [(1, 3), (2, 3), (3, 3)]
+
+    def test_test_propagates_progress_callback_errors(self, fxt_engine, mocker: MockerFixture) -> None:
+        """Errors raised by the callback propagate, enabling cooperative cancellation."""
+        mocker.patch(
+            "getitune.backend.openvino.engine.AutoConfigurator.update_ov_subset_pipeline",
+            return_value=fxt_engine.datamodule,
+        )
+        mock_get_ov_model = mocker.patch("getitune.backend.openvino.engine.AutoConfigurator.get_ov_model")
+        fxt_engine._derive_task_from_ir = MagicMock(return_value="MULTI_LABEL_CLS")
+        mock_model = MagicMock()
+        mock_get_ov_model.return_value = mock_model
+        fxt_engine._model = fxt_engine._auto_configurator.get_ov_model("model.xml")
+
+        mock_dataloader = MagicMock()
+        mock_dataloader.__iter__ = MagicMock(return_value=iter([MagicMock() for _ in range(3)]))
+        mock_dataloader.__len__ = MagicMock(return_value=3)
+        mocker.patch.object(fxt_engine.datamodule, "test_dataloader", return_value=mock_dataloader)
+
+        mock_model.label_info = fxt_engine.datamodule.label_info
+        mock_model.prepare_metric_inputs = mocker.MagicMock(return_value={"preds": [1], "target": [1]})
+        mock_model.compute_metrics = mocker.MagicMock(return_value={})
+
+        def _cancel(done: int, total: int) -> None:
+            raise KeyboardInterrupt
+
+        with pytest.raises(KeyboardInterrupt):
+            fxt_engine.test(metric=MagicMock(), progress_callback=_cancel)
+
     @pytest.mark.parametrize("explain", [True, False])
     def test_predict(self, fxt_engine, tmp_path, explain, mocker: MockerFixture) -> None:
         checkpoint = f"{tmp_path}/model.xml"

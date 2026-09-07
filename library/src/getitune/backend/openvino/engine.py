@@ -28,6 +28,8 @@ from getitune.tools.auto_configurator import AutoConfigurator
 from getitune.types import PathLike, TaskType
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from getitune.metrics import MetricCallable
     from getitune.types.types import ANNOTATIONS, DATA, METRICS, MODEL
 
@@ -228,6 +230,7 @@ class OVEngine(Engine):
         data: DataModule | PathLike | None = None,
         checkpoint: PathLike | None = None,
         metric: MetricCallable | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
         **kwargs,
     ) -> METRICS:
         """Run the testing phase of the engine.
@@ -240,6 +243,12 @@ class OVEngine(Engine):
                 Defaults to None.
             metric (MetricCallable | None, optional): If provided, overrides
                 `LightningModel.metric_callable` with the given metric callable for evaluation.
+            progress_callback (Callable[[int, int], None] | None, optional): Called after every
+                test batch with ``(completed_batches, total_batches)``. OpenVINO evaluation runs
+                on CPU and can take hours for large, high-resolution models; without a way to
+                observe that it is progressing, an embedding application cannot distinguish a
+                slow-but-healthy evaluation from a hung one. Exceptions raised by the callback
+                propagate, so it can also be used to implement cooperative cancellation.
 
         Returns:
             METRICS: The computed metrics after testing the model on the provided data.
@@ -294,10 +303,13 @@ class OVEngine(Engine):
         metric_callable = metric(datamodule.label_info)
         with Progress() as progress:
             dataloader = datamodule.test_dataloader()
-            task = progress.add_task("Testing", total=len(dataloader))
-            for data_batch in dataloader:
+            total_batches = len(dataloader)
+            task = progress.add_task("Testing", total=total_batches)
+            for completed, data_batch in enumerate(dataloader, start=1):
                 model.test_step(data_batch, metric_callable)
                 progress.update(task, advance=1)
+                if progress_callback is not None:
+                    progress_callback(completed, total_batches)
 
         metrics_result = model.compute_metrics(metric_callable)
 

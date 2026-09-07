@@ -162,6 +162,37 @@ class TestJobController:
         # Verify cancellation was requested for both stale jobs
         fxt_job_queue.cancel.assert_has_calls(calls=[call(stale_job1.id), call(stale_job2.id)], any_order=True)
 
+        # The jobs are remembered so the eventual signal-based termination can be explained
+        # in the job log instead of the job simply dying silently.
+        assert {stale_job1.id, stale_job2.id} <= fxt_job_controller._stale_job_ids
+
+    @pytest.mark.asyncio
+    async def test_stale_termination_reason_is_propagated_to_runner(self, fxt_job_controller, fxt_job_queue, fxt_job):
+        """A stale-triggered stop must tell the runner why, so it can be logged.
+
+        Regression test: a long evaluation step reports no progress, so the stale monitor
+        SIGTERMs the process. That kills it without running any Python handler, leaving the
+        job log truncated with no error at all.
+        """
+        job = fxt_job()
+        fxt_job_controller._stale_job_ids.add(job.id)
+
+        job_run = Mock()
+        job_run.events = Mock(return_value=iter([]))
+        job_run.stop = AsyncMock()
+        cancel_event = asyncio.Event()
+        cancel_event.set()
+        fxt_job_queue.get_cancellation_event = Mock(return_value=cancel_event)
+
+        cancel_task = fxt_job_controller._setup_job_execution(job, job_run, asyncio.Queue())
+        await asyncio.sleep(0)
+        await cancel_task
+
+        job_run.stop.assert_awaited_once()
+        reason = job_run.stop.await_args_list[0].kwargs["reason"]
+        assert "stale-job monitor" in reason
+        assert str(fxt_job_controller._stale_threshold) in reason
+
     @pytest.mark.asyncio
     async def test_monitor_stale_jobs_handles_exceptions(self, fxt_job_controller, fxt_job_queue):
         """Test stale monitor handles exceptions gracefully and continues running."""

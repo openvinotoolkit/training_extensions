@@ -94,6 +94,7 @@ class ProcessRun:
         self._parent, self._child = ctx.Pipe(duplex=False)
         self._cancel = ctx.Event()
         self._proc: SpawnProcess | None = None
+        self._stop_reason: str | None = None
 
     def start(self) -> "ProcessRun":
         self._proc = self._ctx.Process(
@@ -130,6 +131,8 @@ class ProcessRun:
                 # cause here - both in the application log and, best effort, in the
                 # job's own log file so the user can actually see why it failed.
                 details = _describe_exit_code(code)
+                if self._stop_reason:
+                    details = f"{details}. Termination was requested by: {self._stop_reason}"
                 self._log_abnormal_exit(details)
                 yield Failed(details)
         finally:
@@ -155,7 +158,13 @@ class ProcessRun:
         except Exception:
             logger.exception("Failed to append the abnormal termination reason to the job log file")
 
-    async def stop(self, graceful_timeout: float = 30.0, term_timeout: float = 15.0, kill_timeout: float = 1.0) -> None:
+    async def stop(
+        self,
+        graceful_timeout: float = 30.0,
+        term_timeout: float = 15.0,
+        kill_timeout: float = 1.0,
+        reason: str | None = None,
+    ) -> None:
         """
         Stop the process with graceful degradation.
 
@@ -163,7 +172,12 @@ class ProcessRun:
             graceful_timeout: How long to wait for graceful shutdown (seconds)
             term_timeout: How long to wait after SIGTERM (seconds)
             kill_timeout: How long to wait after SIGKILL (seconds)
+            reason: Why the process is being stopped. Recorded so that a process which
+                does not shut down gracefully - and therefore dies by signal, without
+                writing anything to its own log - can still be explained to the user.
         """
+        if reason:
+            self._stop_reason = reason
         if self._proc is None:
             return
 

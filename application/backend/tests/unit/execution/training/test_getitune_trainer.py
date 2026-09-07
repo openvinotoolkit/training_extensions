@@ -39,6 +39,7 @@ from app.execution.training.getitune_trainer import (
     ModelVariantDescriptor,
     TrainingDependencies,
 )
+from app.execution.training.progress import EvaluationHeartbeatCallback
 from app.models import (
     DatasetItemAnnotationStatus,
     DatasetItemSubset,
@@ -1192,7 +1193,14 @@ class TestGetiTuneTrainerEvaluateModel:
             )
 
         # Assert: PyTorch evaluation via the LightningEngine
-        mock_getitune_engine.test.assert_called_once_with(metric=metric_callable)
+        pytorch_call = mock_getitune_engine.test.call_args
+        assert mock_getitune_engine.test.call_count == 1
+        assert pytorch_call.kwargs["metric"] is metric_callable
+        # A heartbeat callback keeps the job's updated_at moving during a long test loop,
+        # otherwise the stale-job monitor terminates the process by signal (no traceback).
+        assert any(isinstance(cb, EvaluationHeartbeatCallback) for cb in pytorch_call.kwargs.get("callbacks", [])), (
+            "PyTorch evaluation must report liveness"
+        )
 
         # Assert: OVEngine instantiated twice (OV + ONNX) and tested with the right checkpoints
         assert mock_ov_engine_cls.call_count == 2
@@ -1210,8 +1218,13 @@ class TestGetiTuneTrainerEvaluateModel:
                 ),
             ]
         )
-        mock_ov_engine.test.assert_called_once_with(metric=metric_callable)
-        mock_onnx_engine.test.assert_called_once_with(metric=metric_callable)
+        for engine_mock in (mock_ov_engine, mock_onnx_engine):
+            assert engine_mock.test.call_count == 1
+            kwargs = engine_mock.test.call_args.kwargs
+            assert kwargs["metric"] is metric_callable
+            # OpenVINO/ONNX evaluation runs on CPU and is the slowest part of a training
+            # job, so it must report per-batch liveness to the control plane.
+            assert callable(kwargs["progress_callback"])
 
         # Assert: each variant's metrics are persisted with the matching variant id
         save_calls = fxt_model_service.save_evaluation_result.call_args_list
@@ -1272,7 +1285,8 @@ class TestGetiTuneTrainerEvaluateModel:
         )
 
         # Assert — metric is always passed uniformly; Ultralytics engines ignore it.
-        mock_getitune_engine.test.assert_called_once_with(metric=MeanAPCallable)
+        assert mock_getitune_engine.test.call_count == 1
+        assert mock_getitune_engine.test.call_args.kwargs["metric"] is MeanAPCallable
         fxt_model_service.save_evaluation_result.assert_called_once()
 
 
