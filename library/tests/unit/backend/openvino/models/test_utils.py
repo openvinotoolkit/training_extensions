@@ -69,3 +69,24 @@ class TestRescaleMasksToOriginal:
         assert result.shape == (1, 480, 640)
         # Content was 480x640, resized to 480x640 — should be all 1s
         assert result[0].sum() == 480 * 640
+
+    def test_chunking_does_not_change_result(self) -> None:
+        """Chunked interpolation must be numerically identical to a single-shot resize.
+        The masks are rescaled in chunks to bound the transient float32 buffers that
+        ``F.interpolate`` allocates. For a high-resolution instance segmentation model
+        (MaskRCNN SwinT at 1344x1344, up to 100 instances per image) a single-shot
+        resize allocated several GiB at once, which got the evaluation process killed
+        by the OS OOM killer with no Python traceback.
+        """
+        torch.manual_seed(0)
+        masks = (torch.rand(17, 64, 64) > 0.5).to(torch.uint8)
+        one_shot = rescale_masks_to_original(
+            masks, img_shape=(64, 64), ori_shape=(128, 96), padding=(0, 0, 0, 0), chunk_size=1000
+        )
+        chunked = rescale_masks_to_original(
+            masks, img_shape=(64, 64), ori_shape=(128, 96), padding=(0, 0, 0, 0), chunk_size=4
+        )
+        assert one_shot.shape == (17, 128, 96)
+        assert one_shot.dtype == torch.uint8
+        assert chunked.dtype == torch.uint8
+        assert torch.equal(one_shot, chunked)

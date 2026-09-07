@@ -31,6 +31,22 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 RECIPE_PATH = get_getitune_root_path() / "recipe"
 
+# Memory budget (in MiB) for the decoded image tensors of a *single* OpenVINO
+# evaluation batch.  The ``openvino_model.yaml`` recipes hard-code a batch size
+# (e.g. 64 for instance segmentation) that was tuned for low-resolution models.
+# That same batch size becomes a memory bomb for high-resolution architectures
+# such as MaskRCNN SwinT (1344x1344): 64 * 3 * 1344 * 1344 * 4 B ~= 1.4 GiB of
+# float32 pixels *per batch*, multiplied again by the dataloader prefetch queue
+# (num_workers * prefetch_factor) and once more by the per-instance full-image
+# masks that ModelAPI allocates during post-processing.  The resulting RSS spike
+# gets the worker process killed by the OS OOM killer, which surfaces as a
+# training job that dies during evaluation without any Python traceback.
+#
+# Capping the batch size by a memory budget keeps evaluation results identical
+# (batching only affects throughput, not metrics) while making the peak memory
+# roughly independent of the model input resolution.
+OV_EVAL_BATCH_BUDGET_MB = int(os.environ.get("GETITUNE_OV_EVAL_BATCH_BUDGET_MB", "256"))
+
 DEFAULT_CONFIG_PER_TASK = {
     TaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "mobilenet_v3_large.yaml",
     TaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "mobilenet_v3_large.yaml",
@@ -429,6 +445,16 @@ class AutoConfigurator:
             )
             raise ValueError(msg)
 
+        if not tiling_enabled:
+            # The recipe batch size is resolution-agnostic; clamp it so that a
+            # high-resolution model does not blow up host memory (see
+            # OV_EVAL_BATCH_BUDGET_MB).  Tiled pipelines already force batch_size=1.
+            subset_config.batch_size = self._cap_eval_batch_size(
+                batch_size=subset_config.batch_size,
+                input_size=actual_input_size,
+                subset=subset,
+            )
+
         msg = (
             f"For OpenVINO IR models, Update the following {subset} \n"
             f"\t augmentations_cpu: {subset_config.augmentations_cpu} \n"
@@ -475,6 +501,58 @@ class AutoConfigurator:
             auto_num_workers=datamodule.auto_num_workers,
             device=datamodule.device,
         )
+
+    @staticmethod
+    def _cap_eval_batch_size(batch_size: int, input_size: tuple[int, int], subset: str = "test") -> int:
+        """Clamp an OpenVINO evaluation batch size to a host-memory budget.
+
+        The ``openvino_model.yaml`` recipes declare a single, resolution-agnostic
+        batch size (64 for most tasks).  Combined with a high-resolution model such
+        as MaskRCNN SwinT (1344x1344) this makes one dataloader batch hold ~1.4 GiB
+        of float32 pixels, which is then multiplied by the dataloader prefetch queue
+        and by the per-instance, full-image masks produced during post-processing.
+        The resulting allocation spike is typically resolved by the OS OOM killer,
+        i.e. the evaluation process dies by SIGKILL without a Python traceback.
+
+        Batch size only affects evaluation throughput, never the computed metrics,
+        so clamping it is always safe.
+
+        Args:
+            batch_size: Batch size requested by the OpenVINO recipe.
+            input_size: ``(H, W)`` the images are resized to before inference.
+            subset: Name of the subset being configured, used for logging only.
+
+        Returns:
+            int: ``batch_size``, or a smaller value that fits the memory budget
+            (never less than 1).
+        """
+        height, width = int(input_size[0]), int(input_size[1])
+        if height <= 0 or width <= 0:
+            return batch_size
+
+        # 3 channels, float32 (the OV CPU pipeline scales pixels to float).
+        bytes_per_image = 3 * height * width * 4
+        budget_bytes = max(OV_EVAL_BATCH_BUDGET_MB, 1) * 1024 * 1024
+        max_batch_size = max(1, budget_bytes // bytes_per_image)
+
+        if batch_size <= max_batch_size:
+            return batch_size
+
+        logger.warning(
+            "update_ov_subset_pipeline: OpenVINO recipe %s_subset.batch_size=%d would allocate "
+            "~%.1f MiB of float32 pixels per batch at input_size=%dx%d (plus dataloader prefetch "
+            "and per-instance full-image masks), which risks the evaluation process being killed "
+            "by the OS OOM killer. Reducing batch_size to %d to stay within the %d MiB budget "
+            "(override via GETITUNE_OV_EVAL_BATCH_BUDGET_MB). Metrics are unaffected.",
+            subset,
+            batch_size,
+            batch_size * bytes_per_image / 1024 / 1024,
+            height,
+            width,
+            max_batch_size,
+            OV_EVAL_BATCH_BUDGET_MB,
+        )
+        return int(max_batch_size)
 
     @staticmethod
     def _strip_resize_transforms(augmentations: list[dict]) -> None:

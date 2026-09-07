@@ -13,6 +13,36 @@ from .handlers import InterceptHandler
 
 
 @contextmanager
+def job_log_sink(config: LogConfig) -> Generator[str]:
+    """Temporarily attach *only* a file sink for a job log file.
+
+    Unlike :func:`logging_ctx` this does not touch the stdlib ``logging`` root
+    handlers and does not import heavy third-party modules, which makes it safe
+    to use from the parent process (e.g. the job control plane) to append a few
+    records to a job log file that is otherwise written by the child process.
+
+    Args:
+        config: LogConfig instance specifying the log file path and sink parameters.
+
+    Yields:
+        str: Full path to the log file.
+    """
+    log_path = os.path.join(config.log_folder, config.log_file)
+    sink_id = logger.add(
+        log_path,
+        rotation=config.rotation,
+        retention=config.retention,
+        level=config.level,
+        serialize=config.serialize,
+        enqueue=True,
+    )
+    try:
+        yield log_path
+    finally:
+        logger.remove(sink_id)
+
+
+@contextmanager
 def logging_ctx(config: LogConfig) -> Generator[str]:
     """Create a temporary logging context with an additional file sink.
 

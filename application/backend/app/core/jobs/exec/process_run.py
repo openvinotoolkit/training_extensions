@@ -18,6 +18,7 @@ Functions:
 import asyncio
 import contextlib
 import multiprocessing as mp
+import signal
 from collections.abc import Iterator
 from multiprocessing.connection import Connection
 from multiprocessing.context import SpawnProcess
@@ -27,11 +28,53 @@ from typing import Any
 from loguru import logger
 
 from app.core.jobs.models import Done, ExecutionEvent, Failed, Job, JobType, Started
-from app.core.logging import LogConfig, logging_ctx
+from app.core.logging import LogConfig, job_log_sink, logging_ctx
 from app.core.run import ExecutionContext, RunnableFactory, Runner
 from app.settings import get_settings
 
 from .exceptions import CancelledExc
+
+
+def _describe_exit_code(code: int | None) -> str:
+    """Build a human readable explanation for a child process exit code.
+
+    A negative exit code means the child was terminated by a signal rather than
+    returning normally. In that case no Python-level exception handler ever ran,
+    so nothing was written to the job log: the job simply stops mid-way. The most
+    common cause is the Linux OOM killer (SIGKILL) reaping a job whose memory
+    usage spiked, e.g. during model evaluation on high-resolution inputs.
+
+    Args:
+        code: The child process exit code (``Process.exitcode``).
+
+    Returns:
+        str: Description of how the process ended.
+    """
+    if code is None:
+        return "process ended without an exit code (it may still be running or was never started)"
+    if code >= 0:
+        return f"process exit {code}"
+
+    signum = -code
+    try:
+        signame = signal.Signals(signum).name
+    except ValueError:
+        signame = f"signal {signum}"
+
+    detail = f"process was terminated by {signame} (exit code {code})"
+    # Compare by name: SIGKILL/SIGBUS are not defined on every platform.
+    if signame == "SIGKILL":
+        detail += (
+            ". This is almost always the OS out-of-memory (OOM) killer: the job exceeded the available "
+            "memory and was killed before it could report an error. Check dmesg/`journalctl -k` for an "
+            "'Out of memory: Killed process' entry, and consider lowering the evaluation batch size"
+        )
+    elif signame in ("SIGSEGV", "SIGABRT", "SIGBUS"):
+        detail += (
+            ". This indicates a crash inside a native extension (OpenVINO, PyTorch, OpenCV, ...) rather "
+            "than a Python error, so no traceback could be captured"
+        )
+    return detail
 
 
 class ProcessRun:
@@ -78,9 +121,39 @@ class ProcessRun:
         except EOFError:
             # Child exited; infer outcome
             code = self._proc.exitcode if self._proc else 1
-            yield Done() if code == 0 else Failed(f"process exit {code}")
+            if code == 0:
+                yield Done()
+            else:
+                # The child died without sending a Failed event, meaning no Python
+                # exception handler ran (killed by a signal, hard native crash, ...).
+                # Nothing was written to the job log by the child, so record the
+                # cause here - both in the application log and, best effort, in the
+                # job's own log file so the user can actually see why it failed.
+                details = _describe_exit_code(code)
+                self._log_abnormal_exit(details)
+                yield Failed(details)
         finally:
             self._parent.close()
+
+    def _log_abnormal_exit(self, details: str) -> None:
+        """Record an abnormal child-process termination.
+
+        The child process owns the job log file sink, so when it is killed nothing
+        explains the failure to the user. This re-attaches the job log sink from the
+        parent process just long enough to append the diagnosis.
+
+        Args:
+            details: Human readable description of how the process ended.
+        """
+        job_name = self._proc.name if self._proc else f"job-{self._job.job_type}-{self._job.id}"
+        message = f"Job {self._job.id} ({self._job.job_type}) terminated abnormally: {details}"
+        logger.error("{} [{}]", message, job_name)
+
+        try:
+            with job_log_sink(LogConfig(log_folder=str(get_settings().job_dir), log_file=self._job.log_file)):
+                logger.error(message)
+        except Exception:
+            logger.exception("Failed to append the abnormal termination reason to the job log file")
 
     async def stop(self, graceful_timeout: float = 30.0, term_timeout: float = 15.0, kill_timeout: float = 1.0) -> None:
         """

@@ -158,8 +158,58 @@ class TestAutoConfigurator:
         assert len(updated_datamodule.test_subset.augmentations_cpu) == 1
         assert "Resize" in updated_datamodule.test_subset.augmentations_cpu[0]["class_path"]
         assert not updated_datamodule.tile_config.enable_tiler
-        # Without tiling, the OV recipe's batch_size is used as-is (no override).
-        assert updated_datamodule.test_subset.batch_size == ov_recipe_batch_size
+        # Without tiling, the OV recipe's batch_size is used, clamped to the memory budget.
+        assert updated_datamodule.test_subset.batch_size == AutoConfigurator._cap_eval_batch_size(
+            batch_size=ov_recipe_batch_size,
+            input_size=updated_datamodule.test_subset.input_size,  # pyrefly: ignore[bad-argument-type]
+        )
+        assert updated_datamodule.test_subset.batch_size <= ov_recipe_batch_size
+
+    @pytest.mark.parametrize(
+        ("batch_size", "input_size", "budget_mb", "expected"),
+        [
+            # Low resolution: the recipe batch size fits the budget and is left alone.
+            (64, (224, 224), 256, 64),
+            # MaskRCNN SwinT resolution: 64 * 3 * 1344 * 1344 * 4 B ~= 1.4 GiB -> clamped.
+            (64, (1344, 1344), 256, 12),
+            # Never clamp below 1, even for an absurd resolution.
+            (64, (8192, 8192), 1, 1),
+            # Degenerate/dynamic shapes are passed through untouched.
+            (64, (0, 0), 256, 64),
+        ],
+    )
+    def test_cap_eval_batch_size(self, batch_size, input_size, budget_mb, expected, monkeypatch) -> None:
+        """The OV evaluation batch size is clamped to a host-memory budget.
+
+        Regression test: the instance segmentation OV recipe hard-codes batch_size=64,
+        which at MaskRCNN SwinT's 1344x1344 input resolution makes a single batch hold
+        ~1.4 GiB of float32 pixels (before dataloader prefetch and per-instance
+        full-image masks). The resulting memory spike got the training job's evaluation
+        process killed by the OS OOM killer, i.e. it died with no Python traceback.
+        """
+        monkeypatch.setattr("getitune.tools.auto_configurator.OV_EVAL_BATCH_BUDGET_MB", budget_mb)
+
+        assert AutoConfigurator._cap_eval_batch_size(batch_size=batch_size, input_size=input_size) == expected
+
+    def test_update_ov_subset_pipeline_clamps_high_resolution_batch_size(self) -> None:
+        """A high-resolution model must not inherit the OV recipe's large batch size."""
+        data_root = "tests/assets/detection_coco"
+        auto_configurator = AutoConfigurator(data_root=data_root, task="DETECTION")
+        datamodule = auto_configurator.get_datamodule()
+
+        ov_config_path = DEFAULT_CONFIG_PER_TASK[TaskType.DETECTION].parent / "openvino_model.yaml"
+        ov_recipe_batch_size = auto_configurator._load_default_config(config_path=ov_config_path)["data"][
+            "test_subset"
+        ]["batch_size"]
+
+        updated_datamodule = auto_configurator.update_ov_subset_pipeline(
+            datamodule,
+            subset="test",
+            input_size=(1344, 1344),
+        )
+
+        assert updated_datamodule.test_subset.batch_size < ov_recipe_batch_size
+        assert updated_datamodule.test_subset.batch_size >= 1
 
     def test_update_ov_subset_pipeline_tiling_keeps_tiler_and_strips_resize(self) -> None:
         """With tiling enabled, the OV pipeline keeps the tiler on and removes the tile Resize.

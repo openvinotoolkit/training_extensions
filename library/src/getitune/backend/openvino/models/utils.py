@@ -84,6 +84,7 @@ def rescale_masks_to_original(
     img_shape: tuple[int, int],
     ori_shape: tuple[int, int],
     padding: tuple[int, int, int, int],
+    chunk_size: int = 8,
 ) -> torch.Tensor:
     """Rescale predicted binary masks from model input coordinates to original image coordinates.
 
@@ -96,6 +97,14 @@ def rescale_masks_to_original(
         img_shape: (H, W) of the preprocessed model input image.
         ori_shape: (H, W) of the original image.
         padding: (left, top, right, bottom) padding applied during preprocessing.
+        chunk_size: Number of masks interpolated at once. ``F.interpolate`` requires
+            float32 inputs, so processing all masks in one call materialises a float32
+            copy of the whole stack *and* of the (N, ori_H, ori_W) result — 8 bytes per
+            output pixel per instance. For a high-resolution instance segmentation model
+            (e.g. MaskRCNN SwinT at 1344x1344 with up to 100 instances per image) that is
+            several GiB of transient allocation for a single image, which is enough to get
+            the evaluation process killed by the OS OOM killer. Interpolating in chunks
+            bounds that transient peak without changing the result.
 
     Returns:
         Tensor of shape (N, ori_H, ori_W) with masks mapped to ori_shape space.
@@ -117,9 +126,15 @@ def rescale_masks_to_original(
         content_w = img_w - pad_left - pad_right
         masks = masks[:, pad_top : pad_top + content_h, pad_left : pad_left + content_w]
 
-    # Resize masks to ori_shape using bilinear interpolation
-    # f.interpolate expects (N, C, H, W) input
-    masks_4d = masks.unsqueeze(1).float()  # (N, 1, H, W)
-    return (f.interpolate(masks_4d, size=(ori_h, ori_w), mode="bilinear", align_corners=False).squeeze(1) > 0.5).to(
-        torch.uint8
-    )
+    # Resize masks to ori_shape using bilinear interpolation.
+    # f.interpolate expects (N, C, H, W) float input, so work in chunks to keep the
+    # transient float32 buffers bounded regardless of the number of instances.
+    num_masks = masks.shape[0]
+    step = max(1, chunk_size)
+    rescaled = torch.empty((num_masks, ori_h, ori_w), dtype=torch.uint8)
+    for start in range(0, num_masks, step):
+        chunk = masks[start : start + step].unsqueeze(1).float()  # (n, 1, H, W)
+        resized = f.interpolate(chunk, size=(ori_h, ori_w), mode="bilinear", align_corners=False).squeeze(1)
+        rescaled[start : start + step] = (resized > 0.5).to(torch.uint8)
+        del chunk, resized
+    return rescaled

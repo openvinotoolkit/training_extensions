@@ -110,6 +110,63 @@ class TestProcessRun:
 
         fxt_process_run._parent.close.assert_called_once()
 
+    def test_events_reports_sigkill_as_oom(self, fxt_process_run):
+        """A child killed by SIGKILL (OOM killer) must produce an explicit Failed reason."""
+        fxt_process_run._parent.recv.side_effect = EOFError()
+        fxt_process_run._proc = Mock(exitcode=-9)
+
+        with patch.object(ProcessRun, "_log_abnormal_exit") as mock_log:
+            events = list(fxt_process_run.events())
+
+        assert len(events) == 1
+        assert isinstance(events[0], Failed)
+        assert "SIGKILL" in events[0].details
+        assert "out-of-memory" in events[0].details
+        mock_log.assert_called_once()
+
+    def test_events_reports_native_crash(self, fxt_process_run):
+        """A child killed by SIGSEGV must be reported as a native crash."""
+        fxt_process_run._parent.recv.side_effect = EOFError()
+        fxt_process_run._proc = Mock(exitcode=-11)
+
+        with patch.object(ProcessRun, "_log_abnormal_exit"):
+            events = list(fxt_process_run.events())
+
+        assert "SIGSEGV" in events[0].details
+        assert "native extension" in events[0].details
+
+    def test_events_logs_abnormal_exit_to_job_log(self, fxt_process_run):
+        """The abnormal termination reason is appended to the job's own log file."""
+        fxt_process_run._parent.recv.side_effect = EOFError()
+        fxt_process_run._proc = Mock(exitcode=-9)
+
+        with patch("app.core.jobs.exec.process_run.job_log_sink") as mock_sink:
+            list(fxt_process_run.events())
+
+        mock_sink.assert_called_once()
+        assert mock_sink.call_args.args[0].log_file == fxt_process_run._job.log_file
+
+    def test_log_abnormal_exit_survives_sink_failure(self, fxt_process_run):
+        """Failing to write to the job log must not break event handling."""
+        fxt_process_run._parent.recv.side_effect = EOFError()
+        fxt_process_run._proc = Mock(exitcode=-9)
+
+        with patch("app.core.jobs.exec.process_run.job_log_sink", side_effect=OSError("read-only fs")):
+            events = list(fxt_process_run.events())
+
+        assert len(events) == 1
+        assert isinstance(events[0], Failed)
+
+    def test_events_handles_missing_exit_code(self, fxt_process_run):
+        """A None exit code is reported instead of being silently swallowed."""
+        fxt_process_run._parent.recv.side_effect = EOFError()
+        fxt_process_run._proc = Mock(exitcode=None)
+
+        with patch.object(ProcessRun, "_log_abnormal_exit"):
+            events = list(fxt_process_run.events())
+
+        assert "without an exit code" in events[0].details
+
     @pytest.mark.asyncio
     async def test_stop_with_no_process(self, fxt_process_run):
         """Test stop method when no process exists."""
