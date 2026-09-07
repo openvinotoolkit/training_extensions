@@ -52,13 +52,15 @@ type ToolProps = {
 export const Tool = ({ tool, activeTool, setActiveTool, isDisabled }: ToolProps) => {
     useHotkeys(tool.hotkey, () => setActiveTool(tool.type), [setActiveTool, isDisabled], { enabled: !isDisabled });
 
+    const label = `${tool.label} (${tool.hotkey})`;
+
     return (
         <TooltipTrigger placement={'right'}>
             <ActionButton
                 isQuiet
                 width={'size-400'}
                 onPress={() => setActiveTool(tool.type)}
-                aria-label={`${tool.type} tool`}
+                aria-label={label}
                 isDisabled={isDisabled}
                 aria-pressed={activeTool === tool.type}
             >
@@ -67,7 +69,7 @@ export const Tool = ({ tool, activeTool, setActiveTool, isDisabled }: ToolProps)
                 </IconWrapper>
             </ActionButton>
             <Tooltip UNSAFE_className={tool.tooltip ? classes.drawingToolsTooltips : undefined}>
-                {tool.tooltip === undefined ? `${tool.label} (${tool.hotkey})` : <DrawingToolsTooltip tool={tool} />}
+                {tool.tooltip === undefined ? label : <DrawingToolsTooltip tool={tool} />}
             </Tooltip>
         </TooltipTrigger>
     );

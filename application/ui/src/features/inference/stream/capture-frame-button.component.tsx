@@ -37,7 +37,12 @@ export const CaptureFrameButton = () => {
     };
 
     return (
-        <Button variant={'secondary'} onPress={handleCapture} isDisabled={isCaptureDisabled}>
+        <Button
+            variant={'secondary'}
+            onPress={handleCapture}
+            isDisabled={isCaptureDisabled}
+            isPending={captureFrameMutation.isPending}
+        >
             Capture frame
         </Button>
     );

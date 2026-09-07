@@ -45,7 +45,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _ALLOWED_CODE_LICENSES = frozenset({"Apache-2.0", "BSD-3-Clause", "MIT"})
-_REFUSED_WEIGHTS_LICENSES = frozenset({"Not Specified", "unknown"})
+_REFUSED_WEIGHTS_LICENSES = frozenset({"not specified", "unknown"})
 _UNKNOWN_LICENSE = "unknown"
 # Architecture prefixes that should use AdamW at train time (matches the
 # optimizer selection in TimmModelMulticlassCls / TimmModelMultilabelCls).
@@ -161,7 +161,7 @@ def _is_license_allowed(model_name: str, licenses: dict[str, dict[str, str]]) ->
         return False
 
     weights_license = (info.get("weights_license", "")).strip()
-    return bool(weights_license) and weights_license not in _REFUSED_WEIGHTS_LICENSES
+    return bool(weights_license) and weights_license.lower() not in _REFUSED_WEIGHTS_LICENSES
 
 
 def _compute_stats(model_name: str) -> dict[str, float]:

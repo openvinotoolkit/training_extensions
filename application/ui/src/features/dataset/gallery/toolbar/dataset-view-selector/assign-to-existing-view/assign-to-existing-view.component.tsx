@@ -19,13 +19,11 @@ import {
     Text,
 } from '@geti-ui/ui';
 import { Info } from '@geti-ui/ui/icons';
-import { useQueryClient } from '@tanstack/react-query';
 import { DATASET_VIEW_ID_PARAM, ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isEmpty } from 'lodash-es';
 import { createSearchParams, Link, useLocation } from 'react-router-dom';
 
-import { getQueryKey } from '../../../../../../query-client/query-client';
 import { pluralizeItems } from '../../../../../../shared/util';
 import { useAssignMediaToExistingDatasetView } from '../api/use-assign-media-to-existing-dataset-view';
 import { SelectedMediaCount } from '../selected-media-count/selected-media-count.component';
@@ -35,7 +33,6 @@ import classes from './assign-to-existing-view.module.scss';
 
 const useAssignMediaToExistingView = () => {
     const projectId = useProjectIdentifier();
-    const queryClient = useQueryClient();
 
     const assignToExistingViewMutation = useAssignMediaToExistingDatasetView();
 
@@ -61,36 +58,7 @@ const useAssignMediaToExistingView = () => {
                 },
             },
             {
-                onSuccess: async () => {
-                    await Promise.all([
-                        queryClient.invalidateQueries({
-                            queryKey: getQueryKey([
-                                'get',
-                                '/api/projects/{project_id}/dataset/media',
-                                {
-                                    params: {
-                                        path: {
-                                            project_id: projectId,
-                                        },
-                                    },
-                                },
-                            ]),
-                        }),
-                        queryClient.invalidateQueries({
-                            queryKey: getQueryKey([
-                                'get',
-                                '/api/projects/{project_id}/dataset/items',
-                                {
-                                    params: {
-                                        path: {
-                                            project_id: projectId,
-                                        },
-                                    },
-                                },
-                            ]),
-                        }),
-                    ]);
-
+                onSuccess: () => {
                     onClose(selectedDatasetViewId);
                 },
             }

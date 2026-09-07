@@ -80,7 +80,6 @@ Feature: Timm Model Training Smoke Test
       | resnet                    | test_resnet.r160_in1k                     |
       | resnetv2                  | resnetv2_18.ra4_e3600_r224_in1k           |
       | rexnet                    | rexnet_100.nav_in1k                       |
-      | senet                     | legacy_seresnet18.in1k                    |
       | sequencer                 | sequencer2d_s.in1k                        |
       | shvit                     | shvit_s1.in1k                             |
       | sknet                     | skresnet18.ra_in1k                        |
@@ -102,6 +101,5 @@ Feature: Timm Model Training Smoke Test
       | vitamin                   | vitamin_small_224.datacomp1b_clip         |
       | volo                      | volo_d1_224.sail_in1k                     |
       | vovnet                    | ese_vovnet19b_dw.ra_in1k                  |
-      | xception                  | legacy_xception.tf_in1k                   |
       | xception_aligned          | xception41.tf_in1k                        |
       | xcit                      | xcit_nano_12_p16_224.fb_dist_in1k         |

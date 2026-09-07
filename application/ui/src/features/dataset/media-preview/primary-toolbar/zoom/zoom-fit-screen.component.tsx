@@ -7,21 +7,23 @@ import { ActionButton, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { FitScreen } from '@geti-ui/ui/icons';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import { HOTKEYS } from '../../../../../shared/hotkeys-definition';
+import { formatHotkeyForDisplay, HOTKEYS } from '../../../../../shared/hotkeys-definition';
 
 export const ZoomFitScreen = () => {
     const { fitToScreen } = useSetZoom();
 
     useHotkeys(HOTKEYS.fitToScreen, fitToScreen, [fitToScreen]);
 
+    const label = `Fit to screen (${formatHotkeyForDisplay(HOTKEYS.fitToScreen)})`;
+
     return (
         <TooltipTrigger>
-            <ActionButton isQuiet onPress={fitToScreen} aria-label='Fit to screen'>
+            <ActionButton isQuiet onPress={fitToScreen} aria-label={label}>
                 <IconWrapper>
                     <FitScreen />
                 </IconWrapper>
             </ActionButton>
-            <Tooltip>Fit to screen</Tooltip>
+            <Tooltip>{label}</Tooltip>
         </TooltipTrigger>
     );
 };

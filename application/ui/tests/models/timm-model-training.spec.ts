@@ -25,7 +25,7 @@ const mockedModelArchitectures = [
     getMockedModelArchitecture({ id: 'Object_Detection_SSD', name: 'Object_Detection_SSD' }),
     getMockedModelArchitecture({
         id: TIMM_MODEL_ARCHITECTURE_ID,
-        name: 'PyTorch Image Models (timm)',
+        name: 'Other models (TIMM)',
         description: 'PyTorch Image Models (TIMM) is a large collection of SOTA image classification models.',
         license: 'varies by model',
         stats: null,
@@ -127,7 +127,7 @@ test.describe('TIMM model training flow', () => {
         });
 
         await test.step('shows the timm configuration once the timm architecture is selected', async () => {
-            await modelsPage.selectModelArchitecture('PyTorch Image Models (timm)');
+            await modelsPage.selectModelArchitecture('Other models (TIMM)');
 
             await expect(timmConfiguration).toBeVisible();
         });

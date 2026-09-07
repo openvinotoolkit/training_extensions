@@ -497,7 +497,7 @@ class LightningEngine(Engine):
         export_precision: Precision = Precision.FP32,
         explain: bool = False,
         export_demo_package: bool = False,
-        export_without_nms: bool = False,
+        export_nms: bool = False,
         **kwargs,
     ) -> Path:
         r"""Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
@@ -509,8 +509,7 @@ class LightningEngine(Engine):
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
             export_demo_package (bool): Whether to export demo package with the model.
                 Only OpenVINO model can be exported with demo package.
-            export_without_nms (bool): Whether to exclude NMS from the exported model graph.
-                When True, NMS metadata is embedded so ModelAPI handles NMS at inference time.
+            export_nms (bool): Whether to include NMS in the exported model graph.
                 Defaults to False.
 
         Returns:
@@ -545,10 +544,10 @@ class LightningEngine(Engine):
                 >>> getitune export ... \
                 ...     --explain True
                 ```
-            5. To export model without NMS, run
+            5. To export model with NMS, run
                 ```shell
                 >>> getitune export ... \
-                ...     --export_without_nms True
+                ...     --export_nms True
                 ```
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -569,17 +568,27 @@ class LightningEngine(Engine):
 
         self.model.explain_mode = explain
 
-        # Disable in-graph NMS for detection models if requested.
-        # Only detection models define export_nms; other model types are unaffected.
-        if export_without_nms and hasattr(self.model, "export_nms"):
-            object.__setattr__(self.model, "export_nms", False)
+        # Models without export_nms do not support configurable graph NMS.
+        previous_export_nms = getattr(self.model, "export_nms", None)
+        if previous_export_nms is None:
+            return self.model.export(
+                output_dir=Path(self.work_dir),
+                base_name=self._EXPORTED_MODEL_BASE_NAME,
+                export_format=export_format,
+                precision=export_precision,
+            )
 
-        return self.model.export(
-            output_dir=Path(self.work_dir),
-            base_name=self._EXPORTED_MODEL_BASE_NAME,
-            export_format=export_format,
-            precision=export_precision,
-        )
+        # This is a per-call override; keep the model's configured value intact.
+        self.model.export_nms = export_nms  # pyrefly: ignore[bad-argument-type]
+        try:
+            return self.model.export(
+                output_dir=Path(self.work_dir),
+                base_name=self._EXPORTED_MODEL_BASE_NAME,
+                export_format=export_format,
+                precision=export_precision,
+            )
+        finally:
+            self.model.export_nms = previous_export_nms
 
     def benchmark(
         self,

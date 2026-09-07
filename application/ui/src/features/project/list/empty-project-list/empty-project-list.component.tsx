@@ -8,6 +8,7 @@ import { ReactComponent as EmptyFolderImage } from '../../../../assets/empty-fol
 import { paths } from '../../../../constants/paths';
 import { useImportDatasetDialog } from '../../providers/import-dataset-dialog-provider.component';
 import { ImportDatasetAsNewProject } from '../import-dataset-as-new-project/import-dataset-as-new-project.component';
+import { WorkflowSteps } from './workflow-steps.component';
 
 import classes from './empty-project-list.module.scss';
 
@@ -28,25 +29,35 @@ export const EmptyProjectList = () => {
     };
 
     return (
-        <Flex
-            gap={'size-100'}
-            direction={'column'}
-            alignItems={'center'}
-            justifyContent={'center'}
-            UNSAFE_className={classes.container}
-        >
-            <EmptyFolderImage aria-label='empty list' />
+        <div className={classes.emptyState}>
+            <p className={classes.intro}>
+                Welcome to <span className={classes.introName}>Geti</span>, a vision AI platform that guides you through
+                the <span className={classes.introHighlight}>complete model lifecycle</span>, from dataset preparation
+                to training, optimization and deployment.
+            </p>
 
-            <Flex alignItems={'center'} gap={'size-100'}>
-                <Button variant='accent' id='create-new-project-button' onPress={handleCreateProject}>
-                    <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>Create new Project</Text>
-                </Button>
-                <Button variant='accent' id='create-new-project-button' onPress={handleCreateFromDataset}>
-                    <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>Create from dataset</Text>
-                </Button>
+            <Flex
+                gap={'size-100'}
+                direction={'column'}
+                alignItems={'center'}
+                justifyContent={'center'}
+                UNSAFE_className={classes.container}
+            >
+                <EmptyFolderImage aria-label='empty list' />
+
+                <Flex alignItems={'center'} gap={'size-100'}>
+                    <Button variant='accent' id='create-new-project-button' onPress={handleCreateProject}>
+                        <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>Create new Project</Text>
+                    </Button>
+                    <Button variant='accent' id='create-from-dataset-button' onPress={handleCreateFromDataset}>
+                        <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>Create from dataset</Text>
+                    </Button>
+                </Flex>
+
+                <ImportDatasetAsNewProject dialogState={datasetImportDialogState} />
             </Flex>
 
-            <ImportDatasetAsNewProject dialogState={datasetImportDialogState} />
-        </Flex>
+            <WorkflowSteps />
+        </div>
     );
 };
