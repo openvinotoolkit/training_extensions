@@ -7,14 +7,14 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from ultralytics.models.yolodetr.train import YOLODETRValidator as _YOLODETRValidator
+from ultralytics.models.rtdetr.val import RTDETRValidator as _RTDETRValidator
 
 from getitune.backend.ultralytics.data.collate import detection_collate_fn
 
 from .base import GetiTuneValidatorMixin
 
 
-class YoloDetrValidator(GetiTuneValidatorMixin, _YOLODETRValidator):
+class YoloDetrValidator(GetiTuneValidatorMixin, _RTDETRValidator):
     """YOLO-DETR validator using getitune's DataModule bridge."""
 
     _task_kind: ClassVar[str] = "detect"
