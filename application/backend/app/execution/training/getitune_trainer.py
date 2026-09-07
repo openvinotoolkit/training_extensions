@@ -560,25 +560,25 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         pytorch_metrics: dict | None = None
         for variant in model_variants:
             logger.info("Evaluating the {} model...", variant.format.value)
-            match variant.format:
-                case ModelFormat.PYTORCH:
-                    engine = getitune_engine
-                case ModelFormat.OPENVINO:
-                    engine = OVEngine(
-                        model=variant.path,
-                        data=datamodule,
-                        work_dir=ov_work_dir_base / "ov_eval",
-                    )
-                case ModelFormat.ONNX:
-                    engine = OVEngine(
-                        model=variant.path,
-                        data=datamodule,
-                        work_dir=ov_work_dir_base / "onnx_eval",
-                    )
-                case _:
-                    raise ExecutionErr(f"Unsupported model variant format for evaluation: {variant.format}")
-
             try:
+                match variant.format:
+                    case ModelFormat.PYTORCH:
+                        engine = getitune_engine
+                    case ModelFormat.OPENVINO:
+                        engine = OVEngine(
+                            model=variant.path,
+                            data=datamodule,
+                            work_dir=ov_work_dir_base / "ov_eval",
+                        )
+                    case ModelFormat.ONNX:
+                        engine = OVEngine(
+                            model=variant.path,
+                            data=datamodule,
+                            work_dir=ov_work_dir_base / "onnx_eval",
+                        )
+                    case _:
+                        raise ExecutionErr(f"Unsupported model variant format for evaluation: {variant.format}")
+
                 metrics = engine.test(metric=metric_callable)
             except Exception as eval_exc:
                 # PyTorch is the source of truth for fallback metrics; if it's the one failing, or no
