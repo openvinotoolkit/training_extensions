@@ -244,6 +244,46 @@ class TestExport:
         )
         assert result == tmp_path / "exported_model.xml"
 
+    @pytest.mark.parametrize("export_nms", [False, True])
+    def test_export_forwards_nms_option(self, mocker, tmp_path, export_nms) -> None:
+        engine, _ = _make_engine(tmp_path, mocker)
+        observed_export_nms = []
+
+        def export_model(**_kwargs) -> Path:
+            observed_export_nms.append(engine._model.export_nms)
+            return tmp_path / "exported_model.xml"
+
+        with patch.object(engine._model, "export", side_effect=export_model):
+            engine.export(export_nms=export_nms)
+
+        assert observed_export_nms == [export_nms]
+        assert engine._model.export_nms is False
+
+    def test_export_defaults_to_nms_disabled(self, mocker, tmp_path) -> None:
+        engine, _ = _make_engine(tmp_path, mocker)
+        observed_export_nms = []
+
+        def export_model(**_kwargs) -> Path:
+            observed_export_nms.append(engine._model.export_nms)
+            return tmp_path / "exported_model.xml"
+
+        with patch.object(engine._model, "export", side_effect=export_model):
+            engine.export()
+
+        assert observed_export_nms == [False]
+
+    def test_export_restores_nms_option_when_export_fails(self, mocker, tmp_path) -> None:
+        engine, _ = _make_engine(tmp_path, mocker)
+        engine._model.export_nms = True
+
+        with (
+            patch.object(engine._model, "export", side_effect=ValueError("export failed")),
+            pytest.raises(ValueError, match="export failed"),
+        ):
+            engine.export(export_nms=False)
+
+        assert engine._model.export_nms
+
     def test_export_with_explicit_checkpoint(self, mocker, tmp_path) -> None:
         """Checkpoint arg should be forwarded to model.load_checkpoint."""
         engine, _ = _make_engine(tmp_path, mocker)

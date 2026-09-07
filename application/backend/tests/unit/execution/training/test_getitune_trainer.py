@@ -1275,6 +1275,110 @@ class TestGetiTuneTrainerEvaluateModel:
         mock_getitune_engine.test.assert_called_once_with(metric=MeanAPCallable)
         fxt_model_service.save_evaluation_result.assert_called_once()
 
+    def test_evaluate_model_reuses_pytorch_results_when_openvino_fails(
+        self,
+        fxt_getitune_trainer: Callable[[], GetiTuneTrainer],
+        tmp_path: Path,
+        fxt_model_service: Mock,
+    ):
+        """OpenVINO/ONNX evaluation failures must not fail the job; PyTorch results are reused instead."""
+        # Arrange
+        getitune_trainer = fxt_getitune_trainer()
+        model_id = uuid4()
+        pytorch_variant_id = uuid4()
+        openvino_variant_id = uuid4()
+        onnx_variant_id = uuid4()
+        dataset_revision_id = uuid4()
+
+        pytorch_metrics = {"test/accuracy": torch.tensor(0.85)}
+
+        mock_getitune_engine = Mock()
+        mock_getitune_engine.test.return_value = pytorch_metrics
+        mock_getitune_engine.work_dir = tmp_path / "getitune-workspace"
+        mock_getitune_engine.datamodule = Mock()
+
+        model_checkpoint_path = tmp_path / "best_checkpoint.pt"
+        model_checkpoint_path.touch()
+        ov_xml_path = tmp_path / "exported_model.xml"
+        onnx_path = tmp_path / "exported_model.onnx"
+
+        model_variants = [
+            ModelVariantDescriptor(id=pytorch_variant_id, path=model_checkpoint_path, format=ModelFormat.PYTORCH),
+            ModelVariantDescriptor(id=openvino_variant_id, path=ov_xml_path, format=ModelFormat.OPENVINO),
+            ModelVariantDescriptor(id=onnx_variant_id, path=onnx_path, format=ModelFormat.ONNX),
+        ]
+
+        mock_ov_engine = Mock()
+        mock_ov_engine.test.side_effect = RuntimeError("OpenVINO evaluation blew up")
+        mock_onnx_engine = Mock()
+        mock_onnx_engine.test.return_value = {"test/accuracy": torch.tensor(0.83)}
+
+        # Act
+        with (
+            patch(
+                "getitune.backend.openvino.engine.OVEngine",
+                side_effect=[mock_ov_engine, mock_onnx_engine],
+            ),
+            patch("app.execution.training.getitune_trainer.logger") as mock_logger,
+        ):
+            getitune_trainer.evaluate_model(
+                getitune_engine=mock_getitune_engine,
+                task=Task(task_type=TaskType.CLASSIFICATION, exclusive_labels=True),
+                model_revision_id=model_id,
+                model_variants=model_variants,
+                dataset_revision_id=dataset_revision_id,
+            )
+
+        # Assert: a warning was logged for the failed OpenVINO evaluation
+        mock_logger.warning.assert_called_once()
+        assert "openvino" in mock_logger.warning.call_args.args[1].lower()
+
+        # Assert: all three variants still got a saved evaluation result
+        save_calls = fxt_model_service.save_evaluation_result.call_args_list
+        assert len(save_calls) == 3
+        results_by_variant = {c.args[0].model_variant_id: c.args[0] for c in save_calls}
+
+        # The OpenVINO variant reused the PyTorch metrics instead of failing
+        assert results_by_variant[openvino_variant_id].metrics == results_by_variant[pytorch_variant_id].metrics
+        # The ONNX variant still evaluated normally and kept its own metrics
+        assert results_by_variant[onnx_variant_id].metrics == pytest.approx({"accuracy": 0.83}, rel=1e-6)
+
+    def test_evaluate_model_raises_when_pytorch_evaluation_fails(
+        self,
+        fxt_getitune_trainer: Callable[[], GetiTuneTrainer],
+        tmp_path: Path,
+        fxt_model_service: Mock,
+    ):
+        """A failure evaluating the PyTorch variant itself must still fail the job (no fallback available)."""
+        # Arrange
+        getitune_trainer = fxt_getitune_trainer()
+        model_id = uuid4()
+        pytorch_variant_id = uuid4()
+        dataset_revision_id = uuid4()
+
+        mock_getitune_engine = Mock()
+        mock_getitune_engine.test.side_effect = RuntimeError("PyTorch evaluation blew up")
+        mock_getitune_engine.work_dir = tmp_path / "getitune-workspace"
+        mock_getitune_engine.datamodule = Mock()
+
+        model_checkpoint_path = tmp_path / "best_checkpoint.pt"
+        model_checkpoint_path.touch()
+
+        model_variants = [
+            ModelVariantDescriptor(id=pytorch_variant_id, path=model_checkpoint_path, format=ModelFormat.PYTORCH),
+        ]
+
+        # Act / Assert
+        with pytest.raises(RuntimeError, match="PyTorch evaluation blew up"):
+            getitune_trainer.evaluate_model(
+                getitune_engine=mock_getitune_engine,
+                task=Task(task_type=TaskType.CLASSIFICATION, exclusive_labels=True),
+                model_revision_id=model_id,
+                model_variants=model_variants,
+                dataset_revision_id=dataset_revision_id,
+            )
+        fxt_model_service.save_evaluation_result.assert_not_called()
+
 
 class TestGetiTuneTrainerExportModel:
     """Tests for the GetiTuneTrainer.export_model method."""

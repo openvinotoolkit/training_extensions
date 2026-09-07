@@ -273,6 +273,12 @@ onnx_path = engine.export(export_format=ExportFormat.ONNX)
 onnx_path = engine.export(export_format=ExportFormat.ONNX, precision=ExportPrecision.FP16)
 ```
 
+NMS-based detection and instance-segmentation models are exported without NMS in the graph by default; ModelAPI applies NMS using the embedded metadata. `MaskRCNN`, `MaskRCNNTV`, and `RTMDetInst` always embed NMS because their export paths do not support raw outputs, regardless of `export_nms`. To embed NMS in the exported graph for models that support the option, pass `export_nms=True` explicitly:
+
+```python
+onnx_path = engine.export(export_format=ExportFormat.ONNX, export_nms=True)
+```
+
 ---
 
 ### Validation and Inference

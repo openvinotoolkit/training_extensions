@@ -38,6 +38,7 @@ class UltralyticsModel:
         pretrained: Whether to load pretrained weights.
         imgsz: Image size for training / inference.
         extra_overrides: Extra Ultralytics config forwarded to train/val/export.
+        export_nms: Whether to embed NMS in the exported graph.
     """
 
     task: ClassVar[str] = ""
@@ -56,11 +57,13 @@ class UltralyticsModel:
         pretrained: bool = True,
         imgsz: int | None = None,
         extra_overrides: dict[str, Any] | None = None,
+        export_nms: bool = False,
     ) -> None:
         self.model_name = model_name
         self.label_info = self._dispatch_label_info(label_info)
         self.pretrained = pretrained
         self.extra_overrides = extra_overrides or {}
+        self.export_nms = export_nms
 
         if not self.model_name:
             msg = "model_name must be provided."
@@ -235,6 +238,7 @@ class UltralyticsModel:
             resize_mode="fit_to_window_letterbox",
             pad_value=114,
             swap_rgb=False,
+            export_nms=self.export_nms,
         )
 
     @property
@@ -302,7 +306,7 @@ class UltralyticsModel:
             optimization_config={},
             confidence_threshold=float(conf) if conf is not None else None,
             iou_threshold=float(iou),
-            nms_execute=True,
+            nms_execute=not self.export_nms,
         )
 
     def __repr__(self) -> str:

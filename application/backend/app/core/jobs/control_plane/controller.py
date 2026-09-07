@@ -124,7 +124,17 @@ class JobController:
                     await cancel_task
                 self._jobs_q.cleanup_cancellation_event(job.id)
 
-            logger.success("Job completed, job_id: {}", job.id)
+            # Log when the job has reached its final status
+            final_status: JobStatus = job.status
+            match final_status:
+                case JobStatus.DONE:
+                    logger.success("Job completed successfully, job_id: {}", job.id)
+                case JobStatus.FAILED:
+                    logger.warning("Job failed, job_id: {}", job.id)
+                case JobStatus.CANCELLED:
+                    logger.info("Job cancelled, job_id: {}", job.id)
+                case _:
+                    logger.warning("Job ended in unexpected status {}, job_id: {}", final_status.name, job.id)
 
     def _setup_job_execution(self, job: Job, job_run: Runner, event_q: asyncio.Queue) -> asyncio.Task:
         """Set up event pumping thread and cancellation monitoring task."""

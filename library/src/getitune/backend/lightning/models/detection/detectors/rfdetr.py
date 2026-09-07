@@ -176,6 +176,7 @@ class RFDETRDetector(BaseModule):
         batch_inputs: Tensor,
         num_select: int = 300,
         merge_scores: bool = False,
+        with_nms: bool = False,
     ) -> tuple[Tensor, Tensor, Tensor, Tensor] | tuple[Tensor, Tensor, Tensor] | tuple[Tensor, Tensor]:
         """Export function for model tracing with mask support.
 
@@ -184,6 +185,8 @@ class RFDETRDetector(BaseModule):
             num_select: Number of top predictions to select.
             merge_scores: If True, concatenate ``scores`` as the last column of
                 ``boxes``
+            with_nms: Whether to embed NMS in the exported graph. Not supported.
+
         Returns:
             When ``merge_scores`` is ``False`` (default):
                 - With masks:    ``(boxes, labels, scores, masks)``
@@ -192,6 +195,9 @@ class RFDETRDetector(BaseModule):
                 - With masks:    ``(boxes_with_scores, labels, masks)``
                 - Without masks: ``(boxes_with_scores, labels)``
         """
+        if with_nms:
+            msg = "RFDETRDetector does not support embedded NMS export."
+            raise ValueError(msg)
         outputs = self.lwdetr(batch_inputs)
         # outputs may be dict or tuple in export mode
         if isinstance(outputs, dict):
