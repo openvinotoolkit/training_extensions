@@ -20,6 +20,7 @@ if getattr(sys, "frozen", False) and __name__ == "__main__":
 
 import asyncio
 import logging
+import signal
 import ssl
 from collections.abc import Awaitable, Callable
 from os import getenv
@@ -203,6 +204,50 @@ def _asyncio_exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -
     loop.default_exception_handler(context)
 
 
+def _install_shutdown_trigger() -> Callable[[], Awaitable[None]]:
+    """Install signal handlers and return a Hypercorn ``shutdown_trigger``.
+
+    The desktop shell asks the backend to stop before it exits, so that the ASGI
+    lifespan shutdown can run: in-flight requests finish, worker processes are
+    stopped and the SQLite database is checkpointed and closed. Without this the
+    shell's only option is a hard kill, which leaves WAL/journal files behind and
+    can truncate an in-flight migration or training checkpoint - surfacing as
+    instability on the *next* launch.
+
+    On Windows the shell sends ``CTRL_BREAK_EVENT`` (Python maps it to
+    ``SIGBREAK``), because a process started with ``CREATE_NEW_PROCESS_GROUP`` -
+    which is what makes it addressable by PID - can no longer receive Ctrl+C.
+    ``SIGBREAK`` would otherwise terminate the interpreter abruptly, so it must
+    be handled explicitly. Elsewhere the usual ``SIGTERM``/``SIGINT`` apply.
+
+    Returns:
+        An awaitable factory that resolves once a shutdown signal is received.
+    """
+    loop = asyncio.get_running_loop()
+    shutdown_event = asyncio.Event()
+
+    def _on_signal(signum: int, _frame: object) -> None:
+        # Signal handlers run in the main thread but outside the event loop, so
+        # the event must be set through the loop to stay thread-safe.
+        logger.info("Received signal {}, shutting down gracefully", signal.Signals(signum).name)
+        loop.call_soon_threadsafe(shutdown_event.set)
+
+    # SIGBREAK only exists on Windows; SIGTERM/SIGINT are available everywhere.
+    signals = [signal.SIGINT, signal.SIGTERM, getattr(signal, "SIGBREAK", None)]
+    for sig in signals:
+        if sig is None:
+            continue
+        try:
+            signal.signal(sig, _on_signal)
+        except (OSError, ValueError):  # not the main thread, or unsupported on this platform
+            logger.debug("Could not install handler for signal {}", sig)
+
+    async def _trigger() -> None:
+        await shutdown_event.wait()
+
+    return _trigger
+
+
 async def main_async() -> None:
     """Async main application entry point for Hypercorn"""
     app = create_app()
@@ -220,6 +265,10 @@ async def main_async() -> None:
     # exception handler that downgrades just these cases and delegates everything else.
     asyncio.get_running_loop().set_exception_handler(_asyncio_exception_handler)
 
+    # Handle shutdown requests from the desktop shell ourselves so the lifespan
+    # shutdown (database checkpoint, worker teardown) always gets to run.
+    shutdown_trigger = _install_shutdown_trigger()
+
     setup_hypercorn_logging(settings.log_level)
     config = Config()
     config.bind = [f"{settings.host}:{settings.port}"]
@@ -232,7 +281,8 @@ async def main_async() -> None:
     config.errorlog = "-"
     config.loglevel = settings.log_level.upper()
 
-    await serve(cast(ASGIFramework, app), config)
+    await serve(cast(ASGIFramework, app), config, shutdown_trigger=shutdown_trigger)
+    logger.info("Application shutdown completed")
 
 
 def main() -> None:

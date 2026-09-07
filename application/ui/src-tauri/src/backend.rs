@@ -12,6 +12,20 @@ use std::{
 
 use tauri::{AppHandle, Manager};
 
+/// A spawned side-car together with the OS-level containment that guarantees it
+/// (and its multiprocessing workers) cannot outlive the shell.
+pub struct Sidecar {
+    /// The child process handle. Owning it — instead of only its PID — is what
+    /// keeps the PID reserved: a reaped PID can be recycled by Windows, and
+    /// killing "the backend" by a stale PID could take down an unrelated
+    /// process tree.
+    pub child: Child,
+    /// Windows job object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. Dropping it
+    /// (or crashing) terminates the whole backend tree; see [`crate::job`].
+    #[cfg(windows)]
+    pub job: Option<crate::job::JobHandle>,
+}
+
 /// "geti-backend.exe" on Windows, "geti-backend" elsewhere.
 fn backend_filename() -> &'static str {
     if cfg!(windows) {
@@ -40,7 +54,7 @@ fn backend_filename() -> &'static str {
 ///   the packaging recipe in [`application/Justfile`](../../Justfile).
 /// - **Other platforms** keep the flat layout in both dev and release because
 ///   no equivalent bundle-detection exists on Windows / Linux.
-pub fn spawn_backend(app: &AppHandle) -> std::io::Result<Child> {
+pub fn spawn_backend(app: &AppHandle) -> std::io::Result<Sidecar> {
     let exe_path = env::current_exe().expect("failed to get current exe path");
     let exe_dir = exe_path
         .parent()
@@ -51,10 +65,19 @@ pub fn spawn_backend(app: &AppHandle) -> std::io::Result<Child> {
     let mut command = Command::new(&backend_path);
     apply_default_env(&mut command, app);
 
-    #[cfg(all(windows, not(debug_assertions)))]
+    // Put the backend into its own console process group. This is what makes a
+    // targeted `CTRL_BREAK_EVENT` (i.e. graceful shutdown, see
+    // `job::send_ctrl_break`) deliverable to it and it alone. In release we
+    // additionally suppress the console window.
+    #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
-        command.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+        #[cfg(not(debug_assertions))]
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        #[cfg(debug_assertions)]
+        const CREATE_NO_WINDOW: u32 = 0;
+        command.creation_flags(CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW);
     }
 
     // Put the backend into its own process group so that on shutdown we can
@@ -68,8 +91,19 @@ pub fn spawn_backend(app: &AppHandle) -> std::io::Result<Child> {
 
     let child = command.spawn()?;
 
+    // Belt-and-suspenders containment: even if the shell is killed outright
+    // (Task Manager, power loss of the UI process, panic) the kernel tears the
+    // backend tree down with us, so no orphaned worker keeps the port bound or
+    // the SQLite database locked.
+    #[cfg(windows)]
+    let job = crate::job::contain(&child);
+
     log::info!("▶ Spawned backend: {:?}", backend_path);
-    Ok(child)
+    Ok(Sidecar {
+        child,
+        #[cfg(windows)]
+        job,
+    })
 }
 
 /// Resolve the side-car path. Prefers `<exe_dir>/backend/<name>` (release

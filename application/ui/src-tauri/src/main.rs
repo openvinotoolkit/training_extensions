@@ -2,11 +2,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod backend;
+#[cfg(windows)]
+mod job;
+#[cfg(windows)]
+mod webview;
 
-use std::process::Child;
 use std::path::PathBuf;
+use std::process::Child;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
@@ -14,6 +19,18 @@ use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 use tauri_plugin_opener::OpenerExt;
 
 use crate::backend::spawn_backend;
+
+/// How often the monitor thread checks whether the backend is still alive.
+const MONITOR_POLL_INTERVAL: Duration = Duration::from_millis(250);
+
+/// How long a graceful shutdown request is given before the backend is killed.
+///
+/// Generous on purpose: the ASGI lifespan shutdown has to finish in-flight
+/// requests, stop worker processes and close (checkpoint) the SQLite database.
+const GRACEFUL_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// Label of the single application window (see `tauri.conf.json`).
+pub const MAIN_WINDOW_LABEL: &str = "main";
 
 /// Public issue tracker where users can report fatal backend failures.
 ///
@@ -133,13 +150,39 @@ fn read_and_clear_fatal_status(app: &AppHandle) -> Option<FatalStatus> {
 /// crash).
 #[derive(Clone, Default)]
 struct BackendControl {
-    /// PID of the spawned side-car, used to kill its whole process tree.
-    pid: Arc<Mutex<Option<u32>>>,
-    /// Set before we deliberately kill the backend during app shutdown.
+    /// The live child process.
+    ///
+    /// The `Child` handle is kept (rather than a bare PID) for the whole
+    /// lifetime of the backend: as long as it is not dropped, Windows/Linux
+    /// cannot recycle that PID, so signalling or killing "the backend" can never
+    /// hit an unrelated process that happens to have inherited the number.
+    child: Arc<Mutex<Option<Child>>>,
+    /// Windows job object keeping the backend tree bound to this process.
+    #[cfg(windows)]
+    job: Arc<Mutex<Option<job::JobHandle>>>,
+    /// Set before we deliberately terminate the backend during app shutdown.
     shutting_down: Arc<AtomicBool>,
 }
 
-/// Kill a process and all its descendants by PID.
+/// Block until `child` exits or `timeout` elapses. Returns the exit code when
+/// the process terminated in time.
+fn wait_for_exit(child: &mut Child, timeout: Duration) -> Option<Option<i32>> {
+    let deadline = Instant::now() + timeout;
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return Some(status.code()),
+            // Already reaped or not waitable: treat as gone, nothing left to kill.
+            Err(_) => return Some(None),
+            Ok(None) => {}
+        }
+        if Instant::now() >= deadline {
+            return None;
+        }
+        std::thread::sleep(MONITOR_POLL_INTERVAL);
+    }
+}
+
+/// Hard-kill a process and all its descendants by PID. Last resort only.
 ///
 /// - **Windows**: `taskkill /F /T /PID` terminates the entire process tree.
 /// - **Unix**: sends `SIGKILL` to the process group (`kill -- -<pid>`). The
@@ -164,14 +207,76 @@ fn kill_process_tree(pid: u32) {
     }
 }
 
+/// Politely ask the backend tree to stop.
+///
+/// Windows gets a targeted `CTRL_BREAK_EVENT` (the backend runs in its own
+/// console process group); Unix gets `SIGTERM` on the process group. Returns
+/// `true` when the request was delivered.
+fn request_graceful_stop(pid: u32) -> bool {
+    #[cfg(windows)]
+    {
+        job::send_ctrl_break(pid)
+    }
+
+    #[cfg(unix)]
+    {
+        use std::process::Command;
+        Command::new("kill")
+            .args(["-TERM", "--", &format!("-{pid}")])
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    }
+}
+
+/// Stop the backend as cleanly as possible.
+///
+/// A hard `taskkill /F /T` (the previous behaviour) leaves the SQLite WAL and
+/// journal files behind and can truncate an in-flight migration or training
+/// checkpoint, which then shows up as instability on the *next* launch. So the
+/// backend is first asked to shut down, and only killed if it does not comply
+/// within [`GRACEFUL_SHUTDOWN_TIMEOUT`].
+fn terminate_backend(child: &mut Child) {
+    let pid = child.id();
+
+    if request_graceful_stop(pid) {
+        if let Some(code) = wait_for_exit(child, GRACEFUL_SHUTDOWN_TIMEOUT) {
+            log::info!("⛔ Backend terminated gracefully (exit code {code:?})");
+            return;
+        }
+        log::warn!(
+            "Backend did not stop within {}s, forcing termination",
+            GRACEFUL_SHUTDOWN_TIMEOUT.as_secs()
+        );
+    }
+
+    kill_process_tree(pid);
+    let _ = child.kill();
+    let _ = child.wait();
+    log::info!("⛔ Backend terminated (forced)");
+}
+
 /// Deliberately terminate the backend (app shutdown). Marks the exit as intended
 /// so the monitor thread stays silent instead of showing a crash dialog.
-fn shutdown_backend(control: &BackendControl) {
-    control.shutting_down.store(true, Ordering::SeqCst);
-    if let Some(pid) = control.pid.lock().unwrap().take() {
-        kill_process_tree(pid);
-        log::info!("⛔ Backend terminated");
+///
+/// `reason` identifies the code path that triggered the shutdown; it is logged
+/// so a session that ends unexpectedly can be traced back to the window being
+/// closed, the runtime exiting, or a fatal backend failure.
+fn shutdown_backend(control: &BackendControl, reason: &str) {
+    // Idempotent: `CloseRequested` and `RunEvent::Exit` both call in.
+    if control.shutting_down.swap(true, Ordering::SeqCst) {
+        log::debug!("⛔ Backend shutdown already in progress (reason: {reason})");
+        return;
     }
+
+    log::info!("⛔ Shutting down the backend (reason: {reason})");
+    if let Some(mut child) = control.child.lock().unwrap().take() {
+        terminate_backend(&mut child);
+    }
+
+    // Releasing the job handle kills anything that somehow survived.
+    #[cfg(windows)]
+    drop(control.job.lock().unwrap().take());
 }
 
 /// Resolve the per-user log directory as a display string for user-facing
@@ -269,19 +374,48 @@ If this keeps happening, you can report it on our issue tracker and attach the l
 }
 
 /// Wait for the backend to exit and react to unsolicited terminations. Runs on a
-/// dedicated thread so it can block on `child.wait()` and call the *blocking*
-/// dialog API (which must not run on the main thread).
-fn monitor_backend(app: AppHandle, mut child: Child, control: BackendControl) {
-    // Blocks until the backend exits (and reaps it, avoiding a zombie).
-    let status = child.wait();
+/// dedicated thread so it can call the *blocking* dialog API (which must not run
+/// on the main thread).
+///
+/// The child handle lives in [`BackendControl`] and is polled (rather than
+/// blocked on with `wait()`) so that ownership stays with the control struct —
+/// that is what lets the shutdown path signal a PID that is guaranteed not to
+/// have been recycled by the OS.
+fn monitor_backend(app: AppHandle, control: BackendControl) {
+    let code = loop {
+        // A deliberate shutdown (window closed / app quit) already took the
+        // child — the exit is expected, so stay silent.
+        if control.shutting_down.load(Ordering::SeqCst) {
+            return;
+        }
 
-    // A deliberate shutdown (window closed / app quit) already killed it — the
-    // exit is expected, so stay silent.
-    if control.shutting_down.load(Ordering::SeqCst) {
+        let status = {
+            let mut guard = control.child.lock().unwrap();
+            let Some(child) = guard.as_mut() else { return };
+            child.try_wait()
+        };
+
+        match status {
+            Ok(Some(status)) => break status.code(),
+            Ok(None) => std::thread::sleep(MONITOR_POLL_INTERVAL),
+            Err(e) => {
+                log::warn!("Failed to poll the backend process: {e}");
+                break None;
+            }
+        }
+    };
+
+    // Lost the race against a shutdown that started while we were polling.
+    if control.shutting_down.swap(true, Ordering::SeqCst) {
         return;
     }
 
-    let code = status.ok().and_then(|s| s.code());
+    // The backend is gone: release our handle (and the job object) so nothing
+    // later signals a dead — possibly recycled — PID.
+    drop(control.child.lock().unwrap().take());
+    #[cfg(windows)]
+    drop(control.job.lock().unwrap().take());
+
     log::warn!("Backend exited unexpectedly (code {code:?})");
 
     match code {
@@ -305,6 +439,19 @@ fn main() {
     let control = BackendControl::default();
 
     let app = tauri::Builder::default()
+        // Must be the first plugin registered: a second launch has to bail out
+        // *before* `setup` spawns another backend. Two side-cars would fight
+        // over the same TCP port and the same SQLite database in
+        // %LOCALAPPDATA%\Intel\Geti, which shows up as random failures in
+        // whichever instance loses the race.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            log::info!("▶ Second instance launched, focusing the existing window");
+            if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
@@ -312,14 +459,34 @@ fn main() {
         .setup({
             let control = control.clone();
             move |app| {
-                let child = spawn_backend(app.handle()).expect("Failed to spawn python backend");
-                // Record the PID so shutdown can kill the whole tree, then hand
-                // the child to a monitor thread that watches for crashes and
-                // failed upgrades (exit code 3).
-                *control.pid.lock().unwrap() = Some(child.id());
+                // Logged up front so a mid-session WebView2 failure can be
+                // correlated with an Evergreen runtime update: if this version
+                // differs from the previous launch, the runtime serviced itself
+                // underneath the app.
+                #[cfg(windows)]
+                webview::log_runtime_version();
+
+                let sidecar = spawn_backend(app.handle()).expect("Failed to spawn python backend");
+                // Keep the child handle — and the job object binding the whole
+                // backend tree to our lifetime — in the shared control, then let
+                // a monitor thread watch for crashes and failed upgrades
+                // (exit code 3).
+                #[cfg(windows)]
+                {
+                    *control.job.lock().unwrap() = sidecar.job;
+                }
+                *control.child.lock().unwrap() = Some(sidecar.child);
+
+                // Recover from WebView2 renderer/browser-process failures
+                // instead of letting them take the whole application down.
+                #[cfg(windows)]
+                if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+                    webview::attach_process_failed_handler(&window);
+                }
+
                 let app_handle = app.handle().clone();
                 let monitor_control = control.clone();
-                std::thread::spawn(move || monitor_backend(app_handle, child, monitor_control));
+                std::thread::spawn(move || monitor_backend(app_handle, monitor_control));
                 Ok(())
             }
         })
@@ -334,18 +501,21 @@ fn main() {
                     // Destroying the window first lets the WebView2 / Chromium
                     // widget tear down cleanly before the process exits,
                     // avoiding the "Failed to unregister class
-                    // Chrome_WidgetWin_0" error on Windows.
+                    // Chrome_WidgetWin_0" error on Windows. It also means the
+                    // user does not stare at a frozen window while the backend
+                    // takes its (bounded) time to stop.
                     api.prevent_close();
-
-                    // Kill the backend *before* exiting so worker processes
-                    // cannot outlive the UI — even if RunEvent::Exit is
-                    // short-circuited by exit(0).
-                    shutdown_backend(&control);
 
                     let handle = window.app_handle().clone();
                     if let Err(e) = window.destroy() {
                         log::warn!("Failed to destroy window during shutdown: {e}");
                     }
+
+                    // Stop the backend *before* exiting so worker processes
+                    // cannot outlive the UI — even if RunEvent::Exit is
+                    // short-circuited by exit(0).
+                    shutdown_backend(&control, "window close requested");
+
                     handle.exit(0);
                 }
             }
@@ -360,7 +530,7 @@ fn main() {
     let exit_control = control.clone();
     app.run(move |_app_handle, event| {
         if let RunEvent::Exit = event {
-            shutdown_backend(&exit_control);
+            shutdown_backend(&exit_control, "runtime exit event");
         }
     });
 }
