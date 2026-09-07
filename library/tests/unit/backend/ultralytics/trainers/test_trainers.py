@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable
 from unittest.mock import MagicMock, patch
@@ -111,16 +113,16 @@ def test_yolo_detr_trainer_uses_dfine_loss_names() -> None:
     trainer._use_getitune_data = True
     trainer.model = SimpleNamespace(model=[type("DeimDecoder", (), {})()])
     trainer.test_loader = MagicMock()
-    trainer.save_dir = "save"
+    trainer.save_dir = Path("save")
     trainer.args = SimpleNamespace()
-    trainer.callbacks = []
+    trainer.callbacks = defaultdict(list)
     trainer._datamodule = MagicMock()
 
     with patch("getitune.backend.ultralytics.trainers.yolo_detr.YoloDetrValidator") as validator_cls:
         validator = trainer.get_validator()
 
     assert validator is validator_cls.return_value
-    assert trainer.loss_names == ["giou_loss", "cls_loss", "l1_loss", "fgl_loss", "ddf_loss"]
+    assert trainer.loss_names == ("giou_loss", "cls_loss", "l1_loss", "fgl_loss", "ddf_loss")
     assert validator.datamodule is trainer._datamodule
 
 

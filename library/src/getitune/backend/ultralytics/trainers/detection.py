@@ -42,7 +42,7 @@ class DetectionTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _UltralyticsDe
         if not self._use_getitune_data:
             return super().get_validator()
 
-        self.loss_names = ["box_loss", "cls_loss", "dfl_loss"]
+        self.loss_names = ["box_loss", "cls_loss", "dfl_loss"]  # pyrefly: ignore[bad-assignment]
         validator = DetectionValidator(
             self.test_loader,
             save_dir=self.save_dir,

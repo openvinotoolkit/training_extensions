@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from torch.utils.data import DataLoader
     from torchmetrics import Metric, MetricCollection
     from ultralytics import YOLO
+    from ultralytics.engine.results import Results
 
     from getitune.types import PathLike
     from getitune.types.label import LabelInfo
@@ -332,7 +333,7 @@ class UltralyticsEngine(Engine):
 
         self._model.ensure_predict_ready()
 
-        raw_results = yolo.predict(**predict_args)  # pyrefly: ignore[bad-argument-type]
+        raw_results = self._run_predict(yolo, **predict_args)
 
         return self._convert_predictions(raw_results)  # pyrefly: ignore[bad-return]
 
@@ -583,7 +584,8 @@ class UltralyticsEngine(Engine):
                 raise TypeError(msg)
 
             imgs = batch.images.to(device) if isinstance(batch.images, torch.Tensor) else batch.images
-            raw_results = yolo.predict(
+            raw_results = self._run_predict(
+                yolo,
                 source=imgs,
                 device=device,
                 imgsz=imgsz,
@@ -682,7 +684,8 @@ class UltralyticsEngine(Engine):
                 raise TypeError(msg)
 
             imgs = batch.images.to(device) if isinstance(batch.images, torch.Tensor) else batch.images
-            raw_results = yolo.predict(
+            raw_results = self._run_predict(
+                yolo,
                 source=imgs,
                 device=device,
                 imgsz=imgsz,
@@ -793,7 +796,8 @@ class UltralyticsEngine(Engine):
 
         for batch in dataloader:
             imgs = batch.images.to(device) if isinstance(batch.images, torch.Tensor) else batch.images
-            raw_results = yolo.predict(
+            raw_results = self._run_predict(
+                yolo,
                 source=imgs,
                 device=device,
                 imgsz=imgsz,
@@ -857,7 +861,8 @@ class UltralyticsEngine(Engine):
                 raise TypeError(msg)
 
             imgs = batch.images.to(device)
-            raw_results = yolo.predict(
+            raw_results = self._run_predict(
+                yolo,
                 source=imgs,
                 device=device,
                 imgsz=self._model.imgsz,
@@ -1166,6 +1171,17 @@ class UltralyticsEngine(Engine):
         for name, value in results.items():
             _add(f"test/{name}", value)
         return formatted
+
+    def _run_predict(self, yolo: YOLO, **predict_args: Any) -> list[Results]:  # noqa: ANN401
+        """Run ``YOLO.predict`` and normalize upstream's union return to a plain list.
+
+        Upstream declares ``Iterator[Results | Tensor] | list[Results] | list[Tensor]``:
+        the iterator variant requires ``stream=True`` and the tensor variant only
+        occurs with ``embed=True``. getitune uses neither, so filtering tensors
+        leaves exactly the ``Results`` items.
+        """
+        raw_results = yolo.predict(**predict_args)  # pyrefly: ignore[bad-argument-type]
+        return [result for result in raw_results if not isinstance(result, torch.Tensor)]
 
     def _convert_predictions(
         self,

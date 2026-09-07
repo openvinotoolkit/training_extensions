@@ -23,7 +23,11 @@ if TYPE_CHECKING:
     from ultralytics.models.rtdetr.val import RTDETRValidator as _RTDETRValidator
 
 
-class YoloDetrTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _DEIMTrainer):
+class YoloDetrTrainer(  # pyrefly: ignore[inconsistent-inheritance]
+    GetiTuneBaseTrainer,
+    XPUAwareTrainerMixin,
+    _DEIMTrainer,
+):
     """YOLO-DETR trainer using getitune's DataModule bridge and XPU support."""
 
     _collate_fn = staticmethod(detection_collate_fn)
@@ -50,9 +54,10 @@ class YoloDetrTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _DEIMTrainer):
 
         model_layers = cast("nn.Sequential", unwrap_model(self.model).model)
         head_name = type(model_layers[-1]).__name__
-        self.loss_names = ["giou_loss", "cls_loss", "l1_loss"]
+        loss_names = ["giou_loss", "cls_loss", "l1_loss"]
         if head_name == "DeimDecoder":
-            self.loss_names += ["fgl_loss", "ddf_loss"]
+            loss_names += ["fgl_loss", "ddf_loss"]
+        self.loss_names = tuple(loss_names)  # pyrefly: ignore[bad-assignment]
 
         validator = YoloDetrValidator(
             self.test_loader,

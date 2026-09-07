@@ -84,7 +84,7 @@ class ClassificationTrainer(  # pyrefly: ignore[inconsistent-inheritance]
         if not self._use_getitune_data:
             return super().get_validator()  # type: ignore[return-value]
 
-        self.loss_names = ["loss"]
+        self.loss_names = ["loss"]  # pyrefly: ignore[bad-assignment]
         validator = ClassificationValidator(
             self.test_loader,
             save_dir=self.save_dir,
@@ -147,7 +147,7 @@ class MultiLabelClassificationTrainer(  # pyrefly: ignore[inconsistent-inheritan
         if not self._use_getitune_data:
             return super().get_validator()  # type: ignore[return-value]
 
-        self.loss_names = ["loss"]
+        self.loss_names = ["loss"]  # pyrefly: ignore[bad-assignment]
         validator = MultiLabelClassificationValidator(
             self.test_loader,
             save_dir=self.save_dir,
