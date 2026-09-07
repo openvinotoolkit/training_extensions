@@ -6,18 +6,26 @@ resolution-markers = [
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
@@ -26,18 +34,26 @@ resolution-markers = [
     "python_full_version == '3.13.*' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 conflicts = [[
     { package = "getitune", extra = "cpu" },
@@ -372,7 +388,7 @@ name = "build"
 version = "1.2.2.post1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "(os_name == 'nt' and sys_platform != 'linux') or (os_name == 'nt' and extra != 'extra-8-getitune-cpu') or (os_name != 'nt' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (os_name != 'nt' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (os_name != 'nt' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
+    { name = "colorama", marker = "(os_name == 'nt' and sys_platform != 'darwin' and sys_platform != 'linux') or (os_name == 'nt' and sys_platform == 'linux' and extra != 'extra-8-getitune-cpu') or (os_name != 'nt' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (os_name != 'nt' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (os_name != 'nt' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
     { name = "packaging" },
     { name = "pyproject-hooks" },
 ]
@@ -847,7 +863,7 @@ name = "cuda-bindings"
 version = "13.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-pathfinder", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "cuda-pathfinder", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/51/6b/457ca12dad3ee9bfcc9a545cfd6b64b359ba49de40f776f6e028e678f262/cuda_bindings-13.3.1-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c5879712accf6e14bb01aa5e67440eb84998b8d104b509cc7a6dc0b8f656a474", size = 6053539, upload-time = "2026-05-29T23:11:43.19Z" },
@@ -1506,7 +1522,7 @@ requires-dist = [
     { name = "torchvision", marker = "extra == 'xpu'", specifier = "==0.27.1+xpu", index = "https://download.pytorch.org/whl/xpu", conflict = { package = "getitune", extra = "xpu" } },
     { name = "triton-xpu", marker = "extra == 'xpu'", specifier = "==3.7.1", index = "https://download.pytorch.org/whl/xpu", conflict = { package = "getitune", extra = "xpu" } },
     { name = "typeguard", specifier = ">=4.3,<4.5" },
-    { name = "ultralytics", marker = "extra == 'ultralytics'", specifier = "==8.4.86" },
+    { name = "ultralytics", marker = "extra == 'ultralytics'", git = "https://github.com/ultralytics/ultralytics.git?branch=exp27-clean" },
 ]
 provides-extras = ["cpu", "cuda", "xpu", "ultralytics", "docs", "ci-publish", "benchmark"]
 
@@ -3135,7 +3151,7 @@ name = "nvidia-cublas"
 version = "13.1.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cuda-nvrtc", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-cuda-nvrtc", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/a1/0bd24ee8c8d03adac032fd2909426a00c88f8c57961b1277ded97f91119f/nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:b7a210458267ac818974c53038fbec2e969d5c99f305ab15c72522fa9f001dd5", size = 542848918, upload-time = "2026-04-08T18:46:22.985Z" },
@@ -3178,7 +3194,7 @@ name = "nvidia-cudnn-cu13"
 version = "9.20.0.48"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-cublas", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/56/c5/83384d846b2fd17c44bd499b36c75a45ed4f095fbbb2252294e89cea5c5c/nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:e31454ae00094b0c55319d9d15b6fa2fc50a9e1c0f5c8c80fb75258234e731e1", size = 444574296, upload-time = "2026-03-09T19:28:27.751Z" },
@@ -3191,7 +3207,7 @@ name = "nvidia-cufft"
 version = "12.0.0.61"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-nvjitlink", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8b/ae/f417a75c0259e85c1d2f83ca4e960289a5f814ed0cea74d18c353d3e989d/nvidia_cufft-12.0.0.61-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2708c852ef8cd89d1d2068bdbece0aa188813a0c934db3779b9b1faa8442e5f5", size = 214053554, upload-time = "2025-09-04T08:31:38.196Z" },
@@ -3223,9 +3239,9 @@ name = "nvidia-cusolver"
 version = "12.0.4.66"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
-    { name = "nvidia-cusparse", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
-    { name = "nvidia-nvjitlink", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-cublas", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-cusparse", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-nvjitlink", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/c3/b30c9e935fc01e3da443ec0116ed1b2a009bb867f5324d3f2d7e533e776b/nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:02c2457eaa9e39de20f880f4bd8820e6a1cfb9f9a34f820eb12a155aa5bc92d2", size = 223467760, upload-time = "2025-09-04T08:33:04.222Z" },
@@ -3238,7 +3254,7 @@ name = "nvidia-cusparse"
 version = "12.6.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "nvidia-nvjitlink", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-cuda') or (sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f8/94/5c26f33738ae35276672f12615a64bd008ed5be6d1ebcb23579285d960a9/nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:80bcc4662f23f1054ee334a15c72b8940402975e0eab63178fc7e670aa59472c", size = 162155568, upload-time = "2025-09-04T08:33:42.864Z" },
@@ -3321,8 +3337,8 @@ name = "oneccl"
 version = "2021.17.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "impi-rt", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
-    { name = "intel-sycl-rt", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "impi-rt", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
+    { name = "intel-sycl-rt", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/73/9b/2932b6b128924ba96712ea1c807c1618b9963518eb8ec80cf834ffc3c684/oneccl-2021.17.2-py2.py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:a77c2c56eeba1c78379a530a2ba2bbd33407f6440b44476f83292d1694100373", size = 157647983, upload-time = "2026-01-22T05:34:10.902Z" },
@@ -3333,7 +3349,7 @@ name = "oneccl-devel"
 version = "2021.17.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "oneccl", marker = "(sys_platform != 'win32' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
+    { name = "oneccl", marker = "(sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'darwin' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4a/a1/4fad3108825e2d65d812ba69a9fd3664181cfe8860e49110c92431d1629f/oneccl_devel-2021.17.2-py2.py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:6cdaaf12f04fa8eb7934f3b23c202410fece7ae05dfd3b8cc4219701726f1999", size = 47391093, upload-time = "2026-01-22T05:34:26.3Z" },
@@ -5244,14 +5260,18 @@ version = "1.17.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 dependencies = [
     { name = "numpy", marker = "python_full_version < '3.12' or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
@@ -5328,30 +5348,42 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 dependencies = [
     { name = "numpy", marker = "python_full_version >= '3.12' or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
@@ -5888,14 +5920,18 @@ version = "2026.3.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 dependencies = [
     { name = "numpy", marker = "python_full_version < '3.12' or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
@@ -5913,30 +5949,42 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 dependencies = [
     { name = "numpy", marker = "python_full_version >= '3.12' or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
@@ -6075,18 +6123,26 @@ name = "torch"
 version = "2.12.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.14' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 dependencies = [
     { name = "cuda-bindings", marker = "(sys_platform == 'linux' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
@@ -6184,10 +6240,14 @@ resolution-markers = [
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version >= '3.14' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version < '3.12' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'darwin'",
 ]
 dependencies = [
     { name = "cuda-bindings", marker = "(sys_platform == 'linux' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
@@ -6233,10 +6293,14 @@ resolution-markers = [
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version >= '3.14' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version < '3.12' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'darwin'",
 ]
 dependencies = [
     { name = "dpcpp-cpp-rt", marker = "(extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
@@ -6305,18 +6369,26 @@ name = "torchvision"
 version = "0.27.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.14' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra == 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version >= '3.14' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
     "python_full_version < '3.12' and sys_platform == 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version >= '3.14' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
-    "python_full_version < '3.12' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
+    "python_full_version < '3.12' and sys_platform == 'darwin' and extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu'",
 ]
 dependencies = [
     { name = "numpy", marker = "(sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-8-getitune-cpu') or (sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (sys_platform == 'linux' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra != 'extra-8-getitune-cpu' and extra != 'extra-8-getitune-cuda' and extra != 'extra-8-getitune-xpu')" },
@@ -6392,10 +6464,14 @@ resolution-markers = [
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version >= '3.14' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version < '3.12' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'darwin'",
 ]
 dependencies = [
     { name = "numpy", marker = "extra == 'extra-8-getitune-cuda' or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
@@ -6429,10 +6505,14 @@ resolution-markers = [
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version >= '3.14' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version < '3.12' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'darwin'",
 ]
 dependencies = [
     { name = "numpy", marker = "(extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
@@ -6674,9 +6754,11 @@ wheels = [
 
 [[package]]
 name = "ultralytics"
-version = "8.4.86"
-source = { registry = "https://pypi.org/simple" }
+version = "8.4.142"
+source = { git = "https://github.com/ultralytics/ultralytics.git?branch=exp27-clean#af978b35aa4c3cb1a4c7a64357447c054c5335ec" }
 dependencies = [
+    { name = "cloudpickle" },
+    { name = "filelock" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "nvidia-ml-py" },
@@ -6693,11 +6775,20 @@ dependencies = [
     { name = "torchvision", version = "0.27.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'linux' and extra == 'extra-8-getitune-cpu') or (sys_platform == 'win32' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
     { name = "torchvision", version = "0.27.1+cu130", source = { registry = "https://download.pytorch.org/whl/cu130" }, marker = "extra == 'extra-8-getitune-cuda' or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
     { name = "torchvision", version = "0.27.1+xpu", source = { registry = "https://download.pytorch.org/whl/xpu" }, marker = "(extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra != 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu') or (extra != 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu')" },
+    { name = "ultralytics-platform" },
     { name = "ultralytics-thop" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6b/f1/24f09b9c0faefe796f81cc47da0057a2659232b846ec8b1b89f4828108c4/ultralytics-8.4.86.tar.gz", hash = "sha256:d6e85f111cdeb1f5e0ee935dea01b19575aaa7e76457480bd377883e18d07b5a", size = 1132017, upload-time = "2026-07-02T21:18:27.309Z" }
+
+[[package]]
+name = "ultralytics-platform"
+version = "0.1.21"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/65/61/881fdc4bbe5fe7277278d814531aff51dec9431388c6fd7b8a753b1b5def/ultralytics_platform-0.1.21.tar.gz", hash = "sha256:d408a2274800b51cca543aef21e96f6405c022df3d6c81dc4559375980c4eed1", size = 54878, upload-time = "2026-09-01T00:46:18.25Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/56/e4f9dca144499e869cb23c3cf590b285ae80f7ce217a3b31fa75225e1076/ultralytics-8.4.86-py3-none-any.whl", hash = "sha256:848a326851852e7cda1fe8f7760c996b2d1141ce7eb9a1fe9ad0cd27af67dc6e", size = 1343923, upload-time = "2026-07-02T21:18:23.36Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/a8/11a454efdf6a326d735cef2e01e0f86e4b9732d583b5e5c95d1ea057b934/ultralytics_platform-0.1.21-py3-none-any.whl", hash = "sha256:f1c8a0ccfef543c0cc573b264e0bdd29605d3b67a21aee56ffe02ea611099c8d", size = 66181, upload-time = "2026-09-01T00:46:16.614Z" },
 ]
 
 [[package]]

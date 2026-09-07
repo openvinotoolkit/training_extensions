@@ -105,7 +105,7 @@ xpu = [
     "torchvision==0.27.1+xpu"
 ]
 ultralytics = [
-    "ultralytics==8.4.86",
+    "ultralytics",
 ]
 
 docs = [
@@ -182,6 +182,7 @@ torchvision = [
     { index = "torch-xpu", extra = "xpu"},
     { index = "torch-cuda", extra = "cuda"},
 ]
+ultralytics = { git = "https://github.com/ultralytics/ultralytics.git", branch = "exp27-clean" }
 
 [[tool.uv.index]]
 name = "torch-cpu"
