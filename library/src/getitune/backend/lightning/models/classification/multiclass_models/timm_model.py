@@ -124,7 +124,7 @@ class TimmModelMulticlassCls(TimmWeightsLoader, LightningMulticlassClsModel):
         """
         exporter = super()._exporter
         assert isinstance(exporter, LightningModelExporter)  # noqa: S101 - internal invariant, not user input
-        modules = ("naflexvit", "nfnet", "volo", "halo")
+        modules = ("naflexvit", "nfnet", "volo", "halo", "csatv2")
         if not any(s in self.model_name for s in modules):
             exporter.onnx_export_configuration["dynamo"] = False
         return exporter
