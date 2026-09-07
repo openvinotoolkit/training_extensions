@@ -8,6 +8,8 @@ from .classification import ClassificationTrainer, MultiLabelClassificationTrain
 from .detection import DetectionTrainer
 from .instance_segmentation import SegmentationTrainer
 from .semantic_segmentation import SemanticSegmentationTrainer
+from .yolo_detr import YoloDetrTrainer
+
 
 __all__ = [
     "ClassificationTrainer",
@@ -16,4 +18,6 @@ __all__ = [
     "MultiLabelClassificationTrainer",
     "SegmentationTrainer",
     "SemanticSegmentationTrainer",
+    "YoloDetrTrainer",
 ]
+

@@ -8,6 +8,8 @@ from .classification import UltralyticsMultiClassClsModel, UltralyticsMultiLabel
 from .detection import UltralyticsDetectionModel
 from .instance_segmentation import UltralyticsInstSegModel
 from .semantic_segmentation import UltralyticsSemanticSegModel
+from .yolo_detr import UltralyticsYoloDetrModel
+
 
 __all__ = [
     "UltralyticsDetectionModel",
@@ -16,4 +18,5 @@ __all__ = [
     "UltralyticsMultiClassClsModel",
     "UltralyticsMultiLabelClsModel",
     "UltralyticsSemanticSegModel",
+    "UltralyticsYoloDetrModel",
 ]

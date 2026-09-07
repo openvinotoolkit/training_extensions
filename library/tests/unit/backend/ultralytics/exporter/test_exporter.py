@@ -74,7 +74,6 @@ class TestUltralyticsModelExporterInit:
         exporter = _make_exporter()
         assert isinstance(exporter, ModelExporter)
 
-
 class TestExporterMetadata:
     """Tests for metadata produced by the inherited metadata pipeline."""
 

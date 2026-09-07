@@ -8,6 +8,7 @@ from .classification import ClassificationValidator, MultiLabelClassificationVal
 from .detection import DetectionValidator
 from .instance_segmentation import SegmentationValidator
 from .semantic_segmentation import SemanticSegmentationValidator
+from .yolo_detr import YoloDetrValidator
 
 __all__ = [
     "ClassificationValidator",
@@ -16,4 +17,6 @@ __all__ = [
     "MultiLabelClassificationValidator",
     "SegmentationValidator",
     "SemanticSegmentationValidator",
+    "YoloDetrValidator",
 ]
+

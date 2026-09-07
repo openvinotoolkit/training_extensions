@@ -27,9 +27,10 @@ def _label_info() -> LabelInfo:
     return LabelInfo(label_names=["cat", "dog"], label_ids=["0", "1"], label_groups=[["cat", "dog"]])
 
 
-def test_model_rejects_checkpoint_name_for_scratch_training() -> None:
-    with pytest.raises(ValueError, match="pretrained=False requires a model config"):
-        UltralyticsDetectionModel(model_name="yolo26n.pt", pretrained=False, label_info=_label_info())
+def test_model_accepts_checkpoint_name_for_scratch_training() -> None:
+    model = UltralyticsDetectionModel(model_name="yolo26n.pt", pretrained=False, label_info=_label_info())
+    assert model.model_name == "yolo26n.pt"
+    assert model.pretrained is False
 
 
 def test_model_allows_yaml_config_for_scratch_training() -> None:
@@ -50,6 +51,16 @@ def test_load_checkpoint_creates_fresh_yolo(tmp_path: Path) -> None:
 
     mock_yolo_cls.assert_called_once_with(str(fake_weights), task="detect")
     assert model._yolo is mock_yolo
+
+
+def test_build_yolo_from_checkpoint_path_skips_yaml_lookup() -> None:
+    model = UltralyticsDetectionModel(model_name="yolo26n.pt", pretrained=False, label_info=_label_info())
+    mock_yolo = MagicMock()
+    with patch("getitune.backend.ultralytics.models.base.YOLO", return_value=mock_yolo) as mock_yolo_cls:
+        yolo = model._build_yolo()
+
+    mock_yolo_cls.assert_called_once_with("yolo26n.pt", task="detect")
+    assert yolo is mock_yolo
 
 
 def test_load_checkpoint_raises_on_missing_file() -> None:

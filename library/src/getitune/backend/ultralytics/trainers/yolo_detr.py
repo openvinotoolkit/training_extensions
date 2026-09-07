@@ -1,0 +1,60 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+"""Custom YOLO-DETR trainer bridging getitune data to Ultralytics."""
+
+from __future__ import annotations
+
+from copy import copy
+from typing import Any
+
+from ultralytics.models.rtdetr.train import RTDETRTrainer as _RTDETRTrainer
+from ultralytics.models.yolodetr.train import YOLODETRTrainer as _YOLODETRTrainer
+from ultralytics.models.yolodetr.train import YOLODETRValidator as _YOLODETRValidator
+from ultralytics.utils.torch_utils import unwrap_model
+
+from getitune.backend.ultralytics.data.collate import detection_collate_fn
+from getitune.backend.ultralytics.plugins.xpu_mixin import XPUAwareTrainerMixin
+from getitune.backend.ultralytics.validators.yolo_detr import YoloDetrValidator
+
+from .base import GetiTuneBaseTrainer
+
+
+class YoloDetrTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _YOLODETRTrainer):
+    """YOLO-DETR trainer using getitune's DataModule bridge and XPU support."""
+
+    _collate_fn = staticmethod(detection_collate_fn)
+
+    def preprocess_batch(self, batch: dict[str, Any]) -> dict[str, Any]:
+        """Preserve getitune-normalized images while retaining upstream preprocessing otherwise."""
+        if not self._use_getitune_data:
+            return _YOLODETRTrainer.preprocess_batch(self, batch)
+        return self._move_batch_to_device(batch)
+
+    def train(self, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+        """Skip upstream epoch callbacks that require its native dataset type."""
+        if not self._use_getitune_data:
+            return super().train(*args, **kwargs)
+
+        if self.args.close_mosaic:
+            self.args.close_mosaic = 0
+        return _RTDETRTrainer.train(self, *args, **kwargs)
+
+    def get_validator(self) -> _YOLODETRValidator:
+        """Return the getitune-aware YOLO-DETR validator."""
+        if not self._use_getitune_data:
+            return super().get_validator()
+
+        head_name = type(unwrap_model(self.model).model[-1]).__name__
+        self.loss_names = ["giou_loss", "cls_loss", "l1_loss"]
+        if head_name == "DeimDecoder":
+            self.loss_names += ["fgl_loss", "ddf_loss"]
+
+        validator = YoloDetrValidator(
+            self.test_loader,
+            save_dir=self.save_dir,
+            args=copy(self.args),
+            _callbacks=self.callbacks,
+        )
+        validator.datamodule = self._datamodule
+        return validator
