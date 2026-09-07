@@ -546,6 +546,10 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         - PyTorch (.ckpt) variants are evaluated with the LightningEngine used for training.
         - OpenVINO (.xml) and ONNX (.onnx) variants are evaluated with OVEngine, which
           natively supports both checkpoint types.
+
+        If evaluation of the OpenVINO or ONNX variant fails (e.g. an export/runtime quirk),
+        the job is not failed: the PyTorch variant's results are reused instead, so training
+        can still complete successfully with a valid (if not fully independent) evaluation record.
         """
         from getitune.backend.openvino.engine import OVEngine
 
@@ -553,6 +557,7 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         ov_work_dir_base = Path(getitune_engine.work_dir)
         datamodule = getitune_engine.datamodule
 
+        pytorch_metrics: dict | None = None
         for variant in model_variants:
             logger.info("Evaluating the {} model...", variant.format.value)
             match variant.format:
@@ -573,7 +578,23 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
                 case _:
                     raise ExecutionErr(f"Unsupported model variant format for evaluation: {variant.format}")
 
-            metrics = engine.test(metric=metric_callable)
+            try:
+                metrics = engine.test(metric=metric_callable)
+            except Exception as eval_exc:
+                # PyTorch is the source of truth for fallback metrics; if it's the one failing, or no
+                # fallback is available yet, there is nothing to reuse, so let the job fail as usual.
+                if variant.format == ModelFormat.PYTORCH or pytorch_metrics is None:
+                    raise
+                logger.warning(
+                    "Evaluation of the {} model failed ({}); reusing the PyTorch evaluation results instead",
+                    variant.format.value,
+                    eval_exc,
+                )
+                metrics = pytorch_metrics
+            else:
+                if variant.format == ModelFormat.PYTORCH:
+                    pytorch_metrics = metrics
+
             self._save_evaluation_result(
                 metrics=metrics,
                 model_revision_id=model_revision_id,

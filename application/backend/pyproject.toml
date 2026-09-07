@@ -160,6 +160,11 @@ layers = [
     "app.repositories",
     "app.db",
 ]
+ignore_imports = [
+    # Deliberate exception: on_complete() reconciles a training status stuck at IN_PROGRESS
+    # after a job crash, as a safety net independent of the trainer process itself.
+    "app.models.jobs.training_job -> app.services",
+]
 
 [[tool.importlinter.contracts]]
 name = "Internal API"
@@ -200,6 +205,11 @@ layers = [
     "app.services",
     "app.models",
     "app.utils",
+]
+ignore_imports = [
+    # Deliberate exception: on_complete() reconciles a training status stuck at IN_PROGRESS
+    # after a job crash, as a safety net independent of the trainer process itself.
+    "app.models.jobs.training_job -> app.services",
 ]
 
 [tool.pytest.ini_options]
