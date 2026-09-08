@@ -14,11 +14,20 @@ This script reproduces that exact import order and exercises the asynchronous CP
 path, so an incompatible combination fails the image build instead of sporadically killing a
 customer's training job. It also prints where the ambiguous libraries were actually resolved
 from, which is the single most useful piece of information when triaging such a failure.
+
+On top of that it validates the pre-compiled bytecode of the whole virtual environment
+(``UV_COMPILE_BYTECODE=1``). A single damaged ``.pyc`` is invisible until the module is
+imported - typically deep inside a training job - where it surfaces as
+``ValueError: bad marshal data (invalid reference)``. Checking it here keeps such an image
+from ever being published.
 """
 
 from __future__ import annotations
 
+import marshal
 import sys
+import sysconfig
+from pathlib import Path
 
 # isort: off
 # The order of this import block is load-bearing, so it is fenced off from auto-fixers.
@@ -36,6 +45,48 @@ import numpy as np
 NUM_REQUESTS = 4
 NUM_INFERS = 32
 AMBIGUOUS_SONAMES = ("libtbb.so.12", "libtbbbind", "libiomp5.so", "libgomp.so.1")
+
+# Size of the pyc header (magic, flags, mtime/hash, source size) that precedes the
+# marshalled code object; stable for CPython >= 3.7.
+PYC_HEADER_SIZE = 16
+MAX_REPORTED_CORRUPTIONS = 10
+
+
+def _verify_bytecode_cache() -> None:
+    """Fail the build if any cached bytecode file in the environment is unreadable.
+
+    Every ``.pyc`` in ``site-packages`` is unmarshalled without executing it. This catches
+    truncated or partially zeroed cache files - produced by a full disk, an interrupted
+    build, or a damaged image layer - which CPython would otherwise only report at import
+    time, inside a running job, as ``ValueError: bad marshal data``.
+    """
+    site_packages = Path(sysconfig.get_paths()["purelib"])
+    corrupted: list[str] = []
+    checked = 0
+
+    for pyc in site_packages.rglob("*.pyc"):
+        checked += 1
+        try:
+            data = pyc.read_bytes()
+            if len(data) <= PYC_HEADER_SIZE:
+                msg = f"file is too small to contain a code object ({len(data)} bytes)"
+                raise ValueError(msg)
+            # The data is a build artifact produced moments ago by uv, not untrusted input.
+            marshal.loads(data[PYC_HEADER_SIZE:])  # noqa: S302
+        except Exception as exc:  # noqa: BLE001 - report every broken file, whatever the cause
+            corrupted.append(f"{pyc}: {exc}")
+
+    if corrupted:
+        listed = "\n  ".join(corrupted[:MAX_REPORTED_CORRUPTIONS])
+        remaining = len(corrupted) - MAX_REPORTED_CORRUPTIONS
+        suffix = f"\n  ... and {remaining} more" if remaining > 0 else ""
+        msg = (
+            f"{len(corrupted)} of {checked} cached bytecode files under {site_packages} are "
+            f"corrupted; importing them would fail with 'bad marshal data':\n  {listed}{suffix}"
+        )
+        raise RuntimeError(msg)
+
+    print(f"Bytecode cache OK ({checked} .pyc files under {site_packages})")
 
 
 def _assert_import_order() -> None:
@@ -72,6 +123,7 @@ def _mapped_libraries() -> dict[str, list[str]]:
 def main() -> int:
     """Run the smoke test and report where the ambiguous native libraries resolved from."""
     _assert_import_order()
+    _verify_bytecode_cache()
 
     param = ops.parameter([1, 3, 16, 16], ov.Type.f32, name="input")
     model = ov.Model([ops.relu(param)], [param], "smoke")
