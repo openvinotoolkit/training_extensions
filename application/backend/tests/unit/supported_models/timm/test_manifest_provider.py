@@ -77,6 +77,7 @@ class TestTimmManifestProvider:
         assert manifest.stats.benchmark_metrics.imagenet_top1_accuracy == 70.0
         assert manifest.hyperparameters.training.input_size_width == 224
         assert manifest.hyperparameters.training.input_size_height == 224
+        assert manifest.hyperparameters.training.allowed_values_input_size == [224]
         assert manifest.hyperparameters.training.learning_rate == 0.01
         assert manifest.hyperparameters.training.weight_decay == 0.001
 

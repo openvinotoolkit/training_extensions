@@ -66,7 +66,7 @@ class TimmManifestProvider:
                     weight_decay=e["default_weight_decay"],
                     input_size_width=w,
                     input_size_height=h,
-                    allowed_values_input_size=[w, h],
+                    allowed_values_input_size=sorted({w, h}),
                     # everything else (epochs, batch, scheduler, early stopping,
                     # augmentation) inherits classification/base.yaml defaults.
                 ),
