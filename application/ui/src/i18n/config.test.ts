@@ -17,6 +17,13 @@ describe('createI18nInstance', () => {
         setNavigatorLanguage('en-US');
     });
 
+    beforeEach(() => {
+        createI18nInstance({
+            lng: 'en',
+            resources: structuredClone(resources),
+        });
+    });
+
     it('is initialized and can translate synchronously', () => {
         const instance = createI18nInstance({ lng: 'en' });
 
