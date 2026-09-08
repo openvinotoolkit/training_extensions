@@ -3,13 +3,13 @@ name: EfficientNet-B0
 
 pretrained_weights:
   source: direct_link
-  url: https://github.com/osmr/imgclsmob/releases/download/v0.0.364/efficientnet_b0-0752-0e386130.pth.zip
-  sha_sum: 79f2b405a15399a0772337bd7f58052cb88299a65ed838a43c1ea8d3e0253f70
+  url: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/tf_efficientnet_b0_ap-f262efe1.pth
+  sha_sum: f262efe13ad20442c9e9a54f47971e0959dbdcc2f05854aea5b93762cb4c0a70
 
 description: "EfficientNet-B0 is the baseline model of the EfficientNet family, designed using neural architecture search to optimize accuracy and efficiency. It uses a compound scaling method to balance network depth, width, and resolution, achieving strong performance with relatively low computational cost and around 5.3M parameters."
 stats:
-  gigaflops: 0.81
-  trainable_parameters: 5.3
+  gigaflops: 0.77
+  trainable_parameters: 4
   benchmark_metrics:
     imagenet_top1_accuracy: 77.1
     imagenet_top5_accuracy: 93.3

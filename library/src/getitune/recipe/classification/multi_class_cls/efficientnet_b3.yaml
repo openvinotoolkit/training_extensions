@@ -1,9 +1,9 @@
 task: MULTI_CLASS_CLS
 model:
-  class_path: getitune.backend.lightning.models.classification.multiclass_models.torchvision_model.TVModelMulticlassCls
+  class_path: getitune.backend.lightning.models.classification.multiclass_models.timm_model.TimmModelMulticlassCls
   init_args:
-    model_name: efficientnet_b3
     label_info: 1000
+    model_name: tf_efficientnet_b3.aa_in1k
 
     optimizer:
       class_path: torch.optim.SGD

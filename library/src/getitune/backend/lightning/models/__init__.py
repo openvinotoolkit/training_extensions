@@ -4,10 +4,8 @@
 """Module for getitune custom models."""
 
 from .classification import (
-    EfficientNet,
     MobileNetV3,
     TimmModel,
-    TVModel,
     VisionTransformer,
 )
 from .detection import ATSS, DEIMV2, RFDETR, RTDETR, SSD, YOLOX, DEIMDFine, DFine, EdgeCrafter
@@ -26,7 +24,6 @@ __all__ = [
     "DFine",
     "DinoV2Seg",
     "EdgeCrafter",
-    "EfficientNet",
     "LiteHRNet",
     "MaskRCNN",
     "MaskRCNNTV",
@@ -35,7 +32,6 @@ __all__ = [
     "RTMDetInst",
     "RTMPose",
     "SegNext",
-    "TVModel",
     "TimmModel",
     "VisionTransformer",
 ]

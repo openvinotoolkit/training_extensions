@@ -60,37 +60,6 @@ class _SupportsViTBackboneWeights(Protocol):
     model_name: str
 
 
-class PytorchcvWeightsLoader:
-    """Load backbone weights via pytorchcv's model store (EfficientNet)."""
-
-    def load_pretrained(self: _SupportsBackboneWeights, weights: PathLike | None = None) -> None:
-        """Download EfficientNet backbone weights into the cache dir."""
-        from pytorchcv.models.common.model_store import download_model
-
-        cache_dir = str(Path(weights).parent) if weights is not None else os.environ["PRETRAINED_WEIGHTS_CACHE_DIR"]
-        download_model(
-            net=self.model.backbone,
-            model_name=self.model_name,
-            local_model_store_dir_path=cache_dir,
-        )
-        logger.info("Loaded backbone weights from %s", cache_dir)
-
-
-class TorchvisionWeightsLoader:
-    """Load backbone weights from Torchvision (EfficientNet)."""
-
-    def load_pretrained(self: _SupportsBackboneWeights, weights: PathLike | None = None) -> None:
-        """Load weights: a local checkpoint if given, else torchvision's official set."""
-        if weights is not None and Path(weights).exists():
-            load_checkpoint(self.model.backbone, str(weights))
-            return
-
-        from torchvision.models import get_model, get_model_weights
-
-        ref = get_model(name=self.model_name, weights=get_model_weights(self.model_name).verify("DEFAULT"))
-        self.model.backbone.features.load_state_dict(ref.features.state_dict())  # pyrefly: ignore[missing-attribute]
-
-
 class TimmWeightsLoader:
     """Load backbone weights via ``timm.models.load_pretrained``."""
 

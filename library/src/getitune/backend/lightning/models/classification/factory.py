@@ -13,17 +13,13 @@ from getitune.backend.lightning.models.base import DefaultOptimizerCallable, Def
 from getitune.metrics.accuracy import MultiClassClsMetricCallable
 
 from .multiclass_models import (
-    EfficientNetMulticlassCls,
     MobileNetV3MulticlassCls,
     TimmModelMulticlassCls,
-    TVModelMulticlassCls,
     VisionTransformerMulticlassCls,
 )
 from .multilabel_models import (
-    EfficientNetMultilabelCls,
     MobileNetV3MultilabelCls,
     TimmModelMultilabelCls,
-    TVModelMultilabelCls,
     VisionTransformerMultilabelCls,
 )
 
@@ -100,76 +96,6 @@ class MobileNetV3:
             return MobileNetV3MulticlassCls(**kwargs)
         if task == "multi_label":
             return MobileNetV3MultilabelCls(**kwargs)
-        msg = f"Unsupported task type: {task}"
-        raise ValueError(msg)
-
-
-class EfficientNet:
-    """Factory class for EfficientNet models."""
-
-    @overload
-    def __new__(
-        cls,
-        label_info: LabelInfoTypes,
-        data_input_params: DataInputParams | dict | None = None,
-        task: Literal["multi_class", "multi_label"] = "multi_class",
-        model_name: Literal[
-            "efficientnet_b0",
-            "efficientnet_b1",
-            "efficientnet_b2",
-            "efficientnet_b3",
-            "efficientnet_b4",
-            "efficientnet_b5",
-            "efficientnet_b6",
-            "efficientnet_b7",
-            "efficientnet_b8",
-        ] = "efficientnet_b0",
-        freeze_backbone: bool = False,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
-        torch_compile: bool = False,
-    ) -> EfficientNetMulticlassCls | EfficientNetMultilabelCls: ...
-
-    def __new__(
-        cls,
-        task: Literal["multi_class", "multi_label"] = "multi_class",
-        **kwargs,
-    ) -> EfficientNetMulticlassCls | EfficientNetMultilabelCls:
-        """Factory method to create EfficientNet models based on the task type.
-
-        Args:
-            label_info (LabelInfoTypes): The label information.
-            data_input_params (DataInputParams | dict | None, optional): The data input parameters that consists
-                of input size, mean and std. Defaults to None.
-            freeze_backbone (bool, optional): Whether to freeze the backbone during training. Defaults to False.
-                Note: only multiclass classification supports this argument.
-            model_name (Literal["efficientnet_b0", "efficientnet_b1", "efficientnet_b2", "efficientnet_b3",
-                                 "efficientnet_b4", "efficientnet_b5", "efficientnet_b6", "efficientnet_b7",
-                                 "efficientnet_b8"], optional): The model name. Defaults to "efficientnet_b0".
-            task (Literal["multi_class", "multi_label"], optional): The task type.
-                Can be "multi_class" or "multi_label". Defaults to "multi_class".
-            optimizer (OptimizerCallable, optional): The optimizer callable. Defaults to DefaultOptimizerCallable.
-            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
-                Defaults to DefaultSchedulerCallable.
-            metric (MetricCallable, optional): The metric callable. Defaults to MultiClassClsMetricCallable.
-            torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
-
-        Examples:
-            >>> # Basic usage
-            >>> model = EfficientNet(
-            ...     task="multi_class",
-            ...     label_info=10,
-            ...     data_input_params={"input_size": (224, 224),
-            ...                        "mean": [123.675, 116.28, 103.53],
-            ...                        "std": [58.395, 57.12, 57.375]},
-            ...     model_name="efficientnet_b0",
-            ... )
-        """
-        if task == "multi_class":
-            return EfficientNetMulticlassCls(**kwargs)
-        if task == "multi_label":
-            return EfficientNetMultilabelCls(**kwargs)
         msg = f"Unsupported task type: {task}"
         raise ValueError(msg)
 
@@ -259,86 +185,6 @@ class TimmModel:
         from timm import list_models
 
         return list_models(pretrained=True)
-
-
-class TVModel:
-    """Factory class for Torch Vision models."""
-
-    @overload
-    def __new__(
-        cls,
-        label_info: LabelInfoTypes,
-        data_input_params: DataInputParams | dict | None = None,
-        task: Literal["multi_class", "multi_label"] = "multi_class",
-        model_name: str = "efficientnet_v2_s",
-        freeze_backbone: bool = False,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
-        torch_compile: bool = False,
-    ) -> TVModelMulticlassCls | TVModelMultilabelCls: ...
-
-    def __new__(
-        cls,
-        task: Literal["multi_class", "multi_label"] = "multi_class",
-        **kwargs,
-    ) -> TVModelMulticlassCls | TVModelMultilabelCls:
-        """Factory to create TV models based on the task type.
-
-        This class allows users to create models for multi-class, multi-label,
-        classification by specifying the `task` parameter.
-        You can select any model available in the TorchVision library (over 40 models as of 2025)
-        by providing its name to the `model_name` parameter.
-        To explore all available models, use `torchvision.models.list_models()` or `TVModel.list_models()`.
-
-        Args:
-            label_info (LabelInfoTypes): The label information.
-            data_input_params (DataInputParams | dict | None, optional): The data input parameters that consists
-                of input size, mean and std. Defaults to None.
-            freeze_backbone (bool, optional): Whether to freeze the backbone during training.
-                Note: only multiclass classification supports this argument. Defaults to False.
-            model_name (str, optional): The model name. Defaults to "efficientnet_v2_s".
-            task (Literal["multi_class", "multi_label"], optional): The task type.
-                Can be "multi_class" or "multi_label". Defaults to "multi_class".
-            optimizer (OptimizerCallable, optional): The optimizer callable. Defaults to DefaultOptimizerCallable.
-            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
-                Defaults to DefaultSchedulerCallable.
-            metric (MetricCallable, optional): The metric callable. Defaults to MultiClassClsMetricCallable.
-            torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
-
-        Examples:
-            >>> # Basic usage
-            >>> model = TVModel(
-            ...     task="multi_class",
-            ...     label_info=10,
-            ...     data_input_params={"input_size": (224, 224),
-            ...                        "mean": [123.675, 116.28, 103.53],
-            ...                        "std": [58.395, 57.12, 57.375]},
-            ...     model_name="efficientnet_v2_s",
-            ... )
-            ... # Multi-label classification
-            >>> model = TVModel(
-            ...     task="multi_label",
-            ...     model_name="mobilenet_v3_small",
-            ...     data_input_params={"input_size": (224, 224),
-            ...                        "mean": [123.675, 116.28, 103.53],
-            ...                        "std": [58.395, 57.12, 57.375]},
-            ...     label_info=[1, 5, 10]  # Multi-label setup
-            ... )
-        """
-        if task == "multi_class":
-            return TVModelMulticlassCls(**kwargs)
-        if task == "multi_label":
-            return TVModelMultilabelCls(**kwargs)
-        msg = f"Unsupported task type: {task}"
-        raise ValueError(msg)
-
-    @staticmethod
-    def list_models() -> list[str]:
-        """List available Torch Vision models."""
-        from torchvision.models import list_models
-
-        return list_models()
 
 
 class VisionTransformer:

@@ -1,9 +1,9 @@
 task: MULTI_CLASS_CLS
 model:
-  class_path: getitune.backend.lightning.models.classification.multiclass_models.efficientnet.EfficientNetMulticlassCls
+  class_path: getitune.backend.lightning.models.classification.multiclass_models.timm_model.TimmModelMulticlassCls
   init_args:
     label_info: 1000
-    model_name: efficientnet_b0
+    model_name: tf_efficientnet_b0.ap_in1k
 
     optimizer:
       class_path: torch.optim.SGD
