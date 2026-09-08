@@ -1,13 +1,18 @@
 # See help here: https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
 
 # Default owners for any file not covered by other rules
-* @samet-akcay @leoll2 @Radwan-Ibrahim @itallix @warrkan @yvolokitin
+* @leoll2 @jpggvilaca @yvolokitin @Radwan-Ibrahim
 
 # CI and security
+.ci/ @open-edge-platform/geti-ci-maintain
 .github/actions/ @open-edge-platform/geti-ci-maintain
 .github/workflows/ @open-edge-platform/geti-ci-maintain
 .github/renovate.json5 @open-edge-platform/geti-ci-maintain
 security.md @open-edge-platform/geti-ci-maintain
+
+# License
+LICENSE @alexey-burdakov @AlexanderBarabanov @yvolokitin
+third-party-programs.txt @alexey-burdakov @AlexanderBarabanov @yvolokitin
 
 # Library (getitune)
 library/ @open-edge-platform/geti-lib-write
@@ -22,8 +27,13 @@ application/ui/ @open-edge-platform/geti-ui-write
 application/ui/src-tauri/Cargo.lock @sys-geti @open-edge-platform/geti-ui-write
 
 # Application build and deployment
+.dockerignore @open-edge-platform/geti-backend-write
 application/docker/ @open-edge-platform/geti-backend-write
 application/docker/Dockerfile @sys-geti @open-edge-platform/geti-backend-write
+application/Justfile @open-edge-platform/geti-backend-write
+application/ui/src-tauri/ @open-edge-platform/geti-backend-write @open-edge-platform/geti-ui-write
+install.sh @open-edge-platform/geti-backend-write
+install.ps1 @open-edge-platform/geti-backend-write
 
 # Application documentation
 application/docs/ @open-edge-platform/geti-backend-write @open-edge-platform/geti-ui-write
