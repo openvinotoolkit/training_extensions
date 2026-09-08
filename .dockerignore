@@ -9,8 +9,9 @@
 !application/backend/uv.lock
 !application/VERSION
 
-# Docker entrypoint
+# Docker entrypoint and runtime verification script
 !application/docker/entrypoint.sh
+!application/docker/verify_runtime.py
 
 # UI
 !application/ui/src
