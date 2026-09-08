@@ -1,4 +1,11 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-export { i18n, LANGUAGE_STORAGE_KEY } from './config';
+import { createI18nInstance } from './config';
+
+/** Shared instance used by the app and by non-React code that needs to translate at call time. */
+export const i18n = createI18nInstance();
+
+export { createI18nInstance, LANGUAGE_STORAGE_KEY } from './config';
+export { DEFAULT_LANGUAGE, LOCALES, SUPPORTED_LANGUAGES, resolveLanguage } from './locales';
+export type { LocaleDefinition, TranslationCatalog } from './locales';

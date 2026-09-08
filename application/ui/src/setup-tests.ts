@@ -8,6 +8,7 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 
 import { server } from './msw-node-setup';
 
+import './test-utils/i18n';
 import './test-utils/mock-event-source';
 
 beforeAll(() => {
