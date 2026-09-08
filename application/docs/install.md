@@ -6,16 +6,20 @@ can choose the method that best fits your workflow.
 
 ## System requirements
 
-| Component | Requirement                                              |
-| --------- | -------------------------------------------------------- |
-| CPU       | 8 threads                                                |
-| RAM       | 16 GB                                                    |
-| Disk      | 40 GB free                                               |
-| GPU       | Optional - Intel® XPU or NVIDIA® GPU for larger models |
+Before you begin, make sure your machine meets the following requirements:
+
+| Component | Requirement                            |
+| --------- | -------------------------------------- |
+| CPU       | 8 threads                              |
+| RAM       | 16 GB                                  |
+| Disk      | 40 GB free                             |
+| GPU       | Optional - Intel® XPU or NVIDIA® GPU |
+
+> [!TIP]
+> For larger models, it is recommended to have a GPU (Intel® or NVIDIA®) and additional memory.
 
 > [!NOTE]
-> NVIDIA® GPUs with compute capability below 7.5 (e.g. Volta, Maxwell, Pascal) require a manual patch to work.
-> See [Troubleshooting > I have an old Nvidia GPU, does Geti support it?](#i-have-an-old-nvidia-gpu-does-geti-support-it).
+> NVIDIA® GPUs with compute capability below 7.5 (e.g. Volta, Maxwell, Pascal) require a [manual patch](#i-have-an-old-nvidia-gpu-does-geti-support-it) to work.
 
 ## Installation methods
 
@@ -26,16 +30,16 @@ There are several ways to run Geti™, choose the one that best fits your workfl
 - [**Install script**](#install-script) - download and run a script that builds and configures Geti™ automatically.
 - [**Run from source (for development)**](#run-from-source-for-development) - run the server and the UI as standalone components.
 
-For deployment-specific log collection and troubleshooting, see [Troubleshooting > Logs](#troubleshooting-logs).
+If you encounter problems during the installation, check the [Troubleshooting](#troubleshooting) section: it covers several common error scenarios, and it also explains where to find the logs. If your problem persists, please create a Github issue.
 
 ## Windows app
 
 Installing Geti™ as a Windows app is the simplest way to run it on Windows.
 
 1. Download the Windows Installer suitable for your hardware (prebuilt packages for Intel® XPU, NVIDIA® CUDA, and CPU-only environments):
-   - [CPU-only](https://storage.geti.intel.com/geti/packages/3.0.0/geti-cpu-3.0.0.msix)
-   - [Intel® XPU](https://storage.geti.intel.com/geti/packages/3.0.0/geti-xpu-3.0.0.msix)
-   - [NVIDIA® CUDA](https://storage.geti.intel.com/geti/packages/3.0.0/geti-cuda-3.0.0.msix)
+   - [CPU-only](https://storage.geti.intel.com/geti/packages/3.1.0/geti-cpu-3.1.0.msix)
+   - [Intel® XPU](https://storage.geti.intel.com/geti/packages/3.1.0/geti-xpu-3.1.0.msix)
+   - [NVIDIA® CUDA](https://storage.geti.intel.com/geti/packages/3.1.0/geti-cuda-3.1.0.msix)
 2. Double-click the `.msix` package and click **Install** in the Windows installer dialog.
 3. Launch Geti™ from the **Start** menu.
 
@@ -76,7 +80,7 @@ docker pull ghcr.io/open-edge-platform/geti-xpu
 Retag the pulled image as `geti-{cpu,xpu,cuda}:latest` for use with `just run-image`:
 
 ```bash
-docker tag ghcr.io/open-edge-platform/geti-cpu:latest geti-cpu:latest
+docker tag ghcr.io/open-edge-platform/geti-xpu:latest geti-xpu:latest
 ```
 
 > [!IMPORTANT]
@@ -88,6 +92,14 @@ docker tag ghcr.io/open-edge-platform/geti-cpu:latest geti-cpu:latest
 Geti™ Docker images can be built from source using the [`Dockerfile`](../docker/Dockerfile) in the `application`
 directory. This is useful if you want to customize the application or include Ultralytics models. The instructions
 below use `just` to simplify the build process, but you can also build the image manually with `docker build` if you prefer.
+
+> [!TIP]
+> The `develop` branch contains the latest, potentially unstable, changes. To build a specific, stable release
+> instead, check out the corresponding tag (e.g. `app/v3.1.0`) before building:
+>
+> ```bash
+> git checkout app/v3.1.0
+> ```
 
 From the `application` directory:
 
@@ -264,6 +276,14 @@ For development purposes, you can run the Geti™ server and UI as standalone co
 - (Only for NVIDIA GPU) NVIDIA driver and the NVIDIA Container Toolkit [[Docs]](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/)
 - Node.js v24.2+ [[Docs]](https://nodejs.org/en/docs)
 - Ubuntu 24+ or WSL2 with Ubuntu 24+ [[Docs]](https://ubuntu.com/#download-ubuntu)
+
+> [!TIP]
+> The `develop` branch contains the latest, potentially unstable, changes. To run a specific, stable release
+> instead, check out the corresponding tag (e.g. `app/v3.1.0`) before proceeding:
+>
+> ```bash
+> git checkout app/v3.1.0
+> ```
 
 ### Run the server
 
@@ -482,16 +502,62 @@ docker run --rm -v geti-data:/data alpine ls -l /data/pretrained_weights/<TASK_T
 - **MSIX (Windows app):** Uninstall the package from the **Start** menu (right-click **Geti™ > Uninstall**) or via
   **Settings > Apps > Installed apps > Geti™ > Uninstall**.
 
-## Troubleshooting
+<a id="troubleshooting"></a>
+
+## FAQ & Troubleshooting
+
+<a id="troubleshooting-logs"></a>
+
+<details>
+<summary><strong>How can I view the Geti logs?</strong></summary>
+
+The location depends on how Geti™ is installed:
+
+- Windows app (MSIX): `%LOCALAPPDATA%\Intel\Geti` folder.
+- Docker container: `geti-logs` Docker volume.
+
+In the Docker case, you can view these logs by running
+a temporary container that mounts the volume and prints the log files to the console. The following examples use `jq` to format the JSON logs; install `jq` on the host or omit the `| jq -r '.text'` part to see the
+raw JSON output.
+
+**Application logs:**
+
+```bash
+# Print the logs of the application container to the console
+docker run --rm -v geti-logs:/logs alpine cat /logs/app.log | jq -r '.text'
+
+# Or save the logs to a file for easier browsing
+docker run --rm -v geti-logs:/logs alpine cat /logs/app.log | jq -r '.text' > geti-logs.txt
+```
+
+**Job logs:**
+
+```bash
+# List the available job logs
+docker run --rm -v geti-logs:/logs alpine ls -l /logs/jobs
+
+# Print the logs of a specific job to the console
+docker run --rm -v geti-logs:/logs alpine cat /logs/jobs/<job_type>-<job_id>.log | jq -r '.text'
+```
+
+**Logs of other worker processes:**
+
+```bash
+# Print the logs of the inference pipeline stream loader
+docker run --rm -v geti-logs:/logs alpine cat /logs/workers/streamloader.log | jq -r '.text'
+
+# Print the logs of the inference worker
+docker run --rm -v geti-logs:/logs alpine cat /logs/workers/inference.log | jq -r '.text'
+```
+
+</details>
 
 <details>
 <summary><strong>I have an old Nvidia GPU, does Geti support it?</strong></summary>
 
 <a id="i-have-an-old-nvidia-gpu-does-geti-support-it"></a>
 
-Geti's `cuda` builds use PyTorch wheels compiled against CUDA 13.0, which dropped support for NVIDIA GPU
-architectures older than Ampere (compute capability < 8.0), covering Volta, Turing, Maxwell, and Pascal cards. If
-your GPU falls in this range, you must patch the source to build against CUDA 12.6 instead, which still supports
+Geti's `cuda` builds use PyTorch wheels compiled against CUDA 13.0, which dropped support for NVIDIA GPU architectures older than Turing (compute capability < 7.5), covering Volta, Maxwell, and Pascal cards. If your GPU falls in this range, you must patch the source to build against CUDA 12.6 instead, which still supports
 compute capability >= 5.0.
 
 - **Install script:** patch `pyproject.toml` before running the installer:
@@ -522,6 +588,34 @@ compute capability >= 5.0.
 
 > [!NOTE]
 > The Windows app (MSIX) is prebuilt and cannot be patched this way; it requires the newer PyTorch/CUDA wheels.
+
+</details>
+
+<details>
+<summary><strong>Just fails with "unknown start of token" or "unknown keyword"</strong></summary>
+
+This error means the installed version of `just` is too old to support the `[arg(...)]` attribute syntax used in
+this repository's `Justfile`s. Update to the latest release by following the
+[Just installation documentation](https://just.systems/man/en/packages.html), then re-run the command.
+
+</details>
+
+<details>
+<summary><strong>Docker fails with "unknown flag: --build-arg"</strong></summary>
+
+This means the Docker CLI is missing the `buildx` plugin, which provides the modern build backend used by our
+build recipes. Follow the [Docker documentation](https://docs.docker.com/engine/install/) to install Docker
+cleanly (e.g. via the official `docker-ce`/`docker-buildx-plugin` packages or Docker Desktop) rather than a
+partial or outdated installation, then retry the build.
+
+</details>
+
+<details>
+<summary><strong>Docker or Just commands fail with "permission denied"</strong></summary>
+
+This typically happens when your user isn't allowed to talk to the Docker daemon socket. Follow the
+[Docker post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) to add your user to
+the `docker` group, then log out and back in (or restart your session) for the change to take effect.
 
 </details>
 
@@ -559,48 +653,9 @@ Fixes, in order of preference:
 
 </details>
 
-<a id="troubleshooting-logs"></a>
+<br>
 
-<details>
-<summary><strong>View the logs</strong></summary>
-
-When running Geti™ with Docker, all logs are stored in the `geti-logs` Docker volume. You can view these logs by running
-a temporary container that mounts the volume and prints the log files to the console.
-
-These examples use `jq` to format the JSON logs; install `jq` on the host or omit the `| jq -r '.text'` part to see the
-raw JSON output.
-
-**Application logs:**
-
-```bash
-# Print the logs of the application container to the console
-docker run --rm -v geti-logs:/logs alpine cat /logs/app.log | jq -r '.text'
-
-# Or save the logs to a file for easier browsing
-docker run --rm -v geti-logs:/logs alpine cat /logs/app.log | jq -r '.text' > geti-logs.txt
-```
-
-**Job logs:**
-
-```bash
-# List the available job logs
-docker run --rm -v geti-logs:/logs alpine ls -l /logs/jobs
-
-# Print the logs of a specific job to the console
-docker run --rm -v geti-logs:/logs alpine cat /logs/jobs/<job_type>-<job_id>.log | jq -r '.text'
-```
-
-**Logs of other worker processes:**
-
-```bash
-# Print the logs of the inference pipeline stream loader
-docker run --rm -v geti-logs:/logs alpine cat /logs/workers/streamloader.log | jq -r '.text'
-
-# Print the logs of the inference worker
-docker run --rm -v geti-logs:/logs alpine cat /logs/workers/inference.log | jq -r '.text'
-```
-
-</details>
+Still can't find a solution for your issue? Feel free to [open a Github issue](https://github.com/open-edge-platform/geti/issues) and the Geti™ team will help you.
 
 ## Notes
 

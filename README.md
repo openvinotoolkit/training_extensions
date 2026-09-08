@@ -3,9 +3,7 @@
 
 <img src="assets/geti-header.png" alt="Geti™ - A framework to rapidly build and deploy computer vision AI models">
 
-[Quick Start](#quick-start-with-geti) •
-[Geti™ documentation](https://docs.geti.intel.com/) •
-[`getitune` documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/intro)
+<br>
 
 [![Container build](https://github.com/open-edge-platform/geti/actions/workflows/build.yaml/badge.svg)](https://github.com/open-edge-platform/geti/actions/workflows/build.yaml)
 [![Codecov](https://codecov.io/gh/open-edge-platform/geti/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/open-edge-platform/geti)
@@ -14,54 +12,49 @@
 [![PyPI version](https://img.shields.io/pypi/v/getitune?logo=pypi&logoColor=white)](https://pypi.org/project/getitune/)
 [![PyPI downloads](https://static.pepy.tech/badge/getitune)](https://clickpy.clickhouse.com/dashboard/getitune)
 
+**Application**: [Install](application/docs/install.md) • [Upgrade](application/docs/upgrade.md) • [Docs](https://docs.geti.intel.com/) • [License](#license)
+<br>
+**Library** (`getitune`): [Install](https://docs.geti.intel.com/docs/user-guide/library/get-started/installation) • [Docs](https://docs.geti.intel.com/docs/user-guide/library/get-started/intro)
+
 </div>
 
-Geti™ is an end-to-end Vision AI application that takes you from raw images to a deployed computer vision model. Geti™ runs locally as a single container or a native Windows app and is optimized for fast inference across the full Intel® XPU portfolio.
+**_Geti™_** is an end-to-end platform for building AI computer vision models.
+
+Available as a Docker container or native Windows application, Geti™ guides you through the entire model lifecycle—from dataset preparation and training to optimization and deployment.
+Geti™ is optimized for fine-tuning and fast inference across the full Intel® XPU portfolio.
+
+The Geti™ application is powered by **_getitune_**, an open-source engine for model training and optimization, which is also available standalone as a Python library. Geti™ and _getitune_ are both developed in this repository, in the [`application`](application/) and [`library`](library/) folders, respectively.
 
 <p align="center">
  <img src="assets/model-lifecycle-infinity-light.png" width="600" alt="Geti™ - Learning Cycle"/>
 </p>
 
-> [!IMPORTANT]
-> This repo previously hosted the OpenVINO Training Extensions project, namely `otx`;
-> the development of that library now continues under the new name
-> `getitune` in the [`library`](library) folder, as the training engine of the broader Geti™ application. The package is
-> published on PyPI as [`getitune`](https://pypi.org/project/getitune/), while the old package `otx` is deprecated but
-> still available for download.
->
-> The development of the Geti™ application now continues in this repository in the [`application`](application) folder.
-> Previous versions of Geti™ are still available in a separate [repository](https://github.com/open-edge-platform/geti_v2).
-> In general, we recommend upgrading to the latest Geti™ release whenever possible - not only to access new functionality,
-> but also to receive better support from Intel and the Geti™ community.
-> To upgrade from Geti™ v2 to v3, please follow the [upgrade guidance](https://docs.geti.intel.com/docs/user-guide/getting-started/installation/migration-from-geti-2x).
+> [!NOTE]
+> Geti™ underwent a major revamp in v3.0, resulting in a new application that is much more lightweight and easier to install than before, while adding many new features and SOTA models. This repository contains the latest Geti™ v3. Legacy versions remain available in the old [`geti_v2`](https://github.com/open-edge-platform/geti_v2) repository; to migrate from Geti™ v2 to v3, please follow [this guide](https://docs.geti.intel.com/docs/user-guide/getting-started/installation/migration-from-geti-2x).
+
+> [!NOTE]
+> This repository previously hosted the _OpenVINO Training Extensions (OTX)_ project, now fully replaced by _getitune_. The legacy [`otx`](https://pypi.org/project/otx/) package is still available in Pypi although deprecated; it's recommended to migrate to `getitune`, which has a similar interface to `otx` and extends it with several new models.
 
 ## Quick start with Geti™
 
-Before you begin, make sure your machine meets the following requirements:
+There are several ways to run Geti™, choose the one that best fits your workflow:
 
-| Component | Requirement                                              |
-| --------- | -------------------------------------------------------- |
-| CPU       | 8 threads                                                |
-| RAM       | 16 GB                                                    |
-| Disk      | 40 GB free                                               |
-| GPU       | Optional - Intel® XPU or NVIDIA® GPU for larger models |
+- Install as a [**Windows application (MSIX)**](application/docs/install.md#windows-app)
+- Run as a [**Docker container**](application/docs/install.md#run-with-docker)
+- Install and launch via a [**script**](application/docs/install.md#install-script)
+- Build and run [**from source**](application/docs/install.md#run-from-source-for-development) (for development)
 
-Geti can be installed as a **Windows application**, run as a **container**, or built **from source code**. Choose the option that best suits your environment.
+For complete, step-by-step instructions - including prerequisites, GPU/accelerator support, container and source builds, the install script, and troubleshooting - see the [Installation guide](application/docs/install.md). To update an existing Geti™ installation to a newer version, follow the [Upgrade guide](application/docs/upgrade.md).
 
-For complete, step-by-step instructions - including prerequisites, GPU/accelerator support, container and source builds, the install script, and troubleshooting - see the [Installation guide](application/docs/install.md).
-
-Once Geti is up and running, follow the intuitive UI to train your first model.
+Once Geti™ is up and running, follow the intuitive UI to train your first model.
 
 <p align="center">
   <img src="assets/application.gif" alt="Application demo" width="80%">
 </p>
 
-> [!NOTE]
-> See the detailed step-by-step guidance on how to train your first model in
-> ["Training your first model"](https://docs.geti.intel.com/docs/user-guide/quick-start/training-your-first-model) section in the Geti™ documentation.
-> Full instructions and all options are available in [Geti™ documentation](https://docs.geti.intel.com/).
->
-> Detailed installation guide is available in ["Installation guide"](https://docs.geti.intel.com/docs/user-guide/getting-started/installation/installation-guide)
+> [!TIP]
+> The [documentation](https://docs.geti.intel.com/) is a valuable resource to learn more about Geti™ and its capabilities.  
+> New users are encouraged to read the step-by-step tutorial ["Train your first model"](https://docs.geti.intel.com/docs/user-guide/quick-start/training-your-first-model).
 
 ## Quick start with Geti Library (`getitune`)
 
@@ -75,19 +68,7 @@ uv pip install getitune # CPU-only by default
 ```
 
 > [!IMPORTANT]  
-> The PyPI package does NOT include **Ultralytics YOLO models**, which are distributed under the [AGPL-3.0 license](https://www.ultralytics.com/license).
->
-> Install `getitune` from source to use them:
->
-> ```bash
-> git clone https://github.com/open-edge-platform/geti.git
-> cd geti/library
-> uv sync --extra xpu --extra ultralytics                              # Intel GPU + YOLO
-> uv sync --extra cuda --extra ultralytics                             # NVIDIA GPU + YOLO
-> uv sync --extra cpu --extra ultralytics                              # CPU + YOLO
-> ```
->
-> See the [getitune documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/installation) for more details.
+> The PyPI package does NOT include **Ultralytics YOLO models**, which are distributed under the [AGPL-3.0 license](https://www.ultralytics.com/license). To enable these models, build from source with the `ultralytics` extra as explained in the [getitune documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/installation).
 
 **Discover available models and train a model in just a few lines of code:**
 
@@ -188,7 +169,7 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://arxiv.org/abs/2502.12524">YOLOv12</a></td>
     </tr>
     <tr>
-      <td>YOLO26 Nano / Small / Medium / Large / XLarge</td>
+      <td>YOLO26 N / S / M / L / X</td>
       <td><a href="https://arxiv.org/abs/2606.03748">YOLO26</a></td>
     </tr>
     <tr>
@@ -221,7 +202,7 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://docs.ultralytics.com/models/yolo11#overview">Ultralytics YOLO11</a></td>
     </tr>
     <tr>
-      <td>YOLO26 Nano / Small / Medium / Large / XLarge</td>
+      <td>YOLO26 N / S / M / L / X</td>
       <td><a href="https://arxiv.org/abs/2606.03748">YOLO26</a></td>
     </tr>
     <tr>
@@ -246,11 +227,11 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://arxiv.org/abs/1905.02244">MobileNetV3</a></td>
     </tr>
     <tr>
-      <td>YOLO26 Nano / Small / Medium / Large / XLarge</td>
+      <td>YOLO26 N / S / M / L / X</td>
       <td><a href="https://arxiv.org/abs/2606.03748">YOLO26</a></td>
     </tr>
     <tr>
-      <td>Any timm backbone (generic)</td>
+      <td>Other models from <i>timm</i> (1600+ backbones)</td>
       <td><a href="https://github.com/huggingface/pytorch-image-models">timm</a></td>
     </tr>
   </tbody>
@@ -307,6 +288,8 @@ Track how datasets and models evolve, link models to a specific dataset revision
 
 ## Ecosystem
 
+Explore other open-source AI projects by Intel®:
+
 - [Anomalib](https://github.com/open-edge-platform/anomalib) - An anomaly detection suite comprising state-of-the-art algorithms and features such as experiment management, hyper-parameter optimization and edge inference.
 - [Instant Learn](https://github.com/open-edge-platform/instant-learn) - A framework for developing, benchmarking, and deploying zero-shot visual prompting algorithms on the edge.
 - [Datumaro](https://github.com/open-edge-platform/datumaro) - Dataset Management Framework, a Python library and a CLI tool to build, analyze and manage Computer Vision datasets.
@@ -317,7 +300,7 @@ Track how datasets and models evolve, link models to a specific dataset revision
 
 ## Who uses Geti™?
 
-Geti™ is a powerful tool to build vision models for a wide range of processes, including detecting defective parts in a production line, reducing downtime on the factory floor, automating inventory management, or other automation projects. We have chosen to highlight a few interesting community members:
+Geti™ is used by research institutes, industrial partners, universities and AI enthusiasts. Applications range from robotics to medical analysis or industrial quality control. There are some interesting members of the Geti™ community:
 
 - [Intel Foundry](https://medium.com/open-edge-platform/solving-silicon-foundry-woes-with-ai-vision-geti-and-a-robotic-dog-a8382b5d9267)
 - [Royal Brompton and Harefield hospitals](https://www.rbht.nhs.uk/artificial-intelligence-theme-new-trust-led-research)
@@ -328,14 +311,11 @@ Geti™ is a powerful tool to build vision models for a wide range of processes,
 - [PeopleSense.AI](https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Intel-Liftoff-Days-2024-Highlights-from-the-Third-Edition/post/1661265)
 - [Capgemini](https://www.capgemini.com/insights/expert-perspectives/capgemini-and-intel-corporation-redefining-the-future-of-robotics-and-physical-ai/)
 
-## Community
-
-- To report a bug or submit a feature request, please open a [GitHub issue](https://github.com/open-edge-platform/geti/issues).
-- Ask questions via [GitHub Discussions](https://github.com/open-edge-platform/geti/discussions).
-
 ## Contribute
 
-For those who would like to contribute, see [Contributing guide](CONTRIBUTING.md) for details.
+To report a bug or submit a feature request, please open a [GitHub issue](https://github.com/open-edge-platform/geti/issues). If you have an open question, ask in [GitHub Discussions](https://github.com/open-edge-platform/geti/discussions).
+
+For developers who would like to contribute with a pull request, see the [Contributing guide](CONTRIBUTING.md) for details.
 
 <p align="center">
   <b>Thank you 👏 to all our contributors!</b>
