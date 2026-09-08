@@ -1,1 +1,11 @@
-{}
+{
+    "navigation": {
+        "logoAlt": "Geti logo",
+        "dataset": "Dataset",
+        "datasetDescription": "Data collection page to visualise your media items",
+        "models": "Models",
+        "modelsDescription": "Models page to visualise your models",
+        "inference": "Inference",
+        "inferenceDescription": "Inference page showing live inference on your project"
+    }
+}
