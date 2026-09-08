@@ -23,6 +23,10 @@ use crate::backend::spawn_backend;
 /// How often the monitor thread checks whether the backend is still alive.
 const MONITOR_POLL_INTERVAL: Duration = Duration::from_millis(250);
 
+/// How many consecutive `try_wait()` failures the monitor tolerates before it
+/// concludes the backend can no longer be observed.
+const MAX_CONSECUTIVE_POLL_ERRORS: u32 = 5;
+
 /// How long a graceful shutdown request is given before the backend is killed.
 ///
 /// Generous on purpose: the ASGI lifespan shutdown has to finish in-flight
@@ -164,16 +168,23 @@ struct BackendControl {
     shutting_down: Arc<AtomicBool>,
 }
 
-/// Block until `child` exits or `timeout` elapses. Returns the exit code when
-/// the process terminated in time.
+/// Block until `child` is *confirmed* to have exited, or `timeout` elapses.
+///
+/// Returns `Some(exit_code)` only when the exit was actually observed. A polling
+/// error yields `None` — the same as a timeout — because a failure to *observe*
+/// the process says nothing about whether it is still running. Reporting it as
+/// an exit would make [`terminate_backend`] skip the forced kill and leave the
+/// backend and its workers alive.
 fn wait_for_exit(child: &mut Child, timeout: Duration) -> Option<Option<i32>> {
     let deadline = Instant::now() + timeout;
     loop {
         match child.try_wait() {
             Ok(Some(status)) => return Some(status.code()),
-            // Already reaped or not waitable: treat as gone, nothing left to kill.
-            Err(_) => return Some(None),
             Ok(None) => {}
+            Err(e) => {
+                log::warn!("Failed to poll the backend while stopping it: {e}");
+                return None;
+            }
         }
         if Instant::now() >= deadline {
             return None;
@@ -244,8 +255,10 @@ fn terminate_backend(child: &mut Child) {
             log::info!("⛔ Backend terminated gracefully (exit code {code:?})");
             return;
         }
+        // Either the timeout expired or the process could not be observed.
+        // Both are treated as "still running" so the kill below always happens.
         log::warn!(
-            "Backend did not stop within {}s, forcing termination",
+            "Backend exit not confirmed within {}s, forcing termination",
             GRACEFUL_SHUTDOWN_TIMEOUT.as_secs()
         );
     }
@@ -382,6 +395,8 @@ If this keeps happening, you can report it on our issue tracker and attach the l
 /// that is what lets the shutdown path signal a PID that is guaranteed not to
 /// have been recycled by the OS.
 fn monitor_backend(app: AppHandle, control: BackendControl) {
+    let mut consecutive_errors: u32 = 0;
+
     let code = loop {
         // A deliberate shutdown (window closed / app quit) already took the
         // child — the exit is expected, so stay silent.
@@ -397,10 +412,25 @@ fn monitor_backend(app: AppHandle, control: BackendControl) {
 
         match status {
             Ok(Some(status)) => break status.code(),
-            Ok(None) => std::thread::sleep(MONITOR_POLL_INTERVAL),
+            Ok(None) => {
+                consecutive_errors = 0;
+                std::thread::sleep(MONITOR_POLL_INTERVAL);
+            }
+            // A failure to *observe* the process does not mean it died, so a
+            // transient error must not trigger the crash dialog. Only give up
+            // once polling has failed repeatedly, which also stops this loop
+            // from spinning forever on a permanently broken handle.
             Err(e) => {
-                log::warn!("Failed to poll the backend process: {e}");
-                break None;
+                consecutive_errors += 1;
+                log::warn!(
+                    "Failed to poll the backend process \
+                     (attempt {consecutive_errors}/{MAX_CONSECUTIVE_POLL_ERRORS}): {e}"
+                );
+                if consecutive_errors >= MAX_CONSECUTIVE_POLL_ERRORS {
+                    log::error!("Giving up monitoring the backend after repeated poll failures");
+                    break None;
+                }
+                std::thread::sleep(MONITOR_POLL_INTERVAL);
             }
         }
     };
