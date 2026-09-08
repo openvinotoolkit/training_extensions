@@ -5,7 +5,7 @@ import { createInstance, type i18n as I18n, type InitOptions } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
-import { fallbackLng, resolveLanguage, resources, SUPPORTED_LANGUAGES } from './locales';
+import { DEFAULT_LANGUAGE, resources, SUPPORTED_LANGUAGES } from './locales';
 
 export const LANGUAGE_STORAGE_KEY = 'geti-language';
 
@@ -24,13 +24,12 @@ export const createI18nInstance = (overrides: InitOptions = {}): I18n => {
 
     void instance.use(initReactI18next).init({
         resources,
-        fallbackLng,
+        fallbackLng: DEFAULT_LANGUAGE,
         supportedLngs: SUPPORTED_LANGUAGES,
         detection: {
             order: ['localStorage', 'navigator'],
             lookupLocalStorage: LANGUAGE_STORAGE_KEY,
             caches: ['localStorage'],
-            convertDetectedLanguage: resolveLanguage,
         },
         interpolation: { escapeValue: false },
         react: { useSuspense: false },
