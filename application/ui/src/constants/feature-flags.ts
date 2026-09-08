@@ -3,6 +3,6 @@
 
 export const FEATURE_FLAGS = {
     DATASET_VIEWS: true,
-    TIMM_MODEL_CONFIGURATION: false,
+    TIMM_MODEL_CONFIGURATION: true,
     CONFIDENCE_THRESHOLD: true,
 };

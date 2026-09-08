@@ -83,6 +83,15 @@ Membership in a view is tracked at the _media_ level (images and videos), not at
 a video to be assigned to a view as soon as it is uploaded, even before any of its frames have been annotated (and
 therefore before a dataset item exists for it).
 
+Views are managed through the `/api/projects/<project_id>/dataset/views` endpoints (create, rename, delete, assign
+and unassign media). The _content_ of a view is however not listed there: the regular dataset listing endpoints
+accept an optional `dataset_view_id` query parameter that restricts the results to the items belonging to the view,
+so that filtering, sorting and pagination behave identically with and without a view:
+
+- `GET /api/projects/<project_id>/dataset/media?dataset_view_id=<view_id>` for the media of the view;
+- `GET /api/projects/<project_id>/dataset/items?dataset_view_id=<view_id>` for its dataset items;
+- `GET /api/projects/<project_id>/dataset/statistics?dataset_view_id=<view_id>` for its statistics.
+
 In the web interface, a dataset view is not a separate page: it is selected via the `datasetViewId` query parameter
 on the project's dataset page, e.g. `/projects/<project_id>/dataset?datasetViewId=<dataset_view_id>`. When the
 parameter is absent, the page shows the entire dataset.

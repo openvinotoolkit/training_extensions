@@ -747,17 +747,26 @@ class GetiConfigConverter:
         """Inject the selected timm backbone name and its native preprocessing.
 
         timm_generic.yaml is architecture-agnostic; the concrete backbone and its
-        pretrained_cfg-derived input size is only known once the user
-        has selected a specific backbone (encoded in model_manifest_id).
+        pretrained_cfg-derived params (input size, mean, std) are only known once
+        the user has selected a specific backbone (encoded in model_manifest_id).
         """
         from app.supported_models.timm import TimmManifestProvider
 
         preprocessing = TimmManifestProvider.get_preprocessing(model_name)
         init_args = config["model"]["init_args"]
         init_args["model_name"] = model_name
-        init_args["data_input_params"] = {
-            "input_size": preprocessing["input_size"],
-        }
+        # Sync the data pipeline's resize target and normalization with the backbone.
+        config["data"]["input_size"] = list(preprocessing["input_size"])
+        mean, std = list(preprocessing["mean"]), list(preprocessing["std"])
+        for subset_key in ("train_subset", "val_subset", "test_subset"):
+            subset = config["data"].get(subset_key)
+            if subset is None:
+                raise ValueError(f"Missing '{subset_key}' in recipe config")
+            for stage in ("augmentations_gpu", "augmentations_cpu"):
+                for aug in subset.get(stage, []):
+                    if "Normalize" in aug.get("class_path", ""):
+                        aug.setdefault("init_args", {}).update(mean=mean, std=std)
+                        break
 
     @staticmethod
     def _assert_no_dynamic_placeholders(config: dict) -> None:

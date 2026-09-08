@@ -23,7 +23,7 @@ type DatasetViewItemContainerProps = {
 
 const DatasetViewItemContainer = ({ name, isSelected, onSelect, children }: DatasetViewItemContainerProps) => {
     return (
-        <li aria-label={name} onClick={onSelect}>
+        <li aria-label={name} aria-current={isSelected ? true : undefined} onClick={onSelect}>
             <View
                 padding={'size-200'}
                 borderRadius={'regular'}

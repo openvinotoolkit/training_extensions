@@ -16,6 +16,7 @@ from app.utils.visualization import (
     DetectionVisualizerCreator,
     InstanceSegmentationVisualizerCreator,
     VisualizationDispatcher,
+    Visualizer,
     _compute_scale,
 )
 
@@ -106,3 +107,62 @@ class TestVisualizationHelpers(unittest.TestCase):
         # 4K longer edge → ~3.0
         img = np.zeros((2160, 3840, 3), dtype=np.uint8)
         assert _compute_scale(img) == pytest.approx(3.0, rel=1e-3)
+
+
+class TestLabelColors(unittest.TestCase):
+    """The project label colors must be forwarded to Model API so that the rendered
+    predictions use the same colors as the labels defined in the project."""
+
+    LABEL_COLORS = {"1": "#00FF00", "2": "#FF0000", "3": "#0000FF"}
+
+    def test_detection_creator_forwards_label_colors(self):
+        creator = DetectionVisualizerCreator()
+        original_image = np.zeros((100, 100, 3), dtype=np.uint8)
+        predictions = DetectionResult(bboxes, labels)
+        with mock.patch("model_api.visualizer.scene.DetectionScene") as mock_scene:
+            creator.create_visualization(original_image, predictions, self.LABEL_COLORS)
+        self.assertEqual(mock_scene.call_args.kwargs["label_colors"], self.LABEL_COLORS)
+
+    def test_instance_segmentation_creator_forwards_label_colors(self):
+        creator = InstanceSegmentationVisualizerCreator()
+        original_image = np.zeros((100, 100, 3), dtype=np.uint8)
+        predictions = InstanceSegmentationResult(bboxes, labels, masks)
+        with mock.patch("model_api.visualizer.scene.InstanceSegmentationScene") as mock_scene:
+            creator.create_visualization(original_image, predictions, self.LABEL_COLORS)
+        self.assertEqual(mock_scene.call_args.kwargs["label_colors"], self.LABEL_COLORS)
+
+    def test_classification_creator_forwards_label_colors(self):
+        creator = ClassificationVisualizerCreator()
+        original_image = np.zeros((100, 100, 3), dtype=np.uint8)
+        predictions = ClassificationResult([Label(id=1, name="1", confidence=0.9)])
+        with mock.patch("model_api.visualizer.scene.ClassificationScene") as mock_scene:
+            creator.create_visualization(original_image, predictions, self.LABEL_COLORS)
+        self.assertEqual(mock_scene.call_args.kwargs["label_colors"], self.LABEL_COLORS)
+
+    def test_dispatcher_forwards_label_colors(self):
+        dispatcher = VisualizationDispatcher()
+        original_image = np.zeros((100, 100, 3), dtype=np.uint8)
+        predictions = DetectionResult(bboxes, labels)
+        creator = mock.Mock()
+        with mock.patch.dict(dispatcher._creator_map, {DetectionResult: creator}):
+            dispatcher.create_visualization(original_image, predictions, self.LABEL_COLORS)
+        creator.create_visualization.assert_called_once_with(original_image, predictions, self.LABEL_COLORS)
+
+    def test_overlay_predictions_forwards_label_colors(self):
+        original_image = np.zeros((100, 100, 3), dtype=np.uint8)
+        predictions = DetectionResult(bboxes, labels)
+        with mock.patch.object(VisualizationDispatcher, "create_visualization", return_value=original_image) as mocked:
+            Visualizer.overlay_predictions(original_image, predictions, label_colors=self.LABEL_COLORS)
+        self.assertEqual(mocked.call_args.kwargs["label_colors"], self.LABEL_COLORS)
+
+    def test_rendered_detection_uses_the_requested_color(self):
+        original_image = np.zeros((100, 100, 3), dtype=np.uint8)
+        predictions = DetectionResult(bboxes, labels, label_names=["cat", "dog", "fish"])
+        creator = DetectionVisualizerCreator()
+
+        default_render = creator.create_visualization(original_image, predictions)
+        custom_render = creator.create_visualization(original_image, predictions, {"cat": (255, 0, 255)})
+
+        self.assertFalse(np.array_equal(default_render, custom_render))
+        # The requested color must actually be drawn on the image
+        self.assertTrue(np.any(np.all(custom_render == np.array([255, 0, 255], dtype=np.uint8), axis=-1)))

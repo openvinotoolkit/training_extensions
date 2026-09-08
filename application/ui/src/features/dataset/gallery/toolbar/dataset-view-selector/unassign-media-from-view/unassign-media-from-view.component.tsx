@@ -42,13 +42,6 @@ const useUnassignMediaFromView = () => {
                         queryClient.invalidateQueries({
                             queryKey: getQueryKey([
                                 'get',
-                                '/api/projects/{project_id}/dataset/views/{dataset_view_id}/media',
-                                { params: { path: { project_id: projectId, dataset_view_id: datasetViewId } } },
-                            ]),
-                        }),
-                        queryClient.invalidateQueries({
-                            queryKey: getQueryKey([
-                                'get',
                                 '/api/projects/{project_id}/dataset/media',
                                 { params: { path: { project_id: projectId } } },
                             ]),

@@ -5,6 +5,7 @@ from pathlib import Path
 from uuid import UUID
 
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from app.db.engine import get_db_session
 from app.models.model_activation import ModelActivationState
@@ -12,6 +13,7 @@ from app.models.model_revision import ModelFormat, ModelPrecision, TrainingStatu
 from app.models.system import DeviceInfo, DeviceType
 from app.repositories import ModelRevisionRepository, ModelVariantRepository
 from app.repositories.active_model_repo import ActiveModelRepo
+from app.repositories.label_repo import LabelRepository
 from app.services.inference.model_loader import LoadedModelHandle, ModelLoader
 
 from .system_service import SystemService
@@ -67,7 +69,28 @@ class ActiveModelService:
                 available_models=[UUID(m.id) for m in available_models],
                 device=geti_device,
                 confidence_threshold=active_model_repo.get_active_confidence_threshold(),
+                label_colors=self._load_label_colors(db=db, project_id=str(active_model.project_id)),
             )
+
+    @staticmethod
+    def _load_label_colors(db: Session, project_id: str) -> dict[str, str]:
+        """Load the mapping of label name to label colour for the given project.
+
+        The predictions returned by Model API carry the label names the model was trained on,
+        which are the project label names. Mapping them back to the project colours ensures the
+        rendered predictions use the same colours as the project labels shown in the UI.
+        """
+        try:
+            labels = LabelRepository(project_id=project_id, db=db).list_all()
+        except Exception:
+            logger.exception("Failed to load label colors for project '{}'", project_id)
+            return {}
+        return {label.name: label.color for label in labels if label.name and label.color}
+
+    @property
+    def label_colors(self) -> dict[str, str]:
+        """Mapping of label name to hex colour for the project owning the active model."""
+        return self._model_activation_state.label_colors
 
     def _get_model_file_path(self, project_id: UUID, model_id: UUID, variant_id: UUID, extension: str = "xml") -> Path:
         file_path = self.projects_dir / f"{project_id}/models/{model_id}/variants/{variant_id}/model.{extension}"
@@ -140,6 +163,10 @@ class ActiveModelService:
         """Re-read the pipeline inference parameters and apply them to the loaded model, without reloading it."""
         with get_db_session() as db:
             confidence_threshold = ActiveModelRepo(db=db).get_active_confidence_threshold()
+            project_id = self._model_activation_state.project_id
+            if project_id is not None:
+                # Labels may have been recoloured/renamed in the meantime; keep the overlay in sync.
+                self._model_activation_state.label_colors = self._load_label_colors(db=db, project_id=str(project_id))
         self._model_activation_state.confidence_threshold = confidence_threshold
         self._apply_confidence_threshold()
 

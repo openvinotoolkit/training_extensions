@@ -100,7 +100,7 @@ export const JobRow = ({
                     {groupBy === 'architecture' ? (
                         <DatasetColumn datasetRevision={datasetRevision} labelsCount={labelsCount} />
                     ) : (
-                        <ArchitectureColumn architecture={modelArchitecture} />
+                        <ArchitectureColumn architectureId={modelArchitectureId} architecture={modelArchitecture} />
                     )}
                 </Flex>
 

@@ -22,7 +22,7 @@ import { DatasetStatisticsContent } from './dataset-statistics-content.component
 
 export const DatasetStatistics = () => {
     return (
-        <DialogTrigger>
+        <DialogTrigger isDismissable>
             <TooltipTrigger>
                 <ActionButton isQuiet aria-label={'dataset statistics'}>
                     <GraphChart />

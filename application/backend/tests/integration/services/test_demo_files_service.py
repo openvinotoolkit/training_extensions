@@ -1,6 +1,7 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import ast
 from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import patch
@@ -18,12 +19,13 @@ from app.models.media import ImageFormat, Media, VideoFormat
 from app.models.model_revision import ModelFormat
 from app.services import MediaService
 from app.services.demo_files_service import DemoFile, DemoFilesService
+from app.services.label_service import LabelService
 from app.services.media_service import ImageMetadata
 
 
 @pytest.fixture
-def fxt_demo_files_service(fxt_media_service: MediaService) -> DemoFilesService:
-    return DemoFilesService(media_service=fxt_media_service)
+def fxt_demo_files_service(fxt_media_service: MediaService, fxt_label_service: LabelService) -> DemoFilesService:
+    return DemoFilesService(media_service=fxt_media_service, label_service=fxt_label_service)
 
 
 @pytest.fixture
@@ -317,6 +319,45 @@ class TestDemoFilesServiceIntegration:
         readme = by_name["README.md"].decode("utf-8")
         assert expected_name in readme
         assert "image.jpg" not in readme
+
+    def test_label_colors_are_baked_into_the_demo(
+        self,
+        fxt_demo_files_service: DemoFilesService,
+        fxt_project_with_image: tuple[Project, Media],
+    ) -> None:
+        """The generated utils.py pins the project label colors so that the demo
+        visualizations match the label colors shown in Geti."""
+        project, _ = fxt_project_with_image
+
+        files = fxt_demo_files_service.build_demo_files(project_id=project.id, model_format=ModelFormat.OPENVINO)
+
+        script = {f.name: f.data for f in files}["utils.py"].decode("utf-8")
+        assert '"cat": "#00FF00",' in script
+        assert '"dog": "#FF0000",' in script
+        assert "Visualizer(label_colors=LABEL_COLORS)" in script
+
+        # The generated module must be valid Python and expose the mapping.
+        module = ast.parse(script)
+        assignment = next(
+            node
+            for node in module.body
+            if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", None) == "LABEL_COLORS"
+        )
+        assert ast.literal_eval(assignment.value) == {"cat": "#00FF00", "dog": "#FF0000"}
+
+    def test_label_colors_default_to_empty_without_label_service(
+        self,
+        fxt_media_service: MediaService,
+        fxt_project_with_image: tuple[Project, MediaDB],
+    ) -> None:
+        """Without a label service the demo falls back to the Model API default palette."""
+        project, _ = fxt_project_with_image
+        service = DemoFilesService(media_service=fxt_media_service)
+
+        files = service.build_demo_files(project_id=project.id, model_format=ModelFormat.OPENVINO)
+
+        script = {f.name: f.data for f in files}["utils.py"].decode("utf-8")
+        assert "LABEL_COLORS = {}" in script
 
     def test_video_without_binary_falls_back_gracefully(
         self,

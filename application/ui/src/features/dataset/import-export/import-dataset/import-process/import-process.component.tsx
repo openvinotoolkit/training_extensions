@@ -1,7 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { ImportJobProcess } from '../../../../../components/import-job-process/import-job-process.component';
+import { ImportJobProcess } from '@/components/import-job-process/import-job-process.component';
+
 import { useImportDatasetToProject } from '../../../../../hooks/storage/use-import-dataset-to-project.hook';
 import { useImportDatasetDialogState } from '../../../providers/export-import-dataset-dialog-provider.component';
 

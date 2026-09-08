@@ -5,15 +5,15 @@ import type { PipelineComponentsHealth, PipelineStatus } from '@/api/types';
 import type { StatusLightProps } from '@geti-ui/ui';
 import { capitalize } from 'lodash-es';
 
-export type StatusVariant = StatusLightProps['variant'];
+type StatusVariant = StatusLightProps['variant'];
 
-export type ComponentStatusMeta = {
+type ComponentStatusMeta = {
     label: string;
     variant: StatusVariant;
     message: string | null | undefined;
 };
 
-export type StatusMeta = {
+type StatusMeta = {
     label: string;
     variant: StatusVariant;
 };

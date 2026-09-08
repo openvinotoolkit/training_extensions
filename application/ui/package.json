@@ -10,7 +10,7 @@
     "scripts": {
         "build": "rsbuild build",
         "build:tauri": "cross-env BUILD_TARGET=tauri rsbuild build",
-        "build:api": "npx openapi-typescript ./src/api/openapi-spec.json -o ./src/api/openapi-spec.d.ts  --root-types && prettier --write src/api/openapi-spec.d.ts",
+        "build:api": "npx openapi-typescript ./src/api/openapi-spec.json -o ./src/api/openapi-spec.d.ts && prettier --write src/api/openapi-spec.d.ts",
         "build:api:download": "curl --fail --insecure -o ./src/api/openapi-spec.json https://localhost:7860/api/openapi.json && prettier --write src/api/openapi-spec.json",
         "update-spec": "npm run build:api:download && npm run build:api",
         "cyclic-deps-check": "npx madge --circular src/**/*.ts*",

@@ -8,7 +8,7 @@ import { useDeleteStagedDataset, useStagedDataset } from 'hooks/api/staged-datas
 import { isNil } from 'lodash-es';
 
 import { useExportDataset } from '../../../../../../hooks/storage/use-export-dataset.hook';
-import { downloadFile } from '../../../../../../shared/util';
+import { downloadFile } from '../../../../../../platform/download-file';
 import { ExportJobDetails } from '../export-details/export-details.component';
 
 type ExportCompletedJobProps = {

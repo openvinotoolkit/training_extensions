@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -16,6 +17,7 @@ from app.models.model_revision import ModelFormat
 
 if TYPE_CHECKING:
     from app.services import MediaService
+    from app.services.label_service import LabelService
 
 
 # Filename of the model weights inside the archive, depending on the format.
@@ -36,8 +38,9 @@ class DemoFile:
 
 
 class DemoFilesService:
-    def __init__(self, media_service: MediaService):
+    def __init__(self, media_service: MediaService, label_service: LabelService | None = None):
         self._media_service: MediaService = media_service
+        self._label_service: LabelService | None = label_service
 
     def build_demo_files(
         self, project_id: UUID, model_format: ModelFormat, *, license: str = "Apache 2.0"
@@ -82,7 +85,11 @@ class DemoFilesService:
         files.append(
             DemoFile(
                 name="utils.py",
-                data=_UTILS.format(model_filename=model_filename, image_filename=image_filename).encode("utf-8"),
+                data=_UTILS.format(
+                    model_filename=model_filename,
+                    image_filename=image_filename,
+                    label_colors=self._format_label_colors(project_id=project_id),
+                ).encode("utf-8"),
             )
         )
         files.append(DemoFile(name="pyproject.toml", data=_PY_PROJECT.encode("utf-8")))
@@ -94,6 +101,27 @@ class DemoFilesService:
 
         files.append(DemoFile(name="README.md", data=readme.encode("utf-8")))
         return files
+
+    def _format_label_colors(self, project_id: UUID) -> str:
+        """Render the project label colours as a Python dict literal for the demo scripts.
+
+        The exported model predicts the project label names, so mapping those names to the
+        project label colours makes the demo visualisations match the colours shown in Geti.
+        Returns "{}" when the labels cannot be resolved.
+        """
+        if self._label_service is None:
+            return "{}"
+        try:
+            labels = self._label_service.list_all(project_id=project_id)
+        except Exception:
+            logger.exception("Could not resolve label colors for project {}; using default colors.", project_id)
+            return "{}"
+
+        entries = {label.name: label.color for label in labels if label.name and label.color}
+        if not entries:
+            return "{}"
+        lines = "\n".join(f"    {json.dumps(name)}: {json.dumps(color)}," for name, color in sorted(entries.items()))
+        return "{\n" + lines + "\n}"
 
     def _pick_sample_image(self, project_id: UUID) -> tuple[str, bytes] | None:  # noqa: C901
         """Pick a sample image from the project's dataset.
@@ -277,6 +305,11 @@ MODEL_PATH = HERE / "{model_filename}"
 IMAGE_PATH = HERE / "{image_filename}"
 OUTPUT_PATH = HERE / "result.jpg"
 
+# Colors of the labels as defined in the Geti project, so that the rendered predictions
+# match the label colors shown in the Geti UI. Edit or clear this mapping to use the
+# Model API default color palette instead.
+LABEL_COLORS = {label_colors}
+
 if not MODEL_PATH.exists():
     raise FileNotFoundError(f"Model file not found: {{MODEL_PATH}}")
 if not IMAGE_PATH.exists():
@@ -310,10 +343,11 @@ def visualise_result(image, result) -> None:
     if image.dtype != np.uint8:
         image = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
-    Visualizer().show(image, result)
-    
+    visualizer = Visualizer(label_colors=LABEL_COLORS)
+    visualizer.show(image, result)
+
     display_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    output = Visualizer().render(display_image, result)
+    output = visualizer.render(display_image, result)
     cv2.imwrite(str(OUTPUT_PATH), output)
     print(f"Saved annotated result to {{OUTPUT_PATH}}")
 
@@ -329,7 +363,7 @@ requires-python = ">=3.13,<3.14"
 
 dependencies = [
     "openvino~=2026.3.0",
-    "openvino-model-api[onnx]==0.4.6",
+    "openvino-model-api[onnx]==0.4.7",
     "opencv-python-headless~=4.13.0",
     "numpy>=2.0",
     "pillow~=12.0",

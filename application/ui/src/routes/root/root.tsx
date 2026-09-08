@@ -4,10 +4,10 @@
 import { ReactNode, Suspense } from 'react';
 
 import { $api } from '@/api';
+import { Toast } from '@/components/toast/toast.component';
 import { Flex, Heading, Loading } from '@geti-ui/ui';
 import { Outlet } from 'react-router-dom';
 
-import { Toast } from '../../components/toast/toast.component';
 import { LicenseCheck } from '../../features/license/license-check.component';
 import { ServerErrorFallback } from './server-error-fallback.component';
 

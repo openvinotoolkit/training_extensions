@@ -132,6 +132,16 @@ class InferenceWorker(BaseProcessWorker):
             raise RuntimeError("Prediction buffer not initialized (method 'setup' not called?)")
         return self.__prediction_buffer
 
+    def _label_colors(self) -> dict[str, str]:
+        """Colours of the labels of the project owning the active model, keyed by label name.
+
+        Used to render the predictions with the same colours as the project labels.
+        """
+        model_service = getattr(self, "_model_service", None)
+        if model_service is None:
+            return {}
+        return model_service.label_colors
+
     def _on_inference_completed(self, inf_result: "Result", userdata: dict[str, Any]) -> None:
         # This callback runs on the Model API / OpenVINO inference thread. An unhandled exception
         # here would be raised inside that thread and can wedge the async inference queue, so every
@@ -144,7 +154,9 @@ class InferenceWorker(BaseProcessWorker):
 
             stream_data: StreamData = userdata["stream_data"]
             frame_with_predictions = Visualizer.overlay_predictions(
-                original_image=stream_data.frame_data, predictions=inf_result
+                original_image=stream_data.frame_data,
+                predictions=inf_result,
+                label_colors=self._label_colors(),
             )
             inference_data = InferenceData(
                 prediction=inf_result,

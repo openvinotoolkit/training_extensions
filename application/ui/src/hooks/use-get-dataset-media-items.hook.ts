@@ -14,7 +14,7 @@ const DATASET_ITEMS_LIMIT = 40;
 
 type SortBy = 'upload_date';
 
-interface UseGetDatasetMediaItemsOptions {
+export interface UseGetDatasetMediaItemsOptions {
     subsets?: DatasetSubset[];
     annotationStatus?: DatasetItemAnnotationStatus;
     labelIds?: string[];
@@ -24,44 +24,19 @@ interface UseGetDatasetMediaItemsOptions {
     datasetViewId?: string;
 }
 
-const getMediaEntities = (items: MediaDTO[]): Media[] => {
-    return items.map((item) => {
-        // We will never get the video frame using '/api/projects/{project_id}/dataset/media', it's added only because
-        // of documentation reasons. We use MediaVideoFrame as a local type to work with the played frame in the video.
-        if (item.type === 'video_frame') {
-            return {
-                duration: 0,
-                frame_count: 0,
-                annotated_frame_count: 0,
-                fps: 0,
-                frame_number: 0,
-                frame_stride: 0,
-                ...item,
-            };
-        }
+export interface DatasetMediaQueryFilters {
+    subsets?: DatasetSubset[];
+    labels?: string[];
+    end_date?: string;
+    start_date?: string;
+    annotation_status?: DatasetItemAnnotationStatus;
+    sort_direction?: SortDirection;
+    sort_by?: SortBy;
+    dataset_view_id?: string;
+}
 
-        return item;
-    });
-};
-
-export const useGetDatasetMediaItems = (options?: UseGetDatasetMediaItemsOptions) => {
-    const project_id = useProjectIdentifier();
-
-    const query: {
-        limit: number;
-        offset: number;
-        subsets?: DatasetSubset[];
-        labels?: string[];
-        end_date?: string;
-        start_date?: string;
-        annotation_status?: DatasetItemAnnotationStatus;
-        sort_direction?: SortDirection;
-        sort_by?: SortBy;
-        dataset_view_id?: string;
-    } = {
-        offset: 0,
-        limit: DATASET_ITEMS_LIMIT,
-    };
+export const buildDatasetMediaQueryFilters = (options?: UseGetDatasetMediaItemsOptions): DatasetMediaQueryFilters => {
+    const query: DatasetMediaQueryFilters = {};
 
     if (options !== undefined && !isEmpty(options?.subsets)) {
         query.subsets = options.subsets;
@@ -91,6 +66,38 @@ export const useGetDatasetMediaItems = (options?: UseGetDatasetMediaItemsOptions
     if (options?.datasetViewId !== undefined) {
         query.dataset_view_id = options.datasetViewId;
     }
+
+    return query;
+};
+
+const getMediaEntities = (items: MediaDTO[]): Media[] => {
+    return items.map((item) => {
+        // We will never get the video frame using '/api/projects/{project_id}/dataset/media', it's added only because
+        // of documentation reasons. We use MediaVideoFrame as a local type to work with the played frame in the video.
+        if (item.type === 'video_frame') {
+            return {
+                duration: 0,
+                frame_count: 0,
+                annotated_frame_count: 0,
+                fps: 0,
+                frame_number: 0,
+                frame_stride: 0,
+                ...item,
+            };
+        }
+
+        return item;
+    });
+};
+
+export const useGetDatasetMediaItems = (options?: UseGetDatasetMediaItemsOptions) => {
+    const project_id = useProjectIdentifier();
+
+    const query = {
+        offset: 0,
+        limit: DATASET_ITEMS_LIMIT,
+        ...buildDatasetMediaQueryFilters(options),
+    };
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = $api.useInfiniteQuery(
         'get',

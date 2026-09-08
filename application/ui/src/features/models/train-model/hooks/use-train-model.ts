@@ -17,7 +17,7 @@ export const useTrainModel = () => {
     const {
         selectedTrainingDevice,
         selectedDatasetRevisionId,
-        selectedModelArchitectureId,
+        resolvedModelArchitectureId,
         isAdvancedSettingsMode,
         trainingConfiguration,
         selectedModelRevisionId,
@@ -41,7 +41,7 @@ export const useTrainModel = () => {
      *         values so the project is not left in an inconsistent state.
      */
     const trainModel = ({ onSuccess }: { onSuccess: () => void }) => {
-        if (selectedModelArchitectureId === null || selectedTrainingDevice === null) {
+        if (resolvedModelArchitectureId === null || selectedTrainingDevice === null) {
             return;
         }
 
@@ -56,7 +56,7 @@ export const useTrainModel = () => {
                 job_type: 'train',
                 parameters: {
                     device: selectedTrainingDevice,
-                    model_architecture_id: selectedModelArchitectureId,
+                    model_architecture_id: resolvedModelArchitectureId,
                     parent_model_revision_id: parentModelRevisionId,
                     dataset_revision_id: datasetRevisionId,
                 },
@@ -77,7 +77,7 @@ export const useTrainModel = () => {
                     project_id: projectIdentifier,
                 },
                 query: {
-                    model_architecture_id: selectedModelArchitectureId,
+                    model_architecture_id: resolvedModelArchitectureId,
                 },
             },
         };

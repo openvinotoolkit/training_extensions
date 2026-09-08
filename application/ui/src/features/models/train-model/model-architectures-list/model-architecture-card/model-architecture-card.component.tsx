@@ -7,8 +7,9 @@ import type { ModelArchitecture as ModelArchitectureType, ModelArchitectureWithP
 import { Content, ContextualHelp, Divider, Flex, Heading, Radio, Text } from '@geti-ui/ui';
 import { clsx } from 'clsx';
 
+import { EdgeCrafterLicense } from '../../../components/edgecrafter-license.component';
 import { UltralyticsLicense } from '../../../components/ultralytics-license.component';
-import { isUltralyticsModel } from '../../../utils';
+import { isEdgeCrafterModel, isUltralyticsModel } from '../../../utils';
 import { getAccuracyMetric } from '../utils';
 
 import classes from './model-architecture-card.module.scss';
@@ -37,6 +38,8 @@ const License = () => {
         <li>
             {isUltralyticsModel(modelArchitecture.id) ? (
                 <UltralyticsLicense />
+            ) : isEdgeCrafterModel(modelArchitecture.id) ? (
+                <EdgeCrafterLicense />
             ) : (
                 `License: ${modelArchitecture.license}`
             )}
@@ -49,7 +52,9 @@ const ModelArchitectureParameters = () => {
 
     return (
         <ul className={classes.modelArchitectureParameters}>
-            <li>Number of parameters: {modelArchitecture.stats?.trainable_parameters} million</li>
+            {modelArchitecture.stats !== null && (
+                <li>Number of parameters: {modelArchitecture.stats.trainable_parameters} million</li>
+            )}
             <License />
         </ul>
     );
@@ -61,8 +66,12 @@ const ModelArchitectureDetailedParameters = () => {
 
     return (
         <ul className={classes.modelArchitectureParameters}>
-            <li>Number of parameters: {modelArchitecture.stats?.trainable_parameters} million</li>
-            <li>Gigaflops: {modelArchitecture.stats?.gigaflops}</li>
+            {modelArchitecture.stats !== null && (
+                <>
+                    <li>Number of parameters: {modelArchitecture.stats.trainable_parameters} million</li>
+                    <li>Gigaflops: {modelArchitecture.stats.gigaflops}</li>
+                </>
+            )}
             {accuracyMetric !== undefined && (
                 <li>
                     {accuracyMetric.label}: {accuracyMetric.value}%

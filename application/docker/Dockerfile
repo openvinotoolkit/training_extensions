@@ -321,7 +321,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libva2=2.22.* \
         libva-drm2=2.22.* \
         libvpx9=1.15.0* \
-        openssl=3.5.6*
+        openssl=3.5.7*
 
 # Place the venv at the front of PATH so we can call python directly (no uv needed at runtime)
 ENV PATH="/application/backend/.venv/bin:${PATH}"

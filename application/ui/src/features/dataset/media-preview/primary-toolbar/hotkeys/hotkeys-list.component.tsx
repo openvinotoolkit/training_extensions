@@ -60,6 +60,10 @@ export const HotkeysList = () => {
                 hotkeyName={'Deselect all annotations'}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.deselectAllAnnotations)}
             />
+            <HotkeyItem
+                hotkeyName={'Select next annotation'}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.selectNextAnnotation)}
+            />
             <Divider size='S' gridColumn={'1/-1'} />
             <HotkeyItem hotkeyName={'Reset zoom'} hotkey={formatHotkeyForDisplay(HOTKEYS.fitToScreen)} />
         </Grid>

@@ -4,8 +4,8 @@
 import { ReactNode } from 'react';
 
 import type { AnnotationDTO, Media } from '@/api/types';
+import { ZoomProvider } from '@/components/zoom/zoom.provider';
 
-import { ZoomProvider } from '../../../components/zoom/zoom.provider';
 import { AnnotationActionsProvider } from '../../../shared/annotator/annotation-actions-provider.component';
 import { AnnotationVisibilityProvider } from '../../../shared/annotator/annotation-visibility-provider.component';
 import type { AnnotatorMode } from '../../../shared/annotator/annotator-mode';

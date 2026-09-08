@@ -768,7 +768,7 @@ class FMeasure(Metric):
         return self._f_measure_per_label
 
     @property
-    def f_measure_per_confidence(self) -> None | dict:
+    def f_measure_per_confidence(self) -> dict | None:
         """Returns the curve for f-measure per confidence as dictionary if exists."""
         return self._f_measure_per_confidence
 
@@ -788,12 +788,12 @@ class FMeasure(Metric):
         return self._best_confidence_threshold
 
     @property
-    def f_measure_per_nms(self) -> None | dict:
+    def f_measure_per_nms(self) -> dict | None:
         """Returns the curve for f-measure per nms threshold as CurveMetric if exists."""
         return self._f_measure_per_nms
 
     @property
-    def best_nms_threshold(self) -> None | float:
+    def best_nms_threshold(self) -> float | None:
         """Returns the best NMS threshold as ScoreMetric if exists."""
         return self._best_nms_threshold
 

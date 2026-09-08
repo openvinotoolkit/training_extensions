@@ -3,11 +3,11 @@
 
 import { FocusEvent, KeyboardEvent, useRef, useState } from 'react';
 
+import { HotkeyField } from '@/components/label-fields/hotkey-field.component';
+import { LabelColorPicker } from '@/components/label-fields/label-color-picker.component';
 import { ActionButton, DOMRefValue, Flex, Grid, TextField, useUnwrapDOMRef, View } from '@geti-ui/ui';
 import { Add, Close } from '@geti-ui/ui/icons';
 
-import { HotkeyField } from '../../../../components/label-fields/hotkey-field.component';
-import { LabelColorPicker } from '../../../../components/label-fields/label-color-picker.component';
 import { getRandomDistinctColor } from '../../label-utils';
 
 import classes from '../label-row/label-row.module.scss';

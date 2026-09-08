@@ -63,6 +63,7 @@ class MaskRCNNTV(LightningInstanceSegModel):
             the default pretrained weights will be utilized for fine-tuning. Defaults to None.
     """
 
+    _nms_always_embedded: ClassVar[bool] = True
     pretrained_urls: ClassVar[dict[str, str]] = {
         "maskrcnn_resnet_50": MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT").url,
     }
@@ -79,6 +80,7 @@ class MaskRCNNTV(LightningInstanceSegModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
         pretrained: bool = True,
         pretrained_weights: PathLike | None = None,
+        export_nms: bool = False,
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -91,6 +93,7 @@ class MaskRCNNTV(LightningInstanceSegModel):
             tile_config=tile_config,
             pretrained=pretrained,
             pretrained_weights=pretrained_weights,
+            export_nms=export_nms,
         )
 
     def _create_model(self, num_classes: int | None = None) -> MaskRCNN:
@@ -307,7 +310,12 @@ class MaskRCNNTV(LightningInstanceSegModel):
             "image_shape": shape,
         }
         meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
+        return self.model.export(
+            inputs,
+            meta_info_list,
+            explain_mode=self.explain_mode,
+            with_nms=True,
+        )
 
     @property
     def _optimization_config(self) -> dict[str, Any]:

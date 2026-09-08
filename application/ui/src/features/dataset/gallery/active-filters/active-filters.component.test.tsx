@@ -87,12 +87,13 @@ describe('ActiveFilters', () => {
     });
 
     it('renders chips for the start and end date filters', () => {
-        mockUseDatasetFiltersSearchParams({ startDate: '2026-01-01', endDate: '2026-01-31' });
+        // Without a timezone the dates are parsed as local time, matching what the pickers display
+        mockUseDatasetFiltersSearchParams({ startDate: '2026-01-01T09:30:00', endDate: '2026-01-31T17:45:00' });
 
         render(<ActiveFilters />);
 
-        expect(screen.getByText('From 01/01/2026 00:00')).toBeVisible();
-        expect(screen.getByText('To 31/01/2026 00:00')).toBeVisible();
+        expect(screen.getByText('From 01/01/2026 09:30')).toBeVisible();
+        expect(screen.getByText('To 31/01/2026 17:45')).toBeVisible();
     });
 
     it('renders chips for the selected subsets', () => {

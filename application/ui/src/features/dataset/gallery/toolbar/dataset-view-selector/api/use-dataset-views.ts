@@ -6,13 +6,18 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
 export const datasetViewsQueryOptions = (projectId: string) =>
-    $api.queryOptions('get', '/api/projects/{project_id}/dataset/views', {
-        params: {
-            path: {
-                project_id: projectId,
+    $api.queryOptions(
+        'get',
+        '/api/projects/{project_id}/dataset/views',
+        {
+            params: {
+                path: {
+                    project_id: projectId,
+                },
             },
         },
-    });
+        { staleTime: 1000 * 60 }
+    );
 
 export const useDatasetViewsQuery = () => {
     const projectId = useProjectIdentifier();

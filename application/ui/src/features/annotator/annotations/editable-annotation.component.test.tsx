@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { ZoomProvider } from '@/components/zoom/zoom.provider';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
 import { getMockedAnnotation } from 'mocks/mock-annotation';
 import { getMockedProject } from 'mocks/mock-project';
@@ -8,7 +9,6 @@ import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
-import { ZoomProvider } from '../../../components/zoom/zoom.provider';
 import { server } from '../../../msw-node-setup';
 import {
     AnnotationVisibilityProvider,

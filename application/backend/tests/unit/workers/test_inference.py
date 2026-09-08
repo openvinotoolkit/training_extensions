@@ -206,6 +206,31 @@ class TestInferenceStatusReporting:
         assert status.code == InferenceWorkerStatusCode.OK
         assert status.model_id == model_id
 
+    def test_on_inference_completed_uses_project_label_colors(
+        self, fxt_status_shm, fxt_status_shm_lock, fxt_create_stream_data
+    ):
+        """Predictions are rendered with the colors of the labels of the active project."""
+        label_colors = {"cat": "#00FF00", "dog": "#FF0000"}
+        worker = object.__new__(InferenceWorker)
+        worker._inference_status_shm = fxt_status_shm
+        worker._inference_status_shm_lock = fxt_status_shm_lock
+        worker._metrics_service = Mock()
+        worker._model_service = Mock(label_colors=label_colors)
+        worker._pred_queue = queue.Queue(maxsize=4)  # pyrefly: ignore[bad-assignment]
+        setattr(worker, "_InferenceWorker__prediction_buffer", PredictionReorderBuffer())
+
+        ts = 1.0
+        worker._prediction_buffer.register_expected_timestamp(ts)
+        stream_data = fxt_create_stream_data(ts)
+        userdata = {"inference_start_time": ts, "model_id": uuid4(), "stream_data": stream_data}
+
+        with patch(
+            "app.workers.inference.Visualizer.overlay_predictions", return_value=stream_data.frame_data
+        ) as mock_overlay:
+            worker._on_inference_completed(Mock(), userdata)
+
+        assert mock_overlay.call_args.kwargs["label_colors"] == label_colors
+
     def test_report_status_error(self, fxt_status_shm, fxt_status_shm_lock):
         """_report_status writes an ERROR status (with message) that can be read back."""
         worker = object.__new__(InferenceWorker)

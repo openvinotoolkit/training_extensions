@@ -3,9 +3,9 @@
 
 import { ReactNode, RefObject, useRef } from 'react';
 
+import { useZoom } from '@/components/zoom/zoom.provider';
 import { useEventListener } from 'hooks/event-listener.hook';
 
-import { useZoom } from '../../../components/zoom/zoom.provider';
 import { useAnnotator } from '../../../shared/annotator/annotator-provider.component';
 import { useSelectedAnnotations } from '../../../shared/annotator/select-annotation-provider.component';
 import { useTool } from '../../../shared/annotator/tool-provider.component';

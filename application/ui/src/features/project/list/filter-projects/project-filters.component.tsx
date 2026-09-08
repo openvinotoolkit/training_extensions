@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { TaskType } from '@/api/types';
+import { FilterPopoverButton } from '@/components/filter-popover-button/filter-popover-button.component';
 import { Checkbox, CheckboxGroup, Flex, SearchField, View } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
 
-import { FilterPopoverButton } from '../../../../components/filter-popover-button/filter-popover-button.component';
 import { pluralize } from '../../../../shared/util';
 import { MAP_PROJECT_TYPE_TO_TITLE } from '../util';
 import { TASK_TYPE_OPTIONS } from './utils';

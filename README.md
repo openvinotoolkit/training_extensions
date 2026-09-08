@@ -225,7 +225,7 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://arxiv.org/abs/2606.03748">YOLO26</a></td>
     </tr>
     <tr>
-      <td rowspan="6"><b>Classification</b> (multi-class, multi-label)<br>Assign one or more labels to an entire image. Common use cases: defect classification, product categorization, content tagging.</td>
+      <td rowspan="7"><b>Classification</b> (multi-class, multi-label)<br>Assign one or more labels to an entire image. Common use cases: defect classification, product categorization, content tagging.</td>
       <td>ViT Tiny</td>
       <td><a href="https://arxiv.org/abs/2010.11929">ViT</a></td>
     </tr>
@@ -248,6 +248,10 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
     <tr>
       <td>YOLO26 Nano / Small / Medium / Large / XLarge</td>
       <td><a href="https://arxiv.org/abs/2606.03748">YOLO26</a></td>
+    </tr>
+    <tr>
+      <td>Any timm backbone (generic)</td>
+      <td><a href="https://github.com/huggingface/pytorch-image-models">timm</a></td>
     </tr>
   </tbody>
 </table>

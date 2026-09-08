@@ -33,14 +33,21 @@
 
     text-align: start;
     font-size: var(--spectrum-global-dimension-size-175);
+    white-space: nowrap;
 }
 
 .dialogProjectName {
+    @include lineClamp.clamp(2);
     @include lineClamp.breakableText;
 
     text-align: center;
 }
 
 .selectedProjectButton {
-    padding: var(--spectrum-global-dimension-size-100) var(--spectrum-global-dimension-size-150);
+    display: flex;
+    justify-content: flex-start;
+
+    &::after {
+        display: none;
+    }
 }

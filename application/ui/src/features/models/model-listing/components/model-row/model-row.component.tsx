@@ -93,7 +93,7 @@ export const ModelRow = ({
             {groupBy === 'architecture' ? (
                 <DatasetColumn datasetRevision={datasetRevision} labelsCount={labelsCount} />
             ) : (
-                <ArchitectureColumn architecture={modelArchitecture} />
+                <ArchitectureColumn architectureId={model.architecture} architecture={modelArchitecture} />
             )}
 
             <Text UNSAFE_className={classes.smallText} data-testid={'device info'}>

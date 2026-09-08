@@ -52,6 +52,8 @@ datas = [
     # SAM encoder model shipped inside the app/services/sam module
     ('app/services/sam/mobile_sam.encoder.xml', 'app/services/sam'),
     ('app/services/sam/mobile_sam.encoder.bin', 'app/services/sam'),
+    # timm model catalog snapshot, read via importlib.resources at runtime
+    ('app/supported_models/timm_catalog_snapshot.json', 'app/supported_models'),
     *_collect_manifests(EXCLUDE_AGPL_MODELS),
     *copy_metadata("geti"),
     *copy_metadata("optree"),

@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from getitune.backend.lightning.exporter.base import ModelExporter
+from getitune.backend.lightning.exporter.native import LightningModelExporter
 from getitune.backend.lightning.models.base import DataInputParams, DefaultOptimizerCallable, DefaultSchedulerCallable
 from getitune.backend.lightning.models.classification.backbones.timm import TimmBackbone
 from getitune.backend.lightning.models.classification.classifier import ImageClassifier
@@ -105,3 +107,21 @@ class TimmModelMultilabelCls(TimmWeightsLoader, LightningMultilabelClsModel):
     @property
     def _default_preprocessing_params(self) -> DataInputParams | dict[str, DataInputParams]:
         return get_preprocessing_params(backbone_name=self.model_name)
+
+    @property
+    def _exporter(self) -> ModelExporter:
+        """Force the legacy TorchScript-based ONNX exporter for timm backbones.
+
+        timm's 1700+ architectures frequently use ops (e.g. ``aten.adaptive_max_pool2d``,
+        non-contiguous ``transpose().reshape()`` patterns in attention blocks) that the
+        newer FX/dynamo-based ``torch.onnx.export`` path cannot yet decompose or trace
+        reliably. timm's own official export script (``onnx_export.py``) always uses the
+        legacy exporter for exactly this reason; do the same here rather than relying on
+        torch's current default.
+        """
+        exporter = super()._exporter
+        modules = ("naflexvit", "nfnet", "volo")
+        if not any(s in self.model_name for s in modules):
+            assert isinstance(exporter, LightningModelExporter)  # noqa: S101 - internal invariant, not user input
+            exporter.onnx_export_configuration["dynamo"] = False
+        return exporter

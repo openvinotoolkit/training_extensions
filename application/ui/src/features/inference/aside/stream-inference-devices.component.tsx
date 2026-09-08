@@ -3,10 +3,9 @@
 
 import { useState } from 'react';
 
+import { InferenceDevices } from '@/components/inference-devices/inference-devices.component';
 import { usePatchPipeline, usePipeline } from 'hooks/api/pipeline.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
-
-import { InferenceDevices } from '../../../components/inference-devices/inference-devices.component';
 
 export const StreamInferenceDevices = () => {
     const { data: pipeline } = usePipeline();

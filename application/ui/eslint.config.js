@@ -88,6 +88,37 @@ const apiBarrelRestrictedImportPath = {
     message: 'Do not import the `@/api` barrel from within `src/api/`. Use a direct relative import instead.',
 };
 
+// Forbid `isTauri()` runtime branching. Per-platform behaviour must be selected
+// at build time by the bundler via `*.tauri.{ts,tsx}` file overrides — see
+// src-tauri/README.md.
+const isTauriRestrictedSyntax = {
+    selector: "CallExpression[callee.name='isTauri']",
+    message:
+        'Do not branch on `isTauri()` at runtime. Add or split a capability module via a `.tauri.{ts,tsx}` twin instead.',
+};
+
+// Containment rule for the shared `src/components/` folder: it must be reached
+// through the `@/components/*` alias. A relative `../components/` specifier is
+// ambiguous on its own, so the trees that own a local `components/` folder are
+// exempted rather than resolved.
+const sharedComponentsAliasConfig = {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/components/**', 'src/platform/**', 'src/features/models/**'],
+    rules: {
+        'no-restricted-syntax': [
+            'error',
+            isTauriRestrictedSyntax,
+            {
+                selector:
+                    ':matches(ImportDeclaration, ImportExpression, ExportNamedDeclaration, ExportAllDeclaration)' +
+                    '[source.value=/^(\\.\\.\\/)+components\\//]',
+                message:
+                    'Do not import `src/components/` with a relative path. Use the `@/components/*` alias instead.',
+            },
+        ],
+    },
+};
+
 export default [
     {
         ignores: [...sharedEslintConfig[0].ignores, 'src/api/openapi-spec.d.ts'],
@@ -113,19 +144,10 @@ export default [
                     ' SPDX-License-Identifier: Apache-2.0',
                 ],
             ],
-            // Forbid `isTauri()` runtime branching. Per-platform behaviour must
-            // be selected at build time by the bundler via `*.tauri.{ts,tsx}`
-            // file overrides — see src-tauri/README.md.
-            'no-restricted-syntax': [
-                'error',
-                {
-                    selector: "CallExpression[callee.name='isTauri']",
-                    message:
-                        'Do not branch on `isTauri()` at runtime. Add or split a capability module via a `.tauri.{ts,tsx}` twin instead.',
-                },
-            ],
+            'no-restricted-syntax': ['error', isTauriRestrictedSyntax],
         },
     },
+    sharedComponentsAliasConfig,
     {
         files: ['**/*.test.ts', '**/*.test.tsx', '**/*mock*.ts', '**/*.spec.ts'],
         rules: {

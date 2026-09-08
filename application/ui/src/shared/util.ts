@@ -4,8 +4,6 @@
 import { isEmpty, isString } from 'lodash-es';
 import prettyBytes from 'pretty-bytes';
 
-import { downloadFile as platformDownloadFile } from '../platform/download-file';
-
 const pluralRules = new Intl.PluralRules('en');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,10 +14,6 @@ type IsValidArrayType<T> = T extends any[] ? GetElementType<T> : never;
 export const isNonEmptyArray = <T>(value: T): value is IsValidArrayType<T> => Array.isArray(value) && !isEmpty(value);
 
 export const isNonEmptyString = (value: unknown): value is string => isString(value) && value !== '';
-
-export const downloadFile = (url: string, name?: string, startedMessage?: string): void => {
-    platformDownloadFile(url, name, startedMessage);
-};
 
 export const formatBytes = (bytes: number): string => prettyBytes(bytes);
 

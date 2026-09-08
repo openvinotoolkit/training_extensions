@@ -3,13 +3,10 @@
 
 import { Suspense } from 'react';
 
+import { FileUploadedResponse, ImportUploadFile } from '@/components/import-upload-file/import-upload-file.component';
 import { Content, Dialog, DialogContainer, Divider, Heading, View } from '@geti-ui/ui';
 import { OverlayTriggerState } from '@react-stately/overlays';
 
-import {
-    FileUploadedResponse,
-    ImportUploadFile,
-} from '../../../../components/import-upload-file/import-upload-file.component';
 import { useImportDatasetAsNewProject } from '../../../../hooks/storage/use-import-dataset-as-new-project.hook';
 import { isNonEmptyString } from '../../../../shared/util';
 import { useImportDatasetDialog } from '../../providers/import-dataset-dialog-provider.component';

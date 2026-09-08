@@ -3,6 +3,8 @@
 
 import { type Page } from '@playwright/test';
 
+import { DatasetViewsPage } from './dataset-views-page';
+
 const pluralizeItems = (count: number) => {
     const pluralRules = new Intl.PluralRules('en');
 
@@ -10,10 +12,14 @@ const pluralizeItems = (count: number) => {
 };
 
 export class DatasetPage {
-    constructor(private readonly page: Page) {}
+    readonly views: DatasetViewsPage;
 
-    goto(projectId = 'id-1') {
-        return this.page.goto(`projects/${projectId}/dataset`);
+    constructor(private readonly page: Page) {
+        this.views = new DatasetViewsPage(page);
+    }
+
+    goto(projectId = 'id-1', search = '') {
+        return this.page.goto(`projects/${projectId}/dataset${search}`);
     }
 
     async openAnnotator() {

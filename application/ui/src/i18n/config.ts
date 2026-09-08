@@ -13,7 +13,7 @@ import zhTW from './locales/zh-TW.json';
 
 const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'zh-HK', 'zh-MO'];
 
-export const resources = {
+const resources = {
     en: { translation: en },
     'zh-CN': { translation: zhCN },
     'zh-HK': { translation: zhHK },
