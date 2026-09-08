@@ -5,7 +5,7 @@ Monorepo with three components — different languages, toolchains, and conventi
 | Path                   | What it is                                                 | Primary stack                                                    |
 | ---------------------- |------------------------------------------------------------| ---------------------------------------------------------------- |
 | `library/`             | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch 2.10, OpenVINO, Lightning, Datumaro        |
-| `application/backend/` | Geti™ app server (`geti` package).                         | Python 3.13, FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic |
+| `application/backend/` | Geti™ app server (`geti` package).                         | Python 3.14, FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic |
 | `application/ui/`      | Geti™ web/desktop UI.                                      | Node 24.2+, React, TypeScript, rsbuild, Tauri                    |
 
 The application can be built and deployed in three ways:

@@ -7,7 +7,7 @@ together with the repo-wide `../../AGENTS.md` and the matching skill
 ## What This Component Is
 
 - FastAPI application server named `geti`.
-- Python 3.13, FastAPI, SQLAlchemy 2 (async where applicable), Pydantic v2,
+- Python 3.14, FastAPI, SQLAlchemy 2 (async where applicable), Pydantic v2,
   Alembic, `loguru`.
 - Consumes the local `getitune` library (`../../library`) for training,
   inference, export, and quantization via the `getitune[cpu|xpu|cuda]` extras.

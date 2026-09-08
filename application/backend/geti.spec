@@ -254,6 +254,17 @@ a = Analysis(
     runtime_hooks=runtime_hooks,
     excludes=[
         'torch.utils.benchmark',
+        # This is a headless server; nothing needs a Tk GUI. Excluding tkinter
+        # keeps PyInstaller from auto-collecting _tkinter (pulled in transitively
+        # via matplotlib's TkAgg backend) together with its "pyi_rth__tkinter"
+        # runtime hook, which requires a bundled Tcl/Tk data directory that may
+        # not be produced by every CPython distribution (e.g. some Python 3.14
+        # builds), causing a crash on startup.
+        'tkinter',
+        '_tkinter',
+        'turtle',
+        'matplotlib.backends.backend_tkagg',
+        'matplotlib.backends._backend_tk',
         *(_AGPL_MODULES if EXCLUDE_AGPL_MODELS else []),
     ],
     noarchive=False,

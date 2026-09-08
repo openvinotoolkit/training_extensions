@@ -124,7 +124,7 @@ class ConfigurableParameterGroupView(BaseModel):
             "If set, this parameter group is only applicable when the specified sibling parameter has the given value."
         ),
     )
-    parameters: list[Union[ConfigurableParameterView, "ConfigurableParameterGroupView"]] = Field(
+    parameters: list[ConfigurableParameterView | "ConfigurableParameterGroupView"] = Field(
         title="List of parameters in the group"
     )
 

@@ -21,7 +21,7 @@ inputs:
   python-version:
     description: Python version to install with 'uv' if 'install-uv' is true
     required: false
-    default: "3.13"
+    default: "3.14"
 
 runs:
   using: composite

@@ -6,7 +6,7 @@ minimum_prek_version: "0.2.19"
 
 default_language_version:
   node: 24.11.1
-  python: python3.13
+  python: python3.14
 
 repos:
   # Ruff - Python linter and formatter
@@ -22,7 +22,7 @@ repos:
     rev: v3.0.3
     hooks:
       - id: prettier
-        exclude: ^(application/ui/|\.github/instructions/|\.github/copilot-instructions\.md)
+        exclude: ^(application/ui/|\.github/instructions/|\.github/copilot-instructions\.md)|AGENTS\.md
   # Hadolint - Dockerfile linter
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.14.0
@@ -37,6 +37,7 @@ repos:
     hooks:
       - id: markdownlint
         args: [--config=.markdownlint.yaml]
+        exclude: AGENTS\.md
 
   # Agent skills - keep client adapters in sync and validate the layout
   - repo: local
