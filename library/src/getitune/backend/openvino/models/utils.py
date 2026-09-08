@@ -5,18 +5,37 @@
 
 from __future__ import annotations
 
+import os
 import warnings
 
 import torch
 import torch.nn.functional as f
 
+# Upper bound for the number of concurrently allocated OpenVINO infer requests.
+MAX_NUM_ASYNC_INFER_REQUESTS = 4
+
 
 def get_default_num_async_infer_requests() -> int:
-    """Returns a default number of infer request for OV models."""
-    import os
+    """Returns a default number of infer request for OV models.
+
+    The value is derived from the CPU count but capped at
+    :data:`MAX_NUM_ASYNC_INFER_REQUESTS` to bound peak host memory usage.
+    It can be overridden with the ``GETITUNE_OV_NUM_INFER_REQUESTS`` environment
+    variable.
+    """
+    override = os.environ.get("GETITUNE_OV_NUM_INFER_REQUESTS")
+    if override:
+        try:
+            return max(1, int(override))
+        except ValueError:
+            warnings.warn(
+                f"Ignoring invalid GETITUNE_OV_NUM_INFER_REQUESTS={override!r}; expected an integer.",
+                stacklevel=1,
+            )
 
     number_requests = os.cpu_count()
     number_requests = max(1, int(number_requests / 2)) if number_requests is not None else 1
+    number_requests = min(number_requests, MAX_NUM_ASYNC_INFER_REQUESTS)
     msg = f"""Set the default number of OpenVINO inference requests to {number_requests}.
             You can specify the value in config."""
     warnings.warn(msg, stacklevel=1)

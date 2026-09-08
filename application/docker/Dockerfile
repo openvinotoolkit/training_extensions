@@ -407,6 +407,10 @@ COPY --from=cpu-base --chown=${UID}:${UID} /application/backend/.venv /applicati
 RUN uv pip install --no-deps --force-reinstall /dist/av-*.whl && \
     python -c "import av; print('PyAV:', av.__version__, av.library_versions)"
 
+# Fail the build if torch and OpenVINO cannot share a process (see verify_runtime.py)
+RUN --mount=type=bind,source=application/docker/verify_runtime.py,target=/tmp/verify_runtime.py \
+    python /tmp/verify_runtime.py
+
 # App code + UI assets last – source-only changes only invalidate this layer
 COPY --link --chown=${UID}:${UID} application/backend/app /application/backend/app
 COPY --link --chown=${UID}:${UID} --from=web-ui /home/application/ui/dist/ ${STATIC_FILES_DIR}
@@ -431,6 +435,10 @@ COPY --from=cuda-clean --chown=${UID}:${UID} /application/backend/.venv /applica
 RUN uv pip install --no-deps --force-reinstall /dist/av-*.whl && \
     python -c "import av; print('PyAV:', av.__version__, av.library_versions)"
 
+# Fail the build if torch and OpenVINO cannot share a process (see verify_runtime.py)
+RUN --mount=type=bind,source=application/docker/verify_runtime.py,target=/tmp/verify_runtime.py \
+    python /tmp/verify_runtime.py
+
 # App code + UI assets last – source-only changes only invalidate this layer
 COPY --link --chown=${UID}:${UID} application/backend/app /application/backend/app
 COPY --link --chown=${UID}:${UID} --from=web-ui /home/application/ui/dist/ ${STATIC_FILES_DIR}
@@ -453,8 +461,18 @@ USER root
 # Includes Intel graphics drivers (steps from https://dgpu-docs.intel.com/driver/client/overview.html#ubuntu-latest)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN getent group render_host >/dev/null || groupadd -g 992 render_host && usermod -aG render_host "${USER_NAME}"
+ARG RENDER_GID=992
+RUN if ! getent group render_host >/dev/null; then \
+        groupadd -g "${RENDER_GID}" render_host || groupadd render_host; \
+    fi && \
+    usermod -aG render_host "${USER_NAME}"
 
+# WARNING: this is an Ubuntu 'noble' PPA being added to a Debian 13 (trixie) base image,
+# with signature verification disabled (trusted=yes) and no version pins. That makes the
+# resulting driver stack both unverified and non-reproducible: two builds of the same
+# commit can end up with different Level Zero / compute-runtime versions, and apt is free
+# to satisfy individual dependencies from Debian instead of the PPA.
+# TODO: switch to the signed Intel graphics repository for Debian and pin every package.
 RUN echo "deb [arch=amd64 trusted=yes] https://ppa.launchpadcontent.net/kobuk-team/intel-graphics/ubuntu noble main" \
     | tee /etc/apt/sources.list.d/kobuk-intel.list
 
@@ -473,6 +491,14 @@ COPY --from=xpu-clean --chown=${UID}:${UID} /application/backend/.venv /applicat
 # Replace pyav
 RUN uv pip install --no-deps --force-reinstall /dist/av-*.whl && \
     python -c "import av; print('PyAV:', av.__version__, av.library_versions)"
+
+# Fail the build if torch and OpenVINO cannot share a process (see verify_runtime.py).
+# This matters most on XPU: torch==2.14.0+xpu installs the oneAPI runtime into
+# <venv>/lib, which ships a libtbb.so.12 with the same SONAME as the one bundled in the
+# openvino wheel, and torch's RPATH ($ORIGIN/../../../..) puts that directory on the
+# loader search path for the whole process.
+RUN --mount=type=bind,source=application/docker/verify_runtime.py,target=/tmp/verify_runtime.py \
+    python /tmp/verify_runtime.py
 
 # App code + UI assets last – source-only changes only invalidate this layer
 COPY --link --chown=${UID}:${UID} application/backend/app /application/backend/app

@@ -451,7 +451,7 @@ class DataModule(LightningDataModule):
             "dataset": dataset,
             "batch_size": config.batch_size,
             "num_workers": num_workers,
-            "pin_memory": True,
+            "pin_memory": self._pin_memory,
             "collate_fn": dataset.collate_fn,
             "persistent_workers": num_workers > 0,
             "sampler": sampler,
@@ -513,11 +513,27 @@ class DataModule(LightningDataModule):
             "batch_size": config.batch_size,
             "shuffle": False,
             "num_workers": num_workers,
-            "pin_memory": True,
+            "pin_memory": self._pin_memory,
             "collate_fn": dataset.collate_fn,
             "persistent_workers": num_workers > 0,
             "multiprocessing_context": _MP_CONTEXT if num_workers > 0 else None,
         }
+
+    @property
+    def _pin_memory(self) -> bool:
+        """Whether batches should be copied into accelerator-pinned host memory.
+
+        ``DataLoader(pin_memory=True)`` does not pin into ordinary host memory: it
+        pins into memory owned by the *current accelerator* (CUDA / XPU), from a
+        dedicated pinning thread. That is only worth doing when the batches are
+        actually going to be copied to that accelerator.
+
+        For CPU-only consumers - most importantly the OpenVINO evaluation pipeline,
+        which always runs on CPU - pinning adds an extra copy per batch and, worse,
+        makes a CPU-only workload depend on the GPU runtime (Level Zero on XPU,
+        CUDA on NVIDIA) for a large, non-pageable allocation. Keep it off in that case.
+        """
+        return self.device not in (DeviceType.cpu,)
 
     def setup(self, stage: str) -> None:
         """Setup for each stage."""

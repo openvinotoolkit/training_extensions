@@ -18,6 +18,7 @@ Functions:
 import asyncio
 import contextlib
 import multiprocessing as mp
+import signal
 from collections.abc import Iterator
 from multiprocessing.connection import Connection
 from multiprocessing.context import SpawnProcess
@@ -78,9 +79,42 @@ class ProcessRun:
         except EOFError:
             # Child exited; infer outcome
             code = self._proc.exitcode if self._proc else 1
-            yield Done() if code == 0 else Failed(f"process exit {code}")
+            yield Done() if code == 0 else Failed(self._describe_exit(code))
         finally:
             self._parent.close()
+
+    @staticmethod
+    def _describe_exit(code: int | None) -> str:
+        """Render a child exit code as an actionable message.
+
+        A negative exit code means the child was terminated by a signal rather than
+        raising a Python exception, so no traceback was ever sent over the pipe and the
+        job log just stops mid-step. Naming the signal makes the two common causes -
+        the OOM killer (SIGKILL) and native crashes (SIGSEGV/SIGABRT) - immediately
+        recognisable instead of surfacing as a bare "process exit -9".
+        """
+        if code is None:
+            return "process exited without a status code"
+        if code >= 0:
+            return f"process exit {code}"
+
+        try:
+            signal_name = signal.Signals(-code).name
+        except ValueError:
+            signal_name = f"signal {-code}"
+
+        hints = {
+            "SIGKILL": (
+                "the process was killed, most likely by the out-of-memory killer; "
+                "check the host memory available to the container"
+            ),
+            "SIGSEGV": "the process crashed in native code (segmentation fault)",
+            "SIGABRT": "the process aborted in native code",
+            "SIGBUS": "the process crashed in native code (bus error)",
+        }
+        hint = hints.get(signal_name)
+        detail = f"process terminated by {signal_name}"
+        return f"{detail}: {hint}" if hint else detail
 
     async def stop(self, graceful_timeout: float = 30.0, term_timeout: float = 15.0, kill_timeout: float = 1.0) -> None:
         """
