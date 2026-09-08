@@ -100,11 +100,9 @@ override-dependencies = [
     "opencv-python-headless~=4.11",
     # roboflow hard-pins idna==3.7; allow newer versions
     "idna>=3.15",
-    # torch==2.12.1 caps setuptools<82 but version lower than 83.0 have vulnerabilities of moderate severity
-    "setuptools>=83.0",
 ]
 constraint-dependencies = [
-    "torch==2.12.*",
+    "torch==2.14.*",
 ]
 
 [tool.hatch.version]
