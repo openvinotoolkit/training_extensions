@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
@@ -79,5 +79,50 @@ describe('DeleteMediaItem', () => {
 
         expect(await screen.findByText(`Failed to delete, ${errorMessage}`)).toBeVisible();
         expect(mockedOnDeleted).not.toHaveBeenCalled();
+    });
+
+    describe('backspace hotkey', () => {
+        it('opens the confirmation dialog when the hotkey is enabled', async () => {
+            const itemsIds = ['123', '456'];
+
+            render(<DeleteMediaItem itemsIds={itemsIds} isHotkeyEnabled />);
+
+            fireEvent.keyDown(document, { key: 'Backspace', code: 'Backspace' });
+
+            expect(await screen.findByText(/Are you sure you want to delete 2 items\?/i)).toBeVisible();
+        });
+
+        it('opens the confirmation dialog while a gallery item is focused', async () => {
+            render(
+                <>
+                    <div role={'option'} aria-selected data-testid={'media-item'} tabIndex={0} />
+                    <DeleteMediaItem itemsIds={['123']} isHotkeyEnabled />
+                </>
+            );
+
+            fireEvent.keyDown(screen.getByTestId('media-item'), { key: 'Backspace', code: 'Backspace' });
+
+            expect(await screen.findByText(/Are you sure you want to delete 1 item\?/i)).toBeVisible();
+        });
+
+        it('does not open the confirmation dialog when the hotkey is disabled', async () => {
+            render(<DeleteMediaItem itemsIds={['123']} />);
+
+            fireEvent.keyDown(document, { key: 'Backspace', code: 'Backspace' });
+
+            await waitFor(() => {
+                expect(screen.queryByText(/Are you sure you want to delete/i)).not.toBeInTheDocument();
+            });
+        });
+
+        it('does not open the confirmation dialog when there are no selected items', async () => {
+            render(<DeleteMediaItem itemsIds={[]} isHotkeyEnabled />);
+
+            fireEvent.keyDown(document, { key: 'Backspace', code: 'Backspace' });
+
+            await waitFor(() => {
+                expect(screen.queryByText(/Are you sure you want to delete/i)).not.toBeInTheDocument();
+            });
+        });
     });
 });
