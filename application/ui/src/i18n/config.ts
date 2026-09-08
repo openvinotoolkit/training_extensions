@@ -11,7 +11,8 @@ export const LANGUAGE_STORAGE_KEY = 'geti-language';
 
 /**
  * Creates a ready-to-use i18next instance. Catalogs are bundled and the detector is synchronous, so
- * initialization completes before this returns and no consumer has to await it.
+ * initialization should complete quickly after this returns; callers should initialize i18n before
+ * rendering components that call `useTranslation`.
  *
  * Passing `lng` pins the language and skips browser/storage detection, which is what tests want.
  */
