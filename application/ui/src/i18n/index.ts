@@ -7,5 +7,5 @@ import { createI18nInstance } from './config';
 export const i18n = createI18nInstance();
 
 export { createI18nInstance, LANGUAGE_STORAGE_KEY } from './config';
-export { DEFAULT_LANGUAGE, LOCALES, SUPPORTED_LANGUAGES, resolveLanguage } from './locales';
+export { DEFAULT_LANGUAGE, LOCALES, SUPPORTED_LANGUAGES } from './locales';
 export type { LocaleDefinition, TranslationCatalog } from './locales';
