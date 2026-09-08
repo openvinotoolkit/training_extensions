@@ -90,17 +90,17 @@ lint = [
 cpu = [
     # Note: platform-specific wheels are only available for Linux and Windows.
     # For macOS, there is only one version of torch (default) available via PyPI.
-    "torch==2.12.1+cpu ; sys_platform == 'linux' or sys_platform == 'win32'",
+    "torch==2.13.0; sys_platform == 'linux' or sys_platform == 'win32'",
     "torchvision==0.27.1+cpu ; sys_platform == 'linux' or sys_platform == 'win32'",
-    "torch==2.12.1 ; sys_platform != 'linux' and sys_platform != 'win32'",
+    "torch==2.13.0; sys_platform != 'linux' and sys_platform != 'win32'",
     "torchvision==0.27.1 ; sys_platform != 'linux' and sys_platform != 'win32'"
 ]
 cuda = [
-    "torch==2.12.1+cu130",
+    "torch==2.13.0",
     "torchvision==0.27.1+cu130"
 ]
 xpu = [
-    "torch==2.12.1+xpu",
+    "torch==2.13.0",
     "triton-xpu==3.7.1",
     "torchvision==0.27.1+xpu"
 ]
