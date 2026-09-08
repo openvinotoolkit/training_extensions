@@ -14,7 +14,7 @@ type InputSizeParameterProps = {
 };
 
 const InputSizeParameter = ({ inputSizeParameter, onChange, isReadOnly }: InputSizeParameterProps) => {
-    if (isReadOnly) {
+    if (isReadOnly || inputSizeParameter.allowed_values.length <= 1) {
         return <span aria-label={inputSizeParameter.name}>{inputSizeParameter.value}</span>;
     }
 
