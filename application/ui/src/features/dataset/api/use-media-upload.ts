@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { $api } from '@/api';
+import { uploadDatasetMedia } from '@/api';
 import type { MediaDTO } from '@/api/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -54,25 +54,12 @@ export const useMediaUpload = () => {
         finishUploadProgress,
     } = useUploadProgress();
 
-    const addItemMutation = $api.useMutation('post', '/api/projects/{project_id}/dataset/media', {
-        meta: { error: { notify: () => false } },
-    });
-    type UploadMutationRequest = Parameters<typeof addItemMutation.mutateAsync>[0];
-
     const buildUploadTask = (file: File, itemId: string): UploadTask<MediaDTO> => {
         return async () => {
             setItemUploading(itemId);
 
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const request: UploadMutationRequest = {
-                params: { path: { project_id: projectId } },
-                body: formData as unknown as UploadMutationRequest['body'],
-            };
-
             try {
-                const result = await addItemMutation.mutateAsync(request);
+                const result = await uploadDatasetMedia(projectId, file);
                 setItemUploaded(itemId);
 
                 return result;

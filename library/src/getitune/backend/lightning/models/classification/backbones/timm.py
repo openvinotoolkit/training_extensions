@@ -33,12 +33,14 @@ class TimmBackbone(nn.Module):
         # failures like the ones observed with the newer torch.onnx FX-based exporter.
         self.model = timm.create_model(self.model_name, num_classes=0, exportable=True)
 
-        # `num_features` is the backbone's last-block channel count for some architecture
-        # families (e.g. MobileNetV3/EfficientNet with a conv_head expansion), which differs
-        # from the actual pooled embedding size returned by forward(). `head_hidden_size`
-        # (when present) reflects the true classifier input size; fall back to `num_features`
-        # for architectures that don't define it.
-        num_features = getattr(self.model, "head_hidden_size", self.model.num_features)
+        # `head_hidden_size` is stale on VisionTransformerSAM: it's set once to `embed_dim`
+        # (e.g. 768) and never updated when a neck is present, even though the neck
+        # reduces the actual pre-logits output to `num_features` (e.g. 256). Use
+        # `num_features` directly for this family instead of the generic fallback below.
+        if "samvit" in self.model_name:
+            num_features = self.model.num_features
+        else:
+            num_features = getattr(self.model, "head_hidden_size", self.model.num_features)
         if not isinstance(num_features, int):
             msg = f"Expected int num_features from timm model {model_name!r}, got {type(num_features)}"
             raise TypeError(msg)
