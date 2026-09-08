@@ -20,14 +20,39 @@ from __future__ import annotations
 
 import sys
 
-import numpy as np
+# isort: off
+# The order of this import block is load-bearing, so it is fenced off from auto-fixers.
+# ``torch`` has to enter the process before OpenVINO, exactly as in a training job, because
+# that is what decides which ``libtbb.so.12`` the OpenVINO CPU plugin runs on. Alphabetising
+# these lines would leave a script that still passes while testing the wrong thing, so
+# ``_assert_import_order()`` re-checks the real load order at runtime as a backstop.
+import torch
 import openvino as ov
 import openvino.opset13 as ops
-import torch  # imported first, exactly as in the training job
+import numpy as np
+
+# isort: on
 
 NUM_REQUESTS = 4
 NUM_INFERS = 32
 AMBIGUOUS_SONAMES = ("libtbb.so.12", "libtbbbind", "libiomp5.so", "libgomp.so.1")
+
+
+def _assert_import_order() -> None:
+    """Fail loudly if OpenVINO was pulled into the process before torch.
+
+    ``sys.modules`` is insertion ordered, so it doubles as a record of which stack was
+    imported first. This guards against an auto-formatter silently reordering the import
+    block above and turning this smoke test into a no-op.
+    """
+    loaded = list(sys.modules)
+    if loaded.index("torch") > loaded.index("openvino"):
+        msg = (
+            "verify_runtime.py imported OpenVINO before torch, so it no longer reproduces "
+            "the native library load order of a training job. Restore the import order in "
+            "the '# isort: off' block at the top of this file."
+        )
+        raise RuntimeError(msg)
 
 
 def _mapped_libraries() -> dict[str, list[str]]:
@@ -46,6 +71,8 @@ def _mapped_libraries() -> dict[str, list[str]]:
 
 def main() -> int:
     """Run the smoke test and report where the ambiguous native libraries resolved from."""
+    _assert_import_order()
+
     param = ops.parameter([1, 3, 16, 16], ov.Type.f32, name="input")
     model = ov.Model([ops.relu(param)], [param], "smoke")
 
