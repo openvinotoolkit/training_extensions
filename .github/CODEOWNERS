@@ -24,7 +24,6 @@ application/backend/uv.lock @sys-geti @open-edge-platform/geti-backend-write
 
 # Application frontend
 application/ui/ @open-edge-platform/geti-ui-write
-application/ui/src-tauri/Cargo.lock @sys-geti @open-edge-platform/geti-ui-write
 
 # Application build and deployment
 .dockerignore @open-edge-platform/geti-backend-write
@@ -32,6 +31,7 @@ application/docker/ @open-edge-platform/geti-backend-write
 application/docker/Dockerfile @sys-geti @open-edge-platform/geti-backend-write
 application/Justfile @open-edge-platform/geti-backend-write
 application/ui/src-tauri/ @open-edge-platform/geti-backend-write @open-edge-platform/geti-ui-write
+application/ui/src-tauri/Cargo.lock @sys-geti @open-edge-platform/geti-backend-write @open-edge-platform/geti-ui-write
 install.sh @open-edge-platform/geti-backend-write
 install.ps1 @open-edge-platform/geti-backend-write
 
