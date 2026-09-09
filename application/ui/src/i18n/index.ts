@@ -9,8 +9,8 @@ import { createI18nInstance } from './config';
 export const i18n = createI18nInstance();
 
 /**
- * Single entry point for the translation engine. Everything outside `src/i18n/` imports from here
- * (enforced by `no-restricted-imports`) so swapping the engine stays contained to this folder.
+ * Single entry point for the i18n public API (`useTranslation`, `Trans`, `TranslateFn`).
+ * Direct imports from the underlying engine packages are restricted outside `src/i18n/` via ESLint.
  */
 export { Trans, useTranslation } from 'react-i18next';
 
