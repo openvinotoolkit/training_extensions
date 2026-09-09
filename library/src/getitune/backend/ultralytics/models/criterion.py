@@ -23,7 +23,7 @@ class MultiLabelClassificationLoss(nn.Module):
         self,
         preds: torch.Tensor | list[torch.Tensor] | tuple[torch.Tensor, ...],
         batch: dict[str, Any],
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         """Compute BCE loss between raw logits and multi-hot targets.
 
         Args:
@@ -31,9 +31,9 @@ class MultiLabelClassificationLoss(nn.Module):
             batch: Ultralytics batch dict with ``"cls"`` multi-hot targets.
 
         Returns:
-            Tuple of (loss, detached loss).
+            Tuple of (loss, dict of detached per-component losses).
         """
         logits = preds[0] if isinstance(preds, (list, tuple)) else preds
         targets = batch["cls"].float()
         loss = functional.binary_cross_entropy_with_logits(logits, targets, reduction="mean")
-        return loss, loss.detach()
+        return loss, {"loss": loss.detach()}
