@@ -2831,7 +2831,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 77.79,
       "license": "apache-2.0",
       "gigaflops": 1.04,
       "trainable_parameters": 8.8
@@ -2846,7 +2846,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 78.95,
       "license": "apache-2.0",
       "gigaflops": 1.49,
       "trainable_parameters": 10.8
@@ -2876,7 +2876,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 80.78,
       "license": "apache-2.0",
       "gigaflops": 2.7,
       "trainable_parameters": 21.3
@@ -2906,7 +2906,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 83.1,
       "license": "apache-2.0",
       "gigaflops": 8.11,
       "trainable_parameters": 39.1
@@ -2921,7 +2921,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 72.67,
       "license": "apache-2.0",
       "gigaflops": 0.37,
       "trainable_parameters": 4.9
@@ -2936,7 +2936,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 75.89,
       "license": "apache-2.0",
       "gigaflops": 0.71,
       "trainable_parameters": 7.1
@@ -2951,7 +2951,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 74.85,
       "license": "apache-2.0",
       "gigaflops": 0.53,
       "trainable_parameters": 5.9
@@ -8036,7 +8036,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 77.04,
       "license": "apache-2.0",
       "gigaflops": 1.2,
       "trainable_parameters": 5.4
@@ -8051,7 +8051,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 80.07,
       "license": "apache-2.0",
       "gigaflops": 1.2,
       "trainable_parameters": 5.4
@@ -8246,7 +8246,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 78.4,
       "license": "apache-2.0",
       "gigaflops": 1.88,
       "trainable_parameters": 12.5
@@ -8261,7 +8261,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 79.9,
       "license": "apache-2.0",
       "gigaflops": 2.82,
       "trainable_parameters": 16.3
@@ -8276,7 +8276,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 81.2,
       "license": "apache-2.0",
       "gigaflops": 5.14,
       "trainable_parameters": 31.4
@@ -8291,7 +8291,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 83.6,
       "license": "apache-2.0",
       "gigaflops": 12.19,
       "trainable_parameters": 55.5
@@ -8306,7 +8306,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 78.8,
       "license": "apache-2.0",
       "gigaflops": 2.69,
       "trainable_parameters": 16.3
@@ -8321,7 +8321,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 81.6,
       "license": "apache-2.0",
       "gigaflops": 7.58,
       "trainable_parameters": 21.1
@@ -8336,7 +8336,7 @@
       "std": [0.229, 0.224, 0.225],
       "default_lr": 0.007,
       "default_weight_decay": 0.001,
-      "imagenet_top1_accuracy": null,
+      "imagenet_top1_accuracy": 83.0,
       "license": "apache-2.0",
       "gigaflops": 9.73,
       "trainable_parameters": 39.7

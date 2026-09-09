@@ -202,6 +202,10 @@ def _build_entry(
     family = family_map.get(model_name, _family_of(model_name))
     version_tag, pretrained_tag = _tags(model_name, family)
     default_params = _defaults_for(model_name)
+    if existing is not None and existing["imagenet_top1_accuracy"] is not None:
+        imagenet_top1_accuracy = existing["imagenet_top1_accuracy"]
+    else:
+        imagenet_top1_accuracy = imagenet_top1.get(model_name)
 
     entry: dict[str, Any] = {
         "model_name": model_name,
@@ -213,7 +217,7 @@ def _build_entry(
         "std": list(cfg.std),
         "default_lr": default_params["learning_rate"],
         "default_weight_decay": default_params["weight_decay"],
-        "imagenet_top1_accuracy": imagenet_top1.get(model_name),
+        "imagenet_top1_accuracy": imagenet_top1_accuracy,
         "license": model_licenses.get(model_name, {}).get("weights_license", _UNKNOWN_LICENSE),
     }
 
