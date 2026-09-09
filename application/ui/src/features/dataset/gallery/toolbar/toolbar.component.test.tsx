@@ -3,7 +3,7 @@
 
 import type { Media } from '@/api/types';
 import { ViewModes } from '@geti-ui/ui';
-import { fireEvent, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { getMockedDatasetStatistics } from 'mocks/mock-dataset-item';
 import { getMockedDatasetView } from 'mocks/mock-dataset-view';
 import { getMockedMediaImage } from 'mocks/mock-media';
@@ -105,7 +105,7 @@ describe('Toolbar', () => {
             path: '/projects/:projectId',
         });
 
-        await waitForElementToBeRemoved(screen.getByRole('progressbar'));
+        await screen.findByRole('button', { name: 'Select dataset view' });
 
         return result;
     };

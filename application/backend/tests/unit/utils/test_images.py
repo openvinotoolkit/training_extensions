@@ -14,8 +14,10 @@ from app.utils.images import (
     crop_to_thumbnail,
     is_high_bit_depth_image,
     needs_display_normalization,
+    normalize_high_bit_depth_array,
     normalize_high_bit_depth_image,
     normalize_image_to_png_bytes,
+    to_uint8_rgb,
 )
 
 # ---------------------------------------------------------------------------
@@ -142,6 +144,114 @@ def test_normalize_high_bit_depth_image_maps_full_range() -> None:
     pixels = np.array(result)
     assert pixels.min() == 0
     assert pixels.max() == 255
+
+
+# ---------------------------------------------------------------------------
+# normalize_high_bit_depth_array / to_uint8_rgb
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_high_bit_depth_array_maps_full_range() -> None:
+    arr = np.array([[500, 1000]], dtype=np.uint16)
+    result = normalize_high_bit_depth_array(arr)
+    assert result.dtype == np.uint8
+    assert result.min() == 0
+    assert result.max() == 255
+
+
+def test_normalize_high_bit_depth_array_uniform_becomes_black() -> None:
+    arr = np.full((4, 4), fill_value=40000, dtype=np.uint16)
+    assert normalize_high_bit_depth_array(arr).max() == 0
+
+
+def test_normalize_high_bit_depth_array_empty() -> None:
+    result = normalize_high_bit_depth_array(np.empty((0, 0), dtype=np.uint16))
+    assert result.dtype == np.uint8
+    assert result.size == 0
+
+
+@pytest.mark.parametrize(
+    "shape, dtype",
+    [
+        pytest.param((8, 6), np.uint16, id="2d_16bit_grayscale"),
+        pytest.param((8, 6, 1), np.uint16, id="16bit_grayscale_with_channel"),
+        pytest.param((8, 6, 1), np.uint8, id="8bit_grayscale"),
+        pytest.param((8, 6, 3), np.uint16, id="16bit_rgb"),
+        pytest.param((8, 6, 3), np.uint8, id="8bit_rgb"),
+        pytest.param((8, 6, 4), np.uint8, id="8bit_rgba"),
+        pytest.param((8, 6, 4), np.uint16, id="16bit_rgba"),
+        pytest.param((8, 6), np.float32, id="2d_float"),
+        pytest.param((8, 6, 3), np.int32, id="32bit_int_rgb"),
+    ],
+)
+def test_to_uint8_rgb_shape_and_dtype(shape: tuple[int, ...], dtype: type) -> None:
+    rng = np.random.default_rng(0)
+    array = (rng.random(shape) * 100).astype(dtype)
+
+    result = to_uint8_rgb(array)
+
+    assert result.shape == (8, 6, 3)
+    assert result.dtype == np.uint8
+    assert result.flags["C_CONTIGUOUS"]
+
+
+def test_to_uint8_rgb_passes_through_8bit_rgb() -> None:
+    """An array that already matches the model input must not be copied or altered."""
+    array = np.zeros((4, 4, 3), dtype=np.uint8)
+    assert to_uint8_rgb(array) is array
+
+
+def test_to_uint8_rgb_replicates_grayscale_channels() -> None:
+    array = np.array([[0, 65535]], dtype=np.uint16)[..., np.newaxis]
+
+    result = to_uint8_rgb(array)
+
+    np.testing.assert_array_equal(result[..., 0], result[..., 1])
+    np.testing.assert_array_equal(result[..., 0], result[..., 2])
+    np.testing.assert_array_equal(result[0, :, 0], np.array([0, 255], dtype=np.uint8))
+
+
+def test_to_uint8_rgb_narrow_range_16bit_is_stretched() -> None:
+    """A 16-bit image using a narrow value range must span [0, 255], not stay near-black."""
+    array = np.array([[500, 600, 1000]], dtype=np.uint16)[..., np.newaxis]
+
+    result = to_uint8_rgb(array)
+
+    assert result.min() == 0
+    assert result.max() == 255
+
+
+def test_to_uint8_rgb_drops_alpha_channel() -> None:
+    array = np.dstack(
+        [
+            np.full((2, 2), 10, dtype=np.uint8),
+            np.full((2, 2), 20, dtype=np.uint8),
+            np.full((2, 2), 30, dtype=np.uint8),
+            np.full((2, 2), 255, dtype=np.uint8),
+        ]
+    )
+
+    result = to_uint8_rgb(array)
+
+    assert result.shape == (2, 2, 3)
+    np.testing.assert_array_equal(result, array[..., :3])
+
+
+@pytest.mark.parametrize(
+    "array",
+    [
+        pytest.param(np.zeros((2, 2, 2), dtype=np.uint8), id="two_channels"),
+        pytest.param(np.zeros((2, 2, 5), dtype=np.uint8), id="five_channels"),
+    ],
+)
+def test_to_uint8_rgb_rejects_unsupported_channel_count(array: np.ndarray) -> None:
+    with pytest.raises(ValueError, match="Unsupported number of image channels"):
+        to_uint8_rgb(array)
+
+
+def test_to_uint8_rgb_rejects_unsupported_dimensions() -> None:
+    with pytest.raises(ValueError, match="Expected a 2D or 3D image array"):
+        to_uint8_rgb(np.zeros((2, 2, 3, 3), dtype=np.uint8))
 
 
 # ---------------------------------------------------------------------------

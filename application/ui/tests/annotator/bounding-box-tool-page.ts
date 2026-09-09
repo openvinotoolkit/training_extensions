@@ -18,7 +18,7 @@ export class BoundingBoxToolPage {
     }
 
     getTool() {
-        return this.page.getByRole('button', { name: 'bounding-box tool' });
+        return this.page.getByRole('button', { name: 'Bounding box' });
     }
 
     async selectTool() {

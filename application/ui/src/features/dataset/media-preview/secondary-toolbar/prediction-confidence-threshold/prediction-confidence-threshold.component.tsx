@@ -1,7 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { ConfidenceThreshold } from '../../../../../components/confidence-threshold/confidence-threshold.component';
+import { ConfidenceThreshold } from '@/components/confidence-threshold/confidence-threshold.component';
+
 import { usePredictionSetup } from '../../../../annotator/predictions-setup-provider.component';
 
 export const PredictionConfidenceThreshold = () => {

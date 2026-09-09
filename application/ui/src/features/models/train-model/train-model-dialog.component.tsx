@@ -1,11 +1,11 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { toast } from '@/components/toast/toast.component';
 import { Button, ButtonGroup, Content, Dialog, Divider, Flex, Footer, Heading, InlineAlert, Text } from '@geti-ui/ui';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { Link, useMatch } from 'react-router-dom';
 
-import { toast } from '../../../components/toast/toast.component';
 import { paths } from '../../../constants/paths';
 import { AdvancedSettings } from './advanced-settings/advanced-settings.component';
 import { BasicTrainModelContent } from './basic-train-model-content.component';

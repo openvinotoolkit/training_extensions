@@ -1,9 +1,6 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import huggingface_hub
-from loguru import logger
-
 from app.models import TaskType
 from app.models.model_manifest import (
     BenchmarkMetrics,
@@ -17,7 +14,6 @@ from app.models.model_manifest import (
 from app.models.training_configuration import AlgoLevelParameters, AlgoLevelTrainingParameters
 from app.supported_models.timm.catalog import _snapshot
 
-_UNKNOWN_LICENSE = "unknown"
 _ID_PREFIX = "image-classification-timm-"
 
 
@@ -29,22 +25,6 @@ def model_name_to_id(model_name: str) -> str:
 def id_to_model_name(manifest_id: str) -> str:
     """Convert a manifest ID back to its bare timm model name."""
     return manifest_id.removeprefix(_ID_PREFIX)
-
-
-# TODO(vitalii): populate catalog with the license information for each timm model and remove this function
-def _license_of(model_name: str) -> str:
-    """Return the Hugging Face Hub license for *model_name*, defaulting to Apache-2.0."""
-    try:
-        info = huggingface_hub.model_info(f"timm/{model_name}")
-    except huggingface_hub.errors.HfHubHTTPError:
-        logger.warning("No model card found on the Hub for {}; defaulting license to {}", model_name, _UNKNOWN_LICENSE)
-        return _UNKNOWN_LICENSE
-
-    if info.card_data is None or not info.card_data.license:
-        logger.debug("No license in model card for {}; defaulting to {}", model_name, _UNKNOWN_LICENSE)
-        return _UNKNOWN_LICENSE
-
-    return info.card_data.license
 
 
 class TimmManifestProvider:
@@ -60,8 +40,8 @@ class TimmManifestProvider:
         _, h, w = e["input_size"]
         return ModelManifest(
             id=model_name_to_id(model_name),
-            name=f"timm/{model_name}",
-            license=_license_of(model_name),
+            name=model_name,
+            license=e["license"],
             task=TaskType.CLASSIFICATION,
             description=f"timm backbone '{model_name}'.",
             timm_metadata=TimmMetadata(
@@ -86,7 +66,8 @@ class TimmManifestProvider:
                     weight_decay=e["default_weight_decay"],
                     input_size_width=w,
                     input_size_height=h,
-                    allowed_values_input_size=[w, h],
+                    # Deduplicated: square models would otherwise expose the same size twice.
+                    allowed_values_input_size=sorted({w, h}),
                     # everything else (epochs, batch, scheduler, early stopping,
                     # augmentation) inherits classification/base.yaml defaults.
                 ),
@@ -99,4 +80,6 @@ class TimmManifestProvider:
         _, height, width = e["input_size"]
         return {
             "input_size": (height, width),
+            "mean": tuple(e["mean"]),
+            "std": tuple(e["std"]),
         }

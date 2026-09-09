@@ -39,42 +39,42 @@ export const ZoomTransform = ({ children, target, zoomInMultiplier = 10, zoomOut
 
     useGesture(
         {
-            onPinch: ({ origin, offset: [deltaDistance] }) => {
+            onPinch: ({ origin, offset: [pinchScale] }) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
 
-                const factor = 1 + deltaDistance / 200;
-                const newScale = clampBetween(
-                    zoom.initialCoordinates.scale,
-                    zoom.initialCoordinates.scale * factor,
-                    zoom.maxZoomIn
-                );
-                const relativeCursor = { x: origin[0] - rect.left, y: origin[1] - rect.top };
+                const cursorX = origin[0] - rect.left;
+                const cursorY = origin[1] - rect.top;
 
-                setZoom(
+                setZoom((prev) =>
                     getZoomState({
-                        newScale,
-                        cursorX: relativeCursor.x,
-                        cursorY: relativeCursor.y,
-                        initialCoordinates: zoom.initialCoordinates,
-                    })
+                        newScale: pinchScale,
+                        cursorX,
+                        cursorY,
+                        initialCoordinates: prev.initialCoordinates,
+                    })(prev)
                 );
             },
             onWheel: ({ event, delta: [, verticalScrollDelta] }) => {
+                // A trackpad pinch arrives as ctrl+wheel, which onPinch already handles
+                if (event.ctrlKey) return;
+
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
 
-                const factor = 1 - verticalScrollDelta / 500;
-                const newScale = clampBetween(zoom.initialCoordinates.scale, zoom.scale * factor, zoom.maxZoomIn);
-                const relativeCursor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+                // Exponential so the step stays proportional and never flips sign on large deltas
+                const factor = Math.exp(-verticalScrollDelta / 500);
+                const cursorX = event.clientX - rect.left;
+                const cursorY = event.clientY - rect.top;
 
-                setZoom(
+                // Scaled off prev, since React batches the many events a trackpad emits per frame
+                setZoom((prev) =>
                     getZoomState({
-                        newScale,
-                        cursorX: relativeCursor.x,
-                        cursorY: relativeCursor.y,
-                        initialCoordinates: zoom.initialCoordinates,
-                    })
+                        newScale: clampBetween(prev.initialCoordinates.scale, prev.scale * factor, prev.maxZoomIn),
+                        cursorX,
+                        cursorY,
+                        initialCoordinates: prev.initialCoordinates,
+                    })(prev)
                 );
             },
             onDrag: ({ delta: [x, y] }) => handleTranslateUpdate({ x, y }),
@@ -83,7 +83,12 @@ export const ZoomTransform = ({ children, target, zoomInMultiplier = 10, zoomOut
             target: containerRef,
             eventOptions: { passive: false },
             wheel: { preventDefault: true },
-            pinch: { preventDefault: true },
+            pinch: {
+                preventDefault: true,
+                // Makes offset[0] an absolute scale that resumes from the current zoom
+                from: () => [zoom.scale, 0],
+                scaleBounds: () => ({ min: zoom.initialCoordinates.scale, max: zoom.maxZoomIn }),
+            },
             drag: { enabled: isPanning },
         }
     );

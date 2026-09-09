@@ -54,7 +54,7 @@ test.describe('Annotator', () => {
         });
 
         await test.step('Change annotation label by clicking label badge', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await page.getByLabel('annotation rect').nth(1).click();
 
             await expect(page.getByRole('button', { name: `Label ${redLabel.name}` })).toHaveAttribute(
@@ -79,7 +79,7 @@ test.describe('Annotator', () => {
         });
 
         await test.step('Change second annotation to red label', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await page.getByLabel('annotation rect').nth(3).click();
             await page.getByRole('button', { name: `Label ${redLabel.name}` }).click();
 
@@ -112,7 +112,7 @@ test.describe('Annotator', () => {
         });
 
         await test.step('Remove labels', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             const labels = page.getByLabel('Remove red-label');
 
             await labels.nth(0).click();
@@ -395,7 +395,7 @@ test.describe('Annotator', () => {
         await annotatorPage.goto(mockedDetectionProject.id, 'media-selection-reset-1');
 
         await test.step('Select annotation on media 1', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await page.getByLabel('annotation rect').nth(1).click();
 
             const selectedAnnotations = annotatorPage.getAnnotationsList().getByLabel('selected annotation');
@@ -931,7 +931,7 @@ test.describe('Annotator', () => {
                 });
 
                 await test.step('Enter edit mode via selection tool', async () => {
-                    await page.getByRole('button', { name: 'selection tool' }).click();
+                    await page.getByRole('button', { name: 'Selection' }).click();
                     await page.getByLabel('annotation rect').nth(1).click();
 
                     await expect(page.getByLabel(/^Edit bounding box points/)).toHaveCount(1);
@@ -1004,7 +1004,7 @@ test.describe('Annotator', () => {
                 });
 
                 await test.step('Enter edit mode via selection tool', async () => {
-                    await page.getByRole('button', { name: 'selection tool' }).click();
+                    await page.getByRole('button', { name: 'Selection' }).click();
                     await page.getByLabel('annotation polygon').nth(1).click();
 
                     await expect(page.locator('[id^="edit-polygon-points-"]')).toHaveCount(1);

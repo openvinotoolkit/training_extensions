@@ -43,13 +43,18 @@ jobs:
 
       - name: Check paths
         id: check_paths
-        uses: ./.github/actions/check-paths
+        uses: open-edge-platform/geti-ci/actions/check-paths@2ed3ce382d1dbd6db52c7c6b93ffdae280a1c06f # check-paths/v0.1.0
         with:
           files_yaml: |
             test:
-              - application/backend/**
+              - application/backend/app/**
+              - application/backend/pyproject.toml
+              - application/backend/uv.lock
               - application/ui/**
-              - .github/**
+              - .github/workflows/ui-lint-and-test.yaml
+              - .github/actions/install-common-deps/**
+              - '!**/*.md'
+              - '!**/docs/**'
 
   generate-openapi-spec:
     name: Generate OpenAPI Spec

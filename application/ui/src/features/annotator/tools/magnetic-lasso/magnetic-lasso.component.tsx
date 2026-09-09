@@ -3,12 +3,12 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 
+import { toast } from '@/components/toast/toast.component';
+import { useZoom } from '@/components/zoom/zoom.provider';
 import { isPointOverPoint, isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { useMutation } from '@tanstack/react-query';
 import { isEmpty, isEqual, throttle } from 'lodash-es';
 
-import { toast } from '../../../../components/toast/toast.component';
-import { useZoom } from '../../../../components/zoom/zoom.provider';
 import { Point } from '../../../../shared/types';
 import { isNonEmptyArray } from '../../../../shared/util';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';

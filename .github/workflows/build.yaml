@@ -48,14 +48,20 @@ jobs:
 
       - name: Check paths
         id: check_paths
-        uses: ./.github/actions/check-paths
+        uses: open-edge-platform/geti-ci/actions/check-paths@2ed3ce382d1dbd6db52c7c6b93ffdae280a1c06f # check-paths/v0.1.0
         with:
           files_yaml: |
             test:
               - application/**
-              - '!application/docs/**'
-              - library/**
-              - .github/**
+              - library/src/**
+              - library/pyproject.toml
+              - library/uv.lock
+              - library/MANIFEST.in
+              - .github/workflows/build.yaml
+              - .github/actions/docker-build/**
+              - .github/actions/install-common-deps/**
+              - '!**/*.md'
+              - '!**/docs/**'
 
   build:
     name: Build and push docker image (${{ matrix.device }})
@@ -81,6 +87,9 @@ jobs:
         run: |
           echo "value=$(cat application/VERSION | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
           echo "short_sha=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+          # GHCR image references must be lowercase; the owner is the org on
+          # upstream and the fork owner when the workflow runs in a fork.
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Login to GHCR
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
@@ -93,7 +102,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: ghcr.io/open-edge-platform/geti-${{ matrix.device }}
+          images: ghcr.io/${{ steps.version.outputs.owner }}/geti-${{ matrix.device }}
           tags: |
             type=sha
             type=ref,event=branch
@@ -115,6 +124,9 @@ jobs:
           # Fork PRs cannot write packages to the upstream org, so disable
           # cache export to avoid 403 errors from GHCR.
           cache-write: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
+          # Owner namespace for the build cache; matches the image namespace
+          # so fork runs read/write cache in their own GHCR account.
+          owner: ${{ steps.version.outputs.owner }}
           exclude-agpl-models: ${{ github.event_name != 'pull_request' && github.event_name != 'merge_group' && inputs.exclude-agpl-models != 'false' }}
 
       - name: Resolve primary image tag for signing

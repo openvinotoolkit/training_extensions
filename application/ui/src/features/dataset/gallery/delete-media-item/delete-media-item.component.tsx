@@ -3,7 +3,10 @@
 
 import { ActionButton, DialogContainer, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Delete } from '@geti-ui/ui/icons';
+import { isEmpty } from 'lodash-es';
+import { useHotkeys } from 'react-hotkeys-hook';
 
+import { HOTKEYS } from '../../../../shared/hotkeys-definition';
 import { useDeleteMediaItem } from '../../api/use-delete-media-item';
 import { AlertDialogContent } from './alert-dialog-content.component';
 
@@ -12,14 +15,28 @@ import classes from './delete-media-item.module.scss';
 type DeleteMediaItemProps = {
     itemsIds: string[];
     onDeleted?: (deletedIds: string[]) => void;
+    // Opt-in, so the hotkey does not clash with "delete annotation" in the annotator
+    isHotkeyEnabled?: boolean;
 };
 
-export const DeleteMediaItem = ({ itemsIds = [], onDeleted }: DeleteMediaItemProps) => {
+export const DeleteMediaItem = ({ itemsIds = [], onDeleted, isHotkeyEnabled = false }: DeleteMediaItemProps) => {
     const { deleteMedia, openDeleteDialog, closeDeleteDialog, isPending, isDeleteDialogOpen } = useDeleteMediaItem();
 
     const handleDelete = async () => {
         await deleteMedia(itemsIds, onDeleted);
     };
+
+    useHotkeys(
+        HOTKEYS.delete,
+        openDeleteDialog,
+        {
+            enabled: isHotkeyEnabled && !isPending && !isEmpty(itemsIds),
+            // Selected gallery items have role="option", which the library blocks by default
+            enableOnFormTags: ['option'],
+            preventDefault: true,
+        },
+        [isHotkeyEnabled, openDeleteDialog, isPending, itemsIds]
+    );
 
     return (
         <>

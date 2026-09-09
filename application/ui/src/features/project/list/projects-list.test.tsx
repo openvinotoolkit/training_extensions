@@ -437,6 +437,23 @@ describe('ProjectList', () => {
 
             expect(screen.queryByRole('button', { name: /sort/i })).not.toBeInTheDocument();
         });
+
+        it('shows the Geti intro and the workflow steps', async () => {
+            renderProjectList();
+
+            expect(await screen.findByLabelText('empty list')).toBeInTheDocument();
+            expect(screen.getByText(/a vision AI platform that guides you through/)).toBeInTheDocument();
+
+            const workflow = screen.getByRole('list', { name: 'Geti workflow' });
+            expect(
+                within(workflow)
+                    .getAllByRole('listitem')
+                    .map((item) => item.textContent)
+            ).toEqual(['Add data', 'Annotate', 'Train', 'Optimize', 'Run inference']);
+            expect(
+                screen.getByText('Monitor predictions and collect more data to iteratively fine-tune your model')
+            ).toBeInTheDocument();
+        });
     });
 
     describe('create project card', () => {

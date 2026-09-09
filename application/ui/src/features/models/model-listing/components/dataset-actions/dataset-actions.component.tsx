@@ -1,12 +1,12 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { ExportDatasetConfig } from '@/components/export-dataset-config-dialog/export-dataset-config.component';
 import { ActionButton, AlertDialog, DialogContainer, Item, Key, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
-import { ExportDatasetConfig } from '../../../../../components/export-dataset-config-dialog/export-dataset-config.component';
 import { useDeleteDatasetRevision } from '../../hooks/use-delete-dataset-revision.hook';
 import { useRenameDatasetRevision } from '../../hooks/use-rename-dataset-revision.hook';
 import type { DatasetGroup } from '../../types';

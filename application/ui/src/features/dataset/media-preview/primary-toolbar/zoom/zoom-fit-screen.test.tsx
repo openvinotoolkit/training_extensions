@@ -8,7 +8,7 @@ import { ZoomFitScreen } from './zoom-fit-screen.component';
 
 const mockedFitToScreen = vi.fn();
 
-vi.mock(import('../../../../../components/zoom/zoom.provider'), async (importOriginal) => {
+vi.mock(import('@/components/zoom/zoom.provider'), async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,

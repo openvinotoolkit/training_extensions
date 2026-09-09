@@ -1,15 +1,15 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useZoom } from '@/components/zoom/zoom.provider';
 import { fireEvent, screen } from '@testing-library/react';
 import { render } from 'test-utils/render';
 
-import { useZoom } from '../../../../../components/zoom/zoom.provider';
 import { ZoomSelector } from './zoom-selector.component';
 
 const mockedOnZoomChange = vi.fn();
 
-vi.mock(import('../../../../../components/zoom/zoom.provider'), async (importOriginal) => {
+vi.mock(import('@/components/zoom/zoom.provider'), async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,

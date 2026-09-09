@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { SourceConfig } from '@/api/types';
+import { ConnectionStatusBadge } from '@/components/connection-status-badge/connection-status-badge.component';
 import { Button, dimensionValue, Flex, Text } from '@geti-ui/ui';
 import { Add as AddIcon } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
 import { usePipeline } from 'hooks/api/pipeline.hook';
 import { isEqual } from 'lodash-es';
 
-import { ConnectionStatusBadge } from '../../../../components/connection-status-badge/connection-status-badge.component';
 import { getErrorMessage } from '../../../../query-client/query-client';
 import { removeUnderscore } from '../../util';
 import { useTestSource } from '../api/use-test-source';

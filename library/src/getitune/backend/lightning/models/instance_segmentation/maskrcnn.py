@@ -60,6 +60,7 @@ class MaskRCNN(LightningInstanceSegModel):
             the default pretrained weights will be utilized for fine-tuning. Defaults to None.
     """
 
+    _nms_always_embedded: ClassVar[bool] = True
     pretrained_urls: ClassVar[dict[str, str]] = {
         "maskrcnn_efficientnet_b2b": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/"
         "models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth",
@@ -83,6 +84,7 @@ class MaskRCNN(LightningInstanceSegModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
         pretrained: bool = True,
         pretrained_weights: PathLike | None = None,
+        export_nms: bool = False,
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -95,6 +97,7 @@ class MaskRCNN(LightningInstanceSegModel):
             tile_config=tile_config,
             pretrained=pretrained,
             pretrained_weights=pretrained_weights,
+            export_nms=export_nms,
         )
 
     def _create_model(self, num_classes: int | None = None) -> MaskRCNN:

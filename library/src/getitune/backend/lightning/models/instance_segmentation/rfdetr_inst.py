@@ -111,6 +111,7 @@ class RFDETRInst(RFDETRMixin, LightningInstanceSegModel):  # pyrefly: ignore[inc
         max_total_objects_per_batch: int | None = None,
         pretrained: bool = True,
         pretrained_weights: PathLike | None = None,
+        export_nms: bool = False,
     ) -> None:
         self.multi_scale = multi_scale
         self.max_total_objects_per_batch = max_total_objects_per_batch
@@ -125,6 +126,7 @@ class RFDETRInst(RFDETRMixin, LightningInstanceSegModel):  # pyrefly: ignore[inc
             tile_config=tile_config,
             pretrained=pretrained,
             pretrained_weights=pretrained_weights,
+            export_nms=export_nms,
         )
 
     def _create_model(self, num_classes: int | None = None) -> RFDETRDetector:
@@ -174,7 +176,11 @@ class RFDETRInst(RFDETRMixin, LightningInstanceSegModel):  # pyrefly: ignore[inc
 
     def forward_for_tracing(self, inputs: torch.Tensor) -> dict[str, torch.Tensor]:
         """Forward pass used for export (returns dict for reliable OV output naming)."""
-        boxes_with_scores, labels, masks = self.model.export(inputs, merge_scores=True)  # pyrefly: ignore[not-callable]
+        boxes_with_scores, labels, masks = self.model.export(  # pyrefly: ignore[not-callable]
+            inputs,
+            merge_scores=True,
+            with_nms=self.export_nms,
+        )
         # Scale boxes from normalized [0,1] to pixel coordinates (ModelAPI MaskRCNN expects this)
         h, w = inputs.shape[2], inputs.shape[3]
         scale = torch.tensor([w, h, w, h, 1.0], device=inputs.device)

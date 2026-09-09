@@ -56,7 +56,7 @@ test.describe('Polygon', () => {
             const currentPoint = polygonShape.points[3];
             const relativePoint = relative(currentPoint.x, currentPoint.y);
 
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
 
             await expect(
                 page.getByLabel(`Resize polygon (${currentPoint.x}, ${currentPoint.y}) anchor`)
@@ -98,7 +98,7 @@ test.describe('Polygon', () => {
         });
 
         await test.step('Undo once — last point disappears, previous point remains', async () => {
-            await page.getByRole('button', { name: /^undo$/i }).click();
+            await page.getByRole('button', { name: /^undo\b/i }).click();
 
             const newPolygon = page.getByLabel('new polygon');
 
@@ -110,7 +110,7 @@ test.describe('Polygon', () => {
         });
 
         await test.step('Undo to empty — in-progress polygon is gone', async () => {
-            const undoButton = page.getByRole('button', { name: /^undo$/i });
+            const undoButton = page.getByRole('button', { name: /^undo\b/i });
 
             await undoButton.click();
             await undoButton.click();
@@ -119,14 +119,14 @@ test.describe('Polygon', () => {
         });
 
         await test.step('Redo once — a point is restored', async () => {
-            await page.getByRole('button', { name: /^redo$/i }).click();
+            await page.getByRole('button', { name: /^redo\b/i }).click();
 
             const firstPoint = partialShape.points[0];
             await expect(page.getByLabel('new polygon')).toHaveAttribute('points', pointsToString([firstPoint]));
         });
 
         await test.step('Switch to selection tool — drawing state is reset', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await expect(page.getByLabel('new polygon')).toBeHidden();
         });
     });

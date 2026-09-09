@@ -3,7 +3,8 @@
 
 import { useEffect } from 'react';
 
-import { useZoom } from '../../../../components/zoom/zoom.provider';
+import { useZoom } from '@/components/zoom/zoom.provider';
+
 import { useAnnotationActions } from '../../../../shared/annotator/annotation-actions-provider.component';
 import { getFormattedPoints } from '../../annotations/utils';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';

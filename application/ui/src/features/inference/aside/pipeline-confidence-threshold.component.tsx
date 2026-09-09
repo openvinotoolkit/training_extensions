@@ -3,10 +3,9 @@
 
 import { useState } from 'react';
 
+import { ConfidenceThreshold } from '@/components/confidence-threshold/confidence-threshold.component';
 import { usePatchPipeline, usePipeline } from 'hooks/api/pipeline.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
-
-import { ConfidenceThreshold } from '../../../components/confidence-threshold/confidence-threshold.component';
 
 export const PipelineConfidenceThreshold = () => {
     const projectId = useProjectIdentifier();

@@ -145,6 +145,10 @@ export const useDisablePipeline = () => {
     });
 };
 
+export const useCapturePipelineFrame = () => {
+    return $api.useMutation('post', '/api/projects/{project_id}/pipeline:capture');
+};
+
 export const useConnectSourceToPipeline = () => {
     const project_id = useProjectIdentifier();
     const pipeline = usePatchPipeline();

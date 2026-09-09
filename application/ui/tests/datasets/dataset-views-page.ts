@@ -90,4 +90,8 @@ export class DatasetViewsPage {
     getOpenViewToastLink(name: string) {
         return this.page.getByLabel('toast').getByRole('link', { name: `Open ${name} view` });
     }
+
+    getDeletedSuccessToast(name: string) {
+        return this.page.getByText(`Dataset view "${name}" has been deleted successfully.`);
+    }
 }

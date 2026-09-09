@@ -1,10 +1,10 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { toast } from '@/components/toast/toast.component';
 import { matchQuery, MutationCache, QueryClient } from '@tanstack/react-query';
 
 import { paths } from '../api/openapi-spec';
-import { toast } from '../components/toast/toast.component';
 import { Meta, QueryKey } from './query-client.interface';
 
 declare module '@tanstack/react-query' {

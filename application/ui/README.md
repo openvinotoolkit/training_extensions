@@ -118,6 +118,11 @@ npm run test:e2e           # E2E tests (Playwright against real backend)
 Run a single unit test: `npm run test:unit -- src/path/to/file.test.tsx`
 Run a single Playwright spec: `npm run test:component -- tests/path/to/file.spec.ts`
 
+### Internationalization
+
+The UI uses i18next and react-i18next for internationalization. English is the
+default, fallback, and currently the only supported language.
+
 ### Code Quality
 
 ```bash

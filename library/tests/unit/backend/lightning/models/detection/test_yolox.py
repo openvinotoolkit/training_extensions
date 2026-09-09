@@ -93,7 +93,7 @@ class TestYOLOX:
         output = fxt_model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 4
 
-    def test_export_without_nms(self, fxt_model):
+    def test_export_nms_disabled(self, fxt_model):
         fxt_model.eval()
         fxt_model.export_nms = False
         dets, labels = fxt_model.forward_for_tracing(torch.randn(1, 3, 32, 32))

@@ -1,5 +1,6 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+import platform
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
@@ -14,6 +15,7 @@ from app.models.system import DeviceInfo
 from app.services.base import BaseSessionManagedService
 from app.services.media_numpy_loader import MediaNumpyLoader
 from app.services.media_service import MediaService
+from app.utils.images import to_uint8_rgb
 
 if TYPE_CHECKING:
     from model_api.models import Model
@@ -44,11 +46,14 @@ SAM_ENCODER_CONFIGURATION = {
     "pad_value": 0,
 }
 
-# The mobile_sam encoder IR is numerically unstable in f16: the graph emits the same
-# embedding for every input, so the client decodes an empty mask with no error anywhere.
-# f16 is the CPU plugin default on Apple Silicon (x86 defaults to bf16/f32), so this only
-# reproduces on macOS ARM. Pin f32 explicitly on every platform.
-SAM_ENCODER_PLUGIN_CONFIG = {"INFERENCE_PRECISION_HINT": "f32"}
+
+# The mobile_sam encoder IR is numerically unstable in f16 on Apple Silicon (ARM):
+# the graph emits the same embedding for every input, so the client decodes an empty
+# mask with no error anywhere. As a workaround, we pin the inference precision to f32
+# on arm64 (a.k.a. aarch64), meanwhile other platforms can use the plugin default.
+def _get_encoder_plugin_config() -> dict[str, str]:
+    is_arm = platform.machine() in {"arm64", "aarch64"}
+    return {"INFERENCE_PRECISION_HINT": "f32"} if is_arm else {}
 
 
 class MediaSegmentService(BaseSessionManagedService):
@@ -80,7 +85,7 @@ class MediaSegmentService(BaseSessionManagedService):
             core,
             str(self.model_xml_path),
             device=device,
-            plugin_config=SAM_ENCODER_PLUGIN_CONFIG,
+            plugin_config=_get_encoder_plugin_config(),
             max_num_requests=1,
         )
         return Model.create_model(adapter, configuration=SAM_ENCODER_CONFIGURATION)
@@ -149,6 +154,17 @@ class MediaSegmentService(BaseSessionManagedService):
         elif isinstance(media, Video):
             raise ValueError("Video media type is not supported for segmentation")
 
+        # Derive the resize metadata from the decoded binary (H, W, ...) before any channel
+        # conversion; this is correct for every media type (Image, VideoFrame, extracted frame).
+        original_height, original_width = int(media_binary.shape[0]), int(media_binary.shape[1])
+
+        # The SAM encoder IR only accepts (1, H, W, 3) uint8 input, but media is decoded with its
+        # original bit depth and channel count preserved (e.g. a 16-bit grayscale image decodes to
+        # (H, W, 1) uint16), which makes OpenVINO reject the tensor. Normalize to 8-bit RGB using
+        # the same min-max scaling the UI applies when displaying high bit depth images, so the
+        # encoder sees exactly the pixels the user is prompting on.
+        model_input = to_uint8_rgb(media_binary)
+
         model = self._load_model(device=device.as_openvino)
 
         media_id = (
@@ -156,14 +172,11 @@ class MediaSegmentService(BaseSessionManagedService):
         )
         try:
             logger.debug("Performing image '{}' segmentation", media_id)
-            embeddings = model(media_binary)
+            embeddings = model(model_input)
         finally:
             # Release the native OpenVINO resources; this service loads a fresh model per request.
             self._unload(model)
 
-        # Derive the resize metadata from the actual decoded binary (H, W, C), which is
-        # correct for every media type (Image, VideoFrame, extracted video frame).
-        original_height, original_width = int(media_binary.shape[0]), int(media_binary.shape[1])
         resize_metadata = self._compute_resize_metadata(original_height=original_height, original_width=original_width)
         logger.debug("Embedding resize metadata for '{}': {}", media_id, resize_metadata)
 

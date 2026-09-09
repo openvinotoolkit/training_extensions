@@ -1,5 +1,6 @@
 id: object-detection-edgecrafter-x
 name: ECDet-X
+license: EdgeCrafter
 
 pretrained_weights:
   source: direct_link

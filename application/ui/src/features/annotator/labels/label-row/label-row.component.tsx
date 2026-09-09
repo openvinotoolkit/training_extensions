@@ -4,12 +4,12 @@
 import { KeyboardEvent, useState } from 'react';
 
 import type { Label } from '@/api/types';
+import { HotkeyField } from '@/components/label-fields/hotkey-field.component';
+import { LabelColorPicker } from '@/components/label-fields/label-color-picker.component';
+import { SilentCheckbox } from '@/components/label-fields/silent-checkbox.component';
 import { ActionButton, Flex, Grid, TextField, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Delete, Pin, Unpin } from '@geti-ui/ui/icons';
 
-import { HotkeyField } from '../../../../components/label-fields/hotkey-field.component';
-import { LabelColorPicker } from '../../../../components/label-fields/label-color-picker.component';
-import { SilentCheckbox } from '../../../../components/label-fields/silent-checkbox.component';
 import { useDebounce } from '../../../../hooks/use-debounce.hook';
 import { isNonEmptyString } from '../../../../shared/util';
 

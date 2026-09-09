@@ -3,12 +3,13 @@
 
 import { Suspense, useMemo, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Heading, Loading, Text, View } from '@geti-ui/ui';
 import { useProjects } from 'hooks/api/project.hook';
 import { partition } from 'lodash-es';
 
 import { version } from '../../../../package.json';
-import { isNonEmptyArray, pluralize } from '../../../shared/util';
+import { isNonEmptyArray } from '../../../shared/util';
 import { EmptyProjectList } from './empty-project-list/empty-project-list.component';
 import { NoMatchingProjects } from './filter-projects/no-matching-projects.component';
 import { ProjectFilters } from './filter-projects/project-filters.component';
@@ -23,6 +24,7 @@ import backgroundStyles from '../project-background.module.scss';
 import classes from './project-list.module.scss';
 
 const ProjectGrid = () => {
+    const { t } = useTranslation();
     const projectsQuery = useProjects();
     const projects = projectsQuery.data;
     const [sortBy, setSortBy] = useState<SortBy>('createdAt-descending');
@@ -46,10 +48,9 @@ const ProjectGrid = () => {
     }
 
     const totalCount = projectsWithoutActivePipeline.length;
-    const countUnit = pluralize(totalCount, 'project', 'projects');
     const countLabel = isFiltering
-        ? `${sortedProjects.length} of ${totalCount} ${countUnit}`
-        : `${totalCount} ${countUnit}`;
+        ? t('project.list.countFiltered', { count: totalCount, filtered: sortedProjects.length })
+        : t('project.list.count', { count: totalCount });
     const cardMinWidth = 480;
     const visibleCardsCount = (activeProject === undefined ? 0 : 1) + sortedProjects.length;
 
@@ -62,7 +63,7 @@ const ProjectGrid = () => {
             <Divider size={'S'} />
 
             <Heading width={'100%'} level={1} UNSAFE_className={classes.heading}>
-                Projects
+                {t('project.list.heading')}
             </Heading>
 
             {shouldShowFilters && (
