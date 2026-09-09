@@ -167,8 +167,6 @@ override-dependencies = [
 [tool.uv.sources]
 # TODO @kprokofi: NNCF bug: https://github.com/openvinotoolkit/nncf/pull/4157, should be reverted after 3.4.0 is released
 nncf = { git = "https://github.com/openvinotoolkit/nncf.git", rev = "ae0908fe75e9cbe31051545b6ef818d084cb2797" }
-# Pinned to a specific commit until the required changes are released on PyPI
-openvino-model-api = { git = "https://github.com/open-edge-platform/model_api.git", rev = "9a2b0eab165bfa56021d74c08bb64bff452ad68a", subdirectory = "model_api" }
 torch = [
     # Note: Pytorch indexes only provide pre-built wheels for Linux and Windows.
     # For other platforms (e.g., macOS), Pytorch has to be installed from the default PyPI index.
