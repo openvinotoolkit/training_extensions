@@ -592,7 +592,7 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
                 # fallback is available yet, there is nothing to reuse, so let the job fail as usual.
                 if variant.format == ModelFormat.PYTORCH or pytorch_metrics is None:
                     raise
-                logger.warning(
+                logger.opt(exception=True).warning(
                     "Evaluation of the {} model failed ({}); reusing the PyTorch evaluation results instead",
                     variant.format.value,
                     eval_exc,
