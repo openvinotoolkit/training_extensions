@@ -19,7 +19,7 @@ export const MediaFilterLabels = () => {
 
     return (
         <FilterPopoverButton
-            ariaLabel={t('dataset.filters.labels')}
+            ariaLabel={'Filter by labels'}
             placeholder={t('dataset.filters.searchLabels')}
             summary={summary}
             minWidth='size-3000'

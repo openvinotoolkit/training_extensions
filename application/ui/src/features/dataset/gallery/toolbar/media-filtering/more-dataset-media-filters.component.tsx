@@ -24,7 +24,7 @@ export const MoreDatasetMediaFilters = () => {
     return (
         <DialogTrigger type={'popover'} placement={'bottom'}>
             <TooltipTrigger>
-                <ActionButton isQuiet aria-label={t('dataset.filters.more')}>
+                <ActionButton isQuiet aria-label={'More filters'}>
                     <Filter />
                 </ActionButton>
                 <Tooltip>{t('dataset.filters.more')}</Tooltip>

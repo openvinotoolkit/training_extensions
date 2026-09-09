@@ -56,7 +56,7 @@ const BulkSelectedMediaLabelsAssignment = ({
                     <Text>{t('dataset.bulkLabels.selectedInstructions')}</Text>
                     <Divider size={'S'} marginY={'size-100'} />
                     <LabelsList
-                        ariaLabel={t('dataset.bulkLabels.labelsToAssign')}
+                        ariaLabel={'Labels to assign'}
                         labels={projectLabels}
                         selectedLabels={selectedLabels}
                         onSelectedLabelsChange={setSelectedLabels}

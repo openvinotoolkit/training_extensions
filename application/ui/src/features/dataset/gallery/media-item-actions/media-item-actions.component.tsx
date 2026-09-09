@@ -50,10 +50,10 @@ export const MediaItemActions = ({ id, onDeleted, mediaUrl, mediaFileName, onAnn
     return (
         <>
             <MenuTrigger>
-                <ActionButton isQuiet aria-label={t('dataset.mediaActions.actions')} isDisabled={isPending}>
+                <ActionButton isQuiet aria-label={'Media actions'} isDisabled={isPending}>
                     <MoreMenu />
                 </ActionButton>
-                <Menu onAction={handleAction} aria-label={t('dataset.mediaActions.menu')}>
+                <Menu onAction={handleAction} aria-label={'Media actions menu'}>
                     <Item key={MEDIA_ACTIONS.ANNOTATE}>{t('dataset.mediaActions.annotate')}</Item>
                     <Item key={MEDIA_ACTIONS.DOWNLOAD}>{t('dataset.mediaActions.download')}</Item>
                     <Item key={MEDIA_ACTIONS.DELETE}>{t('common.actions.delete')}</Item>

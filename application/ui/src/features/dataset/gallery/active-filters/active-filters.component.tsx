@@ -108,7 +108,7 @@ export const ActiveFilters = () => {
     }
 
     return (
-        <Flex gap={'size-150'} wrap={'wrap'} alignItems={'center'} aria-label={t('dataset.filtersActive.active')}>
+        <Flex gap={'size-150'} wrap={'wrap'} alignItems={'center'} aria-label={'Active filters'}>
             <ActionButton isQuiet onPress={handleClearAll}>
                 {t('dataset.filtersActive.clearAll')}
             </ActionButton>

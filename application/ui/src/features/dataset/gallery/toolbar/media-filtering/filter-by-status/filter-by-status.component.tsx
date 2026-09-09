@@ -22,7 +22,7 @@ export const FilterByStatus = ({ width }: FilterByStatusProps) => {
     return (
         <Picker
             width={width}
-            aria-label={t('dataset.filters.statusLabel')}
+            aria-label={'media status'}
             items={filterByStatusOptions}
             selectedKey={annotationStatus ?? filterByStatusOptions[0].key}
             onSelectionChange={(status) => setAnnotationStatus(status as FilterByStatusKey)}

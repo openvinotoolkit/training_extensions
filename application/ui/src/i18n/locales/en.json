@@ -37,7 +37,6 @@
             "allMedia": "All media",
             "withAnnotations": "Media with annotations",
             "missingAnnotations": "Media with missing annotations",
-            "statusLabel": "Media status",
             "subset": "Filter by subset",
             "labels": "Filter by labels",
             "searchLabels": "Search labels",
@@ -53,7 +52,6 @@
             "uploading": "Uploading",
             "uploaded": "Uploaded",
             "failed": "Failed",
-            "errorDetails": "Error details",
             "error": "Error",
             "errorTitle": "Upload error",
             "details": "Upload details",
@@ -83,7 +81,6 @@
         },
         "statistics": {
             "label": "Dataset statistics",
-            "ariaLabel": "dataset statistics",
             "title": "Dataset Statistics",
             "numberOfMedia": "Number of media",
             "images": "Images",
@@ -106,7 +103,6 @@
             "selectedInstructions": "Choose the label(s) to assign to the selected images, then click 'Assign'.",
             "imageOnlyNote": "The selected labels apply only to images, videos (if any) will be uploaded without annotations.",
             "selectedImagesNote": "The selected labels apply only to images, videos (if any) remain intact.",
-            "labelsToAssign": "Labels to assign",
             "noResults": "No results found. Try searching with different words.",
             "cancelUpload": "Cancel upload",
             "skip": "Skip",
@@ -114,12 +110,9 @@
             "assign": "Assign"
         },
         "filtersActive": {
-            "clearAll": "Clear all",
-            "active": "Active filters"
+            "clearAll": "Clear all"
         },
         "mediaActions": {
-            "actions": "Media actions",
-            "menu": "Media actions menu",
             "annotate": "Annotate",
             "download": "Download",
             "downloadStarted": "{{fileName}} download has started"

@@ -56,7 +56,7 @@ export const LabelsList = ({
     return (
         <Flex gap='size-200' direction='column' flex={1} minHeight={0}>
             <TextField
-                aria-label={t('dataset.filters.searchLabels')}
+                aria-label={'Search labels'}
                 value={searchPhrase}
                 onChange={setSearchPhrase}
                 placeholder={t('dataset.filters.searchLabels')}

@@ -45,7 +45,7 @@ export const DeleteMediaItem = ({ itemsIds = [], onDeleted, isHotkeyEnabled = fa
             <TooltipTrigger>
                 <ActionButton
                     isQuiet
-                    aria-label={t('dataset.delete.mediaItem')}
+                    aria-label={'delete media item'}
                     isDisabled={isPending}
                     UNSAFE_className={classes.deleteButton}
                     onPress={openDeleteDialog}

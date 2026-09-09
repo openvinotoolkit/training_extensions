@@ -27,7 +27,7 @@ export const DatasetStatistics = () => {
     return (
         <DialogTrigger isDismissable>
             <TooltipTrigger>
-                <ActionButton isQuiet aria-label={t('dataset.statistics.ariaLabel')}>
+                <ActionButton isQuiet aria-label={'dataset statistics'}>
                     <GraphChart />
                 </ActionButton>
                 <Tooltip>{t('dataset.statistics.label')}</Tooltip>

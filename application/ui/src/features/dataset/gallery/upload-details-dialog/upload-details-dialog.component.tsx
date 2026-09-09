@@ -34,31 +34,20 @@ import { computeSummary, type UploadFileItem, type UploadItemStatus } from '../.
 
 import classes from './upload-details-dialog.module.scss';
 
-const StatusIcon = ({
-    status,
-    labels,
-}: {
-    status: UploadItemStatus;
-    labels: Record<UploadItemStatus, string>;
-}): ReactNode => {
+const StatusIcon = ({ status }: { status: UploadItemStatus }): ReactNode => {
     switch (status) {
         case 'queued':
-            return <Pending aria-label={labels.queued} size={'S'} />;
+            return <Pending aria-label={'Queued'} size={'S'} />;
         case 'uploading':
             return <Loading mode={'inline'} size={'S'} />;
         case 'uploaded':
             return (
-                <AcceptCircle
-                    aria-label={labels.uploaded}
-                    width={16}
-                    height={16}
-                    style={{ fill: 'var(--brand-moss)' }}
-                />
+                <AcceptCircle aria-label={'Uploaded'} width={16} height={16} style={{ fill: 'var(--brand-moss)' }} />
             );
         case 'failed':
             return (
                 <CrossCircle
-                    aria-label={labels.failed}
+                    aria-label={'Failed'}
                     width={16}
                     height={16}
                     style={{ fill: 'var(--brand-coral-cobalt)' }}
@@ -78,7 +67,7 @@ const StatusCell = ({
 }) => {
     const statusContent = (
         <Flex alignItems={'center'} gap={'size-100'}>
-            <StatusIcon status={item.status} labels={labels} />
+            <StatusIcon status={item.status} />
             <Text>{labels[item.status]}</Text>
         </Flex>
     );
@@ -88,11 +77,7 @@ const StatusCell = ({
             <Flex alignItems={'center'} gap={'size-100'}>
                 {statusContent}
                 <DialogTrigger type={'popover'}>
-                    <ActionButton
-                        isQuiet
-                        aria-label={t('dataset.upload.errorDetails')}
-                        UNSAFE_className={classes.error}
-                    >
+                    <ActionButton isQuiet aria-label={'Error details'} UNSAFE_className={classes.error}>
                         {t('dataset.upload.error')}
                     </ActionButton>
                     <Dialog>
@@ -153,7 +138,7 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
                 <Flex direction={'column'} gap={'size-200'}>
                     <Text>{subheader}</Text>
                     <TableView
-                        aria-label={t('dataset.upload.details')}
+                        aria-label={'Upload details'}
                         overflowMode={'truncate'}
                         density={'compact'}
                         maxHeight={'60vh'}
