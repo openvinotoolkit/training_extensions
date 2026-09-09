@@ -751,27 +751,27 @@ class ExperimentExecutor:
         csv_metrics["training:gpu_mem"] = _get_peak_gpu_memory_mb()
         csv_metrics["training:ram_mem"] = ram_sampler.peak_mb
 
-        from getitune.benchmark.hardware import get_training_device_name
+        if self.performance_benchmark:
+            from getitune.benchmark.hardware import get_training_device_name
 
-        train_batch_size = self._effective_training_batch_size(engine)
-        if train_batch_size is None:
-            msg = f"Could not determine effective training batch size for {self.model_name}."
-            raise RuntimeError(msg)
-        metadata = {
-            "schema_version": 1,
-            "task": self.task,
-            "model": self.model_name,
-            "dataset": self.dataset_name,
-            "scenario": self.scenario_name,
-            "seed": self.seed,
-            "training_device": self.training_device_name or get_training_device_name(self.accelerator),
-            "training_batch_size": train_batch_size,
-            "gpu_memory_mb": csv_metrics.get("training:gpu_mem", 0.0),
-            "ram_memory_mb": csv_metrics.get("training:ram_mem", 0.0),
-            "git_sha": self._git_sha(),
-            "software": self._software_versions(),
-        }
-        self._write_performance_result(metadata)
+            train_batch_size = self._effective_training_batch_size(engine)
+            if train_batch_size is None:
+                msg = f"Could not determine effective training batch size for {self.model_name}."
+                raise RuntimeError(msg)
+            metadata = {
+                "schema_version": 1,
+                "task": self.task,
+                "model": self.model_name,
+                "dataset": self.dataset_name,
+                "scenario": self.scenario_name,
+                "seed": self.seed,
+                "training_device": self.training_device_name or get_training_device_name(self.accelerator),
+                "training_batch_size": train_batch_size,
+                "gpu_memory_mb": csv_metrics.get("training:gpu_mem", 0.0),
+                "ram_memory_mb": csv_metrics.get("training:ram_mem", 0.0),
+                "software": self._software_versions(),
+            }
+            self._write_performance_result(metadata)
 
         del engine
         return PhaseResult(phase="train", metrics=csv_metrics, wall_time=wall)
