@@ -6,6 +6,7 @@ import { FormEvent, useState } from 'react';
 import type { Label, Project, TaskType } from '@/api/types';
 import { Button, ButtonGroup, Divider, Flex, Form, Text, TextField } from '@geti-ui/ui';
 import { useCreateProject } from 'hooks/api/project.hook';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 
@@ -27,6 +28,7 @@ type CreateProjectFormProps = {
 };
 
 export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
+    const { t } = useTranslation();
     const [selectedTask, setSelectedTask] = useState<TaskType | null>(null);
     const [labels, setLabels] = useState<Label[]>([]);
     const [name, setName] = useState<string>(() => generateUniqueProjectName(projects.map((project) => project.name)));
@@ -43,7 +45,8 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
         ? undefined
         : validateProjectName(
               name,
-              projects.map((project) => project.name)
+              projects.map((project) => project.name),
+              t
           );
 
     const isSingleLabelClassification = isClassificationTask(selectedTask) && classificationTaskType === 'single-label';
