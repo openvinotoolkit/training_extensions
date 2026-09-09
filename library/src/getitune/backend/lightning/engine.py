@@ -14,7 +14,7 @@ import os
 import shutil
 import time
 from contextlib import contextmanager
-from pathlib import Path, PosixPath, WindowsPath
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Iterable, Iterator, Literal
 from warnings import warn
 
@@ -46,6 +46,7 @@ from getitune.types.export import ExportFormat
 from getitune.types.precision import Precision
 from getitune.types.task import TaskType
 from getitune.utils.device import get_available_device, is_xpu_available
+from getitune.utils.safe_globals import CHECKPOINT_SAFE_GLOBALS
 from getitune.utils.utils import measure_flops
 
 if TYPE_CHECKING:
@@ -57,21 +58,6 @@ if TYPE_CHECKING:
     from getitune.data.dataset.base import VisionDataset
     from getitune.metrics import MetricCallable
     from getitune.types.types import DATA, MODEL
-
-
-# Checkpoints saved by getitune <= 0.3.0 capture the model's `pretrained_weights`
-# init argument into `hyper_parameters`, which pickles a `pathlib.Path` object.
-# pathlib paths are inert data objects (their pickle reconstructs via a plain
-# constructor call with a string), so they are safe for PyTorch's restricted
-# unpickler. The tuple entries register the module paths used by different
-# Python versions (`pathlib` up to 3.12, `pathlib._local` from 3.13).
-_CHKPT_SAFE_GLOBALS: list[Callable | tuple[Callable, str]] = [
-    (Path, "pathlib.Path"),
-    (PosixPath, "pathlib.PosixPath"),
-    (PosixPath, "pathlib._local.PosixPath"),
-    (WindowsPath, "pathlib.WindowsPath"),
-    (WindowsPath, "pathlib._local.WindowsPath"),
-]
 
 
 @contextmanager
@@ -1270,7 +1256,7 @@ class LightningEngine(Engine):
             raise FileNotFoundError(msg)
 
         try:
-            with torch.serialization.safe_globals(_CHKPT_SAFE_GLOBALS):
+            with torch.serialization.safe_globals(CHECKPOINT_SAFE_GLOBALS):
                 ckpt = torch.load(checkpoint, map_location=map_location)
         except Exception as e:
             msg = (

@@ -20,6 +20,8 @@ from torch import distributed as torch_dist
 from torch import nn
 from torch.utils.model_zoo import load_url
 
+from getitune.utils.safe_globals import PRETRAINED_SAFE_GLOBALS
+
 BoolTypeTensor = Union[torch.BoolTensor, torch.cuda.BoolTensor]
 LongTypeTensor = Union[torch.LongTensor, torch.cuda.LongTensor]
 IndexType = Union[str, slice, int, list, LongTypeTensor, BoolTypeTensor, np.ndarray]
@@ -74,9 +76,11 @@ def load_checkpoint(
             Defaults to None.
     """
     if Path(checkpoint).exists():
+        with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
+            loaded_checkpoint = torch.load(checkpoint, map_location)
         load_checkpoint_to_model(
             model,
-            torch.load(checkpoint, map_location),
+            loaded_checkpoint,
             strict=strict,
             prefix=prefix,
             key_mapping=key_mapping,
@@ -124,15 +128,17 @@ def load_from_http(
     logger.info("Checkpoint folder: '%s'", weights_dir)
     rank, world_size = get_dist_info()
     if rank == 0:
-        checkpoint = load_url(
-            filename, model_dir=weights_dir, map_location=map_location, progress=progress, weights_only=True
-        )
-    if world_size > 1:
-        torch_dist.barrier()
-        if rank > 0:
+        with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
             checkpoint = load_url(
                 filename, model_dir=weights_dir, map_location=map_location, progress=progress, weights_only=True
             )
+    if world_size > 1:
+        torch_dist.barrier()
+        if rank > 0:
+            with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
+                checkpoint = load_url(
+                    filename, model_dir=weights_dir, map_location=map_location, progress=progress, weights_only=True
+                )
     return checkpoint
 
 
