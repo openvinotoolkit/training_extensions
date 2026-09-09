@@ -65,24 +65,13 @@ pub fn spawn_backend(app: &AppHandle) -> std::io::Result<Sidecar> {
     let mut command = Command::new(&backend_path);
     apply_default_env(&mut command, app);
 
-    // Put the backend into its own console process group, and in release
-    // suppress its console window.
-    //
-    // Note that `CREATE_NO_WINDOW` leaves the child *without a console handle*,
-    // so the release side-car cannot be stopped with `GenerateConsoleCtrlEvent`.
-    // Graceful shutdown therefore goes through the backend's named event (see
-    // `job::signal_shutdown_event`); `CREATE_NEW_PROCESS_GROUP` only keeps the
-    // Ctrl+Break fallback usable in `tauri dev`, where the child does inherit
-    // the shell's console.
-    #[cfg(windows)]
+    // Release builds suppress the side-car's console window; in dev it stays
+    // visible so the backend's logs show up in the terminal.
+    #[cfg(all(windows, not(debug_assertions)))]
     {
         use std::os::windows::process::CommandExt;
-        const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
-        #[cfg(not(debug_assertions))]
         const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-        #[cfg(debug_assertions)]
-        const CREATE_NO_WINDOW: u32 = 0;
-        command.creation_flags(CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW);
+        command.creation_flags(CREATE_NO_WINDOW);
     }
 
     // Put the backend into its own process group so that on shutdown we can

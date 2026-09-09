@@ -28,9 +28,9 @@ tauri-plugin-opener = "2.5.3"
 [target.'cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))'.dependencies]
 tauri-plugin-single-instance = "=2.4.4"
 
-# Windows-only: Job Objects + console control events for a reliable, graceful
-# side-car shutdown, and the WebView2 COM interfaces needed to observe
-# `ProcessFailed` (Evergreen runtime updates / GPU crashes) instead of dying.
+# Windows-only: Job Objects to bind the side-car's process tree to the shell's
+# lifetime, and the WebView2 COM interfaces needed to observe `ProcessFailed`
+# (Evergreen runtime updates / GPU crashes) instead of dying.
 #
 # Deliberately *not* pinned with `=`: these must resolve to the very same crate
 # versions that tauri 2.11 / wry 0.55 already depend on, otherwise the COM types
@@ -42,9 +42,7 @@ windows = { version = "0.61", features = [
     "Win32_Foundation",
     "Win32_Security",
     "Win32_System_Com",
-    "Win32_System_Console",
     "Win32_System_JobObjects",
-    "Win32_System_Threading",
 ] }
 webview2-com = "0.38"
 

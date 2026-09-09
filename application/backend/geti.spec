@@ -240,15 +240,8 @@ runtime_hooks = ['pyinstaller/pyi_rth_pkgmeta.py']
 
 system = platform.system()
 if system == "Windows":
-    # shutdown.py publishes the graceful-shutdown event as early as possible so the
-    # shell can stop the backend even while it is still starting up.
     # uwp.py sets DATA_DIR; certs.py must run after it to generate TLS certs there.
-    runtime_hooks += [
-        'pyinstaller/windows/shutdown.py',
-        'pyinstaller/windows/uwp.py',
-        'pyinstaller/windows/certs.py',
-        'pyinstaller/windows/proxy.py',
-    ]
+    runtime_hooks += ['pyinstaller/windows/uwp.py', 'pyinstaller/windows/certs.py', 'pyinstaller/windows/proxy.py']
 
 a = Analysis(
     ['app/main.py'],

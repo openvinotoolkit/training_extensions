@@ -20,9 +20,7 @@ if getattr(sys, "frozen", False) and __name__ == "__main__":
 
 import asyncio
 import logging
-import signal
 import ssl
-import threading
 from collections.abc import Awaitable, Callable
 from os import getenv
 from pathlib import Path
@@ -205,90 +203,6 @@ def _asyncio_exception_handler(loop: asyncio.AbstractEventLoop, context: dict) -
     loop.default_exception_handler(context)
 
 
-# Module published by the frozen Windows launcher hook
-# (``pyinstaller/windows/shutdown.py``) carrying a ``threading.Event`` that is set
-# when the desktop shell asks the backend to stop. Absent in every other context.
-_SHUTDOWN_BRIDGE_MODULE = "geti_shutdown"
-_SHUTDOWN_BRIDGE_ATTRIBUTE = "shutdown_requested"
-
-
-def _watch_launcher_shutdown_request(loop: asyncio.AbstractEventLoop, shutdown_event: asyncio.Event) -> None:
-    """Forward a shutdown request raised by the platform launcher, if there is one.
-
-    Some launchers cannot use signals to stop the backend - the Windows desktop
-    shell, for instance, has no console to send console control events through.
-    Those platforms publish the request as a :class:`threading.Event` instead
-    (see ``pyinstaller/windows/shutdown.py``); all the platform-specific
-    machinery lives there, and this function only bridges the result onto the
-    event loop.
-
-    Args:
-        loop: The running event loop, used to set ``shutdown_event`` thread-safely.
-        shutdown_event: The event awaited by the Hypercorn ``shutdown_trigger``.
-    """
-    bridge = sys.modules.get(_SHUTDOWN_BRIDGE_MODULE)
-    request = getattr(bridge, _SHUTDOWN_BRIDGE_ATTRIBUTE, None) if bridge else None
-    if request is None:
-        return
-
-    def _wait_for_request() -> None:
-        request.wait()
-        logger.info("Shutdown requested by the launcher, shutting down gracefully")
-        loop.call_soon_threadsafe(shutdown_event.set)
-
-    # Daemon thread: it must never delay interpreter exit.
-    threading.Thread(target=_wait_for_request, name="shutdown-request-listener", daemon=True).start()
-    logger.debug("Listening for launcher shutdown requests")
-
-
-def _install_shutdown_trigger() -> Callable[[], Awaitable[None]]:
-    """Install shutdown listeners and return a Hypercorn ``shutdown_trigger``.
-
-    Something has to ask the backend to stop before it exits, so that the ASGI
-    lifespan shutdown can run: in-flight requests finish, worker processes are
-    stopped and the SQLite database is checkpointed and closed. Without this the
-    caller's only option is a hard kill, which leaves WAL/journal files behind and
-    can truncate an in-flight migration or training checkpoint - surfacing as
-    instability on the *next* launch.
-
-    Two channels are wired up:
-
-    * POSIX signals. ``SIGBREAK`` is included so a ``CTRL_BREAK_EVENT`` works when
-      the process owns a console (``tauri dev``, or a manual launch from a
-      terminal); it would otherwise kill the interpreter outright.
-    * a request published by the platform launcher, for the cases signals cannot
-      reach (see :func:`_watch_launcher_shutdown_request`).
-
-    Returns:
-        An awaitable factory that resolves once a shutdown request is received.
-    """
-    loop = asyncio.get_running_loop()
-    shutdown_event = asyncio.Event()
-
-    def _on_signal(signum: int, _frame: object) -> None:
-        # Signal handlers run in the main thread but outside the event loop, so
-        # the event must be set through the loop to stay thread-safe.
-        logger.info("Received signal {}, shutting down gracefully", signal.Signals(signum).name)
-        loop.call_soon_threadsafe(shutdown_event.set)
-
-    # SIGBREAK only exists on Windows; SIGTERM/SIGINT are available everywhere.
-    signals = [signal.SIGINT, signal.SIGTERM, getattr(signal, "SIGBREAK", None)]
-    for sig in signals:
-        if sig is None:
-            continue
-        try:
-            signal.signal(sig, _on_signal)
-        except (OSError, ValueError):  # not the main thread, or unsupported on this platform
-            logger.debug("Could not install handler for signal {}", sig)
-
-    _watch_launcher_shutdown_request(loop, shutdown_event)
-
-    async def _trigger() -> None:
-        await shutdown_event.wait()
-
-    return _trigger
-
-
 async def main_async() -> None:
     """Async main application entry point for Hypercorn"""
     app = create_app()
@@ -306,10 +220,6 @@ async def main_async() -> None:
     # exception handler that downgrades just these cases and delegates everything else.
     asyncio.get_running_loop().set_exception_handler(_asyncio_exception_handler)
 
-    # Handle shutdown requests from the desktop shell ourselves so the lifespan
-    # shutdown (database checkpoint, worker teardown) always gets to run.
-    shutdown_trigger = _install_shutdown_trigger()
-
     setup_hypercorn_logging(settings.log_level)
     config = Config()
     config.bind = [f"{settings.host}:{settings.port}"]
@@ -322,8 +232,7 @@ async def main_async() -> None:
     config.errorlog = "-"
     config.loglevel = settings.log_level.upper()
 
-    await serve(cast(ASGIFramework, app), config, shutdown_trigger=shutdown_trigger)
-    logger.info("Application shutdown completed")
+    await serve(cast(ASGIFramework, app), config)
 
 
 def main() -> None:

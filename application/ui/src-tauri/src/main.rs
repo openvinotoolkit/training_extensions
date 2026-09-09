@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use std::process::Child;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use serde::Deserialize;
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
@@ -26,12 +26,6 @@ const MONITOR_POLL_INTERVAL: Duration = Duration::from_millis(250);
 /// How many consecutive `try_wait()` failures the monitor tolerates before it
 /// concludes the backend can no longer be observed.
 const MAX_CONSECUTIVE_POLL_ERRORS: u32 = 5;
-
-/// How long a graceful shutdown request is given before the backend is killed.
-///
-/// Generous on purpose: the ASGI lifespan shutdown has to finish in-flight
-/// requests, stop worker processes and close (checkpoint) the SQLite database.
-const GRACEFUL_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Label of the single application window (see `tauri.conf.json`).
 pub const MAIN_WINDOW_LABEL: &str = "main";
@@ -168,43 +162,28 @@ struct BackendControl {
     shutting_down: Arc<AtomicBool>,
 }
 
-/// Block until `child` is *confirmed* to have exited, or `timeout` elapses.
+/// Hard-kill a process and all its descendants by PID.
 ///
-/// Returns `Some(exit_code)` only when the exit was actually observed. A polling
-/// error yields `None` — the same as a timeout — because a failure to *observe*
-/// the process says nothing about whether it is still running. Reporting it as
-/// an exit would make [`terminate_backend`] skip the forced kill and leave the
-/// backend and its workers alive.
-fn wait_for_exit(child: &mut Child, timeout: Duration) -> Option<Option<i32>> {
-    let deadline = Instant::now() + timeout;
-    loop {
-        match child.try_wait() {
-            Ok(Some(status)) => return Some(status.code()),
-            Ok(None) => {}
-            Err(e) => {
-                log::warn!("Failed to poll the backend while stopping it: {e}");
-                return None;
-            }
-        }
-        if Instant::now() >= deadline {
-            return None;
-        }
-        std::thread::sleep(MONITOR_POLL_INTERVAL);
-    }
-}
-
-/// Hard-kill a process and all its descendants by PID. Last resort only.
+/// Only used as a fallback: on Windows the side-car normally lives in a
+/// kill-on-close job object (see `job.rs`), which tears the whole tree down with
+/// a single handle close and without spawning anything.
 ///
-/// - **Windows**: `taskkill /F /T /PID` terminates the entire process tree.
+/// - **Windows**: `taskkill /F /T /PID` terminates the entire process tree. It
+///   is launched with `CREATE_NO_WINDOW`, because `taskkill` is a console
+///   application and a GUI process spawning it would otherwise flash a console
+///   window on screen every time the app closes.
 /// - **Unix**: sends `SIGKILL` to the process group (`kill -- -<pid>`). The
 ///   backend is spawned as its own process-group leader (see `backend.rs`), so
 ///   all of its multiprocessing workers are included.
 fn kill_process_tree(pid: u32) {
     #[cfg(windows)]
     {
+        use std::os::windows::process::CommandExt;
         use std::process::Command;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
         let _ = Command::new("taskkill")
             .args(["/F", "/T", "/PID", &pid.to_string()])
+            .creation_flags(CREATE_NO_WINDOW)
             .output();
     }
 
@@ -218,61 +197,14 @@ fn kill_process_tree(pid: u32) {
     }
 }
 
-/// Politely ask the backend tree to stop.
+/// Terminate the backend and every process it spawned.
 ///
-/// On Windows the primary channel is the backend's named shutdown event, which
-/// works regardless of whether the side-car has a console — the release build is
-/// spawned with `CREATE_NO_WINDOW` and therefore has none, so the console-based
-/// `CTRL_BREAK_EVENT` is only a fallback for `tauri dev`. Unix gets `SIGTERM` on
-/// the process group. Returns `true` when the request was delivered.
-fn request_graceful_stop(pid: u32) -> bool {
-    #[cfg(windows)]
-    {
-        job::signal_shutdown_event(pid) || job::send_ctrl_break(pid)
-    }
-
-    #[cfg(unix)]
-    {
-        use std::process::Command;
-        Command::new("kill")
-            .args(["-TERM", "--", &format!("-{pid}")])
-            .output()
-            .map(|o| o.status.success())
-            .unwrap_or(false)
-    }
-}
-
-/// Stop the backend as cleanly as possible.
-///
-/// A hard `taskkill /F /T` (the previous behaviour) leaves the SQLite WAL and
-/// journal files behind and can truncate an in-flight migration or training
-/// checkpoint, which then shows up as instability on the *next* launch. So the
-/// backend is first asked to shut down, and only killed if it does not comply
-/// within [`GRACEFUL_SHUTDOWN_TIMEOUT`].
-fn terminate_backend(child: &mut Child) {
-    let pid = child.id();
-
-    if request_graceful_stop(pid) {
-        if let Some(code) = wait_for_exit(child, GRACEFUL_SHUTDOWN_TIMEOUT) {
-            log::info!("⛔ Backend terminated gracefully (exit code {code:?})");
-            return;
-        }
-        // Either the timeout expired or the process could not be observed.
-        // Both are treated as "still running" so the kill below always happens.
-        log::warn!(
-            "Backend exit not confirmed within {}s, forcing termination",
-            GRACEFUL_SHUTDOWN_TIMEOUT.as_secs()
-        );
-    }
-
-    kill_process_tree(pid);
-    let _ = child.kill();
-    let _ = child.wait();
-    log::info!("⛔ Backend terminated (forced)");
-}
-
-/// Deliberately terminate the backend (app shutdown). Marks the exit as intended
-/// so the monitor thread stays silent instead of showing a crash dialog.
+/// This is deliberately immediate rather than graceful. Asking the backend to
+/// wind down first was tried and reverted: it routinely needed longer than any
+/// reasonable timeout (training/export workers, ONNX and OpenVINO teardown), so
+/// in practice every exit paid the full timeout and *then* hard-killed anyway —
+/// all it added was a multi-second delay between the user closing the window and
+/// the process going away.
 ///
 /// `reason` identifies the code path that triggered the shutdown; it is logged
 /// so a session that ends unexpectedly can be traced back to the window being
@@ -284,14 +216,33 @@ fn shutdown_backend(control: &BackendControl, reason: &str) {
         return;
     }
 
-    log::info!("⛔ Shutting down the backend (reason: {reason})");
+    log::info!("⛔ Stopping the backend (reason: {reason})");
+
+    // Closing the job handle terminates the side-car together with all of its
+    // workers, in one syscall and without launching a helper process.
+    #[cfg(windows)]
+    let contained = {
+        let job = control.job.lock().unwrap().take();
+        let contained = job.is_some();
+        drop(job);
+        contained
+    };
+
     if let Some(mut child) = control.child.lock().unwrap().take() {
-        terminate_backend(&mut child);
+        // Fall back to the process-tree kill when the job object is unavailable,
+        // otherwise the multiprocessing workers would outlive the shell.
+        #[cfg(windows)]
+        if !contained {
+            kill_process_tree(child.id());
+        }
+        #[cfg(unix)]
+        kill_process_tree(child.id());
+
+        let _ = child.kill();
+        let _ = child.wait();
     }
 
-    // Releasing the job handle kills anything that somehow survived.
-    #[cfg(windows)]
-    drop(control.job.lock().unwrap().take());
+    log::info!("⛔ Backend terminated");
 }
 
 /// Resolve the per-user log directory as a display string for user-facing
