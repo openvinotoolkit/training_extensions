@@ -27,7 +27,6 @@ from typing import Any
 
 from loguru import logger
 
-from app.core.bytecode import install_corrupt_bytecode_guard
 from app.core.jobs.models import Done, ExecutionEvent, Failed, Job, JobType, Started
 from app.core.logging import LogConfig, logging_ctx
 from app.core.run import ExecutionContext, RunnableFactory, Runner
@@ -170,12 +169,6 @@ def _entrypoint(
     import traceback
 
     from app.core.jobs.models import Cancelled, Done, Failed, Progress
-
-    # A spawned child starts from a fresh interpreter, so the import machinery has to be
-    # hardened again here: this process is the one that imports the heavy training stack
-    # (torch/lightning/getitune) and would otherwise die with an opaque
-    # "ValueError: bad marshal data" if any of its cached .pyc files is damaged.
-    install_corrupt_bytecode_guard()
 
     def report(msg: str, p: float, metadata: dict[str, Any] | None = None) -> None:
         if cancel_event.is_set():

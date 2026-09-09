@@ -54,7 +54,6 @@ from app.api.routers import (
     webrtc,
 )
 from app.api.routers import license as license_api
-from app.core.bytecode import install_corrupt_bytecode_guard
 from app.core.certs import ensure_certs_exist
 from app.core.logging import InterceptHandler, setup_hypercorn_logging
 from app.lifecycle import lifespan
@@ -238,8 +237,6 @@ async def main_async() -> None:
 
 def main() -> None:
     """Synchronous wrapper to start the async loop"""
-    # Survive a damaged .pyc in the shipped virtual environment (see app.core.bytecode).
-    install_corrupt_bytecode_guard()
     try:
         asyncio.run(main_async())
     except KeyboardInterrupt:

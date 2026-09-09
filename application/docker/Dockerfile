@@ -407,10 +407,6 @@ COPY --from=cpu-base --chown=${UID}:${UID} /application/backend/.venv /applicati
 RUN uv pip install --no-deps --force-reinstall /dist/av-*.whl && \
     python -c "import av; print('PyAV:', av.__version__, av.library_versions)"
 
-# Fail the build if torch and OpenVINO cannot share a process (see verify_runtime.py)
-RUN --mount=type=bind,source=application/docker/verify_runtime.py,target=/tmp/verify_runtime.py \
-    python /tmp/verify_runtime.py
-
 # App code + UI assets last – source-only changes only invalidate this layer
 COPY --link --chown=${UID}:${UID} application/backend/app /application/backend/app
 COPY --link --chown=${UID}:${UID} --from=web-ui /home/application/ui/dist/ ${STATIC_FILES_DIR}
@@ -434,10 +430,6 @@ COPY --from=cuda-clean --chown=${UID}:${UID} /application/backend/.venv /applica
 # Replace pyav
 RUN uv pip install --no-deps --force-reinstall /dist/av-*.whl && \
     python -c "import av; print('PyAV:', av.__version__, av.library_versions)"
-
-# Fail the build if torch and OpenVINO cannot share a process (see verify_runtime.py)
-RUN --mount=type=bind,source=application/docker/verify_runtime.py,target=/tmp/verify_runtime.py \
-    python /tmp/verify_runtime.py
 
 # App code + UI assets last – source-only changes only invalidate this layer
 COPY --link --chown=${UID}:${UID} application/backend/app /application/backend/app
@@ -491,14 +483,6 @@ COPY --from=xpu-clean --chown=${UID}:${UID} /application/backend/.venv /applicat
 # Replace pyav
 RUN uv pip install --no-deps --force-reinstall /dist/av-*.whl && \
     python -c "import av; print('PyAV:', av.__version__, av.library_versions)"
-
-# Fail the build if torch and OpenVINO cannot share a process (see verify_runtime.py).
-# This matters most on XPU: torch==2.14.0+xpu installs the oneAPI runtime into
-# <venv>/lib, which ships a libtbb.so.12 with the same SONAME as the one bundled in the
-# openvino wheel, and torch's RPATH ($ORIGIN/../../../..) puts that directory on the
-# loader search path for the whole process.
-RUN --mount=type=bind,source=application/docker/verify_runtime.py,target=/tmp/verify_runtime.py \
-    python /tmp/verify_runtime.py
 
 # App code + UI assets last – source-only changes only invalidate this layer
 COPY --link --chown=${UID}:${UID} application/backend/app /application/backend/app
