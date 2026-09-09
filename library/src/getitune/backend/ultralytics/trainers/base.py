@@ -269,8 +269,18 @@ class GetiTuneBaseTrainer:
                 return
             header.append("train/iter_time")
             epoch_times = {epoch: sum(times) / len(times) for epoch, times in times_by_epoch.items() if times}
-            for row_index, row in enumerate(rows[1:]):
-                row.append(str(epoch_times.get(row_index, "")))
+            # Ultralytics persists one-based epoch values in results.csv
+            # (``self.epoch + 1``). Map by the row's epoch value, not its
+            # position, so resumed runs with pre-existing rows stay aligned.
+            epoch_col = header.index("epoch") if "epoch" in header else None
+            for row in rows[1:]:
+                epoch_key = None
+                if epoch_col is not None and epoch_col < len(row):
+                    try:
+                        epoch_key = int(float(row[epoch_col])) - 1
+                    except ValueError:
+                        epoch_key = None
+                row.append(str(epoch_times.get(epoch_key, "")) if epoch_key is not None else "")
 
             with results_csv.open("w", newline="", encoding="utf-8") as stream:
                 csv.writer(stream).writerows(rows)

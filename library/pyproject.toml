@@ -165,8 +165,6 @@ override-dependencies = [
 ]
 
 [tool.uv.sources]
-# TODO (#7346) revert to official Pypi package after MAPI 0.4.7 or higher is released.
-openvino-model-api = { git = "https://github.com/open-edge-platform/model_api", branch = "master", subdirectory = "model_api" }
 nncf = { git = "https://github.com/openvinotoolkit/nncf.git", rev = "ae0908fe75e9cbe31051545b6ef818d084cb2797" }
 torch = [
     # Note: Pytorch indexes only provide pre-built wheels for Linux and Windows.

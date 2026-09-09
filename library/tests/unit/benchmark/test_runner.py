@@ -419,6 +419,13 @@ class TestPerformanceCleanup:
 
         assert BenchmarkRunner._performance_result_complete(seed_dir / "model.xml") is True
 
+    def test_complete_result_for_nonzero_seed_is_cleaned(self, tmp_path: Path) -> None:
+        seed_dir = tmp_path / "detection" / "model" / "data" / "1"
+        seed_dir.mkdir(parents=True)
+        (seed_dir / "performance_result.json").write_text(json.dumps({"fp16": {}, "int8": {}}))
+
+        assert BenchmarkRunner._performance_result_complete(seed_dir / "export" / "exported_model.xml") is True
+
 
 # ---------------------------------------------------------------------------
 # Runner — eval_upto gating

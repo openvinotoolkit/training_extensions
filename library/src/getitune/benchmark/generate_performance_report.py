@@ -40,19 +40,26 @@ def _cell(value: object, digits: int = 2) -> str:
 
 
 def _load_result(path: Path) -> dict[str, Any]:
-    """Load one canonical performance result, preserving missing fields."""
+    """Load one canonical performance result, rejecting incomplete results.
+
+    Raises:
+        ValueError: If the result cannot be read, is not a JSON object, is
+            missing required metadata, has non-physical device names, or has
+            an invalid training batch size.
+    """
     try:
         result = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        logger.warning("Could not read performance result %s: %s", path, exc)
-        return {"_path": str(path), "_error": "Error"}
+        msg = f"Could not read performance result {path}: {exc}"
+        raise ValueError(msg) from exc
     if not isinstance(result, dict):
-        logger.warning("Performance result must be a JSON object: %s", path)
-        return {"_path": str(path), "_error": "Error"}
+        msg = f"Performance result must be a JSON object: {path}"
+        raise ValueError(msg)  # noqa: TRY004 - single failure contract for incomplete results
     missing = _REQUIRED_FIELDS - result.keys()
     if missing:
-        logger.warning("Performance result %s is missing fields: %s", path, sorted(missing))
-    result.setdefault("_path", str(path))
+        msg = f"Performance result {path} is missing fields: {sorted(missing)}"
+        raise ValueError(msg)
+    result["_path"] = str(path)
     for precision, expected in (("fp16", "FP16"), ("int8", "INT8")):
         section = result.get(precision, {})
         required = {"precision", "inference_batch_size", "throughput_fps", "latency_ms"}
@@ -71,11 +78,11 @@ def _load_result(path: Path) -> dict[str, Any]:
     for field in ("training_device", "openvino_device"):
         value = str(result.get(field, "")).strip()
         if value.lower() in logical_names:
-            logger.warning("Performance result %s has missing physical %s.", path, field)
-            result[field] = "None"
+            msg = f"Performance result {path} has missing physical {field}."
+            raise ValueError(msg)
     if not isinstance(result.get("training_batch_size"), int) or result["training_batch_size"] < 1:
-        logger.warning("Performance result %s has missing training batch size.", path)
-        result["training_batch_size"] = "None"
+        msg = f"Performance result {path} has missing training batch size."
+        raise ValueError(msg)
     software = result.get("software", {})
     if not isinstance(software, dict):
         software = {}
@@ -280,11 +287,11 @@ def generate_performance_report(result_roots: list[Path], output: Path) -> None:
     lines.append("")
 
     header = (
-        "| Model | Train Batch | OV Inference Batch | "
+        "| Model | Training Device | OpenVINO Device | Train Batch | OV Inference Batch | "
         "Train Iteration (ms) | GPU Memory (MB) | Peak RAM (MB) | FP16 FPS | FP Latency (ms) | "
         "INT8 FPS | INT8 Latency (ms) |"
     )
-    separator = "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
+    separator = "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
     for task, task_rows in sorted(grouped.items()):
         lines.extend([f"## {task}", "", header, separator])
         for row in sorted(task_rows, key=lambda item: (str(item["model"]), str(item["training_device"]))):
@@ -298,7 +305,8 @@ def generate_performance_report(result_roots: list[Path], output: Path) -> None:
             if inference_batch != int8.get("inference_batch_size", inference_batch):
                 logger.warning("FP16 and INT8 inference batches differ for %s.", row["model"])
             lines.append(
-                f"| {row['model']} | {row.get('training_batch_size', 'None')} | {inference_batch} | "
+                f"| {row['model']} | {row['training_device']} | {row['openvino_device']} | "
+                f"{row.get('training_batch_size', 'None')} | {inference_batch} | "
                 f"{_cell(row.get('training_iter_ms'))} | {_cell(row.get('gpu_memory_mb'))} | "
                 f"{_cell(row.get('ram_memory_mb'))} | {_cell(fp16.get('throughput_fps'))} | "
                 f"{_cell(fp16.get('latency_ms'))} | {_cell(int8.get('throughput_fps'))} | "

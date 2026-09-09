@@ -489,7 +489,7 @@ class BenchmarkRunner:
     def _performance_result_complete(path: Path) -> bool:
         """Return whether *path* belongs to a complete performance result."""
         seed_dir = path
-        while seed_dir != seed_dir.parent and seed_dir.name != "0":
+        while seed_dir != seed_dir.parent and not (seed_dir / "performance_result.json").exists():
             seed_dir = seed_dir.parent
         result_path = seed_dir / "performance_result.json"
         if not result_path.exists():
