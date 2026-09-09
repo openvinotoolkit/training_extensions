@@ -7,10 +7,10 @@ import { Content, Heading, IllustratedMessage, View } from '@geti-ui/ui';
 import { usePipelineMetrics } from 'hooks/api/pipeline.hook';
 import { CartesianGrid, Label, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
 
-interface DataPoint {
+type DataPoint = {
     name: string;
     value: number;
-}
+};
 
 const MAX_DATA_POINTS = 60; // Keep last 60 data points
 
@@ -60,7 +60,16 @@ const AXIS_LABEL_STYLE = {
     fontSize: '10px',
 } as const;
 
-const formatValue = (value: number) => (value > 10 ? value.toFixed(0) : value.toFixed(2));
+const formatValue = (value: unknown) => {
+    const raw = Array.isArray(value) ? value[0] : value;
+    const num = typeof raw === 'number' ? raw : Number(raw);
+
+    if (!Number.isFinite(num)) {
+        return String(raw ?? '');
+    }
+
+    return num > 10 ? num.toFixed(0) : num.toFixed(2);
+};
 
 const Graph = ({ label, data }: { label: string; data: DataPoint[] }) => {
     return (
