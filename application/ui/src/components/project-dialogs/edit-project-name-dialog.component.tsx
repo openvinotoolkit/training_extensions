@@ -3,10 +3,10 @@
 
 import { FormEvent, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, TextField } from '@geti-ui/ui';
 import { usePatchProject } from 'hooks/api/project.hook';
 import { isEmpty } from 'lodash-es';
-import { useTranslation } from 'react-i18next';
 
 import { PROJECT_NAME_MAX_LENGTH, validateProjectName } from '../../features/project/validator';
 import { toast } from '../toast/toast.component';

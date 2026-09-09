@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Task, TaskType } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 import dayjs from 'dayjs';
-import type { TFunction } from 'i18next';
 
 import { isMultiLabelClassificationTask } from '../task-type-guards';
 
@@ -17,7 +17,7 @@ export const MAP_PROJECT_TYPE_TO_TITLE_KEY = {
     instance_segmentation: 'project.taskTypes.instanceSegmentation',
 } as const satisfies Record<TaskType, string>;
 
-export const getProjectTypeTitle = (task: Task | undefined, t: TFunction): string | undefined => {
+export const getProjectTypeTitle = (task: Task | undefined, t: TranslateFn): string | undefined => {
     if (task === undefined) {
         return undefined;
     }

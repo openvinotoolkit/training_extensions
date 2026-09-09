@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { API_BASE_URL } from '@/api';
+import { i18n } from '@/i18n';
 import { screen } from '@testing-library/react';
 import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
@@ -9,7 +10,6 @@ import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
-import { i18n } from '../../../i18n';
 import { server } from '../../../msw-node-setup';
 import { ProjectCard } from './project-card.component';
 import { formatCreationDate, getProjectTypeTitle } from './util';

@@ -1,8 +1,8 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Item, Picker, Section } from '@geti-ui/ui';
-import { useTranslation } from 'react-i18next';
 
 import { SORT_BY_OPTIONS, SortBy } from './utils';
 

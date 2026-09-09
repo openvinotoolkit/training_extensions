@@ -6,10 +6,10 @@ import { useState, type CSSProperties } from 'react';
 import { EnablePipelineBlockedDialog } from '@/components/enable-pipeline-blocked-dialog/enable-pipeline-blocked-dialog.component';
 import { DeleteProjectDialog } from '@/components/project-dialogs/delete-project-dialog.component';
 import { EditProjectNameDialog } from '@/components/project-dialogs/edit-project-name-dialog.component';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Item, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { useOverlayTriggerState } from '@react-stately/overlays';
-import { useTranslation } from 'react-i18next';
 
 import { useProjectMenuActions } from './use-project-menu-actions';
 

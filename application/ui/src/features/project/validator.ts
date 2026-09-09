@@ -1,9 +1,9 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import type { TFunction } from 'i18next';
+import type { TranslateFn } from '@/i18n';
 
-export const validateProjectName = (name: string, projectNames: string[], t: TFunction): string | undefined => {
+export const validateProjectName = (name: string, projectNames: string[], t: TranslateFn): string | undefined => {
     if (name.trim().length === 0) {
         return t('project.validation.nameEmpty');
     }

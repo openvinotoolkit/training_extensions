@@ -1,8 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Heading, Text } from '@geti-ui/ui';
-import { useTranslation } from 'react-i18next';
 
 import { ReactComponent as EmptyFolderImage } from '../../../../assets/empty-folder.svg';
 

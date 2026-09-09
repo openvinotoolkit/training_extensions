@@ -1,9 +1,9 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Text, View } from '@geti-ui/ui';
 import { Adjustments, AICPUIcon, AutoTraining, Edit, FolderLight } from '@geti-ui/ui/icons';
-import { useTranslation } from 'react-i18next';
 
 import classes from './workflow-steps.module.scss';
 

@@ -1,9 +1,9 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Text } from '@geti-ui/ui';
 import { AddCircle } from '@geti-ui/ui/icons';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { paths } from '../../../../constants/paths';

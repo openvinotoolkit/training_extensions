@@ -1,9 +1,9 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { AlertDialog, DialogContainer } from '@geti-ui/ui';
 import { useDeleteProject } from 'hooks/api/project.hook';
-import { useTranslation } from 'react-i18next';
 
 import { toast } from '../toast/toast.component';
 

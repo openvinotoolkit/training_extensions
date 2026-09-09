@@ -3,10 +3,10 @@
 
 import { Suspense, useMemo, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Heading, Loading, Text, View } from '@geti-ui/ui';
 import { useProjects } from 'hooks/api/project.hook';
 import { partition } from 'lodash-es';
-import { useTranslation } from 'react-i18next';
 
 import { version } from '../../../../package.json';
 import { isNonEmptyArray } from '../../../shared/util';
