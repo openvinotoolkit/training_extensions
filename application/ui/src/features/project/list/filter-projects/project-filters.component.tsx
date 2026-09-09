@@ -3,9 +3,9 @@
 
 import type { TaskType } from '@/api/types';
 import { FilterPopoverButton } from '@/components/filter-popover-button/filter-popover-button.component';
+import { useTranslation } from '@/i18n';
 import { Checkbox, CheckboxGroup, Flex, SearchField, View } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
-import { useTranslation } from 'react-i18next';
 
 import { MAP_PROJECT_TYPE_TO_TITLE_KEY } from '../util';
 import { TASK_TYPE_OPTIONS } from './utils';

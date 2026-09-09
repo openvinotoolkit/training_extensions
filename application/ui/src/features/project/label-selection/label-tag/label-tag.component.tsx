@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Label } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, PressableElement, Text, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Cross } from '@geti-ui/ui/icons';
-import { useTranslation } from 'react-i18next';
 
 import { formatHotkeyForDisplay } from '../../../../shared/hotkeys-definition';
 

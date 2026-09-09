@@ -4,12 +4,12 @@
 import { useActionState, useState } from 'react';
 
 import type { TaskType } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, Form, Item, Picker, Text, TextField, View } from '@geti-ui/ui';
 import { InfoOutline } from '@geti-ui/ui/icons';
 import { useProjects } from 'hooks/api/project.hook';
 import { useStagedDatasetSuspense } from 'hooks/api/staged-dataset.hook';
 import { useImportDatasetAsNewProject } from 'hooks/storage/use-import-dataset-as-new-project.hook';
-import { useTranslation } from 'react-i18next';
 
 import { generateUniqueProjectName } from '../../../create/utils';
 import { useImportDatasetDialog } from '../../../providers/import-dataset-dialog-provider.component';

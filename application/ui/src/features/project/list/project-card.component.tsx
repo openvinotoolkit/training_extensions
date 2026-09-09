@@ -4,11 +4,11 @@
 import { useState } from 'react';
 
 import type { Project } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Badge, dimensionValue, Flex, Heading, Text, View } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { getProjectQueryOptions } from 'hooks/api/project.hook';
-import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 
 import placeholderThumbnailIconUrl from '../../../assets/icons/image-icon.svg?url';

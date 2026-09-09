@@ -79,6 +79,14 @@ const apiBarrelRestrictedImportPattern = {
     message: 'Do not import the `@/api` barrel from within `src/api/`. Use a direct relative import instead.',
 };
 
+// Containment rule for the translation engine. Only src/i18n/** may name
+// `i18next` / `react-i18next`; everywhere else goes through the `@/i18n`
+// barrel, so swapping or removing the engine stays a single-folder change.
+const i18nEngineRestrictedImportPattern = {
+    group: ['i18next', 'react-i18next', 'i18next-*'],
+    message: 'Do not import the i18n engine directly. Use `useTranslation`, `Trans` and `TranslateFn` from `@/i18n`.',
+};
+
 // Containment rule for the `@/api` barrel. Files inside src/api/ are the ones
 // building that barrel, so importing it back via the alias creates a
 // self-import / circular-reference risk. Use direct relative imports
@@ -130,7 +138,7 @@ export default [
                 'error',
                 {
                     paths: restrictedImportPaths,
-                    patterns: restrictedImportPatterns,
+                    patterns: [...restrictedImportPatterns, i18nEngineRestrictedImportPattern],
                 },
             ],
             'header/header': [
@@ -164,7 +172,11 @@ export default [
                 'error',
                 {
                     paths: restrictedImportPaths,
-                    patterns: [...restrictedImportPatterns, tauriRestrictedImportPattern],
+                    patterns: [
+                        ...restrictedImportPatterns,
+                        tauriRestrictedImportPattern,
+                        i18nEngineRestrictedImportPattern,
+                    ],
                 },
             ],
         },
@@ -172,6 +184,27 @@ export default [
     {
         files: ['src/**/*.{ts,tsx}'],
         ignores: ['src/**/*.tauri.{ts,tsx}', 'src/api/**', 'src/query-client/**'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: restrictedImportPaths,
+                    patterns: [
+                        ...restrictedImportPatterns,
+                        tauriRestrictedImportPattern,
+                        openapiSpecRestrictedImportPattern,
+                        apiBarrelRestrictedImportPattern,
+                        sharedTypesRestrictedImportPattern,
+                        i18nEngineRestrictedImportPattern,
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        // The i18n folder owns the engine, so it is the one place allowed to
+        // name `i18next` / `react-i18next` and to reach its own siblings.
+        files: ['src/i18n/**/*.{ts,tsx}'],
         rules: {
             'no-restricted-imports': [
                 'error',
@@ -201,6 +234,7 @@ export default [
                         openapiSpecRestrictedImportPattern,
                         apiBarrelRestrictedImportPattern,
                         sharedTypesRestrictedImportPattern,
+                        i18nEngineRestrictedImportPattern,
                     ],
                 },
             ],
@@ -216,7 +250,11 @@ export default [
                 'error',
                 {
                     paths: [...restrictedImportPaths, apiBarrelRestrictedImportPath],
-                    patterns: [...restrictedImportPatterns, tauriRestrictedImportPattern],
+                    patterns: [
+                        ...restrictedImportPatterns,
+                        tauriRestrictedImportPattern,
+                        i18nEngineRestrictedImportPattern,
+                    ],
                 },
             ],
         },

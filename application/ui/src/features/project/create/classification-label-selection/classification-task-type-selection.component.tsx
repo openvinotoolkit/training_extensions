@@ -1,9 +1,9 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Radio, RadioGroup, Text } from '@geti-ui/ui';
 import { InfoOutline } from '@geti-ui/ui/icons';
-import { useTranslation } from 'react-i18next';
 
 import classes from './classification-task-type-selection.module.scss';
 

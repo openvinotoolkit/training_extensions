@@ -4,9 +4,8 @@
 import type { Dispatch, SetStateAction } from 'react';
 
 import type { TaskType } from '@/api/types';
+import { useTranslation, type TranslateFn } from '@/i18n';
 import { Divider, Flex, Grid, Heading, Image, Radio, RadioGroup, Text, View } from '@geti-ui/ui';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
 
 import classificationImageUrl from '../../../assets/classification.webp';
 import detectionImageUrl from '../../../assets/detection.webp';
@@ -21,7 +20,7 @@ export const MAP_TASK_TYPE_TO_VERB_KEY = {
     classification: 'project.create.tasks.classification.verb',
 } as const satisfies Record<TaskType, string>;
 
-const getTaskOptions = (t: TFunction): TaskOption[] => [
+const getTaskOptions = (t: TranslateFn): TaskOption[] => [
     {
         id: 'detection_task',
         imageSrc: detectionImageUrl,

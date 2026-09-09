@@ -5,11 +5,11 @@ import { Suspense } from 'react';
 
 import { $api } from '@/api';
 import { ProjectsListPanel } from '@/components/project-panel/projects-list-panel.component';
+import { useTranslation } from '@/i18n';
 import { Flex, Grid, Item, Loading, TabList, Tabs, Text, View } from '@geti-ui/ui';
 import { usePrefetchQuery } from '@tanstack/react-query';
 import { usePrefetchPipeline } from 'hooks/api/pipeline.hook';
 import { useProject } from 'hooks/api/project.hook';
-import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 import getiLogo from './assets/icons/geti-logo.webp';
