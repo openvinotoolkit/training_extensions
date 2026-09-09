@@ -533,7 +533,7 @@ class DataModule(LightningDataModule):
         makes a CPU-only workload depend on the GPU runtime (Level Zero on XPU,
         CUDA on NVIDIA) for a large, non-pageable allocation. Keep it off in that case.
         """
-        return self.device not in (DeviceType.cpu,)
+        return self.device != DeviceType.cpu
 
     def setup(self, stage: str) -> None:
         """Setup for each stage."""

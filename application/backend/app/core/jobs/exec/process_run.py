@@ -104,13 +104,10 @@ class ProcessRun:
             signal_name = f"signal {-code}"
 
         hints = {
-            "SIGKILL": (
-                "the process was killed, most likely by the out-of-memory killer; "
-                "check the host memory available to the container"
-            ),
-            "SIGSEGV": "the process crashed in native code (segmentation fault)",
-            "SIGABRT": "the process aborted in native code",
-            "SIGBUS": "the process crashed in native code (bus error)",
+            "SIGKILL": "the process was killed; check whether cancellation timed out or the host ran out of memory",
+            "SIGSEGV": "the process crashed (segmentation fault)",
+            "SIGABRT": "the process aborted",
+            "SIGBUS": "the process crashed (bus error)",
         }
         hint = hints.get(signal_name)
         detail = f"process terminated by {signal_name}"
@@ -166,9 +163,14 @@ def _entrypoint(
         conn (Connection): IPC connection to parent process.
         cancel_event (Event): Event to signal cancellation.
     """
+    import faulthandler
     import traceback
 
     from app.core.jobs.models import Cancelled, Done, Failed, Progress
+
+    # A crash (SIGSEGV/SIGABRT/SIGBUS) terminates the interpreter outright: no Python exception is raised.
+    # Enable faulthandler to write a stack trace to stderr (and the log file) in that case.
+    faulthandler.enable()
 
     def report(msg: str, p: float, metadata: dict[str, Any] | None = None) -> None:
         if cancel_event.is_set():
