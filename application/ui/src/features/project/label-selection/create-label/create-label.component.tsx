@@ -35,8 +35,8 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
     const appHotkeys = Object.values(TASK_HOTKEYS[taskType]);
     const allHotkeys = [...labelsHotkeys, ...appHotkeys];
 
-    const validationResult = validateLabelName(newLabel.name, labels);
-    const hotkeyError = newLabel.hotkey ? validateLabelHotkey(newLabel.hotkey, allHotkeys) : undefined;
+    const validationResult = validateLabelName(newLabel.name, labels, t);
+    const hotkeyError = newLabel.hotkey ? validateLabelHotkey(newLabel.hotkey, allHotkeys, t) : undefined;
     const isCreateLabelDisabled = newLabel.name.trim().length === 0 || validationResult !== undefined;
 
     const createLabel = () => {

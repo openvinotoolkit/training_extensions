@@ -7,7 +7,9 @@ import { useSearchParams } from 'react-router-dom';
 import { render } from 'test-utils/render';
 
 import { END_DATE_PARAM, START_DATE_PARAM } from '../../../../../../hooks/use-dataset-filters-search-params.hook';
-import { DateFilter, INVALID_RANGE_MESSAGE } from './date-filter.component';
+import { DateFilter } from './date-filter.component';
+
+const INVALID_RANGE_MESSAGE = 'End date must be later than start date';
 
 const START_DATE = '2026-03-15T10:00:00.000Z';
 const END_DATE = '2026-03-20T10:00:00.000Z';

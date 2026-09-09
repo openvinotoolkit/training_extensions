@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Content,
@@ -20,16 +21,18 @@ import { FilterBySubset } from './filter-by-subset/filter-by-subset.component';
 import { MediaFilterLabels } from './media-filter-labels/media-filter-labels.component';
 
 export const AnnotatorMediaFiltering = () => {
+    const { t } = useTranslation();
+
     return (
         <DialogTrigger type={'popover'} placement={'bottom'}>
             <TooltipTrigger>
-                <ActionButton isQuiet aria-label={'More filters'}>
+                <ActionButton isQuiet aria-label={t('dataset.filters.more')}>
                     <Filter />
                 </ActionButton>
-                <Tooltip>More filters</Tooltip>
+                <Tooltip>{t('dataset.filters.more')}</Tooltip>
             </TooltipTrigger>
             <Dialog size='S'>
-                <Heading>Filters</Heading>
+                <Heading>{t('dataset.filters.title')}</Heading>
                 <Divider />
                 <Content>
                     <Flex direction='column' gap='size-300'>

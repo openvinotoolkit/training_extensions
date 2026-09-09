@@ -3,6 +3,7 @@
 
 import { Key } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, DialogContainer, Item, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 
@@ -25,11 +26,16 @@ type MediaItemActionsProps = {
 };
 
 export const MediaItemActions = ({ id, onDeleted, mediaUrl, mediaFileName, onAnnotate }: MediaItemActionsProps) => {
+    const { t } = useTranslation();
     const { closeDeleteDialog, openDeleteDialog, isDeleteDialogOpen, deleteMedia, isPending } = useDeleteMediaItem();
 
     const handleAction = (key: Key) => {
         if (key === MEDIA_ACTIONS.DOWNLOAD) {
-            downloadFile(mediaUrl, mediaFileName, `${mediaFileName} download has started`);
+            downloadFile(
+                mediaUrl,
+                mediaFileName,
+                t('dataset.mediaActions.downloadStarted', { fileName: mediaFileName })
+            );
         } else if (key === MEDIA_ACTIONS.DELETE) {
             openDeleteDialog();
         } else if (key === MEDIA_ACTIONS.ANNOTATE) {
@@ -44,13 +50,13 @@ export const MediaItemActions = ({ id, onDeleted, mediaUrl, mediaFileName, onAnn
     return (
         <>
             <MenuTrigger>
-                <ActionButton isQuiet aria-label={'Media actions'} isDisabled={isPending}>
+                <ActionButton isQuiet aria-label={t('dataset.mediaActions.actions')} isDisabled={isPending}>
                     <MoreMenu />
                 </ActionButton>
-                <Menu onAction={handleAction} aria-label={'Media actions menu'}>
-                    <Item key={MEDIA_ACTIONS.ANNOTATE}>Annotate</Item>
-                    <Item key={MEDIA_ACTIONS.DOWNLOAD}>Download</Item>
-                    <Item key={MEDIA_ACTIONS.DELETE}>Delete</Item>
+                <Menu onAction={handleAction} aria-label={t('dataset.mediaActions.menu')}>
+                    <Item key={MEDIA_ACTIONS.ANNOTATE}>{t('dataset.mediaActions.annotate')}</Item>
+                    <Item key={MEDIA_ACTIONS.DOWNLOAD}>{t('dataset.mediaActions.download')}</Item>
+                    <Item key={MEDIA_ACTIONS.DELETE}>{t('common.actions.delete')}</Item>
                 </Menu>
             </MenuTrigger>
             <DialogContainer onDismiss={closeDeleteDialog}>

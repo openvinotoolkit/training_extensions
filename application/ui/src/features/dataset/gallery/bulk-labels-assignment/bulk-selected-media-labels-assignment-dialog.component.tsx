@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import {
     Button,
     ButtonGroup,
@@ -33,6 +34,7 @@ const BulkSelectedMediaLabelsAssignment = ({
     isAssignPending,
     onAssign,
 }: BulkSelectedMediaLabelsAssignmentProps) => {
+    const { t } = useTranslation();
     const projectLabels = useProjectLabelsWithEmptyLabel();
     const { data: project } = useProject();
     const isMultiLabelClassification = isMultiLabelClassificationTask(project.task);
@@ -47,27 +49,27 @@ const BulkSelectedMediaLabelsAssignment = ({
 
     return (
         <Dialog height={'65vh'}>
-            <Heading>Label assignment</Heading>
+            <Heading>{t('dataset.bulkLabels.title')}</Heading>
             <Divider />
             <Content>
                 <Flex direction={'column'} gap={'size-100'} height={'100%'} minHeight={0}>
-                    <Text>Choose the label(s) to assign to the selected images, then click {"'Assign'"}.</Text>
+                    <Text>{t('dataset.bulkLabels.selectedInstructions')}</Text>
                     <Divider size={'S'} marginY={'size-100'} />
                     <LabelsList
-                        ariaLabel={'Labels to assign'}
+                        ariaLabel={t('dataset.bulkLabels.labelsToAssign')}
                         labels={projectLabels}
                         selectedLabels={selectedLabels}
                         onSelectedLabelsChange={setSelectedLabels}
                         isMultiple={isMultiLabelClassification}
                     />
                     <Text UNSAFE_style={{ lineHeight: dimensionValue('size-225') }}>
-                        The selected labels apply only to images, videos (if any) remain intact.
+                        {t('dataset.bulkLabels.selectedImagesNote')}
                     </Text>
                 </Flex>
             </Content>
             <ButtonGroup>
                 <Button variant={'secondary'} onPress={onClose}>
-                    Cancel
+                    {t('common.actions.cancel')}
                 </Button>
                 <Button
                     variant={'accent'}
@@ -75,7 +77,7 @@ const BulkSelectedMediaLabelsAssignment = ({
                     isDisabled={isAssignDisabled}
                     isPending={isAssignPending}
                 >
-                    Assign
+                    {t('dataset.bulkLabels.assign')}
                 </Button>
             </ButtonGroup>
         </Dialog>

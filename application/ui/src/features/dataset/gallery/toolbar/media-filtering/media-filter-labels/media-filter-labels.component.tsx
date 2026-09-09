@@ -3,24 +3,24 @@
 
 import { FilterPopoverButton } from '@/components/filter-popover-button/filter-popover-button.component';
 import { MultiSelectList } from '@/components/multi-select-list/multi-select-list.component';
+import { useTranslation } from '@/i18n';
 import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
 import { useProjectLabels } from 'hooks/use-project-labels.hook';
 import { isEmpty } from 'lodash-es';
 
-import { pluralize } from '../../../../../../shared/util';
-
 export const MediaFilterLabels = () => {
+    const { t } = useTranslation();
     const labels = useProjectLabels();
     const { selectedLabelIds, setSelectedLabelIds } = useDatasetFiltersSearchParams();
 
     const summary = isEmpty(selectedLabelIds)
         ? null
-        : `${selectedLabelIds.length} ${pluralize(selectedLabelIds.length, 'label', 'labels')} selected`;
+        : t('dataset.filters.labelsSelected', { count: selectedLabelIds.length });
 
     return (
         <FilterPopoverButton
-            ariaLabel='Filter by labels'
-            placeholder='Search labels'
+            ariaLabel={t('dataset.filters.labels')}
+            placeholder={t('dataset.filters.searchLabels')}
             summary={summary}
             minWidth='size-3000'
             dialogWidth='size-5000'
@@ -29,7 +29,7 @@ export const MediaFilterLabels = () => {
                 name='labels'
                 items={labels}
                 maxHeight='size-2000'
-                selectAllLabel='Toggle all'
+                selectAllLabel={t('dataset.filters.toggleAll')}
                 onSelectionChange={setSelectedLabelIds}
                 defaultSelectedKeys={new Set(selectedLabelIds)}
             />
