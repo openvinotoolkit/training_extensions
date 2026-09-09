@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from getitune.backend.lightning.engine import LightningEngine
 from getitune.backend.lightning.models.base import DataInputParams, LightningModel
-from getitune.backend.lightning.models.classification.multiclass_models import EfficientNetMulticlassCls
+from getitune.backend.lightning.models.classification.multiclass_models import TimmModelMulticlassCls
 from getitune.types.export import ExportFormat
 from getitune.types.precision import Precision
 
@@ -35,7 +35,7 @@ class TestEngine:
         )
         assert engine.task == "MULTI_CLASS_CLS"
         assert engine.datamodule.task == "MULTI_CLASS_CLS"
-        assert isinstance(engine.model, EfficientNetMulticlassCls)
+        assert isinstance(engine.model, TimmModelMulticlassCls)
 
         assert "default_root_dir" in engine.trainer_params
         assert engine.trainer_params["default_root_dir"] == tmp_path

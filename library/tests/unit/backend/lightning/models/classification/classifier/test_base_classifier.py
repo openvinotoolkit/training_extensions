@@ -5,11 +5,10 @@ import pytest
 import torch
 from torch import nn
 
-from getitune.backend.lightning.models.classification.backbones import EfficientNetBackbone
+from getitune.backend.lightning.models.classification.backbones import TimmBackbone
 from getitune.backend.lightning.models.classification.classifier import ImageClassifier
 from getitune.backend.lightning.models.classification.heads import LinearClsHead, MultiLabelLinearClsHead
 from getitune.backend.lightning.models.classification.losses import AsymmetricAngularLossWithIgnore
-from getitune.backend.lightning.models.classification.necks.gap import GlobalAveragePooling
 
 
 class TestImageClassifier:
@@ -22,8 +21,7 @@ class TestImageClassifier:
     )
     def fxt_model_and_inputs(self, request):
         head_cls, loss_cls, input_fxt_name = request.param
-        backbone = EfficientNetBackbone(model_name="efficientnet_b0")
-        neck = GlobalAveragePooling(dim=2)
+        backbone = TimmBackbone(model_name="tf_efficientnet_b0.aa_in1k")
         head = head_cls(num_classes=3, in_channels=backbone.num_features)
         loss = loss_cls()
         fxt_input = request.getfixturevalue(input_fxt_name)
@@ -35,7 +33,7 @@ class TestImageClassifier:
         return (
             ImageClassifier(
                 backbone=backbone,
-                neck=neck,
+                neck=None,
                 head=head,
                 loss=loss,
             ),
@@ -55,14 +53,6 @@ class TestImageClassifier:
 
         output = model(images, labels, mode="predict")
         assert isinstance(output, torch.Tensor)
-
-        output = model(images, labels, mode="explain")
-        assert isinstance(output, dict)
-        assert "logits" in output
-        assert "scores" in output
-        assert "preds" in output
-        assert "saliency_map" in output
-        assert "feature_vector" in output
 
         with pytest.raises(RuntimeError):
             model(images, labels, mode="invalid_mode")

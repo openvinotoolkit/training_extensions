@@ -16,7 +16,7 @@ import torch
 
 from getitune.backend.lightning.engine import LightningEngine
 from getitune.backend.lightning.models.base import DataInputParams
-from getitune.backend.lightning.models.classification.multiclass_models import EfficientNetMulticlassCls
+from getitune.backend.lightning.models.classification.multiclass_models import TimmModelMulticlassCls
 from getitune.types.label import LabelInfo
 
 
@@ -81,7 +81,7 @@ def test_load_model_checkpoint_loads_checkpoint_with_pathlib_path(tmp_path, fxt_
     checkpoint = tmp_path / "path_hparams.ckpt"
     torch.save(
         {
-            "state_dict": fxt_engine.model.state_dict(),
+            "state_dict": fxt_engine.model.model.state_dict(),
             "hyper_parameters": {"pretrained_weights": Path(tmp_path / "dummy_weights.pt")},
         },
         checkpoint,
@@ -94,8 +94,8 @@ def test_load_model_checkpoint_loads_checkpoint_with_pathlib_path(tmp_path, fxt_
 
 def test_save_hyperparameters_excludes_pretrained_weights(tmp_path) -> None:
     """`pretrained_weights` init arg must not be pickled into saved checkpoints."""
-    model = EfficientNetMulticlassCls(
-        model_name="efficientnet_b0",
+    model = TimmModelMulticlassCls(
+        model_name="tf_efficientnet_b0.ap_in1k",
         label_info=3,
         data_input_params=DataInputParams((224, 224), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
         pretrained=False,
