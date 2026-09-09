@@ -1,6 +1,6 @@
 task: MULTI_LABEL_CLS
 model:
-  class_path: getitune.backend.lightning.models.classification.multilabel_models.timm_model.TimmModelMulticlassCls
+  class_path: getitune.backend.lightning.models.classification.multilabel_models.timm_model.TimmModelMultilabelCls
   init_args:
     label_info: 1000
     model_name: tf_efficientnet_b3.aa_in1k

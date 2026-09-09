@@ -22,7 +22,6 @@ from getitune.backend.lightning.models import (
     DFine,
     DinoV2Seg,
     EdgeCrafter,
-    EfficientNet,
     LiteHRNet,
     MaskRCNN,
     MaskRCNNTV,
@@ -32,7 +31,6 @@ from getitune.backend.lightning.models import (
     RTMPose,
     SegNext,
     TimmModel,
-    TVModel,
     VisionTransformer,
 )
 from getitune.backend.openvino.models import (
@@ -71,7 +69,6 @@ __all__ = [
     "DFine",
     "DinoV2Seg",
     "EdgeCrafter",
-    "EfficientNet",
     "HFDetectionModel",
     "HFInstSegModel",
     "HFModel",
@@ -93,7 +90,6 @@ __all__ = [
     "RTMDetInst",
     "RTMPose",
     "SegNext",
-    "TVModel",
     "TimmModel",
     "VisionTransformer",
 ]
