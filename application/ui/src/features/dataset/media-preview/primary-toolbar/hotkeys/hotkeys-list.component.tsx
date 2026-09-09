@@ -46,7 +46,7 @@ export const HotkeysList = () => {
             />
             <HotkeyItem
                 hotkeyName={'Delete selected annotation'}
-                hotkey={formatHotkeyForDisplay(HOTKEYS.deleteAnnotation)}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.delete)}
             />
             <HotkeyItem
                 hotkeyName={'Show or hide all annotations'}

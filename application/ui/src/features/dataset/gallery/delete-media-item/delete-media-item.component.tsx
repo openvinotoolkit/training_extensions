@@ -27,7 +27,7 @@ export const DeleteMediaItem = ({ itemsIds = [], onDeleted, isHotkeyEnabled = fa
     };
 
     useHotkeys(
-        HOTKEYS.deleteMedia,
+        HOTKEYS.delete,
         openDeleteDialog,
         {
             enabled: isHotkeyEnabled && !isPending && !isEmpty(itemsIds),
