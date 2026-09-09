@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { toast } from '@/components/toast/toast.component';
 import { Content, Dialog, DialogContainer, DialogTrigger, Flex, PressableElement, Text, View } from '@geti-ui/ui';
 import { ChevronDownSmall } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
@@ -79,6 +80,10 @@ export const DatasetViewSelector = ({ datasetViews, resetSelectedMediaIds }: Dat
         if (datasetViewToBeDeleted?.id === datasetViewId) {
             setDatasetViewId(ENTIRE_DATASET_VIEW_ID);
         }
+        toast({
+            message: `Dataset view "${datasetViewToBeDeleted?.name}" has been deleted successfully.`,
+            type: 'success',
+        });
         setDatasetViewToBeDeleted(null);
     };
 

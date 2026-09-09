@@ -6,7 +6,7 @@ import { Key } from 'react';
 import { ActionButton, DialogContainer, Item, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 
-import { downloadFile } from '../../../../shared/util';
+import { downloadFile } from '../../../../platform/download-file';
 import { useDeleteMediaItem } from '../../api/use-delete-media-item';
 import { AlertDialogContent } from '../delete-media-item/alert-dialog-content.component';
 

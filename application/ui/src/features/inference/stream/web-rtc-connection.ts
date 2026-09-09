@@ -77,7 +77,13 @@ export class WebRTCConnection {
 
             const data = await this.sendOffer();
 
-            if (!this.handleOfferResponse(data)) return;
+            if (!(await this.handleOfferResponse(data))) {
+                clearTimeout(this.timeoutId);
+                this.updateStatus('failed');
+                await this.stop();
+
+                return;
+            }
 
             await this.updateConfThreshold(0.5); // Initial confidence threshold
             this.setupConnectionStateListener();
@@ -208,6 +214,8 @@ export class WebRTCConnection {
     }
 
     public async stop(): Promise<void> {
+        clearTimeout(this.timeoutId);
+
         if (!this.peerConnection) {
             return;
         }

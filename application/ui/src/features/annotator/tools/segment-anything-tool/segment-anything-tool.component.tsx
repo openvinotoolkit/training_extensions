@@ -3,12 +3,12 @@
 
 import { PointerEvent, useEffect, useRef, useState } from 'react';
 
+import { toast } from '@/components/toast/toast.component';
+import { useZoom } from '@/components/zoom/zoom.provider';
 import { clampPointBetweenImage } from '@geti-ui/smart-tools/utils';
 import { useGetDatasetMediaItems } from 'hooks/use-get-dataset-media-items.hook';
 
 import selectionCursor from '../../../../assets/icons/selection.svg?url';
-import { toast } from '../../../../components/toast/toast.component';
-import { useZoom } from '../../../../components/zoom/zoom.provider';
 import type { Annotation, RegionOfInterest, Shape } from '../../../../shared/types';
 import { useNextMediaItem } from '../../../dataset/media-preview/utils';
 import { AnnotationShape } from '../../annotations/annotation-shape/annotation-shape.component';

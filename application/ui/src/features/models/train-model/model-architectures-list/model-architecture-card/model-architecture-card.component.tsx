@@ -7,8 +7,9 @@ import type { ModelArchitecture as ModelArchitectureType, ModelArchitectureWithP
 import { Content, ContextualHelp, Divider, Flex, Heading, Radio, Text } from '@geti-ui/ui';
 import { clsx } from 'clsx';
 
+import { EdgeCrafterLicense } from '../../../components/edgecrafter-license.component';
 import { UltralyticsLicense } from '../../../components/ultralytics-license.component';
-import { isUltralyticsModel } from '../../../utils';
+import { isEdgeCrafterModel, isUltralyticsModel } from '../../../utils';
 import { getAccuracyMetric } from '../utils';
 
 import classes from './model-architecture-card.module.scss';
@@ -37,6 +38,8 @@ const License = () => {
         <li>
             {isUltralyticsModel(modelArchitecture.id) ? (
                 <UltralyticsLicense />
+            ) : isEdgeCrafterModel(modelArchitecture.id) ? (
+                <EdgeCrafterLicense />
             ) : (
                 `License: ${modelArchitecture.license}`
             )}

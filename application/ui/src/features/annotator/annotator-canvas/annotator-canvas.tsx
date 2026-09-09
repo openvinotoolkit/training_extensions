@@ -27,6 +27,7 @@ import {
 import { getVideoFrameRangeIndexes } from '../video-player/api/utils';
 import { useVideoPlayer, useVideoPlayerContext } from '../video-player/video-player-provider.component';
 import { MediaCanvas } from './media-canvas';
+import { useSelectNextAnnotation } from './use-select-next-annotation.hook';
 
 import classes from './annotator-canvas.module.scss';
 
@@ -37,7 +38,13 @@ type ImageAnnotationsProps = {
 const ImageAnnotations = ({ mediaItem }: ImageAnnotationsProps) => {
     const { isFocussed } = useAnnotationVisibility();
     const { annotations } = useAnnotationActions();
-    const { selectedAnnotations } = useSelectedAnnotations();
+    const { selectedAnnotations, setSelectedAnnotations } = useSelectedAnnotations();
+
+    useSelectNextAnnotation({
+        annotations,
+        selectedAnnotationsIds: selectedAnnotations,
+        updateSelectedAnnotationsIds: setSelectedAnnotations,
+    });
 
     // Order annotations by selection. Selected annotation should always be on top.
     const orderedAnnotations = [

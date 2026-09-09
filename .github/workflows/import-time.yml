@@ -7,8 +7,42 @@ on:
 permissions: {}
 
 jobs:
+  check-paths:
+    name: Check if workflow should run
+    runs-on: ubuntu-latest
+    outputs:
+      run_workflow: ${{ steps.check_paths.outputs.run }}
+    permissions:
+      contents: read
+    steps:
+      - &harden-runner
+        name: Harden the runner (audit all outbound calls)
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
+      - &checkout
+        name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Check paths
+        id: check_paths
+        uses: open-edge-platform/geti-ci/actions/check-paths@2ed3ce382d1dbd6db52c7c6b93ffdae280a1c06f # check-paths/v0.1.0
+        with:
+          files_yaml: |
+            test:
+              - application/backend/**
+              - .github/workflows/import-time.yml
+              - .github/actions/**
+              - '!**/*.md'
+              - '!**/docs/**'
+
   import-time:
     name: Measure Backend Import Time
+    needs: check-paths
+    if: needs.check-paths.outputs.run_workflow == 'true'
     permissions:
       # Required to post comments on the PR with the import time results
       pull-requests: write
@@ -22,16 +56,9 @@ jobs:
         working-directory: application/backend
 
     steps:
-      - name: Harden the runner (audit all outbound calls)
-        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
-        with:
-          egress-policy: audit
+      - *harden-runner
 
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
+      - *checkout
 
       - name: Install common dependencies
         uses: ./.github/actions/install-common-deps

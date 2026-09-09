@@ -125,6 +125,14 @@ def _make_geti_config(
 
 def _make_timm_getitune_config(**overrides: Any) -> dict:
     """Minimal timm_generic.yaml-shaped config (optimizer present, DYNAMIC placeholders)."""
+    imagenet_normalize = {
+        "class_path": "kornia.augmentation.Normalize",
+        "init_args": {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]},
+    }
+    resize = {
+        "class_path": "torchvision.transforms.v2.Resize",
+        "init_args": {"size": "$(input_size)"},
+    }
     cfg: dict[str, Any] = {
         "config": ["some_path"],
         "max_epochs": 90,
@@ -147,9 +155,21 @@ def _make_timm_getitune_config(**overrides: Any) -> dict:
             "__path__": "some/path.yaml",
             "input_size": [224, 224],
             "tile_config": {"enable_tiler": False, "enable_adaptive_tiling": False},
-            "train_subset": {"batch_size": 32},
-            "val_subset": {"batch_size": 32},
-            "test_subset": {"batch_size": 32},
+            "train_subset": {
+                "batch_size": 32,
+                "augmentations_cpu": [copy.deepcopy(resize)],
+                "augmentations_gpu": [copy.deepcopy(imagenet_normalize)],
+            },
+            "val_subset": {
+                "batch_size": 32,
+                "augmentations_cpu": [copy.deepcopy(resize)],
+                "augmentations_gpu": [copy.deepcopy(imagenet_normalize)],
+            },
+            "test_subset": {
+                "batch_size": 32,
+                "augmentations_cpu": [copy.deepcopy(resize)],
+                "augmentations_gpu": [copy.deepcopy(imagenet_normalize)],
+            },
         },
     }
     for k, v in overrides.items():
@@ -1063,9 +1083,9 @@ class TestTimmRecipeConversion:
             MockAutoConfigurator.return_value.config = getitune_cfg
             return GetiConfigConverter.convert(geti_cfg)
 
-    def test_injects_model_name_and_preprocessing_from_catalog(self) -> None:
-        """The two DYNAMIC values that only GetiConfigConverter (not HyperparametersUpdater)
-        is responsible for resolving: model_name and data_input_params."""
+    def test_injects_model_name_from_catalog(self) -> None:
+        """The model_name DYNAMIC value that only GetiConfigConverter (not HyperparametersUpdater)
+        is responsible for resolving."""
         geti_cfg = _make_geti_config(
             model_manifest_id="image-classification-timm-resnet18.a1_in1k",
             sub_task_type="MULTI_CLASS_CLS",
@@ -1074,9 +1094,6 @@ class TestTimmRecipeConversion:
         result = self._convert(geti_cfg, _make_timm_getitune_config())
 
         assert result["model"]["init_args"]["model_name"] == "resnet18.a1_in1k"
-        assert result["model"]["init_args"]["data_input_params"] == {
-            "input_size": (224, 224),
-        }
 
     def test_timm_optimizer_init_args(self) -> None:
         geti_cfg = _make_geti_config(
@@ -1101,3 +1118,51 @@ class TestTimmRecipeConversion:
 
         with pytest.raises(ValueError, match="DYNAMIC"):
             self._convert(geti_cfg, _make_timm_getitune_config())
+
+    def test_syncs_data_input_size_and_normalization_from_preprocessing(self) -> None:
+        """input_size and Normalize mean/std in data.*_subset must match the backbone's
+        own pretrained_cfg, not the generic recipe's ImageNet defaults."""
+        geti_cfg = _make_geti_config(
+            model_manifest_id="image-classification-timm-resnet18.a1_in1k",
+            sub_task_type="MULTI_CLASS_CLS",
+            hyper_parameters={"training": {"learning_rate": 0.02, "weight_decay": 0.0002}},
+        )
+        fake_preprocessing = {
+            "input_size": (299, 299),
+            "mean": (0.5, 0.5, 0.5),
+            "std": (0.5, 0.5, 0.5),
+        }
+
+        with patch(
+            "app.execution.common.geti_config_converter.TimmManifestProvider.get_preprocessing",
+            return_value=fake_preprocessing,
+        ):
+            result = self._convert(geti_cfg, _make_timm_getitune_config())
+
+        assert result["data"]["input_size"] == [299, 299]
+        for subset_key in ("train_subset", "val_subset", "test_subset"):
+            normalize = next(
+                aug for aug in result["data"][subset_key]["augmentations_gpu"] if "Normalize" in aug["class_path"]
+            )
+            assert normalize["init_args"]["mean"] == [0.5, 0.5, 0.5]
+            assert normalize["init_args"]["std"] == [0.5, 0.5, 0.5]
+
+    def test_user_input_size_override_wins_over_timm_default(self) -> None:
+        """Explicit hyperparameter overrides (applied after backbone injection) must
+        still take precedence over the backbone's native input_size."""
+        geti_cfg = _make_geti_config(
+            model_manifest_id="image-classification-timm-resnet18.a1_in1k",
+            sub_task_type="MULTI_CLASS_CLS",
+            hyper_parameters={
+                "training": {
+                    "learning_rate": 0.02,
+                    "weight_decay": 0.0002,
+                    "input_size_height": 384,
+                    "input_size_width": 384,
+                }
+            },
+        )
+
+        result = self._convert(geti_cfg, _make_timm_getitune_config())
+
+        assert result["data"]["input_size"] == (384, 384)

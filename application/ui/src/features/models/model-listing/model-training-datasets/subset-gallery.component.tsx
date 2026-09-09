@@ -4,13 +4,13 @@
 import { Suspense, useMemo, useState } from 'react';
 
 import type { DatasetRevisionItem } from '@/api/types';
+import { MediaItem } from '@/components/media-item/media-item.component';
+import { MediaThumbnail } from '@/components/media-thumbnail/media-thumbnail.component';
+import { VirtualizerGridLayout } from '@/components/virtualizer-grid-layout/virtualizer-grid-layout.component';
 import { DialogContainer, Flex, Loading, Size, Text, View, ViewModes } from '@geti-ui/ui';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { GridLayoutOptions } from 'react-aria-components';
 
-import { MediaItem } from '../../../../components/media-item/media-item.component';
-import { MediaThumbnail } from '../../../../components/media-thumbnail/media-thumbnail.component';
-import { VirtualizerGridLayout } from '../../../../components/virtualizer-grid-layout/virtualizer-grid-layout.component';
 import { type GalleryViewMode } from '../../../../shared/gallery-view-modes';
 import { getDatasetRevisionThumbnailUrl } from '../../../../shared/media-url.utils';
 import { usePrefetchMediaItem } from '../../../annotator/hooks/use-prefetch-media-item.hook';

@@ -41,6 +41,12 @@ class TaskLevelExportParameters:
         iou_threshold (float | None): The Intersection over Union (IoU) threshold
             for Non-Maximum Suppression (NMS) post-processing.
             It is used only for models in detection and instance segmentation tasks.
+        nms_execute (bool | None): Whether to execute Non-Maximum Suppression (NMS) in Model API on model outputs.
+            Only specified for detection and instance segmentation tasks.
+        agnostic_nms (bool | None): Whether to perform class-agnostic NMS.
+            Only specified for detection and instance segmentation tasks.
+        nms_max_predictions (int | None): Maximum number of predictions to keep after NMS.
+            Only specified for detection and instance segmentation tasks.
         return_soft_prediction (bool | None): Whether to return soft prediction.
             It is used only for semantic segmentation tasks.
         soft_threshold (float | None): Minimum class confidence for each pixel.

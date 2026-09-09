@@ -1,9 +1,10 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { $api } from '@/api';
+import { uploadDatasetArchive } from '@/api';
 import { Button, Content, DropZone, FileTrigger, Flex, Heading, IllustratedMessage, Text } from '@geti-ui/ui';
 import { LinkOut } from '@geti-ui/ui/icons';
+import { useMutation } from '@tanstack/react-query';
 import { useSubmitJob } from 'hooks/api/jobs/jobs.hook';
 
 import { ReactComponent as EmptyDataset } from '../../assets/drop-files.svg';
@@ -23,7 +24,7 @@ type ImportUploadFileProps = {
 };
 
 export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUploadFileProps) => {
-    const stagedDatasetMutation = $api.useMutation('post', '/api/staged_datasets');
+    const stagedDatasetMutation = useMutation({ mutationFn: uploadDatasetArchive });
     const prepareImportJobMutation = useSubmitJob();
 
     const handleLoadingFile = (files: File[]) => {
@@ -49,11 +50,7 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
     };
 
     const handleImportPrepare = async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        // @ts-expect-error There is an incorrect type in OpenAPI
-        const stagedDataset = await stagedDatasetMutation.mutateAsync({ body: formData });
+        const stagedDataset = await stagedDatasetMutation.mutateAsync(file);
 
         const prepareImportJob = await prepareImportJobMutation.mutateAsync({
             body: {

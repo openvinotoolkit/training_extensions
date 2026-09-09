@@ -4,7 +4,7 @@
 import { useState, type PointerEvent, type RefObject } from 'react';
 
 import type { Point } from '../../../../../shared/types';
-import { getRelativePoint } from './utils';
+import { getRelativePoint } from '../../utils';
 
 interface UseCrosshair {
     location: Point | null;

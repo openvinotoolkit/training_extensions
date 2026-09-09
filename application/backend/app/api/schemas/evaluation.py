@@ -152,9 +152,13 @@ class EvaluationView(BaseModel):
                 "metrics": cls.__serialize_metrics(data.metrics),
             }
         if isinstance(data, dict):
+            metrics = data["metrics"]
+            if isinstance(metrics, dict):
+                metrics = cls.__serialize_metrics(metrics)
+            subset = data["subset"]
             return {
                 "dataset_revision_id": data["dataset_revision_id"],
-                "subset": data["subset"].value,
-                "metrics": cls.__serialize_metrics(data["metrics"]),
+                "subset": subset.value if isinstance(subset, StrEnum) else subset,
+                "metrics": metrics,
             }
         return data

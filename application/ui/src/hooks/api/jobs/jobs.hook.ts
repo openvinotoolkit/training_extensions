@@ -5,10 +5,10 @@ import { useRef } from 'react';
 
 import { $api } from '@/api';
 import type { Job, QuantizeJob, TrainJob } from '@/api/types';
+import { toast } from '@/components/toast/toast.component';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
-import { toast } from '../../../components/toast/toast.component';
 import { getQueryKey } from '../../../query-client/query-client';
 import { useDismissedJobs } from '../../storage/use-dismissed-jobs.hook';
 import { useSSE } from '../../use-sse.hook';

@@ -84,6 +84,7 @@ class RTDETR(LightningDetectionModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
         pretrained: bool = True,
         pretrained_weights: PathLike | None = None,
+        export_nms: bool = False,
     ) -> None:
         self.multi_scale = multi_scale
         super().__init__(
@@ -97,6 +98,7 @@ class RTDETR(LightningDetectionModel):
             tile_config=tile_config,
             pretrained=pretrained,
             pretrained_weights=pretrained_weights,
+            export_nms=export_nms,
         )
 
     def _create_model(self, num_classes: int | None = None) -> DETR:

@@ -5,7 +5,7 @@ import { ActionButton, Flex, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Redo, Undo } from '@geti-ui/ui/icons';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import { HOTKEYS } from '../../../../../shared/hotkeys-definition';
+import { formatHotkeyForDisplay, HOTKEYS } from '../../../../../shared/hotkeys-definition';
 import { useUndoRedo } from './undo-redo-provider.component';
 
 export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
@@ -18,6 +18,9 @@ export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
         canRedo,
     ]);
 
+    const undoLabel = `Undo (${formatHotkeyForDisplay(HOTKEYS.undo)})`;
+    const redoLabel = `Redo (${formatHotkeyForDisplay(HOTKEYS.redo)} or ${formatHotkeyForDisplay(HOTKEYS.redoAlt)})`;
+
     return (
         <Flex alignItems='center' direction={'column'} justifyContent={'center'} data-testid='undo-redo-tools'>
             <TooltipTrigger placement={'end'}>
@@ -26,12 +29,12 @@ export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
                     id='undo-button'
                     data-testid='undo-button'
                     onPress={undo}
-                    aria-label='undo'
+                    aria-label={undoLabel}
                     isDisabled={!canUndo || isDisabled}
                 >
                     <Undo />
                 </ActionButton>
-                <Tooltip>Undo</Tooltip>
+                <Tooltip>{undoLabel}</Tooltip>
             </TooltipTrigger>
 
             <TooltipTrigger placement={'end'}>
@@ -39,13 +42,13 @@ export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
                     isQuiet
                     id='redo-button'
                     data-testid='redo-button'
-                    aria-label='redo'
+                    aria-label={redoLabel}
                     onPress={redo}
                     isDisabled={!canRedo || isDisabled}
                 >
                     <Redo />
                 </ActionButton>
-                <Tooltip>Redo</Tooltip>
+                <Tooltip>{redoLabel}</Tooltip>
             </TooltipTrigger>
         </Flex>
     );

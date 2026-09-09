@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 import type { DatasetRevision, Model } from '@/api/types';
 
-import { GroupByMode, GroupedModels, SortBy } from '../types';
+import type { GroupByMode, GroupedModels, SortDescriptor } from '../types';
 import {
     filterBySearch,
     filterOutFailedModels,
@@ -18,7 +18,8 @@ import { sortGroupedModelsByDatasetRevisionDate } from '../utils/sorting';
 
 type UseGroupedModelsOptions = {
     groupBy: GroupByMode;
-    sortBy: SortBy;
+    // Each group sorts independently; groups without an entry use the default sort.
+    sortBy: Record<string, SortDescriptor>;
     searchBy: string;
     datasetRevisions: DatasetRevision[];
     showFailedModels: boolean;

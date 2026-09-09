@@ -39,6 +39,13 @@ inputs:
       Intended for RC and release builds; regular builds should leave this disabled.
     required: false
     default: "false"
+  owner:
+    description: >
+      GHCR namespace (repository owner, lowercase) for the build cache image.
+      Defaults to the upstream org; forks pass their own owner so cache
+      reads/writes target their namespace instead of the upstream one.
+    required: false
+    default: "open-edge-platform"
 
 outputs:
   digest:
@@ -97,8 +104,8 @@ runs:
         # packages:write which fork PRs do not have.
         # Cache is disabled for RC/release builds (use-cache=false)
         # to prevent cache poisoning and ensure reproducible builds.
-        cache-from: ${{ inputs.use-cache == 'true' && format('type=registry,ref=ghcr.io/open-edge-platform/geti-{0}:buildcache', inputs.device) || '' }}
-        cache-to: ${{ inputs.cache-write == 'true' && inputs.use-cache == 'true' && format('type=registry,ref=ghcr.io/open-edge-platform/geti-{0}:buildcache,mode=max,compression=zstd,image-manifest=true,ignore-error=true', inputs.device) || '' }}
+        cache-from: ${{ inputs.use-cache == 'true' && format('type=registry,ref=ghcr.io/{0}/geti-{1}:buildcache', inputs.owner, inputs.device) || '' }}
+        cache-to: ${{ inputs.cache-write == 'true' && inputs.use-cache == 'true' && format('type=registry,ref=ghcr.io/{0}/geti-{1}:buildcache,mode=max,compression=zstd,image-manifest=true,ignore-error=true', inputs.owner, inputs.device) || '' }}
 
     - name: Extract first image tag
       id: first-tag

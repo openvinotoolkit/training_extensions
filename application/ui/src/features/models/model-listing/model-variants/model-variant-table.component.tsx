@@ -21,7 +21,8 @@ import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { get } from 'lodash-es';
 import { useNumberFormatter } from 'react-aria';
 
-import { downloadFile, formatBytes } from '../../../../shared/util';
+import { downloadFile } from '../../../../platform/download-file';
+import { formatBytes } from '../../../../shared/util';
 import { getModelVariantBinaryFilename, getModelVariantBinaryUrl } from '../utils/utils';
 import {
     getBaselineVariant,

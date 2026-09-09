@@ -6,24 +6,48 @@ import dayjs from 'dayjs';
 import { orderBy } from 'lodash-es';
 
 import { getTestingMetric } from '../components/model-row/utils';
-import type { GroupedModels, SortBy } from '../types';
+import type { GroupedModels, SortBy, SortDescriptor, SortDirection } from '../types';
 
-export const sortModels = (models: Model[], sortBy: SortBy, datasetRevisions: DatasetRevision[]): Model[] => {
+export const DEFAULT_SORT_DIRECTIONS: Record<SortBy, SortDirection> = {
+    name: 'asc',
+    trained: 'desc',
+    architecture: 'asc',
+    dataset: 'desc',
+    device: 'asc',
+    size: 'asc',
+    score: 'desc',
+};
+
+export const DEFAULT_SORT: SortDescriptor = { key: 'score', direction: 'desc' };
+
+export const sortModels = (
+    models: Model[],
+    sortBy: SortBy,
+    datasetRevisions: DatasetRevision[],
+    direction: SortDirection = DEFAULT_SORT_DIRECTIONS[sortBy]
+): Model[] => {
     switch (sortBy) {
         case 'name':
-            return orderBy(models, (model) => model.name.toLowerCase(), 'asc');
+            return orderBy(models, (model) => model.name.toLowerCase(), direction);
         case 'architecture':
-            return orderBy(models, (model) => model.architecture?.toLowerCase() ?? '', 'asc');
-        case 'trained':
+            return orderBy(models, (model) => model.architecture?.toLowerCase() ?? '', direction);
+        case 'trained': {
+            const endTimes = new Map(models.map((model) => [model, dayjs(model.training_info?.end_time)]));
+
             return orderBy(
                 models,
-                (model) => {
-                    const date = dayjs(model.training_info?.end_time);
+                [
+                    // Models without a valid training date come last in both directions.
+                    (model) => (endTimes.get(model)?.isValid() ? 0 : 1),
+                    (model) => {
+                        const date = endTimes.get(model);
 
-                    return date.isValid() ? date.valueOf() : 0;
-                },
-                'desc'
+                        return date?.isValid() ? date.valueOf() : 0;
+                    },
+                ],
+                ['asc', direction]
             );
+        }
         case 'device':
             return orderBy(
                 models,
@@ -32,37 +56,47 @@ export const sortModels = (models: Model[], sortBy: SortBy, datasetRevisions: Da
                     (model) => (model.training_info?.device?.name != null ? 0 : 1),
                     (model) => model.training_info?.device?.name?.toLowerCase() ?? '',
                 ],
-                ['asc', 'asc']
+                ['asc', direction]
             );
         case 'size':
-            return orderBy(models, (model) => model.size ?? 0, 'asc');
-        case 'score':
-            return orderBy(models, (model) => getTestingMetric(model)?.value ?? 0, 'desc');
+            return orderBy(models, (model) => model.size ?? 0, direction);
+        case 'score': {
+            const metrics = new Map(models.map((model) => [model, getTestingMetric(model)]));
+
+            return orderBy(
+                models,
+                [
+                    // Models without a score come last.
+                    (model) => (metrics.get(model) !== undefined ? 0 : 1),
+                    (model) => metrics.get(model)?.value ?? 0,
+                ],
+                ['asc', direction]
+            );
+        }
         case 'dataset': {
             const datasetRevisionsMap = new Map(
                 datasetRevisions.map((datasetRevision) => [datasetRevision.id, datasetRevision])
             );
 
-            const getDatasetRevision = (model: Model) => {
-                const id = model.training_info?.dataset_revision_id;
-                return id != null ? datasetRevisionsMap.get(id) : undefined;
-            };
+            const revisions = new Map(
+                models.map((model) => {
+                    const id = model.training_info?.dataset_revision_id;
+
+                    return [model, id != null ? datasetRevisionsMap.get(id) : undefined];
+                })
+            );
 
             return orderBy(
                 models,
                 [
-                    // First: models with a resolvable dataset revision come first.
-                    (model) => (getDatasetRevision(model) != null ? 1 : 0),
-                    // Second: sort by dataset revision creation date, newest first.
-                    (model) => {
-                        const createdAt = getDatasetRevision(model)?.created_at;
-
-                        return createdAt ?? '';
-                    },
-                    // Third: sort by dataset revision name, Z -> A.
-                    (model) => getDatasetRevision(model)?.name?.toLowerCase() ?? '',
+                    // First: models without a resolvable dataset revision come last.
+                    (model) => (revisions.get(model) != null ? 0 : 1),
+                    // Second: sort by dataset revision creation date.
+                    (model) => revisions.get(model)?.created_at ?? '',
+                    // Third: sort by dataset revision name.
+                    (model) => revisions.get(model)?.name?.toLowerCase() ?? '',
                 ],
-                ['desc', 'desc', 'desc']
+                ['asc', direction, direction]
             );
         }
         default:

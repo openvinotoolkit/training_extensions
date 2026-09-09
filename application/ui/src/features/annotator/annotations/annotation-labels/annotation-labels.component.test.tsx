@@ -108,7 +108,8 @@ describe('AnnotationLabels', () => {
         );
 
         const foreignObject = document.querySelector('foreignObject');
-        expect(foreignObject).toHaveAttribute('height', '25');
+        expect(foreignObject).toHaveAttribute('height', '24');
+        expect(foreignObject).toHaveAttribute('y', '-24');
     });
 
     it('prevents event propagation on close button click', () => {

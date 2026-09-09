@@ -133,6 +133,7 @@ class ECDETRDetector(DETR):
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
         explain_mode: bool = False,
+        with_nms: bool = False,
     ) -> dict[str, Tensor]:
         """Export-mode forward pass (no teacher, no denoising, deploy postprocess).
 
@@ -145,10 +146,14 @@ class ECDETRDetector(DETR):
             batch_img_metas: List of per-image meta dicts; ``"img_shape"`` key
                 is used for rescaling.
             explain_mode: Ignored.
+            with_nms: Whether to embed NMS in the exported graph. Not supported.
 
         Returns:
             Dict with ``bboxes``, ``labels``, ``scores`` (and ``masks`` for ECSeg).
         """
+        if with_nms:
+            msg = "ECDETRDetector does not support embedded NMS export."
+            raise ValueError(msg)
         backbone_feats = self.backbone(batch_inputs)
         encoder_feats = self.encoder(backbone_feats)
         predictions = self.decoder(encoder_feats, spatial_feat=backbone_feats[0])

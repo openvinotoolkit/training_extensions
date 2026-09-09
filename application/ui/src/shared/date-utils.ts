@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 
 const DATE_TIME_FORMAT = 'DD MMM YYYY, hh:mm A';
 
-export const formatFilterDate = (date: string): string => dayjs(date).format('DD/MM/YYYY HH:mm');
+const formatFilterDate = (date: string): string => dayjs(date).format('DD/MM/YYYY HH:mm');
 
 export const formatDateRangeStart = (date: string): string => `From ${formatFilterDate(date)}`;
 

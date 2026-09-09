@@ -146,10 +146,22 @@ class TestLightningDetectionModel:
         assert ("model_info", "agnostic_nms") not in metadata
         assert ("model_info", "nms_max_predictions") not in metadata
 
+    def test_export_nms_defaults_to_false(self, model):
+        assert model.export_nms is False
+
+    def test_export_nms_can_be_enabled(self):
+        model = ATSS(
+            model_name="atss_mobilenetv2",
+            label_info=1,
+            data_input_params=DataInputParams((320, 320), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+            export_nms=True,
+        )
+        assert model.export_nms is True
+
     def test_export_parameters_with_nms(self, model):
         model.export_nms = True
         parameters = model._export_parameters
-        assert parameters.nms_execute is None
+        assert parameters.nms_execute is False
         assert parameters.agnostic_nms is None
         assert parameters.nms_max_predictions is None
 
@@ -165,6 +177,24 @@ class TestLightningDetectionModel:
         assert dets.shape[2] == 5
         assert labels.ndim == 2
         assert labels.shape == dets.shape[:2]
+
+    def test_forward_for_tracing_with_nms(self, model):
+        model.eval()
+        model.export_nms = True
+
+        dets, labels = model.forward_for_tracing(torch.randn(1, 3, 64, 64))
+
+        assert dets.ndim == 3
+        assert dets.shape[0] == 1
+        assert dets.shape[2] == 5
+        assert labels.ndim == 2
+        assert labels.shape == dets.shape[:2]
+        assert dets.shape[1] <= model.model.test_cfg["max_per_img"]
+
+        scores = dets[..., 4]
+        assert torch.all((scores >= 0) & (scores <= 1))
+        assert torch.all(scores[:, :-1] >= scores[:, 1:])
+        assert torch.all((labels >= 0) & (labels < model.num_classes))
 
     def test_dummy_input(self, model: ATSS):
         batch_size = 2

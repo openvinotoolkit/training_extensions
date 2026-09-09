@@ -1,15 +1,15 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { StagedImportDataset } from '@/components/import-card-status/staged-import-dataset/staged-import-dataset.component';
+import { LoadingImportDataset } from '@/components/loading-import-dataset/loading-import-dataset.component';
+import { PrepareImportDataset } from '@/components/prepare-import-dataset/prepare-import-dataset.component';
 import { Flex } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useImportDatasetToProject } from 'hooks/storage/use-import-dataset-to-project.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isEmpty, partition } from 'lodash-es';
 
-import { StagedImportDataset } from '../../../../components/import-card-status/staged-import-dataset/staged-import-dataset.component';
-import { LoadingImportDataset } from '../../../../components/loading-import-dataset/loading-import-dataset.component';
-import { PrepareImportDataset } from '../../../../components/prepare-import-dataset/prepare-import-dataset.component';
 import { getQueryKey } from '../../../../query-client/query-client';
 import { useImportDatasetDialogState } from '../../providers/export-import-dataset-dialog-provider.component';
 

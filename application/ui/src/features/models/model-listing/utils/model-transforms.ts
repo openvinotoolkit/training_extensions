@@ -3,9 +3,9 @@
 
 import type { DatasetRevision, Model } from '@/api/types';
 
-import type { GroupByMode, GroupedModels, SortBy } from '../types';
+import type { GroupByMode, GroupedModels, SortDescriptor } from '../types';
 import { groupModelsByArchitecture, groupModelsByDataset } from './grouping';
-import { sortModels } from './sorting';
+import { DEFAULT_SORT, sortModels } from './sorting';
 import { isFailedModel, isTrainingModel } from './utils';
 
 export const filterBySearch = (models: Model[], query: string): Model[] =>
@@ -28,9 +28,17 @@ export const groupModels = (
 
 export const sortGroupedModels = (
     groups: GroupedModels[],
-    sortBy: SortBy,
+    sortByGroup: Record<string, SortDescriptor>,
     datasetRevisions: DatasetRevision[]
-): GroupedModels[] => groups.map((group) => ({ ...group, models: sortModels(group.models, sortBy, datasetRevisions) }));
+): GroupedModels[] =>
+    groups.map((group) => {
+        const { key, direction } = sortByGroup[group.group.id] ?? DEFAULT_SORT;
+
+        return {
+            ...group,
+            models: sortModels(group.models, key, datasetRevisions, direction),
+        };
+    });
 
 export const removeEmpty = (groups: GroupedModels[]): GroupedModels[] =>
     groups.filter((group) => group.models.length > 0);

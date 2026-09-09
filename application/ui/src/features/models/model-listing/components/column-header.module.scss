@@ -1,0 +1,35 @@
+// Copyright (C) 2026 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+.columnHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spectrum-global-dimension-size-50);
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover .icon,
+    &:focus-visible .icon {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+// Kept in the layout while transparent so that hovering a column does not shift the header.
+.icon {
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    color: var(--spectrum-global-color-gray-700);
+    transition: opacity 0.3s ease-in-out;
+}
+
+.isSorted .icon {
+    opacity: 1;
+    visibility: visible;
+    color: var(--spectrum-global-color-gray-900);
+}

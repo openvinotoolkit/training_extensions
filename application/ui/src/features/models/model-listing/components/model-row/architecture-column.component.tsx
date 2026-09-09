@@ -9,13 +9,14 @@ import { PerformanceCategoryBadge } from './performance-category-badge.component
 import classes from './model-row.module.scss';
 
 type ArchitectureColumnProps = {
+    architectureId: string;
     architecture: ModelArchitectureWithPerformanceCategory | undefined;
 };
 
-export const ArchitectureColumn = ({ architecture }: ArchitectureColumnProps) => {
-    // Should never happen, but just in case
+export const ArchitectureColumn = ({ architectureId, architecture }: ArchitectureColumnProps) => {
+    // For TIMM, and as a general fallback, we display the architecture ID (and no license)
     if (architecture === undefined) {
-        return <Text>Unknown</Text>;
+        return <Text UNSAFE_className={classes.smallText}>{architectureId}</Text>;
     }
 
     return (

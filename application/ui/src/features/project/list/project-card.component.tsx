@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import type { Project } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Badge, dimensionValue, Flex, Heading, Text, View } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
@@ -62,8 +63,9 @@ type ProjectCardProps = {
 };
 
 export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: ProjectCardProps) => {
+    const { t } = useTranslation();
     const isActive = item.active_pipeline;
-    const taskType = getProjectTypeTitle(item.task);
+    const taskType = getProjectTypeTitle(item.task, t);
     const queryClient = useQueryClient();
 
     const prefetchProject = () => {
@@ -71,7 +73,7 @@ export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: Pro
     };
 
     return (
-        <div style={{ position: 'relative' }} aria-label={`Project: ${item.name}`}>
+        <div style={{ position: 'relative' }} aria-label={t('project.list.card.label', { projectName: item.name })}>
             <NavLink
                 to={paths.project.dataset.index({ projectId: item.id })}
                 viewTransition
@@ -105,10 +107,12 @@ export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: Pro
 
                         <Flex marginTop={'size-200'} gap={'size-100'} direction={'column'}>
                             <Text UNSAFE_className={classes.projectMetadata}>
-                                • Created: {formatCreationDate(item.created_at)}
+                                {t('project.list.card.created', { date: formatCreationDate(item.created_at) })}
                             </Text>
                             <Text UNSAFE_className={clsx(classes.labelList, classes.projectMetadata)}>
-                                • Labels: {(item.task.labels ?? []).map((label) => label.name).join(', ')}
+                                {t('project.list.card.labels', {
+                                    labels: (item.task.labels ?? []).map((label) => label.name).join(', '),
+                                })}
                             </Text>
                         </Flex>
                     </View>

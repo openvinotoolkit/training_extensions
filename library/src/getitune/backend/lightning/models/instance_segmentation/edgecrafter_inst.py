@@ -107,6 +107,7 @@ class EdgeCrafterInst(EdgeCrafterMixin, LightningInstanceSegModel):  # pyrefly: 
         tile_config: TileConfig = TileConfig(enable_tiler=False),
         pretrained: bool = True,
         pretrained_weights: PathLike | None = None,
+        export_nms: bool = False,
     ) -> None:
         self.multi_scale = multi_scale
         self.backbone_lr = backbone_lr
@@ -121,6 +122,7 @@ class EdgeCrafterInst(EdgeCrafterMixin, LightningInstanceSegModel):  # pyrefly: 
             tile_config=tile_config,
             pretrained=pretrained,
             pretrained_weights=pretrained_weights,
+            export_nms=export_nms,
         )
 
     def _create_model(self, num_classes: int | None = None) -> ECDETRDetector:
@@ -179,7 +181,7 @@ class EdgeCrafterInst(EdgeCrafterMixin, LightningInstanceSegModel):  # pyrefly: 
             Dict with ``boxes``, ``labels``, ``masks``.
         """
         meta_info_list = self._default_is_meta(inputs)
-        result = self.model.export(inputs, meta_info_list)  # type: ignore[attr-defined]  # pyrefly: ignore[not-callable]
+        result = self.model.export(inputs, meta_info_list, with_nms=self.export_nms)  # type: ignore[attr-defined]  # pyrefly: ignore[not-callable]
         return self._make_is_export_prediction(inputs, result)
 
     @property

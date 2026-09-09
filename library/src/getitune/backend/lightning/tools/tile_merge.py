@@ -119,8 +119,8 @@ class TileMerge:
         bboxes: torch.Tensor,
         scores: torch.Tensor,
         labels: torch.Tensor,
-        masks: None | list[torch.Tensor] = None,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, None | torch.Tensor]:
+        masks: list[torch.Tensor] | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
         """Non-maximum suppression and post-process."""
         keep = batched_nms(bboxes, scores, labels, self.iou_threshold)
         if len(keep) > self.max_num_instances:
@@ -469,7 +469,7 @@ class InstanceSegTileMerge(TileMerge):
         self,
         labels: torch.Tensor,
         scores: torch.Tensor,
-        masks: None | torch.Tensor,
+        masks: torch.Tensor | None,
         num_classes: int,
     ) -> np.ndarray:
         """Average and normalize predicted masks in  per-class.

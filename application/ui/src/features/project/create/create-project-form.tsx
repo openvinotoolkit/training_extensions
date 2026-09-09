@@ -4,6 +4,7 @@
 import { FormEvent, useState } from 'react';
 
 import type { Label, Project, TaskType } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Divider, Flex, Form, Text, TextField } from '@geti-ui/ui';
 import { useCreateProject } from 'hooks/api/project.hook';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 
 import { paths } from '../../../constants/paths';
 import { LabelSelection } from '../label-selection/label-selection.component';
-import { TASK_OPTIONS, TaskSelection } from '../task-selection/task-selection.component';
+import { MAP_TASK_TYPE_TO_VERB_KEY, TaskSelection } from '../task-selection/task-selection.component';
 import { isClassificationTask } from '../task-type-guards';
 import { PROJECT_NAME_MAX_LENGTH, validateProjectName } from '../validator';
 import {
@@ -27,10 +28,11 @@ type CreateProjectFormProps = {
 };
 
 export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
+    const { t } = useTranslation();
     const [selectedTask, setSelectedTask] = useState<TaskType | null>(null);
     const [labels, setLabels] = useState<Label[]>([]);
     const [name, setName] = useState<string>(() => generateUniqueProjectName(projects.map((project) => project.name)));
-    const selectedTaskOption = TASK_OPTIONS.find((task) => task.value === selectedTask);
+    const taskVerb = selectedTask === null ? undefined : t(MAP_TASK_TYPE_TO_VERB_KEY[selectedTask]);
 
     const [classificationTaskType, setClassificationTaskType] = useState<ClassificationTaskType>('single-label');
 
@@ -43,7 +45,8 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
         ? undefined
         : validateProjectName(
               name,
-              projects.map((project) => project.name)
+              projects.map((project) => project.name),
+              t
           );
 
     const isSingleLabelClassification = isClassificationTask(selectedTask) && classificationTaskType === 'single-label';
@@ -99,7 +102,7 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
             >
                 <Flex justifyContent={'center'} marginTop={'size-600'}>
                     <TextField
-                        aria-label={'Project name input'}
+                        aria-label={t('project.create.nameFieldLabel')}
                         maxLength={PROJECT_NAME_MAX_LENGTH}
                         isRequired
                         value={name}
@@ -116,9 +119,7 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
                     UNSAFE_style={{ overflow: 'auto', margin: '0 auto' }}
                     width={'100%'}
                 >
-                    <Text UNSAFE_className={classes.taskTypeSelectionTitle}>
-                        What type of task would you like the model to perform?
-                    </Text>
+                    <Text UNSAFE_className={classes.taskTypeSelectionTitle}>{t('project.create.taskQuestion')}</Text>
 
                     <TaskSelection selectedTask={selectedTask} setSelectedTask={setSelectedTask} />
 
@@ -133,7 +134,7 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
                         <Flex direction={'column'} alignItems={'center'} gap={'size-350'}>
                             <Flex>
                                 <Text UNSAFE_className={classes.objectsToLearnTitle}>
-                                    {`What objects should the model learn to ${selectedTaskOption?.verb}?`}
+                                    {t('project.create.labelsQuestion', { verb: taskVerb })}
                                 </Text>
                             </Flex>
                             <LabelSelection labels={labels} setLabels={setLabels} taskType={selectedTask} />
@@ -155,10 +156,10 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
                             isExternalReferrer ? navigate(paths.project.index({})) : navigate(-1);
                         }}
                     >
-                        Go back
+                        {t('common.actions.goBack')}
                     </Button>
                     <Button type={'submit'} variant='accent' isDisabled={isCreateProjectDisabled}>
-                        Create project
+                        {t('project.create.submit')}
                     </Button>
                 </ButtonGroup>
             </Flex>

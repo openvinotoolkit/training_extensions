@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import type { AnnotationDTO } from '@/api/types';
+import type { AnnotationDTO, Project } from '@/api/types';
 import { NetworkFixture } from '@msw/playwright';
 import { getMockedLabel } from 'mocks/mock-labels';
 import { getMockedMediaImage, getMockedVideo, getMultipleMockedMediaImage } from 'mocks/mock-media';
@@ -13,7 +13,6 @@ import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 import { v4 as uuid } from 'uuid';
 
-import { SchemaProjectView } from '../../src/api/openapi-spec';
 import { expect, http, test } from '../fixtures';
 
 const mockedItems = getMultipleMockedMediaImage(40, '1');
@@ -205,7 +204,7 @@ test.describe('Dataset', () => {
 
         const mockNetwork = (
             network: NetworkFixture,
-            project: SchemaProjectView,
+            project: Project,
             options?: { onUpload?: () => Promise<void> }
         ) => {
             const createAnnotationPayloads: [string, AnnotationDTO[]][] = [];
@@ -435,7 +434,7 @@ test.describe('Dataset', () => {
             }),
         ];
 
-        const mockNetwork = (network: NetworkFixture, project: SchemaProjectView) => {
+        const mockNetwork = (network: NetworkFixture, project: Project) => {
             const createAnnotationPayloads: [string, AnnotationDTO[]][] = [];
 
             network.use(

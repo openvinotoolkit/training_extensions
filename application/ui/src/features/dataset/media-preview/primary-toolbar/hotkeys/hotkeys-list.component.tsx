@@ -44,10 +44,7 @@ export const HotkeysList = () => {
                 hotkeyName={'Redo'}
                 hotkey={`${formatHotkeyForDisplay(HOTKEYS.redo)} or ${formatHotkeyForDisplay(HOTKEYS.redoAlt)}`}
             />
-            <HotkeyItem
-                hotkeyName={'Delete selected annotation'}
-                hotkey={formatHotkeyForDisplay(HOTKEYS.deleteAnnotation)}
-            />
+            <HotkeyItem hotkeyName={'Delete selected annotation'} hotkey={formatHotkeyForDisplay(HOTKEYS.delete)} />
             <HotkeyItem
                 hotkeyName={'Show or hide all annotations'}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.toggleAnnotationsVisibility)}
@@ -59,6 +56,10 @@ export const HotkeysList = () => {
             <HotkeyItem
                 hotkeyName={'Deselect all annotations'}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.deselectAllAnnotations)}
+            />
+            <HotkeyItem
+                hotkeyName={'Select next annotation'}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.selectNextAnnotation)}
             />
             <Divider size='S' gridColumn={'1/-1'} />
             <HotkeyItem hotkeyName={'Reset zoom'} hotkey={formatHotkeyForDisplay(HOTKEYS.fitToScreen)} />

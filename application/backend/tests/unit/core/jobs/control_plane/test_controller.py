@@ -122,6 +122,56 @@ class TestJobController:
         fxt_runner_factory.for_job.assert_called_with(job)
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "events,expected_status,expected_log_method,expected_log_args",
+        [
+            (
+                [Started(), Progress("progress", 100.0), Done()],
+                JobStatus.DONE,
+                "success",
+                ("Job completed successfully, job_id: {}", "job_id"),
+            ),
+            (
+                [Started(), Progress("progress", 50.0), Failed("boom")],
+                JobStatus.FAILED,
+                "warning",
+                ("Job failed, job_id: {}", "job_id"),
+            ),
+            (
+                [Started(), Progress("progress", 50.0), Cancelled()],
+                JobStatus.CANCELLED,
+                "info",
+                ("Job cancelled, job_id: {}", "job_id"),
+            ),
+        ],
+    )
+    async def test_run_job_logs_actual_terminal_status(
+        self,
+        events,
+        expected_status,
+        expected_log_method,
+        expected_log_args,
+        fxt_job_controller,
+        fxt_job_queue,
+        fxt_runner_factory,
+        fxt_job,
+    ):
+        """Test that _run_job logs a message matching the job's real terminal status, not a generic success."""
+        job = fxt_job()
+        fxt_job_queue.next_runnable.side_effect = [job, asyncio.CancelledError()]
+        fxt_job_queue.get_cancellation_event = Mock(return_value=asyncio.Event())
+        fxt_runner_factory.for_job.return_value = MockRunner(events)
+
+        with patch("app.core.jobs.control_plane.controller.logger") as mock_logger:
+            await fxt_job_controller.start()
+            await asyncio.sleep(0.1)
+            await fxt_job_controller.stop()
+
+        assert job.status == expected_status
+        expected_call_args = tuple(job.id if arg == "job_id" else arg for arg in expected_log_args)
+        getattr(mock_logger, expected_log_method).assert_any_call(*expected_call_args)
+
+    @pytest.mark.asyncio
     async def test_supervise_loop_handles_exceptions(self, fxt_job_controller, fxt_job_queue):
         """Test supervisor loop handles exceptions gracefully."""
         fxt_job_queue.next_runnable.side_effect = [Exception("Test error"), asyncio.CancelledError()]

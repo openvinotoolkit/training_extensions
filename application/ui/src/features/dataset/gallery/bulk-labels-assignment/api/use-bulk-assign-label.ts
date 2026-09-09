@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { $api } from '@/api';
+import { toast } from '@/components/toast/toast.component';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isEmpty, partition } from 'lodash-es';
 
-import { toast } from '../../../../../components/toast/toast.component';
 import { getQueryKey } from '../../../../../query-client/query-client';
 import { filterOutEmptyLabels } from '../../../../../shared/annotator/labels';
 

@@ -10,6 +10,7 @@
 [Supported Tasks & Models](#supported-tasks--models) •
 [Installation](#installation) •
 [Usage](#usage) •
+[Command-Line Scripts](#command-line-scripts) •
 [Docs](https://docs.geti.intel.com/docs/user-guide/library/get-started/intro) •
 [License](#license)
 
@@ -60,13 +61,13 @@ Each supported task ships with curated "recipes": YAML files that bundle the mod
 
 All recipes live under `src/getitune/recipe/<task>/`. Pass any of these YAMLs directly to the API as `model=...`. Recipes whose name ends in `_tile` enable the tiling pipeline for large images.
 
-| Task                                       | Recipe directory                                                                                                                               | Example recipes                                                                                                                                                                                                                                            |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Classification (multi-class / multi-label) | [multi_class_cls](src/getitune/recipe/classification/multi_class_cls/), [multi_label_cls](src/getitune/recipe/classification/multi_label_cls/) | `dino_v2`, `vit_tiny`, `efficientnet_b0`, `efficientnet_b3`, `efficientnet_v2`, `mobilenet_v3_large`, `yolo26_{n,s,m,l,x}_cls`                                                                                                                             |
-| Object detection                           | [detection](src/getitune/recipe/detection/)                                                                                                    | `atss_mobilenetv2`, `ssd_mobilenetv2`, `yolox_{tiny,s,l,x}`, `rtdetr_50`, `dfine_x`, `deim_dfine_{l,m,x}`, `deimv2_{s,m,l}`, `edgecrafter_{s,m,l,x}`, `rfdetr_{nano,small,medium,large}`, `yolo11_{n,s,m,l,x}`, `yolo12_{n,s,m,l,x}`, `yolo26_{n,s,m,l,x}` |
-| Instance segmentation                      | [instance_segmentation](src/getitune/recipe/instance_segmentation/)                                                                            | `maskrcnn_{r50,swint,efficientnetb2b}`, `rtmdet_inst_tiny`, `rfdetr_seg_{nano,small,medium,large,xlarge,2xlarge}`, `yolo11_{n,s,m,l,x}_seg`, `yolo26_{n,s,m,l,x}_seg`                                                                                      |
-| Semantic segmentation                      | [semantic_segmentation](src/getitune/recipe/semantic_segmentation/)                                                                            | `dino_v2`, `litehrnet_{s,18,x}`, `segnext_{t,s,b}`, `yolo26_{n,s,m,l,x}_sem` (with `_tile` variants)                                                                                                                                                       |
-| Keypoint detection                         | [keypoint_detection](src/getitune/recipe/keypoint_detection/)                                                                                  | `rtmpose_tiny`                                                                                                                                                                                                                                             |
+| Task                                       | Recipe directory                                                                                                                               | Example recipes                                                                                                                                                                                                                                                                   |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Classification (multi-class / multi-label) | [multi_class_cls](src/getitune/recipe/classification/multi_class_cls/), [multi_label_cls](src/getitune/recipe/classification/multi_label_cls/) | `dino_v2`, `vit_tiny`, `efficientnet_b0`, `efficientnet_b3`, `efficientnet_v2`, `mobilenet_v3_large`, `yolo26_{n,s,m,l,x}_cls`, `timm_generic` (any [timm](https://github.com/huggingface/pytorch-image-models) backbone by name, e.g. `resnet50.a1_in1k`, `convnext_tiny.in12k`) |
+| Object detection                           | [detection](src/getitune/recipe/detection/)                                                                                                    | `atss_mobilenetv2`, `ssd_mobilenetv2`, `yolox_{tiny,s,l,x}`, `rtdetr_50`, `dfine_x`, `deim_dfine_{l,m,x}`, `deimv2_{s,m,l}`, `edgecrafter_{s,m,l,x}`, `rfdetr_{nano,small,medium,large}`, `yolo11_{n,s,m,l,x}`, `yolo12_{n,s,m,l,x}`, `yolo26_{n,s,m,l,x}`                        |
+| Instance segmentation                      | [instance_segmentation](src/getitune/recipe/instance_segmentation/)                                                                            | `maskrcnn_{r50,swint,efficientnetb2b}`, `rtmdet_inst_tiny`, `rfdetr_seg_{nano,small,medium,large,xlarge,2xlarge}`, `yolo11_{n,s,m,l,x}_seg`, `yolo26_{n,s,m,l,x}_seg`                                                                                                             |
+| Semantic segmentation                      | [semantic_segmentation](src/getitune/recipe/semantic_segmentation/)                                                                            | `dino_v2`, `litehrnet_{s,18,x}`, `segnext_{t,s,b}`, `yolo26_{n,s,m,l,x}_sem` (with `_tile` variants)                                                                                                                                                                              |
+| Keypoint detection                         | [keypoint_detection](src/getitune/recipe/keypoint_detection/)                                                                                  | `rtmpose_tiny`                                                                                                                                                                                                                                                                    |
 
 Each task directory also ships an `openvino_model.yaml` recipe for running and optimizing pre-exported OpenVINO IR models via `OVEngine`.
 
@@ -100,23 +101,23 @@ pip install "getitune"
 
 | Extra    | PyTorch wheel                                                          | Use when                             | Setup Guide                                                                      |
 | -------- | ---------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
-| `[cpu]`  | `torch==2.12.1+cpu` (Linux/Windows) or default `torch==2.12.1` (macOS) | No GPU, or running on Apple silicon. | —                                                                                |
+| `[cpu]`  | `torch==2.14.0+cpu` (Linux/Windows) or default `torch==2.14.0` (macOS) | No GPU, or running on Apple silicon. | —                                                                                |
 | `[xpu]`  | `torch==2.14.0+xpu` + `triton-xpu`                                     | Intel discrete or integrated GPUs.   | [Intel GPU drivers](https://github.com/intel/compute-runtime/releases)           |
-| `[cuda]` | `torch==2.12.1+cu130`                                                  | NVIDIA GPUs with CUDA 13.0 drivers.  | [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-13-0-0-download-archive) |
+| `[cuda]` | `torch==2.14.0+cu130`                                                  | NVIDIA GPUs with CUDA 13.0 drivers.  | [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-13-0-0-download-archive) |
 
 ```bash
 # Intel GPU (XPU)
 uv pip install "getitune[xpu]" --extra-index-url https://download.pytorch.org/whl/xpu
 
 # NVIDIA GPU (CUDA 13.0)
-uv pip install "getitune[cuda]" --extra-index-url https://download.pytorch.org/whl/cu128
+uv pip install "getitune[cuda]" --extra-index-url https://download.pytorch.org/whl/cu130
 
 # CPU-only (no extra index needed)
 uv pip install "getitune[cpu]"
 ```
 
 > [!NOTE]
-> For **macOS** users: PyTorch's `+cpu` wheel is only published for Linux and Windows. The `[cpu]` extra resolves this automatically and installs the default `torch==2.12.1` wheel on macOS.
+> For **macOS** users: PyTorch's `+cpu` wheel is only published for Linux and Windows. The `[cpu]` extra resolves this automatically and installs the default `torch==2.14.0` wheel on macOS.
 
 </details>
 
@@ -270,6 +271,12 @@ onnx_path = engine.export(export_format=ExportFormat.ONNX)
 
 # Export to FP16 ONNX. Same for OpenVINO IR.
 onnx_path = engine.export(export_format=ExportFormat.ONNX, precision=ExportPrecision.FP16)
+```
+
+NMS-based detection and instance-segmentation models are exported without NMS in the graph by default; ModelAPI applies NMS using the embedded metadata. `MaskRCNN`, `MaskRCNNTV`, and `RTMDetInst` always embed NMS because their export paths do not support raw outputs, regardless of `export_nms`. To embed NMS in the exported graph for models that support the option, pass `export_nms=True` explicitly:
+
+```python
+onnx_path = engine.export(export_format=ExportFormat.ONNX, export_nms=True)
 ```
 
 ---
@@ -608,6 +615,115 @@ Available model classes:
 - **Keypoint:** `RTMPose`
 
 </details>
+
+---
+
+## Command-Line Scripts
+
+The `scripts/` directory ships ready-to-use command-line entry points that wrap the `getitune` API for common workflows (training, evaluation, export, benchmarking, and prediction). They are plain Python scripts — run them directly with your `getitune` environment active.
+
+### `train.py`
+
+Train, test, and optionally export/quantize a `getitune` model from the CLI. Accepts a model name or recipe, dataset root, device, epochs, batch size, and precision, with flags to disable early stopping and to export (`--export`) to OpenVINO/ONNX and quantize (`--quantize`) to INT8.
+
+```bash
+# Train, test, and export to OpenVINO FP16
+python scripts/train.py \
+    --model src/getitune/recipe/detection/yolox_s.yaml \
+    --data-root /path/to/dataset \
+    --epochs 50 \
+    --export --export-format openvino --export-precision fp16
+
+# Train and quantize the exported model to INT8
+python scripts/train.py \
+    --model yolox_s \
+    --data-root /path/to/dataset \
+    --export --quantize
+```
+
+### `test.py`
+
+Evaluate a trained model (torch `.ckpt`/`.pt`/`.pth`, or exported OV/ONNX) on a dataset and print the resulting metrics. Supports a task-aware `--metric` override (e.g. `f1-score`, `map`, `dice`, `miou`, `pck`) mapped per task, so invalid combinations like `map` for multiclass classification are rejected.
+
+```bash
+# Evaluate an exported OpenVINO model with the default recipe metrics
+python scripts/test.py \
+    --model /path/to/exported_model.xml \
+    --data-root /path/to/dataset
+
+# Evaluate a torch checkpoint with explicit metrics (DETECTION task)
+python scripts/test.py \
+    --model ckpt.ckpt --recipe yolox_s --task DETECTION \
+    --data-root /path/to/dataset \
+    --metric f1-score map
+
+# Supported metrics per task:
+#   MULTI_CLASS_CLS:        accuracy, f1-score
+#   MULTI_LABEL_CLS:        accuracy, f1-score, map
+#   DETECTION:              f1-score, map
+#   INSTANCE_SEGMENTATION:  f1-score, map
+#   SEMANTIC_SEGMENTATION:  dice, miou
+#   KEYPOINT_DETECTION:     pck, pck-score
+```
+
+### `export.py`
+
+Export a `getitune` model to OpenVINO or ONNX at FP32/FP16, or to INT8 via post-training quantization. Defaults to OpenVINO FP16; INT8 requires a dataset root for the calibration step.
+
+```bash
+# Export to OpenVINO FP16 (default)
+python scripts/export.py \
+    --model yolox_s --checkpoint /path/to/ckpt.ckpt \
+    --data-root /path/to/dataset
+
+# Export to ONNX FP32 from a recipe/model and checkpoint
+python scripts/export.py \
+    --model yolox_s --checkpoint /path/to/ckpt.ckpt \
+    --data-root /path/to/dataset \
+    --format onnx --precision fp32
+
+# Export to OpenVINO INT8 (quantized)
+python scripts/export.py \
+    --model yolox_s --checkpoint /path/to/ckpt.ckpt \
+    --data-root /path/to/dataset \
+    --precision int8
+```
+
+### `predict.py`
+
+Run inference with an OV/ONNX/torch model on a dataset or images folder and write the predictions to a COCO-format JSON file (bounding boxes, RLE masks for segmentation, and keypoints). Uses `coco_utils.py` for the conversion.
+
+```bash
+# Predict with an exported OpenVINO model on an images folder
+python scripts/predict.py \
+    --model /path/to/exported_model.xml \
+    --input /path/to/images \
+    --output predictions.json
+
+# Predict with a torch checkpoint
+python scripts/predict.py \
+    --model ckpt.ckpt --recipe yolox_s --task DETECTION \
+    --input /path/to/dataset \
+    --output predictions.json
+```
+
+### `benchmark.py`
+
+Prepare a model (export a recipe or quantize to INT8 as needed) and run OpenVINO `benchmark_app` against it, forwarding device, batch, input shape, hint, and iteration/time options for latency/throughput measurement.
+
+```bash
+# Benchmark an exported OpenVINO model on CPU
+python scripts/benchmark.py \
+    --model /path/to/exported_model.xml \
+    --data-root /path/to/dataset \
+    --device CPU
+
+# Export + quantize a recipe to INT8, then benchmark
+python scripts/benchmark.py \
+    --model yolox_s --checkpoint /path/to/ckpt.ckpt \
+    --data-root /path/to/dataset \
+    --precision int8 --device CPU
+```
 
 ---
 

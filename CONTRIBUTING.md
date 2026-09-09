@@ -10,13 +10,27 @@ We want to make it as simple and straightforward as possible to contribute to th
 - Creating a Pull Request (PR)
 - Becoming a maintainer
 
+## Repository layout
+
+This is a monorepo with three independent components, each with its own language and toolchain:
+
+| Path                   | What it is                                                 | Primary stack                                                    |
+| ---------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| `library/`             | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch, OpenVINO, Lightning, Datumaro             |
+| `application/backend/` | Geti™ app server (`geti` package).                        | Python 3.13, FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic |
+| `application/ui/`      | Geti™ web/desktop UI.                                     | Node 24.2+, React, TypeScript, rsbuild, Tauri                    |
+
+See [`AGENTS.md`](AGENTS.md) for a more detailed map of the repository, and the
+per-component guides (`library/AGENTS.md`, `application/backend/AGENTS.md`,
+`application/ui/AGENTS.md`) for conventions specific to each area.
+
 ## Bug Report
 
 We use GitHub issues to track the bugs. Report a bug by using our Bug Report Template in [Issues](https://github.com/open-edge-platform/geti/issues/new?template=bug_report.md).
 
 ## Discussion
 
-We enabled [GitHub Discussions](https://github.com/open-edge-platform/geti/discussions) in getitune to welcome the community to ask questions and/or propose ideas/solutions. This will not only provide a medium for the community to discuss Geti™ but also help us de-clutter [Issues](https://github.com/open-edge-platform/geti/issues/).
+We enabled [GitHub Discussions](https://github.com/open-edge-platform/geti/discussions) to welcome the community to ask questions and/or propose ideas/solutions. This will not only provide a medium for the community to discuss Geti™ but also help us de-clutter [Issues](https://github.com/open-edge-platform/geti/issues/).
 
 ## Feature Request
 
@@ -30,73 +44,105 @@ We actively welcome your pull requests:
 
 #### 1. Fork and Clone the Repository
 
-First, fork the getitune repository by following the GitHub documentation on [forking a repo](https://docs.github.com/en/enterprise-cloud@latest/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo). Then, clone your forked repository to your local machine and create a new branch from `develop`.
+First, fork the repository by following the GitHub documentation on [forking a repo](https://docs.github.com/en/enterprise-cloud@latest/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo). Then, clone your forked repository to your local machine and create a new branch from `develop`.
 
 #### 2. Set Up Your Development Environment
 
-Set up your development environment to start contributing. This involves installing the required dependencies and setting up pre-commit hooks for code quality checks. Note that this guide assumes you are using [Venv](https://docs.python.org/3/library/venv.html) for python environments management. However, the steps are similar for other env managers.
+Each component manages its own environment, but the tooling is consistent across the repo:
+
+- Python components (`library/`, `application/backend/`) use [`uv`](https://docs.astral.sh/uv/) for dependency and virtual environment management, and expose their workflows through [`just`](https://github.com/casey/just) recipes.
+- The UI (`application/ui/`) uses `npm` with Node `>=24.2.0`.
+- Code quality hooks are managed with [`prek`](https://github.com/j178/prek) (a drop-in `pre-commit` replacement), configured in [`.pre-commit-config.yaml`](.pre-commit-config.yaml).
 
 <details>
-<summary>Development Environment Setup Instructions</summary>
-
-1. Create and activate a new python environment:
-
-   ```bash
-   cd library
-   python -m venv .getitune
-   source .getitune/bin/activate
-   ```
-
-2. Install the development requirements:
-
-   ```bash
-   pip install -e .[dev]
-   ```
-
-Make sure to address any pre-commit issues before finalizing your pull request.
-Pre-commit checks can be launched by the command:
+<summary>Library (<code>getitune</code>) setup</summary>
 
 ```bash
-tox -vv -e pre-commit
+cd library
+just venv --device cpu   # or --device cuda / --device xpu
+```
+
+Run checks with:
+
+```bash
+just lint
+just test-unit -- <pytest args>
+just test-integration -- <pytest args>
 ```
 
 </details>
 
+<details>
+<summary>Backend (<code>geti</code>) setup</summary>
+
+```bash
+cd application/backend
+just venv --accelerator cpu   # or --accelerator cuda / --accelerator xpu
+```
+
+Run checks with:
+
+```bash
+just lint
+just test-unit -- <pytest args>
+just test-integration -- <pytest args>
+```
+
+</details>
+
+<details>
+<summary>UI setup</summary>
+
+```bash
+cd application/ui
+npm ci
+```
+
+Run checks with:
+
+```bash
+npm run format:check
+npm run lint
+npm run type-check
+npm run test:unit
+```
+
+</details>
+
+<details>
+<summary>Pre-commit hooks (all components)</summary>
+
+`prek` is used instead of `pre-commit` to run the shared hooks (Ruff, Prettier, Hadolint, etc.):
+
+```bash
+prek install
+prek run --all-files
+```
+
+</details>
+
+Never invent ad-hoc `uv`/`docker` commands when a `just` recipe already exists; run `just --list` from a component root to see what's available.
+
 ### Making Changes
 
-1. **Write Code:** Follow the project's coding standards and write your code with clear intent. Ensure your code is well-documented and includes examples where appropriate. For code quality we use ruff, whose configuration is in [`pyproject.toml`](pyproject.toml) file.
+1. **Write Code:** Follow the conventions of the component you're editing (see `AGENTS.md` and the per-component guides). Keep changes minimal and scoped to what's needed.
 
-2. **Add Tests:** If your code includes new functionality, add corresponding tests using [pytest](https://docs.pytest.org/en/7.4.x/) to maintain coverage and reliability.
+2. **Add Tests:** If your code includes new functionality, add corresponding tests (`pytest` for `library`/`application/backend`, Vitest/Playwright for `application/ui`) to maintain coverage and reliability.
 
-3. **Update Documentation:** If you've changed APIs or added new features, update the documentation accordingly. Ensure your docstrings are clear and follow [Google's docstring guide](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings).
+3. **Update Documentation:** If you've changed APIs or added new features, update the relevant documentation (`README.md`, `application/docs/`, `library/README.md`, or docstrings) in the same change set.
 
-4. **Pass Tests and Quality Checks:** Ensure the test suite passes and that your code meets quality standards by running:
+4. **Pass Tests and Quality Checks:** Ensure the test suite and lint/type checks pass for the component(s) you touched, using the `just`/`npm` commands above.
 
-   ```bash
-   cd library
-   tox -vv -e pre-commit
-   pytest tests/unit
-   pytest tests/integration
-   ```
-
-5. **Check Licensing:** Ensure you own the code or have rights to use it, adhering to appropriate licensing.
-
-6. **Sign Your Commits:** Use signed commits to certify that you have the right to submit the code under the project's license:
-
-   ```bash
-   git commit -S -m "Your detailed commit message"
-   ```
-
-   For more on signing commits, see [GitHub's guide on signing commits](https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/signing-commits).
+5. **Check Licensing:** Ensure you own the code or have rights to use it, adhering to appropriate licensing. New source files require a copyright + SPDX header (see [`AGENTS.md`](AGENTS.md)).
 
 ### Submitting Pull Requests
 
 Once you've followed the above steps and are satisfied with your changes:
 
 1. Push your changes to your forked repository.
-2. Go to the original getitune repository you forked and click "New pull request".
+2. Go to the original repository you forked and click "New pull request".
 3. Choose your fork and the branch with your changes to open a pull request.
-4. Fill in the pull request template with the necessary details about your changes.
+4. Fill in the pull request template with the necessary details about your changes. Make the title and the description are accurate and clear, this will help reviewers to understand your code.
 
 We look forward to your contributions!
 
