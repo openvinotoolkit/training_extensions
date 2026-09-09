@@ -217,7 +217,7 @@ def _build_entry(
         "license": model_licenses.get(model_name, {}).get("weights_license", _UNKNOWN_LICENSE),
     }
 
-    cached_keys = {"trainable_parameters", "gigaflops"}
+    cached_keys = {"gigaflops", "trainable_parameters"}
     if existing is not None and cached_keys.issubset(existing.keys()):
         logger.debug("Reusing cached stats for %s", model_name)
         entry.update({k: existing[k] for k in cached_keys})
