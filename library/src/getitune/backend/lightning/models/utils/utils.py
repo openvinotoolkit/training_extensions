@@ -123,11 +123,15 @@ def load_from_http(
     logger.info("Checkpoint folder: '%s'", model_dir)
     rank, world_size = get_dist_info()
     if rank == 0:
-        checkpoint = load_url(filename, model_dir=model_dir, map_location=map_location, progress=progress)
+        checkpoint = load_url(
+            filename, model_dir=model_dir, map_location=map_location, progress=progress, weights_only=True
+        )
     if world_size > 1:
         torch_dist.barrier()
         if rank > 0:
-            checkpoint = load_url(filename, model_dir=model_dir, map_location=map_location, progress=progress)
+            checkpoint = load_url(
+                filename, model_dir=model_dir, map_location=map_location, progress=progress, weights_only=True
+            )
     return checkpoint
 
 
