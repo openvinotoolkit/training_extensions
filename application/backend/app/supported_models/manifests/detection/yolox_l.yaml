@@ -2,6 +2,7 @@ id: object-detection-yolox-l
 name: YOLOX-L
 
 pretrained_weights:
+  source: direct_link
   url: https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth
   sha_sum: d3bd2b23e4cd178bfcc756df67e0d0949f3d77e0a73482f6da694c580ed54da1
 

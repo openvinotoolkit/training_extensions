@@ -8,9 +8,14 @@ import { acceptedExtensions } from '../../utils';
 type AddMediaButtonProps = {
     onFileUpload: (files: File[]) => Promise<void>;
     isDisabled?: boolean;
+    testId?: string;
 };
 
-export const AddMediaButton = ({ onFileUpload, isDisabled = false }: AddMediaButtonProps) => {
+export const AddMediaButton = ({
+    onFileUpload,
+    isDisabled = false,
+    testId = 'upload-media-input',
+}: AddMediaButtonProps) => {
     const handleFileSelect = async (files: FileList | null) => {
         if (files && files.length > 0) {
             await onFileUpload(Array.from(files));
@@ -19,7 +24,7 @@ export const AddMediaButton = ({ onFileUpload, isDisabled = false }: AddMediaBut
 
     return (
         <FileTrigger
-            data-testid='upload-media-input'
+            data-testid={testId}
             acceptedFileTypes={[acceptedExtensions]}
             allowsMultiple
             onSelect={handleFileSelect}

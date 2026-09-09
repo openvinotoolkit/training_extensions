@@ -3,12 +3,13 @@
 
 import { Suspense, useMemo, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Heading, Loading, Text, View } from '@geti-ui/ui';
 import { useProjects } from 'hooks/api/project.hook';
 import { partition } from 'lodash-es';
 
 import { version } from '../../../../package.json';
-import { isNonEmptyArray, pluralize } from '../../../shared/util';
+import { isNonEmptyArray } from '../../../shared/util';
 import { EmptyProjectList } from './empty-project-list/empty-project-list.component';
 import { NoMatchingProjects } from './filter-projects/no-matching-projects.component';
 import { ProjectFilters } from './filter-projects/project-filters.component';
@@ -23,6 +24,7 @@ import backgroundStyles from '../project-background.module.scss';
 import classes from './project-list.module.scss';
 
 const ProjectGrid = () => {
+    const { t } = useTranslation();
     const projectsQuery = useProjects();
     const projects = projectsQuery.data;
     const [sortBy, setSortBy] = useState<SortBy>('createdAt-descending');
@@ -39,77 +41,70 @@ const ProjectGrid = () => {
         return SORT_BY_HANDLERS[sortBy](filteredProjects);
     }, [filteredProjects, sortBy]);
 
-    const projectNames = projectsQuery.data.map((project) => project.name);
+    const projectNames = projects.map((project) => project.name);
 
     if (!hasProjects) {
         return <EmptyProjectList />;
     }
 
-    const matchCountLabel = `${sortedProjects.length} of ${projectsWithoutActivePipeline.length} ${pluralize(
-        projectsWithoutActivePipeline.length,
-        'project',
-        'projects'
-    )}`;
-
-    const totalCountLabel = `${projectsWithoutActivePipeline.length} ${pluralize(
-        projectsWithoutActivePipeline.length,
-        'project',
-        'projects'
-    )}`;
-
-    const columns = activeProject === undefined ? ['1fr'] : ['1fr', '1fr'];
+    const totalCount = projectsWithoutActivePipeline.length;
+    const countLabel = isFiltering
+        ? t('project.list.countFiltered', { count: totalCount, filtered: sortedProjects.length })
+        : t('project.list.count', { count: totalCount });
+    const cardMinWidth = 480;
+    const visibleCardsCount = (activeProject === undefined ? 0 : 1) + sortedProjects.length;
 
     return (
         <Flex direction={'column'} gap={'size-300'} height={'100%'}>
-            <Divider size={'S'} />
-            <Grid columns={columns} gap={'size-300'} rows={['size-2000']}>
+            <View UNSAFE_className={classes.newProjectRow}>
                 <NewProjectCard />
+            </View>
 
-                {activeProject !== undefined && (
-                    <ProjectCard
-                        item={activeProject}
-                        prioritizeImage
-                        projectNames={projectNames.filter((projectName) => projectName !== activeProject.name)}
-                    />
-                )}
-            </Grid>
+            <Divider size={'S'} />
+
+            <Heading width={'100%'} level={1} UNSAFE_className={classes.heading}>
+                {t('project.list.heading')}
+            </Heading>
+
             {shouldShowFilters && (
-                <>
-                    <Divider size={'S'} />
+                <Flex width={'100%'} gap={'size-200'}>
+                    <SortProjects sortBy={sortBy} onSort={setSortBy} />
 
-                    <Flex width={'100%'} gap={'size-200'}>
-                        <SortProjects sortBy={sortBy} onSort={setSortBy} />
+                    <Divider size={'S'} orientation={'vertical'} />
 
-                        <Divider size={'S'} orientation={'vertical'} />
+                    <Flex flex={1} alignItems={'center'} gap={'size-200'}>
+                        <Text UNSAFE_className={classes.projectMetadata}>{countLabel}</Text>
 
-                        <Flex flex={1} alignItems={'center'} gap={'size-200'}>
-                            <Text UNSAFE_className={classes.projectMetadata}>
-                                {isFiltering ? matchCountLabel : totalCountLabel}
-                            </Text>
-
-                            <ProjectFilters
-                                searchName={searchName}
-                                onSearchChange={setSearchName}
-                                selectedTaskTypes={selectedTaskTypes}
-                                onSelectedTaskTypesChange={setSelectedTaskTypes}
-                            />
-                        </Flex>
+                        <ProjectFilters
+                            searchName={searchName}
+                            onSearchChange={setSearchName}
+                            selectedTaskTypes={selectedTaskTypes}
+                            onSelectedTaskTypesChange={setSelectedTaskTypes}
+                        />
                     </Flex>
-                </>
+                </Flex>
             )}
-            {sortedProjects.length === 0 ? (
-                isFiltering ? (
-                    <NoMatchingProjects />
-                ) : null
-            ) : (
+            {isFiltering && sortedProjects.length === 0 && <NoMatchingProjects />}
+
+            {visibleCardsCount > 0 && (
                 <Grid
                     flex={1}
                     gap={'size-300'}
                     autoRows={'size-2000'}
-                    justifyContent={'center'}
-                    UNSAFE_style={{ overflowY: 'auto' }}
-                    columns={['1fr', '1fr']}
+                    columns={
+                        visibleCardsCount === 1
+                            ? `minmax(min(${cardMinWidth}px, 100%), .5fr)`
+                            : `repeat(auto-fit, minmax(min(${cardMinWidth}px, 100%), 1fr))`
+                    }
+                    UNSAFE_className={classes.projectGrid}
                 >
+                    {activeProject !== undefined && (
+                        <ProjectCard
+                            item={activeProject}
+                            prioritizeImage
+                            projectNames={projectNames.filter((projectName) => projectName !== activeProject.name)}
+                        />
+                    )}
                     {sortedProjects.map((item, index) => (
                         <ProjectCard
                             key={item.id}
@@ -131,27 +126,9 @@ const AppInfo = () => {
 export const ProjectList = () => {
     return (
         <View UNSAFE_className={backgroundStyles.projectBackground} height={'100%'} position={'relative'}>
-            <Content height={'100%'} maxWidth={'1052px'} margin={'0 auto'} UNSAFE_className={classes.content}>
+            <Content height={'100%'} maxWidth={'1560px'} margin={'0 auto'} UNSAFE_className={classes.content}>
                 <Flex direction={'column'} height={'100%'}>
                     <ImportJobsList />
-
-                    <Heading
-                        level={1}
-                        marginBottom={'size-250'}
-                        UNSAFE_style={{
-                            textAlign: 'center',
-                            fontSize: 'var(--spectrum-global-dimension-font-size-700)',
-                        }}
-                    >
-                        Projects
-                    </Heading>
-
-                    <Text UNSAFE_className={classes.description}>
-                        Your computer vision journey starts here.
-                        <br />
-                        Create projects by selecting a computer vision task, annotate your data, train models, and run
-                        inference.
-                    </Text>
 
                     <View flex={1} UNSAFE_style={{ overflow: 'auto' }}>
                         <Suspense fallback={<Loading size='M' mode='inline' />}>

@@ -1,0 +1,149 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "goBack": "Go back",
+            "rename": "Rename",
+            "save": "Save"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Geti logo",
+        "dataset": "Dataset",
+        "datasetDescription": "Data collection page to visualise your media items",
+        "models": "Models",
+        "modelsDescription": "Models page to visualise your models",
+        "inference": "Inference",
+        "inferenceDescription": "Inference page showing live inference on your project"
+    },
+    "project": {
+        "delete": {
+            "title": "Delete",
+            "confirmation": "Are you sure you want to delete project \"{{projectName}}\"?",
+            "success": "Project deleted successfully"
+        },
+        "rename": {
+            "title": "Edit project name",
+            "fieldLabel": "Edit project name field",
+            "success": "Project updated successfully"
+        },
+        "validation": {
+            "nameEmpty": "Project name cannot be empty",
+            "nameExists": "That project name already exists"
+        },
+        "taskTypes": {
+            "detection": "Object detection",
+            "classification": "Classification",
+            "instanceSegmentation": "Instance segmentation",
+            "multiLabelClassification": "Multi-label classification",
+            "recommended": "{{taskType}} (Recommended)"
+        },
+        "list": {
+            "heading": "Projects",
+            "count_one": "{{count}} project",
+            "count_other": "{{count}} projects",
+            "countFiltered_one": "{{filtered}} of {{count}} project",
+            "countFiltered_other": "{{filtered}} of {{count}} projects",
+            "createNewProject": "Create new project",
+            "createProjectFromDataset": "Create project from dataset",
+            "activeBadge": "Active",
+            "card": {
+                "label": "Project: {{projectName}}",
+                "created": "• Created: {{date}}",
+                "labels": "• Labels: {{labels}}"
+            },
+            "menu": {
+                "trigger": "open project options",
+                "enablePipeline": "Enable pipeline",
+                "disablePipeline": "Disable pipeline",
+                "pipelineEnabled": "Pipeline enabled successfully",
+                "pipelineDisabled": "Pipeline disabled successfully"
+            },
+            "sort": {
+                "label": "Sort:",
+                "nameAscending": "Name (A-Z)",
+                "nameDescending": "Name (Z-A)",
+                "createdAtDescending": "Created date (newest)",
+                "createdAtAscending": "Created date (oldest)"
+            },
+            "filters": {
+                "searchPlaceholder": "Search by name...",
+                "searchLabel": "Search projects by name",
+                "taskType": "Filter by task type",
+                "typesSelected_one": "{{count}} type selected",
+                "typesSelected_other": "{{count}} types selected"
+            },
+            "noMatches": {
+                "imageLabel": "no matching projects",
+                "title": "No projects match your filters",
+                "description": "Try adjusting your search or task type filters to find what you are looking for."
+            },
+            "empty": {
+                "intro": "Welcome to <name>Geti</name>, a vision AI platform that guides you through the <highlight>complete model lifecycle</highlight>, from dataset preparation to training, optimization and deployment.",
+                "imageLabel": "empty list",
+                "createNewProject": "Create new project",
+                "createFromDataset": "Create from dataset"
+            },
+            "workflow": {
+                "label": "Geti workflow",
+                "addData": "Add data",
+                "annotate": "Annotate",
+                "train": "Train",
+                "optimize": "Optimize",
+                "runInference": "Run inference",
+                "loop": "Monitor predictions and collect more data to iteratively fine-tune your model"
+            }
+        },
+        "create": {
+            "nameFieldLabel": "Project name input",
+            "taskQuestion": "What type of task would you like the model to perform?",
+            "labelsQuestion": "What objects should the model learn to {{verb}}?",
+            "submit": "Create project",
+            "taskSelection": {
+                "groupLabel": "Task selection",
+                "optionLabel": "Task option: {{title}}"
+            },
+            "tasks": {
+                "detection": {
+                    "title": "Object Detection",
+                    "description": "Identify and locate objects in your images",
+                    "advice": "Best for: Counting, Tracking",
+                    "verb": "detect"
+                },
+                "instanceSegmentation": {
+                    "title": "Instance Segmentation",
+                    "description": "Detect and outline specific regions or shapes",
+                    "advice": "Best for: Measurement, Odd shapes",
+                    "verb": "segment"
+                },
+                "classification": {
+                    "title": "Image Classification",
+                    "description": "Categorize entire images based on their content",
+                    "advice": "Best for: Filtering, Content Moderation",
+                    "verb": "classify"
+                }
+            },
+            "classificationType": {
+                "title": "What classification type should the model use?",
+                "groupLabel": "Classification type",
+                "singleLabel": {
+                    "label": "Single-label",
+                    "description": "Assign one label from mutually exclusive labels",
+                    "warning": "Requires at least 2 labels"
+                },
+                "multiLabel": {
+                    "label": "Multi-label",
+                    "description": "Assign one or more labels from non-mutually exclusive labels"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "At least one object is required",
+                "inputLabel": "Create label input",
+                "inputPlaceholder": "Create label",
+                "createAction": "Create label {{name}}",
+                "deleteAction": "Delete label {{name}}"
+            }
+        }
+    }
+}

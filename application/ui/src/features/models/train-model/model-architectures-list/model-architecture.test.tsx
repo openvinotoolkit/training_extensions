@@ -74,7 +74,7 @@ describe('ModelArchitecture', () => {
 
         expect(screen.getByText(modelArchitecture.name)).toBeVisible();
         expect(
-            screen.getByText(`Number of parameters: ${modelArchitecture.stats.trainable_parameters} million`)
+            screen.getByText(`Number of parameters: ${modelArchitecture.stats?.trainable_parameters} million`)
         ).toBeVisible();
     });
 
@@ -151,7 +151,7 @@ describe('ModelArchitecture', () => {
         it('shows gigaflops and mAP when using DetailedParameters', () => {
             renderDetailedModelArchitecture({ modelArchitecture: detectionArchitecture });
 
-            expect(screen.getByText(`Gigaflops: ${detectionArchitecture.stats.gigaflops}`)).toBeVisible();
+            expect(screen.getByText(`Gigaflops: ${detectionArchitecture.stats?.gigaflops}`)).toBeVisible();
             expect(screen.getByText('mAP on COCO: 55.3%')).toBeVisible();
         });
 

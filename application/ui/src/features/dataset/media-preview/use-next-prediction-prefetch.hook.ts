@@ -11,7 +11,7 @@ import { usePredictionSetup } from '../../annotator/predictions-setup-provider.c
 
 export const useNextPredictionPrefetch = (nextMediaItem: Media) => {
     const projectId = useProjectIdentifier();
-    const { selectedModel, selectedDevice } = usePredictionSetup();
+    const { selectedModel, selectedDevice, confidenceThreshold } = usePredictionSetup();
 
     const range = isVideoFrame(nextMediaItem)
         ? {
@@ -27,6 +27,7 @@ export const useNextPredictionPrefetch = (nextMediaItem: Media) => {
             selectedModel,
             mediaId: nextMediaItem.id,
             device: selectedDevice,
+            confidenceThreshold,
             range,
         })
     );

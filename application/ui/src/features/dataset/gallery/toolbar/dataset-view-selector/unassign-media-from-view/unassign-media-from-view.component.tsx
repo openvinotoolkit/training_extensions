@@ -15,11 +15,15 @@ const useUnassignMediaFromView = () => {
     const queryClient = useQueryClient();
     const unassignFromViewMutation = useUnassignMediaFromViewMutation();
 
-    const unassignMediaFromView = (datasetViewId: string, selectedMediaIds: string[]) => {
-        if (datasetViewId === ENTIRE_DATASET_VIEW_ID) {
-            return;
-        }
-
+    const unassignMediaFromView = ({
+        datasetViewId,
+        selectedMediaIds,
+        onSuccess,
+    }: {
+        datasetViewId: string;
+        selectedMediaIds: string[];
+        onSuccess: () => void;
+    }) => {
         unassignFromViewMutation.mutate(
             {
                 params: {
@@ -38,13 +42,6 @@ const useUnassignMediaFromView = () => {
                         queryClient.invalidateQueries({
                             queryKey: getQueryKey([
                                 'get',
-                                '/api/projects/{project_id}/dataset/views/{dataset_view_id}/media',
-                                { params: { path: { project_id: projectId, dataset_view_id: datasetViewId } } },
-                            ]),
-                        }),
-                        queryClient.invalidateQueries({
-                            queryKey: getQueryKey([
-                                'get',
                                 '/api/projects/{project_id}/dataset/media',
                                 { params: { path: { project_id: projectId } } },
                             ]),
@@ -57,6 +54,7 @@ const useUnassignMediaFromView = () => {
                             ]),
                         }),
                     ]);
+                    onSuccess();
                 },
             }
         );
@@ -71,17 +69,22 @@ const useUnassignMediaFromView = () => {
 type UnassignMediaButtonFromViewProps = {
     selectedMediaIds: string[];
     datasetViewId: string;
+    resetSelectedMediaIds: () => void;
 };
 
-const UnassignMediaButton = ({ selectedMediaIds, datasetViewId }: UnassignMediaButtonFromViewProps) => {
+const UnassignMediaButton = ({
+    selectedMediaIds,
+    datasetViewId,
+    resetSelectedMediaIds,
+}: UnassignMediaButtonFromViewProps) => {
     const { unassignMediaFromView, isPending } = useUnassignMediaFromView();
 
-    const unassignMedia = async () => {
-        if (datasetViewId === ENTIRE_DATASET_VIEW_ID) {
-            return;
-        }
-
-        unassignMediaFromView(datasetViewId, selectedMediaIds);
+    const unassignMedia = () => {
+        unassignMediaFromView({
+            datasetViewId,
+            selectedMediaIds,
+            onSuccess: resetSelectedMediaIds,
+        });
     };
 
     return (
@@ -93,9 +96,10 @@ const UnassignMediaButton = ({ selectedMediaIds, datasetViewId }: UnassignMediaB
 
 type UnassignMediaFromViewProps = {
     selectedMediaIds: string[];
+    resetSelectedMediaIds: () => void;
 };
 
-export const UnassignMediaFromView = ({ selectedMediaIds }: UnassignMediaFromViewProps) => {
+export const UnassignMediaFromView = ({ selectedMediaIds, resetSelectedMediaIds }: UnassignMediaFromViewProps) => {
     const [datasetViewId] = useDatasetViewId();
 
     if (isEmpty(selectedMediaIds)) {
@@ -106,5 +110,11 @@ export const UnassignMediaFromView = ({ selectedMediaIds }: UnassignMediaFromVie
         return null;
     }
 
-    return <UnassignMediaButton selectedMediaIds={selectedMediaIds} datasetViewId={datasetViewId} />;
+    return (
+        <UnassignMediaButton
+            selectedMediaIds={selectedMediaIds}
+            datasetViewId={datasetViewId}
+            resetSelectedMediaIds={resetSelectedMediaIds}
+        />
+    );
 };

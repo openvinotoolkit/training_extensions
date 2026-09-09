@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import shutil
+import threading
 import time
 import traceback as _traceback
 from dataclasses import dataclass, field
@@ -20,6 +21,8 @@ import yaml
 from getitune.types.task import TaskType
 
 if TYPE_CHECKING:
+    import psutil
+
     from getitune.engine.engine import Engine
     from getitune.metrics import MetricCallable
 
@@ -290,6 +293,89 @@ def _get_peak_gpu_memory_mb() -> float:
     return 0.0
 
 
+def _reset_peak_gpu_memory() -> None:
+    """Best-effort reset of the accelerator's peak-memory counter (no-op if unavailable).
+
+    Scopes the next :func:`_get_peak_gpu_memory_mb` reading to the phase that
+    follows this call, rather than accumulating since the last experiment-level
+    reset.
+    """
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
+        elif hasattr(torch, "xpu") and torch.xpu.is_available():
+            torch.xpu.reset_peak_memory_stats()
+    except Exception:
+        logger.debug("Could not reset peak accelerator memory.", exc_info=True)
+
+
+def _safe_rss(process: psutil.Process) -> int:
+    """Return *process*' RSS in bytes, or ``0`` if it has already exited."""
+    try:
+        return process.memory_info().rss
+    except Exception:
+        return 0
+
+
+class _PeakRamSampler:
+    """Background sampler that tracks peak host RAM (RSS) during a ``with`` block.
+
+    Polls this process' RSS plus every child process' RSS (e.g. DataLoader
+    workers) on a fixed interval and keeps the running maximum. Degrades to a
+    no-op (``peak_mb`` stays ``0.0``) when ``psutil`` isn't installed, since it
+    is only declared under the optional ``benchmark`` extra.
+    """
+
+    _POLL_INTERVAL_S = 0.2
+    _JOIN_TIMEOUT_S = 2.0
+
+    def __init__(self) -> None:
+        self._peak_mb = 0.0
+        self._stop_event = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._process: psutil.Process | None = None
+
+    def __enter__(self) -> _PeakRamSampler:
+        try:
+            import psutil
+
+            self._process = psutil.Process()
+        except Exception:
+            logger.debug("psutil unavailable; RAM sampling disabled (install the 'benchmark' extra).")
+            return self
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+        return self
+
+    def __exit__(self, *_exc_info: object) -> None:
+        self._stop_event.set()
+        if self._thread is not None:
+            self._thread.join(timeout=self._JOIN_TIMEOUT_S)
+
+    def _run(self) -> None:
+        while not self._stop_event.is_set():
+            self._sample()
+            self._stop_event.wait(self._POLL_INTERVAL_S)
+        self._sample()  # capture a final reading right before exit
+
+    def _sample(self) -> None:
+        if self._process is None:
+            return
+        try:
+            procs = [self._process, *self._process.children(recursive=True)]
+            total_bytes = sum(_safe_rss(proc) for proc in procs)
+            self._peak_mb = max(self._peak_mb, total_bytes / (1024 * 1024))
+        except Exception:
+            logger.debug("RAM sampling tick failed (ignored).", exc_info=True)
+
+    @property
+    def peak_mb(self) -> float:
+        """Peak observed RAM (main process + children) in MB, ``0.0`` if unavailable."""
+        return self._peak_mb
+
+
 def _count_test_samples(engine: Engine) -> int:
     """Return the number of test samples for *engine*'s datamodule (>= 1).
 
@@ -483,8 +569,10 @@ class ExperimentExecutor:
             kwargs["max_epochs"] = self.max_epochs
         kwargs.update(self.extra_train_kwargs)
 
+        _reset_peak_gpu_memory()
         start = time.monotonic()
-        engine.train(**kwargs)
+        with _PeakRamSampler() as ram_sampler:
+            engine.train(**kwargs)
         wall = time.monotonic() - start
 
         # Scrape metrics from the CSV that the engine writes
@@ -492,6 +580,7 @@ class ExperimentExecutor:
         csv_metrics = _scrape_csv_metrics(csv_path, prefix="training:") if csv_path else {}
         csv_metrics["training:e2e_time"] = wall
         csv_metrics["training:gpu_mem"] = _get_peak_gpu_memory_mb()
+        csv_metrics["training:ram_mem"] = ram_sampler.peak_mb
 
         del engine
         return PhaseResult(phase="train", metrics=csv_metrics, wall_time=wall)
@@ -509,8 +598,10 @@ class ExperimentExecutor:
             if metric_callable is not None:
                 test_kwargs["metric"] = metric_callable
 
+        _reset_peak_gpu_memory()
         start = time.monotonic()
-        metrics = engine.test(checkpoint=ckpt, **test_kwargs)
+        with _PeakRamSampler() as ram_sampler:
+            metrics = engine.test(checkpoint=ckpt, **test_kwargs)
         wall = time.monotonic() - start
 
         # The Ultralytics engine returns metrics without writing a metrics.csv;
@@ -525,6 +616,8 @@ class ExperimentExecutor:
         csv_metrics = _scrape_csv_metrics(csv_path, prefix="torch:") if csv_path else {}
         csv_metrics["torch:test/e2e_time"] = wall
         csv_metrics["torch:test/latency"] = latency
+        csv_metrics["torch:test/gpu_mem"] = _get_peak_gpu_memory_mb()
+        csv_metrics["torch:test/ram_mem"] = ram_sampler.peak_mb
 
         # Write a marker for resume detection
         result_json = self.work_dir / "test" / "torch" / "result.json"

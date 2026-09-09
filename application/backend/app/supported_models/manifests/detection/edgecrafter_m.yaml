@@ -1,7 +1,9 @@
 id: object-detection-edgecrafter-m
 name: ECDet-M
+license: EdgeCrafter
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/capsule2077/edgecrafter/releases/download/edgecrafterv1/ecdet_m.pth
   sha_sum: c4cdf8bcd3b27c7903e422acd03caf733b5e1bfd664550bce43e50e2a3bbdc6e
 

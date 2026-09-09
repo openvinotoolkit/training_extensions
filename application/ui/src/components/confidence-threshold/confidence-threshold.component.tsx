@@ -7,7 +7,6 @@ import { ActionButton, Flex, NumberField, Slider, View } from '@geti-ui/ui';
 import { Refresh } from '@geti-ui/ui/icons';
 
 const THRESHOLD_CONFIG = {
-    defaultValue: 0.3,
     step: 0.001,
     min: 0,
     max: 1,
@@ -65,30 +64,36 @@ const ThresholdField = ({ onChange, value, isDisabled, name }: ThresholdFieldPro
 };
 
 type ConfidenceThresholdProps = {
+    value: number;
+    defaultValue: number;
+    onChange: (value: number) => void;
     isDisabled?: boolean;
     maxWidth?: string;
     width?: string;
 };
 
-export const ConfidenceThreshold = ({ isDisabled = false, maxWidth, width = '100%' }: ConfidenceThresholdProps) => {
-    // TODO: Default confidence threshold value will come from the server side
-    const defaultValue = THRESHOLD_CONFIG.defaultValue;
-    const [threshold, setThreshold] = useState<number>(defaultValue);
-
+export const ConfidenceThreshold = ({
+    value,
+    defaultValue,
+    onChange,
+    isDisabled = false,
+    maxWidth,
+    width = '100%',
+}: ConfidenceThresholdProps) => {
     return (
         <View maxWidth={maxWidth} width={width}>
             <Flex width={'100%'} justifyContent={'space-between'} gap={'size-175'} alignItems={'end'}>
                 <ThresholdField
-                    onChange={setThreshold}
+                    onChange={onChange}
                     name={'Confidence threshold'}
-                    value={threshold}
+                    value={value}
                     isDisabled={isDisabled}
                 />
                 <ActionButton
                     isQuiet
                     aria-label={'Reset confidence threshold'}
-                    onPress={() => setThreshold(defaultValue)}
-                    isDisabled={isDisabled}
+                    onPress={() => onChange(defaultValue)}
+                    isDisabled={isDisabled || value === defaultValue}
                 >
                     <Refresh />
                 </ActionButton>

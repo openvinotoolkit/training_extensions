@@ -1,7 +1,9 @@
 id: object-detection-edgecrafter-x
 name: ECDet-X
+license: EdgeCrafter
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/capsule2077/edgecrafter/releases/download/edgecrafterv1/ecdet_x.pth
   sha_sum: c87394be021b573fd8e25969b85a8670127120c9d0209ac7807fbadae1a5cec6
 

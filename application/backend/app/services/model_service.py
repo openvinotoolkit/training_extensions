@@ -95,11 +95,6 @@ CONFIDENCE_THRESHOLD_IR_PATH = "rt_info/model_info/confidence_threshold"
 CONFIDENCE_THRESHOLD_ONNX_KEY = "model_info confidence_threshold"
 
 
-@lru_cache
-def _cached_model_size_in_bytes(model_path: Path) -> int:
-    return sum(f.stat().st_size for f in model_path.glob("**/*") if f.is_file())
-
-
 def _read_ir_confidence_threshold(model_xml: Path) -> float | None:
     """Read the confidence threshold from the ``rt_info`` section of an OpenVINO IR XML file."""
     # The IR topology is parsed directly rather than through openvino.Core.read_model, which would also
@@ -267,7 +262,8 @@ class ModelService(BaseSessionManagedService):
             return 0
 
         model_path = self._projects_dir / str(project_id) / "models" / str(model_id)
-        return _cached_model_size_in_bytes(model_path)
+
+        return sum(f.stat().st_size for f in model_path.glob("**/*") if f.is_file())
 
     def rename_model(self, project_id: UUID, model_id: UUID, model_metadata: dict[str, str]) -> ModelRevision:
         """

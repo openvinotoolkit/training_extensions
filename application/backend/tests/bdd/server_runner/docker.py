@@ -33,7 +33,10 @@ class DockerRunner(BaseServerRunner):
             .with_volume_mapping(str(tmp_dir / "data"), "/application/backend/data", mode="rw")
             .with_volume_mapping(str(tmp_dir / "logs"), "/application/backend/logs", mode="rw")
             .with_bind_ports(port, port)
-            .with_kwargs(user=f"{os.getuid()}:{os.getgid()}")
+            .with_kwargs(
+                user=f"{os.getuid()}:{os.getgid()}",
+                shm_size="2g",
+            )
         )
         self.container.start()
         wait_for_logs(self.container, "Application startup completed", timeout=60)

@@ -3,7 +3,8 @@
 
 import os
 from datetime import datetime
-from typing import Annotated
+from pathlib import Path
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, UploadFile, status
@@ -19,6 +20,7 @@ from app.api.dependencies import (
     get_media_segment_service,
     get_media_service,
     get_project,
+    get_project_service,
     get_system_service,
 )
 from app.api.io_utils import write_bytes_to_response, write_file_to_response, write_image_to_response
@@ -31,7 +33,7 @@ from app.api.schemas.media import (
     MediaWithPagination,
     SetMediaAnnotations,
 )
-from app.api.validators import MediaID, normalize_datetime_to_utc
+from app.api.validators import MediaID, ProjectID, normalize_datetime_to_utc
 from app.core.models import Pagination
 from app.models import BatchInferenceResult, DatasetItemAnnotationStatus, DatasetItemSubset, Media, Project, Video
 from app.models.media import (
@@ -43,7 +45,14 @@ from app.models.media import (
     SortDirection,
     VideoFormat,
 )
-from app.services import DatasetService, DatasetViewService, MediaPredictionService, MediaService, SystemService
+from app.services import (
+    DatasetService,
+    DatasetViewService,
+    MediaPredictionService,
+    MediaService,
+    ProjectService,
+    SystemService,
+)
 from app.services.base import ResourceNotFoundError, ResourceType
 from app.services.dataset_service import AnnotationValidationError, SubsetAlreadyAssignedError
 from app.services.inference import InferenceBusyError
@@ -241,7 +250,12 @@ def list_media(  # noqa: PLR0913
         Query(description="If provided, list media assigned to this dataset view instead of the entire dataset"),
     ] = None,
 ) -> MediaWithPagination:
-    """List the available media and their metadata. This endpoint supports pagination."""
+    """
+    List the available media and their metadata. This endpoint supports pagination.
+
+    This is also the endpoint used to list the content of a dataset view: when `dataset_view_id` is provided,
+    only the media assigned to that view are returned, with the same filtering, sorting and pagination options.
+    """
     start_date = normalize_datetime_to_utc(start_date)
     end_date = normalize_datetime_to_utc(end_date)
 
@@ -402,25 +416,50 @@ def get_media_binary(
     },
 )
 def get_media_thumbnail(
-    project: Annotated[Project, Depends(get_project)],
-    media: Annotated[Media | NotAnnotatedVideoFrame, Depends(_get_request_media)],
+    project_id: ProjectID,
+    media_id: MediaID,
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
     media_service: Annotated[MediaService, Depends(get_media_service)],
+    frame_index: Annotated[int | None, Query(description="Video frame index", ge=0)] = None,
 ) -> Response:
     """Get media thumbnail binary content"""
-    if isinstance(media, NotAnnotatedVideoFrame):
-        frame_thumbnail = media_service.get_frame_thumbnail(
-            project=project, video=media.video, frame_index=media.frame_index
-        )
-        return write_image_to_response(
-            image=frame_thumbnail, filename=f"{media.video.name}_frame_{media.frame_index}.jpeg"
+
+    def _response(thumbnail_path: Path, media_id: str | UUID) -> Response:
+        return write_file_to_response(
+            path=thumbnail_path, filename=f"{str(media_id)}-thumb.jpeg", cache_control="public, max-age=31536000"
         )
 
-    thumbnail_path = media_service.get_media_thumbnail_path(project=project, media=media)
-    if not os.path.exists(thumbnail_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Media thumbnail file is not found.")
-    return write_file_to_response(
-        path=thumbnail_path, filename=f"{media.id}-thumb.jpeg", cache_control="public, max-age=31536000"
+    def _not_found() -> HTTPException:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Media thumbnail file is not found.")
+
+    thumbnail_path = media_service.get_media_thumbnail_path_by_id(project_id=project_id, media_id=media_id)
+    if frame_index is None and os.path.exists(thumbnail_path):
+        return _response(thumbnail_path=thumbnail_path, media_id=media_id)
+
+    project = project_service.get_project_by_id(project_id=project_id)
+    media = media_service.get_media_by_id(project_id=project_id, media_id=media_id)
+    if media.type != MediaType.VIDEO or frame_index is None:
+        raise _not_found()
+
+    # Video frames can be identified by video ID and frame index
+    if frame_index >= media.frame_count:  # pyrefly: ignore[unsupported-operation]
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Video frame index {frame_index} exceeds video frames count {media.frame_count}.",
+        )
+
+    video_frame = media_service.get_video_frame_by_video_id_and_index(
+        project=project, video_id=media_id, frame_index=frame_index
     )
+    if video_frame is not None:
+        thumbnail_path = media_service.get_media_thumbnail_path_by_id(project_id=project_id, media_id=video_frame.id)
+        if os.path.exists(thumbnail_path):
+            return _response(thumbnail_path=thumbnail_path, media_id=video_frame.id)
+        raise _not_found()
+
+    # If the media is a video frame, generate the thumbnail on the fly
+    frame_thumbnail = media_service.get_frame_thumbnail(project=project, video=media, frame_index=frame_index)
+    return write_image_to_response(image=frame_thumbnail, filename=f"{media.name}_frame_{frame_index}.jpeg")
 
 
 @router.delete(
@@ -591,20 +630,28 @@ def delete_media_annotation(
     dataset_service.delete_dataset_item_annotations(project=project, dataset_item_id=dataset_item_id)
 
 
+MEDIA_PREDICT_RESPONSES: dict[int | str, dict[str, Any]] = {
+    status.HTTP_200_OK: {"description": "Media predictions are calculated"},
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Missing frame range, range is specified for non-video media, or media inference limit exceeded"
+    },
+    status.HTTP_404_NOT_FOUND: {"description": "Media, dataset item or project not found"},
+    status.HTTP_503_SERVICE_UNAVAILABLE: {
+        "description": "Inference server is busy with another request, try again later"
+    },
+}
+
+
+@router.post(
+    ":predict",
+    status_code=status.HTTP_200_OK,
+    responses=MEDIA_PREDICT_RESPONSES,
+)
 @router.post(
     "/media:predict",
     status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"description": "Media predictions are calculated"},
-        status.HTTP_400_BAD_REQUEST: {
-            "description": "Missing frame range, range is specified for non-video media, "
-            "or media inference limit exceeded"
-        },
-        status.HTTP_404_NOT_FOUND: {"description": "Media, dataset item or project not found"},
-        status.HTTP_503_SERVICE_UNAVAILABLE: {
-            "description": "Inference server is busy with another request, try again later"
-        },
-    },
+    deprecated=True,
+    responses=MEDIA_PREDICT_RESPONSES,
 )
 def media_predict(
     inference_media_limit: Annotated[int, Depends(get_inference_media_limit)],
@@ -613,7 +660,11 @@ def media_predict(
     media_prediction_service: Annotated[MediaPredictionService, Depends(get_media_prediction_service)],
     system_service: Annotated[SystemService, Depends(get_system_service)],
 ) -> BatchInferenceResult:
-    """Get predictions for media"""
+    """Get predictions for media.
+
+    .. deprecated:: The `/media:predict` path is deprecated due to a duplicated `media` path segment
+       and will be removed in version 3.4. Use `:predict` instead.
+    """
     items_count = sum(
         [
             1

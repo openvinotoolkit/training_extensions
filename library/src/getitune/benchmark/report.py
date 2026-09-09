@@ -614,6 +614,9 @@ def _detect_metric_columns(
     if "training:gpu_mem" in all_keys:
         columns.append(("GPU Mem ↓", "training:gpu_mem", _fmt_memory))
 
+    if "training:ram_mem" in all_keys:
+        columns.append(("Peak RAM ↓", "training:ram_mem", _fmt_memory))
+
     if rewrite_metric_key("torch:test/latency") in all_keys:
         columns.append(("Test Latency ↓", rewrite_metric_key("torch:test/latency"), _fmt_latency))
 

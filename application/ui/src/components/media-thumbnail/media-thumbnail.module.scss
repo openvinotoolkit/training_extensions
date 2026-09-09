@@ -3,6 +3,7 @@
     overflow: hidden;
     position: relative;
     text-align: center;
+    background-color: var(--spectrum-global-color-gray-100);
 }
 
 .img {
@@ -15,6 +16,15 @@
     &:hover {
         transform: scale(1.1);
     }
+}
+
+.imgHidden {
+    visibility: hidden;
+}
+
+.skeleton {
+    inset: 0;
+    position: absolute;
 }
 
 .videoIndicator {

@@ -6,10 +6,10 @@ model:
     model_name: DYNAMIC
 
     optimizer:
-      class_path: getitune.backend.lightning.models.classification.utils.timm.TimmOptimizer
+      class_path: getitune.backend.lightning.models.classification.optimizers.timm.TimmOptimizer
       init_args:
-        lr: DYNAMIC
-        weight_decay: DYNAMIC
+        lr: .nan
+        weight_decay: .nan
 
 engine:
   device: auto

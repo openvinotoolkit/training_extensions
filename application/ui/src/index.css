@@ -141,3 +141,13 @@ svg {
         border-color: var(--spectrum-global-color-informative) !important;
     }
 }
+
+/* `Skeleton` from @geti-ui/ui sets `animation: shimmer`, but the package ships no keyframes. */
+@keyframes shimmer {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
+}

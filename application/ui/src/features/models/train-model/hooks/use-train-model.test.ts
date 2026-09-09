@@ -19,6 +19,7 @@ import { getTrainingConfigurationUpdatePayload } from './utils';
 
 const DEFAULT_STATE: Partial<TrainModelContextProps> = {
     selectedModelArchitectureId: 'arch-1',
+    resolvedModelArchitectureId: 'arch-1',
     selectedTrainingDevice: 'cpu',
     selectedDatasetRevisionId: 'use-current-dataset-revision',
     selectedModelRevisionId: 'default-pre-trained-weights',
@@ -83,7 +84,7 @@ describe('useTrainModel', () => {
 
     describe('guard clause', () => {
         it('does not call any API when model architecture is not selected', async () => {
-            mockTrainModelState.mockReturnValue({ ...DEFAULT_STATE, selectedModelArchitectureId: null });
+            mockTrainModelState.mockReturnValue({ ...DEFAULT_STATE, resolvedModelArchitectureId: null });
 
             const trainSpy = vi.fn();
             registerSuccessfulTrainHandler(trainSpy);

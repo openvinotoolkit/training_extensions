@@ -2,6 +2,7 @@ id: image-classification-efficientnet-v2-s
 name: EfficientNet-V2-S
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s_21k-6337ad01.pth
   sha_sum: 6337ad01eda2fde154ffd358cf1583fb3040f1bf467739f28f17fb1dce1c3eb3
 

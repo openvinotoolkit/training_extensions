@@ -687,6 +687,33 @@ class TestPipelineConfidenceThreshold:
 
         assert pipeline.inference.confidence_threshold is None
 
+    @pytest.mark.parametrize("embedded_threshold", [0.35, None], ids=["with_threshold", "without_threshold"])
+    def test_get_pipeline_reports_model_variant_confidence_threshold(
+        self, embedded_threshold, fxt_pipeline_with_models, fxt_pipeline_service, fxt_project_id
+    ):
+        """The embedded model variant returned by the pipeline also reports the confidence threshold."""
+        fxt_pipeline_with_models([embedded_threshold, None], is_running=False)
+
+        pipeline = fxt_pipeline_service.get_pipeline_by_id(fxt_project_id)
+
+        assert pipeline.model_variant is not None
+        assert pipeline.model_variant.optimal_confidence_threshold == pytest.approx(embedded_threshold)
+
+    def test_get_pipeline_model_variant_threshold_independent_of_custom_override(
+        self, fxt_pipeline_with_models, fxt_pipeline_service, fxt_project_id
+    ):
+        """The model variant's threshold always reflects the model file, not a custom pipeline override."""
+        fxt_pipeline_with_models([0.35, None], is_running=False)
+        fxt_pipeline_service.update_pipeline(
+            str(fxt_project_id), {"inference": InferenceConfig(confidence_threshold=0.7)}
+        )
+
+        pipeline = fxt_pipeline_service.get_pipeline_by_id(fxt_project_id)
+
+        assert pipeline.inference.confidence_threshold == pytest.approx(0.7)
+        assert pipeline.model_variant is not None
+        assert pipeline.model_variant.optimal_confidence_threshold == pytest.approx(0.35)
+
     def test_set_custom_confidence_threshold(
         self, fxt_pipeline_with_models, fxt_pipeline_service, fxt_project_id, fxt_event_bus, db_session
     ):

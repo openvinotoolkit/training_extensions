@@ -7,11 +7,10 @@ import { getMockedModel } from 'mocks/mock-model';
 import { getMockedVariant } from 'mocks/mock-model-variant';
 import { render } from 'test-utils/render';
 
-import { downloadFile } from '../../../../shared/util';
+import { downloadFile } from '../../../../platform/download-file';
 import { ModelVariantTable } from './model-variant-table.component';
 
-vi.mock('../../../../shared/util', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../../../../shared/util')>()),
+vi.mock('../../../../platform/download-file', () => ({
     downloadFile: vi.fn(),
 }));
 

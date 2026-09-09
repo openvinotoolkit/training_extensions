@@ -22,6 +22,7 @@ type UseGetDatasetItemsOptions = {
     startDate?: string;
     endDate?: string;
     limit?: number;
+    datasetViewId?: string;
 };
 
 const getDatasetItemsQueryParameter = ({
@@ -31,6 +32,7 @@ const getDatasetItemsQueryParameter = ({
     labelIds,
     startDate,
     endDate,
+    datasetViewId,
     limit = DATASET_ITEMS_LIMIT,
 }: UseGetDatasetItemsOptions) => {
     const query: {
@@ -43,6 +45,7 @@ const getDatasetItemsQueryParameter = ({
         labels?: string[];
         start_date?: string;
         end_date?: string;
+        dataset_view_id?: string;
     } = {
         offset: 0,
         limit,
@@ -73,6 +76,10 @@ const getDatasetItemsQueryParameter = ({
         query.end_date = endDate;
     }
 
+    if (datasetViewId !== undefined) {
+        query.dataset_view_id = datasetViewId;
+    }
+
     return query;
 };
 
@@ -83,6 +90,7 @@ export const useGetDatasetItems = ({
     labelIds,
     startDate,
     endDate,
+    datasetViewId,
 }: UseGetDatasetItemsOptions = {}) => {
     const project_id = useProjectIdentifier();
 
@@ -93,6 +101,7 @@ export const useGetDatasetItems = ({
         labelIds,
         startDate,
         endDate,
+        datasetViewId,
     });
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = $api.useInfiniteQuery(

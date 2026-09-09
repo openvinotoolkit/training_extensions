@@ -552,6 +552,45 @@ class TestGenerateMarkdown:
         assert "Export map" in md
         assert "Optimize map" in md
 
+    def test_peak_ram_column_shown_when_present(self) -> None:
+        report = BenchmarkReport(
+            comparisons=[
+                ExperimentComparison(
+                    task="detection",
+                    model="yolox_s",
+                    dataset="pothole",
+                    scenario="default",
+                    current_metrics={
+                        "training:val/mAP": 0.85,
+                        "training:gpu_mem": 512.0,
+                        "training:ram_mem": 2048.0,
+                    },
+                    baseline_metrics=None,
+                ),
+            ],
+            failures=[],
+        )
+        md = generate_markdown(report)
+        assert "Peak RAM" in md
+        assert "GPU Mem" in md
+
+    def test_peak_ram_column_absent_when_missing(self) -> None:
+        report = BenchmarkReport(
+            comparisons=[
+                ExperimentComparison(
+                    task="detection",
+                    model="yolox_s",
+                    dataset="pothole",
+                    scenario="default",
+                    current_metrics={"training:val/mAP": 0.85},
+                    baseline_metrics=None,
+                ),
+            ],
+            failures=[],
+        )
+        md = generate_markdown(report)
+        assert "Peak RAM" not in md
+
 
 # ---------------------------------------------------------------------------
 # generate_csv

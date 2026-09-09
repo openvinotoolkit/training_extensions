@@ -2,6 +2,7 @@ id: instance-segmentation-rfdetr-s
 name: RF-DETR-Seg-S
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth
   sha_sum: 6de3da31b2572cac214a1c76cce4a92a13966d56390ac2b3a3de9a8dc2b2bca3
 

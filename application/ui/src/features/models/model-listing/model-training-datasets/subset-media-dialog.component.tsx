@@ -52,6 +52,7 @@ const SubsetMediaDialogContent = ({
         mediaId: mediaItem.id,
         selectedModel,
         device: pipeline.device,
+        confidenceThreshold: selectedModel?.optimalConfidenceThreshold ?? null,
         range: null,
     });
 
@@ -59,6 +60,7 @@ const SubsetMediaDialogContent = ({
         mediaId: mediaItem.id,
         selectedModel,
         device: pipeline.device,
+        confidenceThreshold: selectedModel?.optimalConfidenceThreshold ?? null,
         range: null,
     });
 

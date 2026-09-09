@@ -2,6 +2,7 @@ id: object-detection-rfdetr-l
 name: RF-DETR-L
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.googleapis.com/rfdetr/rf-detr-large-2026.pth
   cache_filename: rf-detr-large-2026.pth
   sha_sum: 0f4e20e19a99c0f8a62b5685f57f6c8b5c371c59081feda6752a0561a79ccf38

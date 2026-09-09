@@ -58,6 +58,7 @@ from app.services import (
     SubsetService,
     TrainingConfigurationService,
 )
+from app.supported_models.timm import TimmManifestProvider
 
 MODEL_WEIGHTS_PATH = "model_weights_path"
 
@@ -405,11 +406,11 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             )
 
     @step("Train Model", 80)
-    def train_model(  # noqa: PLR0915, C901 - training orchestration is intentionally centralized here
+    def train_model(  # noqa: PLR0912, PLR0915, C901 - training orchestration is intentionally centralized here
         self,
         training_config: dict,
         dataset_info: DatasetInfo,
-        weights_path: Path,
+        weights_path: Path | None,
         model_id: UUID,
         device: DeviceInfo,
         has_model_revision: bool,
@@ -463,16 +464,18 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             "work_dir": self._data_dir / f"getitune-workspace-{model_id}",
             "device": getitune_device_type,
         }
-        # Route weight loading through checkpoint for Ultralytics and for resume flows.
-        load_from_checkpoint = is_ultralytics or has_model_revision
-        if load_from_checkpoint:
-            engine_kwargs["checkpoint"] = weights_path
-            # Disable default pretrained loading when checkpoint controls initialization.
-            model_cfg["init_args"]["pretrained"] = False
-        else:
-            # Fresh Lightning training loads base weights via model init args.
-            model_cfg["init_args"]["pretrained"] = True
-            model_cfg["init_args"]["pretrained_weights"] = weights_path
+        # timm weights (`weights_path=None`) are loaded in the library
+        if weights_path is not None:
+            # Route weight loading through checkpoint for Ultralytics and for resume flows.
+            load_from_checkpoint = is_ultralytics or has_model_revision
+            if load_from_checkpoint:
+                engine_kwargs["checkpoint"] = weights_path
+                # Disable default pretrained loading when checkpoint controls initialization.
+                model_cfg["init_args"]["pretrained"] = False
+            else:
+                # Fresh Lightning training loads base weights via model init args.
+                model_cfg["init_args"]["pretrained"] = True
+                model_cfg["init_args"]["pretrained_weights"] = weights_path
 
         model_parser = ArgumentParser()
         if is_ultralytics:
@@ -543,6 +546,10 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         - PyTorch (.ckpt) variants are evaluated with the LightningEngine used for training.
         - OpenVINO (.xml) and ONNX (.onnx) variants are evaluated with OVEngine, which
           natively supports both checkpoint types.
+
+        If evaluation of the OpenVINO or ONNX variant fails (e.g. an export/runtime quirk),
+        the job is not failed: the PyTorch variant's results are reused instead, so training
+        can still complete successfully with a valid (if not fully independent) evaluation record.
         """
         from getitune.backend.openvino.engine import OVEngine
 
@@ -550,27 +557,44 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         ov_work_dir_base = Path(getitune_engine.work_dir)
         datamodule = getitune_engine.datamodule
 
+        pytorch_metrics: dict | None = None
         for variant in model_variants:
             logger.info("Evaluating the {} model...", variant.format.value)
-            match variant.format:
-                case ModelFormat.PYTORCH:
-                    engine = getitune_engine
-                case ModelFormat.OPENVINO:
-                    engine = OVEngine(
-                        model=variant.path,
-                        data=datamodule,
-                        work_dir=ov_work_dir_base / "ov_eval",
-                    )
-                case ModelFormat.ONNX:
-                    engine = OVEngine(
-                        model=variant.path,
-                        data=datamodule,
-                        work_dir=ov_work_dir_base / "onnx_eval",
-                    )
-                case _:
-                    raise ExecutionErr(f"Unsupported model variant format for evaluation: {variant.format}")
+            try:
+                match variant.format:
+                    case ModelFormat.PYTORCH:
+                        engine = getitune_engine
+                    case ModelFormat.OPENVINO:
+                        engine = OVEngine(
+                            model=variant.path,
+                            data=datamodule,
+                            work_dir=ov_work_dir_base / "ov_eval",
+                        )
+                    case ModelFormat.ONNX:
+                        engine = OVEngine(
+                            model=variant.path,
+                            data=datamodule,
+                            work_dir=ov_work_dir_base / "onnx_eval",
+                        )
+                    case _:
+                        raise ExecutionErr(f"Unsupported model variant format for evaluation: {variant.format}")
 
-            metrics = engine.test(metric=metric_callable)
+                metrics = engine.test(metric=metric_callable)
+            except Exception as eval_exc:
+                # PyTorch is the source of truth for fallback metrics; if it's the one failing, or no
+                # fallback is available yet, there is nothing to reuse, so let the job fail as usual.
+                if variant.format == ModelFormat.PYTORCH or pytorch_metrics is None:
+                    raise
+                logger.warning(
+                    "Evaluation of the {} model failed ({}); reusing the PyTorch evaluation results instead",
+                    variant.format.value,
+                    eval_exc,
+                )
+                metrics = pytorch_metrics
+            else:
+                if variant.format == ModelFormat.PYTORCH:
+                    pytorch_metrics = metrics
+
             self._save_evaluation_result(
                 metrics=metrics,
                 model_revision_id=model_revision_id,
@@ -725,7 +749,9 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             model_id=params.model_id,
         )
 
-        weights_path = self.prepare_weights(training_params=params)
+        weights_path = None
+        if not TimmManifestProvider.is_timm_id(params.model_architecture_id):
+            weights_path = self.prepare_weights(training_params=params)
         training_config, getitune_training_config = self.prepare_training_configuration(
             training_params=params, task=task
         )

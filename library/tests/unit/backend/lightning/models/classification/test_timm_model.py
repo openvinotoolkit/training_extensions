@@ -8,6 +8,7 @@ from getitune.backend.lightning.models.base import DataInputParams
 from getitune.backend.lightning.models.classification.classifier import ImageClassifier
 from getitune.backend.lightning.models.classification.multiclass_models.timm_model import TimmModelMulticlassCls
 from getitune.backend.lightning.models.classification.multilabel_models.timm_model import TimmModelMultilabelCls
+from getitune.backend.lightning.models.classification.optimizers import TimmOptimizer
 from getitune.data.entity.base import BatchLoss
 from getitune.data.entity.sample import PredictionBatch
 
@@ -85,6 +86,17 @@ class TestTimmModelMulticlassCls:
         )
         assert all(param.requires_grad for param in model.parameters())
 
+    def test_timm_optimizer_bound_to_model_name(self):
+        optimizer = TimmOptimizer(lr=0.01, weight_decay=0.001)
+        model = TimmModelMulticlassCls(
+            label_info=10,
+            model_name="vit_base_patch16_224",
+            data_input_params=DataInputParams((224, 224), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+            optimizer=optimizer,
+            pretrained=False,
+        )
+        assert model.optimizer_callable.model_name == "vit_base_patch16_224"  # pyrefly: ignore[missing-attribute]
+
 
 @pytest.fixture
 def fxt_multi_label_cls_model():
@@ -158,3 +170,14 @@ class TestTimmModelMultilabelCls:
             pretrained=False,
         )
         assert all(param.requires_grad for param in model.parameters())
+
+    def test_timm_optimizer_bound_to_model_name(self):
+        optimizer = TimmOptimizer(lr=0.01, weight_decay=0.001)
+        model = TimmModelMultilabelCls(
+            label_info=10,
+            model_name="vit_base_patch16_224",
+            data_input_params=DataInputParams((224, 224), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+            optimizer=optimizer,
+            pretrained=False,
+        )
+        assert model.optimizer_callable.model_name == "vit_base_patch16_224"  # pyrefly: ignore[missing-attribute]

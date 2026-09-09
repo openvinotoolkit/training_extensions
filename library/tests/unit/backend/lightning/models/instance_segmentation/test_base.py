@@ -3,6 +3,8 @@
 #
 """Unit tests for instance segmentation model entity."""
 
+from __future__ import annotations
+
 import pytest
 import torch
 
@@ -73,6 +75,54 @@ class TestLightningInstanceSegModel:
         parameters = model._export_parameters
         assert isinstance(parameters, TaskLevelExportParameters)
         assert parameters.task_type == "instance_segmentation"
+        assert parameters.nms_execute is False
+
+    def test_export_parameters_with_nms(self, model):
+        model.export_nms = True
+
+        parameters = model._export_parameters
+
+        assert parameters.nms_execute is False
+
+    def test_forward_for_tracing_forwards_explain_mode(self, model, mocker):
+        observed_arguments = []
+
+        def export_model(_inputs, _meta_info_list, explain_mode=False, with_nms=False) -> tuple[()]:
+            observed_arguments.append((explain_mode, with_nms))
+            return ()
+
+        mocker.patch.object(model.model, "export", export_model)
+        LightningInstanceSegModel.forward_for_tracing(model, torch.randn(1, 3, 224, 224))
+
+        assert observed_arguments == [(False, True)]
+
+    @pytest.mark.parametrize("export_nms", [False, True])
+    def test_forward_for_tracing_always_forwards_nms(self, model, mocker, export_nms):
+        observed_with_nms = []
+
+        def export_model(_inputs, _meta_info_list, explain_mode=False, with_nms=False) -> tuple[()]:
+            observed_with_nms.append(with_nms)
+            return ()
+
+        mocker.patch.object(model.model, "export", export_model)
+        model.export_nms = export_nms
+
+        LightningInstanceSegModel.forward_for_tracing(model, torch.randn(1, 3, 224, 224))
+
+        assert observed_with_nms == [True]
+
+    def test_export_nms_defaults_to_false(self, model):
+        assert model.export_nms is False
+
+    def test_export_nms_can_be_enabled(self):
+        model = MaskRCNNTV(
+            label_info=1,
+            model_name="maskrcnn_resnet_50",
+            data_input_params=DataInputParams((224, 224), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+            pretrained=False,
+            export_nms=True,
+        )
+        assert model.export_nms is True
 
     def test_dummy_input(self, model):
         batch_size = 2

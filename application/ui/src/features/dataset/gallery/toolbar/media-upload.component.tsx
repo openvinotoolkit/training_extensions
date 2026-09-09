@@ -5,13 +5,13 @@ import { BulkLabelsAssignmentDialog } from '../bulk-labels-assignment/bulk-label
 import { useUploadFiles } from '../use-upload-files';
 import { AddMediaButton } from './add-media-button/add-media-button.component';
 
-export const MediaUpload = () => {
+export const MediaUpload = ({ testId }: { testId?: string }) => {
     const { isClassification, uploadFiles, uploadMediaLoading, clearFilesForLabelAssignment, filesForLabelAssignment } =
         useUploadFiles();
 
     return (
         <>
-            <AddMediaButton onFileUpload={uploadFiles} isDisabled={uploadMediaLoading} />
+            <AddMediaButton onFileUpload={uploadFiles} isDisabled={uploadMediaLoading} testId={testId} />
             {isClassification && (
                 <BulkLabelsAssignmentDialog onClose={clearFilesForLabelAssignment} files={filesForLabelAssignment} />
             )}

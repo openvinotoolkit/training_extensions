@@ -2,6 +2,7 @@ id: object-detection-dfine-x
 name: D-FINE-X
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/eugene123tw/DEIM/releases/download/poc/deim_dfine_hgnetv2_x_coco_50e.pth
   sha_sum: e729436f96d95e78dbf67452bf3fb654cd5bed37de43067f5cf0aafb24d0fc7a
 

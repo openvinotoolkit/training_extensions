@@ -1,22 +1,10 @@
-.card {
+.button {
     height: 100%;
-    display: flex;
-    border: 1px dashed var(--spectrum-gray-700) !important;
-    border-radius: var(--spectrum-alias-border-radius-regular);
-    gap: var(--spectrum-global-dimension-size-10);
+    padding: var(--spectrum-global-dimension-size-250);
+    background-color: var(--spectrum-global-color-gray-300);
+    gap: var(--spectrum-global-dimension-size-125);
 
-    button {
-        flex: 1;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        justify-content: center;
-        background-color: var(--spectrum-global-color-gray-300);
-        gap: var(--spectrum-global-dimension-size-200);
+    span[class*='spectrum-ActionButton-label'] {
+        padding-inline-end: 0;
     }
-}
-
-.buttonText span[class*='spectrum-ActionButton-label'] {
-    padding-inline-end: 0;
 }

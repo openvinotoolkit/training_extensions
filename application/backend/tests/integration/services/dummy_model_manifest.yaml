@@ -1,6 +1,7 @@
 id: dummy_model_manifest
 name: "Dummy ModelManifest"
 pretrained_weights:
+  source: "direct_link"
   url: "https://example.com/dummy_model_weights.pth"
   mirror_url: "https://mirror.example.com/dummy_model_weights.pth"
   sha_sum: "example_sha256_checksum"

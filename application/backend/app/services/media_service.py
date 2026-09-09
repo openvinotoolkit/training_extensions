@@ -321,7 +321,11 @@ class MediaService(BaseSessionManagedService):
 
     def get_media_thumbnail_path(self, project: Project, media: MediaDB | Media) -> Path:
         """Get a media thumbnail binary content"""
-        return self.projects_dir / f"{project.id}/dataset/{media.id}-thumb.jpg"
+        return self.get_media_thumbnail_path_by_id(project_id=project.id, media_id=media.id)
+
+    def get_media_thumbnail_path_by_id(self, project_id: UUID, media_id: UUID | str) -> Path:
+        """Get a media thumbnail binary content"""
+        return self.projects_dir / f"{project_id}/dataset/{media_id}-thumb.jpg"
 
     @staticmethod
     def _crop_image_to_thumbnail(image: Image.Image) -> Image.Image:

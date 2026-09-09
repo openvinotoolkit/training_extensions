@@ -5,6 +5,7 @@ import { $api } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { getQueryKey } from '../../../../../../query-client/query-client';
+import { datasetViewsQueryOptions } from './use-dataset-views';
 
 export const useRenameDatasetViewMutation = () => {
     const queryClient = useQueryClient();
@@ -20,11 +21,7 @@ export const useRenameDatasetViewMutation = () => {
                     ]),
                 }),
                 queryClient.invalidateQueries({
-                    queryKey: getQueryKey([
-                        'get',
-                        '/api/projects/{project_id}/dataset/views',
-                        { params: { path: { project_id } } },
-                    ]),
+                    queryKey: datasetViewsQueryOptions(project_id).queryKey,
                 }),
             ]);
         },

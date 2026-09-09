@@ -5,8 +5,11 @@
 
 from __future__ import annotations
 
+import builtins
 import json
+import time
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -17,7 +20,9 @@ from getitune.benchmark.experiment import (
     PhaseResult,
     _find_csv_metrics,
     _get_peak_gpu_memory_mb,
+    _PeakRamSampler,
     _recipe_backend,
+    _reset_peak_gpu_memory,
     _scrape_csv_metrics,
     _ultralytics_torch_metric,
     _write_phase_metrics_csv,
@@ -458,6 +463,48 @@ class TestGetPeakGpuMemory:
         result = _get_peak_gpu_memory_mb()
         assert isinstance(result, float)
         assert result >= 0.0
+
+
+# ---------------------------------------------------------------------------
+# _reset_peak_gpu_memory
+# ---------------------------------------------------------------------------
+
+
+class TestResetPeakGpuMemory:
+    def test_does_not_raise_when_unavailable(self) -> None:
+        """Must be a no-op (never raise) on hosts without CUDA/XPU."""
+        _reset_peak_gpu_memory()
+
+
+# ---------------------------------------------------------------------------
+# _PeakRamSampler
+# ---------------------------------------------------------------------------
+
+
+class TestPeakRamSampler:
+    def test_peak_mb_reflects_current_process(self) -> None:
+        """With psutil installed, the sampler should observe this process' own RSS."""
+        pytest.importorskip("psutil")
+        with _PeakRamSampler() as sampler:
+            # Allocate something so RSS is unambiguously > 0 while sampling.
+            _ = bytearray(10 * 1024 * 1024)
+            time.sleep(0.3)
+        assert sampler.peak_mb > 0.0
+
+    def test_degrades_to_zero_without_psutil(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Falls back to a no-op (peak_mb == 0.0) when psutil can't be imported."""
+        real_import = builtins.__import__
+
+        def _raise_for_psutil(name: str, *args, **kwargs) -> ModuleType:
+            if name == "psutil":
+                msg = "psutil not installed"
+                raise ImportError(msg)
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", _raise_for_psutil)
+        with _PeakRamSampler() as sampler:
+            time.sleep(0.05)
+        assert sampler.peak_mb == 0.0
 
 
 # ---------------------------------------------------------------------------

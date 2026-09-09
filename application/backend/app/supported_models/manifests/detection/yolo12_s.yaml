@@ -3,6 +3,7 @@ name: YOLO12-S
 license: AGPL-3.0
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo12s.pt
   mirror_url: https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo12s.pt
   sha_sum: "e915c2c4286e3f6f8610ef106fa3f94a7b8c19b30eccede5887e22c33ef75f58"

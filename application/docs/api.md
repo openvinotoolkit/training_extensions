@@ -67,6 +67,20 @@
 | `POST`   | `/api/projects/<id>/dataset/media`                | binary  | media info                     | Upload an image or a video to the dataset  |
 | `DELETE` | `/api/projects/<id>/dataset/media/<id>`           | -       | -                              | Delete a dataset media                     |
 
+> `GET /api/projects/<id>/dataset/media` accepts an optional `dataset_view_id` query parameter: when provided,
+> only the media assigned to that [dataset view](#views) are returned. This is the only endpoint to list the
+> content of a dataset view.
+
+### Predictions
+
+| Method | Path                                       | Payload              | Return                 | Description                                 |
+| ------ | ------------------------------------------ | -------------------- | ---------------------- | ------------------------------------------- |
+| `POST` | `/api/projects/<id>/dataset/media:predict` | model id, media list | batch inference result | Get predictions for one or more media items |
+
+> **Deprecated:** `POST /api/projects/<id>/dataset/media/media:predict` (with the duplicated `media` path
+> segment) is deprecated in favor of `POST /api/projects/<id>/dataset/media:predict` above. The deprecated
+> path is marked `deprecated: true` in the OpenAPI spec and will be removed in version 3.4.
+
 ### Annotations
 
 | Method   | Path                                                | Payload         | Return          | Description                               |
@@ -92,15 +106,25 @@
 
 ### Views
 
-| Method   | Path                                          | Payload             | Return        | Description                      |
-| -------- | --------------------------------------------- | ------------------- | ------------- | -------------------------------- |
-| `POST`   | `/api/projects/<id>/dataset/views`            | name                | view info     | Create a new dataset view        |
-| `GET`    | `/api/projects/<id>/dataset/views`            | -                   | list of views | List the dataset views           |
-| `GET`    | `/api/projects/<id>/dataset/views/<id>`       | -                   | view info     | Get info about a dataset view    |
-| `GET`    | `/api/projects/<id>/dataset/views/<id>/items` | -                   | list of items | List the items in a dataset view |
-| `POST`   | `/api/projects/<id>/dataset/views/<id>/items` | items ids or filter | -             | Add items to a dataset view      |
-| `DELETE` | `/api/projects/<id>/dataset/views/<id>/items` | items ids or filter | -             | Remove items from a dataset view |
-| `DELETE` | `/api/projects/<id>/dataset/views/<id>`       | -                   | -             | Delete a dataset view            |
+| Method   | Path                                          | Payload   | Return        | Description                        |
+| -------- | --------------------------------------------- | --------- | ------------- | ---------------------------------- |
+| `POST`   | `/api/projects/<id>/dataset/views`            | name      | view info     | Create a new dataset view          |
+| `GET`    | `/api/projects/<id>/dataset/views`            | -         | list of views | List the dataset views             |
+| `GET`    | `/api/projects/<id>/dataset/views/<id>`       | -         | view info     | Get info about a dataset view      |
+| `PATCH`  | `/api/projects/<id>/dataset/views/<id>`       | name      | view info     | Rename a dataset view              |
+| `POST`   | `/api/projects/<id>/dataset/views/<id>/media` | media ids | -             | Assign media to a dataset view     |
+| `DELETE` | `/api/projects/<id>/dataset/views/<id>/media` | media ids | -             | Unassign media from a dataset view |
+| `DELETE` | `/api/projects/<id>/dataset/views/<id>`       | -         | -             | Delete a dataset view              |
+
+> **Listing the content of a view.** There is no endpoint to list the content of a view in this section: the
+> existing dataset endpoints accept an optional `dataset_view_id` query parameter which restricts the results to
+> the media/items assigned to that view, with the same filtering, sorting and pagination options:
+>
+> | Method | Path                                                              | Description                         |
+> | ------ | ----------------------------------------------------------------- | ----------------------------------- |
+> | `GET`  | `/api/projects/<id>/dataset/media?dataset_view_id=<view_id>`      | List the media assigned to the view |
+> | `GET`  | `/api/projects/<id>/dataset/items?dataset_view_id=<view_id>`      | List the dataset items of the view  |
+> | `GET`  | `/api/projects/<id>/dataset/statistics?dataset_view_id=<view_id>` | Get the statistics of the view      |
 
 ### Models
 

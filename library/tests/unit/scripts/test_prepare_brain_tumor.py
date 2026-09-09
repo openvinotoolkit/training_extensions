@@ -93,6 +93,11 @@ class TestParseYoloSegmentationLabel:
 
         bboxes, labels, areas, iscrowd, polygons = _parse_yolo_segmentation_label(label_path, width=100, height=100)
 
+        assert labels is not None
+        assert bboxes is not None
+        assert areas is not None
+        assert iscrowd is not None
+        assert polygons is not None
         assert labels.tolist() == [0]
         # Polygon spans [0.25, 0.75] normalized -> [25, 75] px in a 100x100 image.
         assert bboxes[0].tolist() == pytest.approx([25.0, 25.0, 50.0, 50.0])

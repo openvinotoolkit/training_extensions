@@ -341,6 +341,7 @@ class UltralyticsEngine(Engine):
         checkpoint: PathLike | None = None,
         export_format: ExportFormat = ExportFormat.OPENVINO,
         export_precision: Precision = Precision.FP32,
+        export_nms: bool = False,
         **kwargs,
     ) -> Path:
         """Export the model to OpenVINO IR or ONNX.
@@ -354,6 +355,8 @@ class UltralyticsEngine(Engine):
                 weights from this file before exporting.
             export_format: Target format.
             export_precision: Precision (FP32 or FP16).
+            export_nms: Whether to include NMS in the exported model graph.
+                Defaults to False.
             **kwargs: Extra arguments (reserved for future use).
 
         Returns:
@@ -375,13 +378,18 @@ class UltralyticsEngine(Engine):
             f"checkpoint={checkpoint or self._last_train_checkpoint or 'current weights'}"
         )
 
-        return self._model.export(
-            output_dir=self._work_dir,
-            base_name=self._EXPORTED_MODEL_BASE_NAME,
-            export_format=export_format,
-            precision=export_precision,
-            export_args=self._export_args,
-        )
+        previous_export_nms = self._model.export_nms
+        self._model.export_nms = export_nms
+        try:
+            return self._model.export(
+                output_dir=self._work_dir,
+                base_name=self._EXPORTED_MODEL_BASE_NAME,
+                export_format=export_format,
+                precision=export_precision,
+                export_args=self._export_args,
+            )
+        finally:
+            self._model.export_nms = previous_export_nms
 
     @staticmethod
     def is_supported(model: MODEL, data: DATA) -> bool:

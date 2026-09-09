@@ -1,6 +1,6 @@
 {
     "name": "@geti/app-ui",
-    "version": "3.1.0",
+    "version": "3.2.0",
     "private": true,
     "type": "module",
     "engines": {
@@ -10,7 +10,7 @@
     "scripts": {
         "build": "rsbuild build",
         "build:tauri": "cross-env BUILD_TARGET=tauri rsbuild build",
-        "build:api": "npx openapi-typescript ./src/api/openapi-spec.json -o ./src/api/openapi-spec.d.ts  --root-types && prettier --write src/api/openapi-spec.d.ts",
+        "build:api": "npx openapi-typescript ./src/api/openapi-spec.json -o ./src/api/openapi-spec.d.ts && prettier --write src/api/openapi-spec.d.ts",
         "build:api:download": "curl --fail --insecure -o ./src/api/openapi-spec.json https://localhost:7860/api/openapi.json && prettier --write src/api/openapi-spec.json",
         "update-spec": "npm run build:api:download && npm run build:api",
         "cyclic-deps-check": "npx madge --circular src/**/*.ts*",
@@ -33,8 +33,8 @@
         "tauri": "tauri"
     },
     "dependencies": {
-        "@geti-ui/ui": "^1.6.0",
         "@geti-ui/smart-tools": "^1.6.0",
+        "@geti-ui/ui": "^1.6.0",
         "@react-aria/utils": "^3.34.1",
         "@react-stately/overlays": "^3.7.1",
         "@tanstack/react-query": "~5.101.4",
@@ -46,6 +46,8 @@
         "clsx": "~2.1.1",
         "comlink": "~4.4.2",
         "dayjs": "^1.11.21",
+        "i18next": "~26.3.6",
+        "i18next-browser-languagedetector": "~8.2.1",
         "lodash-es": "~4.18.1",
         "onnxruntime-web": "~1.27.0",
         "openapi-fetch": "~0.17.0",
@@ -59,6 +61,7 @@
         "react-dom": "~19.1.1",
         "react-error-boundary": "~3.1.4",
         "react-hotkeys-hook": "^5.3.3",
+        "react-i18next": "~17.0.11",
         "react-router-dom": "~6.30.4",
         "react-stately": "^3.47.0",
         "recharts": "~3.10.1",

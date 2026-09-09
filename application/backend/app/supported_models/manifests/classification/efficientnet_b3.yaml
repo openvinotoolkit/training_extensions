@@ -2,6 +2,7 @@ id: image-classification-efficientnet-b3
 name: EfficientNet-B3
 
 pretrained_weights:
+  source: direct_link
   url: https://download.pytorch.org/models/efficientnet_b3_rwightman-b3899882.pth
   sha_sum: b3899882250c22946d0229d266049fcd133c169233530b36b9ffa7983988362f
 

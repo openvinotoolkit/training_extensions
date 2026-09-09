@@ -224,7 +224,7 @@ describe('VideoFrameSegment', () => {
         describe('when the frame has no predictions', () => {
             beforeEach(() => {
                 server.use(
-                    http.post('/api/projects/{project_id}/dataset/media/media:predict', () => {
+                    http.post('/api/projects/{project_id}/dataset/media:predict', () => {
                         return HttpResponse.json({
                             predictions: [
                                 {
@@ -275,7 +275,7 @@ describe('VideoFrameSegment', () => {
         describe('when the frame has predictions for some labels', () => {
             beforeEach(() => {
                 server.use(
-                    http.post('/api/projects/{project_id}/dataset/media/media:predict', () => {
+                    http.post('/api/projects/{project_id}/dataset/media:predict', () => {
                         return HttpResponse.json({
                             predictions: [
                                 {

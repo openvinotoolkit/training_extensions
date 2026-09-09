@@ -17,7 +17,7 @@ const NO_OBJECT_LABEL: Label = { id: EMPTY_LABEL_ID, name: 'No object', color: '
 export const isEmptyLabel = <T extends { id: string }>({ id }: T): boolean => id === EMPTY_LABEL_ID;
 export const isNonEmptyLabel = negate(isEmptyLabel);
 
-export const getEmptyLabel = (taskType: TaskType, exclusiveLabels: boolean): Label | null => {
+const getEmptyLabel = (taskType: TaskType, exclusiveLabels: boolean): Label | null => {
     if (isClassificationTask(taskType)) {
         const isMultiLabel = exclusiveLabels === false;
 

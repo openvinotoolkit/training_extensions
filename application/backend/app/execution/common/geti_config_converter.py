@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from enum import Enum
+import math
 from pathlib import Path
 from typing import Any, ClassVar
 from warnings import warn
@@ -13,15 +13,8 @@ from warnings import warn
 import yaml
 from loguru import logger
 
-
-class ModelStatus(str, Enum):
-    """Enum for model status."""
-
-    SPEED = "speed"
-    BALANCE = "balance"
-    ACCURACY = "accuracy"
-    DEPRECATED = "deprecated"
-    ACTIVE = "active"
+from app.execution.common.recipe_resolver import RecipeResolver
+from app.supported_models.timm import TimmManifestProvider, id_to_model_name
 
 
 class TransformsUpdater:
@@ -681,422 +674,20 @@ class GetiConfigConverter:
             dict: The default configuration dictionary.
 
         """
-        from getitune.tools.auto_configurator import AutoConfigurator
         from getitune.utils import get_getitune_root_path
 
         hyper_parameters = config["hyper_parameters"]
 
-        RECIPE_PATH = get_getitune_root_path() / "recipe"
-        TEMPLATE_ID_MAPPING = {
-            # MULTI_CLASS_CLS
-            "image-classification-vit-tiny": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "vit_tiny.yaml",
-                "status": ModelStatus.BALANCE,
-                "default": False,
-            },
-            "image-classification-dinov2": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "dino_v2.yaml",
-                "status": ModelStatus.ACCURACY,
-                "default": False,
-            },
-            "image-classification-efficientnet-b0": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "efficientnet_b0.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": True,
-            },
-            "image-classification-efficientnet-v2-s": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "efficientnet_v2.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "image-classification-mobilenet-v3-large": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "mobilenet_v3_large.yaml",
-                "status": ModelStatus.SPEED,
-                "default": False,
-            },
-            "image-classification-efficientnet-b3": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "efficientnet_b3.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "image-classification-yolo26-n": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "yolo26_n_cls.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "image-classification-yolo26-s": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "yolo26_s_cls.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "image-classification-yolo26-m": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "yolo26_m_cls.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "image-classification-yolo26-l": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "yolo26_l_cls.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "image-classification-yolo26-x": {
-                "recipe_path": RECIPE_PATH / "classification" / "multi_class_cls" / "yolo26_x_cls.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            # DETECTION
-            "object-detection-atss-mobilenet-v2": {
-                "recipe_path": RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": True,
-            },
-            "object-detection-ssd-mobilenet-v2": {
-                "recipe_path": RECIPE_PATH / "detection" / "ssd_mobilenetv2.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolox-x": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolox_x.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolox-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolox_l.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolox-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolox_s.yaml",
-                "status": ModelStatus.SPEED,
-                "default": False,
-            },
-            "object-detection-yolox-tiny": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolox_tiny.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-rt-detr-r50": {
-                "recipe_path": RECIPE_PATH / "detection" / "rtdetr_50.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-dfine-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "deim_dfine_m.yaml",
-                "status": ModelStatus.BALANCE,
-                "default": False,
-            },
-            "object-detection-dfine-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "deim_dfine_l.yaml",
-                "status": ModelStatus.ACCURACY,
-                "default": False,
-            },
-            "object-detection-dfine-x": {
-                "recipe_path": RECIPE_PATH / "detection" / "deim_dfine_x.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-rfdetr-n": {
-                "recipe_path": RECIPE_PATH / "detection" / "rfdetr_nano.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-rfdetr-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "rfdetr_small.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-rfdetr-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "rfdetr_medium.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-rfdetr-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "rfdetr_large.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-edgecrafter-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "edgecrafter_s.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-edgecrafter-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "edgecrafter_m.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-edgecrafter-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "edgecrafter_l.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-edgecrafter-x": {
-                "recipe_path": RECIPE_PATH / "detection" / "edgecrafter_x.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-dinov3-detr-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "deimv2_s.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-dinov3-detr-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "deimv2_m.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-dinov3-detr-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "deimv2_l.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo26-n": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo26_n.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo26-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo26_s.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo26-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo26_m.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo26-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo26_l.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo26-x": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo26_x.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo11-n": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo11_n.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo11-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo11_s.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo11-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo11_m.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo11-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo11_l.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo11-x": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo11_x.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo12-n": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo12_n.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo12-s": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo12_s.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo12-m": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo12_m.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo12-l": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo12_l.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "object-detection-yolo12-x": {
-                "recipe_path": RECIPE_PATH / "detection" / "yolo12_x.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            # INSTANCE_SEGMENTATION
-            "instance-segmentation-mask-rcnn-swin-t": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "maskrcnn_swint.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-mask-rcnn-efficientnet-b2": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "maskrcnn_efficientnetb2b.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": True,
-            },
-            "instance-segmentation-rtmdet-tiny": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rtmdet_inst_tiny.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-mask-rcnn-resnet50": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "maskrcnn_r50.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-rfdetr-n": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rfdetr_seg_nano.yaml",
-                "status": ModelStatus.SPEED,
-                "default": False,
-            },
-            "instance-segmentation-rfdetr-s": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rfdetr_seg_small.yaml",
-                "status": ModelStatus.SPEED,
-                "default": False,
-            },
-            "instance-segmentation-rfdetr-m": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rfdetr_seg_medium.yaml",
-                "status": ModelStatus.BALANCE,
-                "default": False,
-            },
-            "instance-segmentation-rfdetr-l": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rfdetr_seg_large.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-rfdetr-xl": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rfdetr_seg_xlarge.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-rfdetr-2xl": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "rfdetr_seg_2xlarge.yaml",
-                "status": ModelStatus.ACCURACY,
-                "default": False,
-            },
-            "instance-segmentation-yolo26-n": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo26_n_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo26-s": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo26_s_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo26-m": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo26_m_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo26-l": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo26_l_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo26-x": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo26_x_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo11-n": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo11_n_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo11-s": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo11_s_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo11-m": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo11_m_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo11-l": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo11_l_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-            "instance-segmentation-yolo11-x": {
-                "recipe_path": RECIPE_PATH / "instance_segmentation" / "yolo11_x_seg.yaml",
-                "status": ModelStatus.ACTIVE,
-                "default": False,
-            },
-        }
-
-        model_config_path: Path = TEMPLATE_ID_MAPPING[config["model_manifest_id"]]["recipe_path"]  # type: ignore[assignment]
-
-        # Classification task type (multi-class vs. multi-label) can't be deduced
-        # from the manifest's recipe path alone, since the architecture is shared
-        # across both. Resolve the sub-task recipe variant once, for both backends.
-        model_config_path = GetiConfigConverter._resolve_task_specific_recipe_path(
-            model_config_path,
+        resolver = RecipeResolver(get_getitune_root_path() / "recipe")
+        recipe_path = resolver.resolve(
+            config["model_manifest_id"],
             config["sub_task_type"],
-            RECIPE_PATH,
         )
 
-        if not model_config_path.exists():
-            msg = f"Recipe file not found: {model_config_path}"
-            raise FileNotFoundError(msg)
+        if GetiConfigConverter._is_ultralytics_recipe(recipe_path):
+            return GetiConfigConverter._convert_ultralytics(recipe_path, config, hyper_parameters)
 
-        if GetiConfigConverter._is_ultralytics_recipe(model_config_path):
-            from getitune.backend.ultralytics.tools.configurator import Configurator as UltralyticsConfigurator
-
-            config_dict = UltralyticsConfigurator.convert(model_config_path, hyper_parameters)
-            # Apply the standard augmentation / tiling updates to the data section.
-            # This is the same TransformsUpdater path that Lightning recipes use,
-            # so all augmentations are supported identically across backends.
-            if hyper_parameters:
-                GetiConfigConverter._update_data_transforms(config_dict, hyper_parameters)
-            # Apply task-level parameters (e.g. intensity mapping) to the Ultralytics config.
-            task_level_params = config.get("task_level_parameters", {})
-            intensity_mapping = task_level_params.get("dataset_preparation", {}).get("intensity_mapping")
-            if intensity_mapping:
-                GetiConfigConverter._update_intensity_mapping(config_dict, intensity_mapping)
-            return config_dict
-
-        # Lightning-specific: resolve tile recipe variant.
-        tile_enabled = hyper_parameters and hyper_parameters.get("dataset_preparation", {}).get("augmentation", {}).get(
-            "tiling",
-            {},
-        ).get("enable", False)
-        if tile_enabled and "_tile" not in model_config_path.stem:
-            tile_name = model_config_path.stem + "_tile.yaml"
-            model_config_path = model_config_path.parent / tile_name
-
-        default_config = AutoConfigurator(model=model_config_path).config
-        if hyper_parameters:
-            GetiConfigConverter._update_params(default_config, hyper_parameters)
-
-        # Update parameters that are task-level in Geti
-        task_level_params = config.get("task_level_parameters", {})
-        intensity_mapping = task_level_params.get("dataset_preparation", {}).get("intensity_mapping")
-        if intensity_mapping:
-            GetiConfigConverter._update_intensity_mapping(default_config, intensity_mapping)
-
-        GetiConfigConverter._remove_unused_key(default_config)
-        return default_config
-
-    @staticmethod
-    def _resolve_task_specific_recipe_path(
-        model_config_path: Path,
-        sub_task_type: str | None,
-        recipe_root: Path,
-    ) -> Path:
-        """Select the classification sub-task recipe variant, for either backend.
-
-        Classification manifests map to a single architecture recipe (e.g.
-        ``yolo26_m_cls.yaml``) shared by both multi-class and multi-label
-        tasks. ``sub_task_type`` (e.g. ``"MULTI_LABEL_CLS"``) picks the
-        matching recipe subdirectory.
-        """
-        if sub_task_type and "_cls" in model_config_path.parent.name:
-            return recipe_root / "classification" / sub_task_type.lower() / model_config_path.name
-        return model_config_path
+        return GetiConfigConverter._convert_lightning(recipe_path, config, hyper_parameters)
 
     @staticmethod
     def _is_ultralytics_recipe(recipe_path: Path) -> bool:
@@ -1106,8 +697,96 @@ class GetiConfigConverter:
         return isinstance(recipe, dict) and recipe.get("backend") == "ultralytics"
 
     @staticmethod
+    def _convert_ultralytics(recipe_path: Path, config: dict, hyper_parameters: dict) -> dict:
+        from getitune.backend.ultralytics.tools.configurator import Configurator as UltralyticsConfigurator
+
+        config_dict = UltralyticsConfigurator.convert(recipe_path, hyper_parameters)
+        # Apply the standard augmentation / tiling updates to the data section.
+        # This is the same TransformsUpdater path that Lightning recipes use,
+        # so all augmentations are supported identically across backends.
+        if hyper_parameters:
+            GetiConfigConverter._update_data_transforms(config_dict, hyper_parameters)
+        GetiConfigConverter._apply_intensity_mapping_from_task_params(config_dict, config)
+        return config_dict
+
+    @staticmethod
+    def _convert_lightning(recipe_path: Path, config: dict, hyper_parameters: dict) -> dict:
+        from getitune.tools.auto_configurator import AutoConfigurator
+
+        augmentation_cfg = hyper_parameters.get("dataset_preparation", {}).get("augmentation", {})
+        tiling_enabled = augmentation_cfg.get("tiling", {}).get("enable", False)
+        if tiling_enabled and "_tile" not in recipe_path.stem:
+            recipe_path = recipe_path.with_name(f"{recipe_path.stem}_tile.yaml")
+
+        default_config = AutoConfigurator(model=recipe_path).config
+
+        manifest_id = config["model_manifest_id"]
+        is_timm = TimmManifestProvider.is_timm_id(manifest_id)
+        if is_timm:
+            GetiConfigConverter._inject_timm_backbone(default_config, id_to_model_name(manifest_id))
+
+        if hyper_parameters:
+            GetiConfigConverter._update_params(default_config, hyper_parameters)
+        GetiConfigConverter._apply_intensity_mapping_from_task_params(default_config, config)
+        GetiConfigConverter._remove_unused_key(default_config)
+
+        if is_timm:
+            GetiConfigConverter._assert_no_dynamic_placeholders(default_config)
+
+        return default_config
+
+    @staticmethod
+    def _apply_intensity_mapping_from_task_params(target_config: dict, geti_config: dict) -> None:
+        task_level_params = geti_config.get("task_level_parameters", {})
+        intensity_mapping = task_level_params.get("dataset_preparation", {}).get("intensity_mapping")
+        if intensity_mapping:
+            GetiConfigConverter._update_intensity_mapping(target_config, intensity_mapping)
+
+    @staticmethod
+    def _inject_timm_backbone(config: dict, model_name: str) -> None:
+        """Inject the selected timm backbone name and its native preprocessing.
+
+        timm_generic.yaml is architecture-agnostic; the concrete backbone and its
+        pretrained_cfg-derived params (input size, mean, std) are only known once
+        the user has selected a specific backbone (encoded in model_manifest_id).
+        """
+        from app.supported_models.timm import TimmManifestProvider
+
+        preprocessing = TimmManifestProvider.get_preprocessing(model_name)
+        init_args = config["model"]["init_args"]
+        init_args["model_name"] = model_name
+        # Sync the data pipeline's resize target and normalization with the backbone.
+        config["data"]["input_size"] = list(preprocessing["input_size"])
+        mean, std = list(preprocessing["mean"]), list(preprocessing["std"])
+        for subset_key in ("train_subset", "val_subset", "test_subset"):
+            subset = config["data"].get(subset_key)
+            if subset is None:
+                raise ValueError(f"Missing '{subset_key}' in recipe config")
+            for stage in ("augmentations_gpu", "augmentations_cpu"):
+                for aug in subset.get(stage, []):
+                    if "Normalize" in aug.get("class_path", ""):
+                        aug.setdefault("init_args", {}).update(mean=mean, std=std)
+                        break
+
+    @staticmethod
+    def _assert_no_dynamic_placeholders(config: dict) -> None:
+        """Fail fast if any `DYNAMIC` placeholder survived hyperparameter resolution.
+
+        Indicates the training configuration was not fully seeded from the
+        selected model manifest's defaults before conversion.
+        """
+        optimizer_args = config["model"]["init_args"].get("optimizer", {}).get("init_args", {})
+        unresolved = [k for k, v in optimizer_args.items() if isinstance(v, float) and math.isnan(v)]
+        model_args = config["model"]["init_args"]
+        if model_args.get("model_name") == "DYNAMIC":
+            unresolved.append("model_name")
+        if unresolved:
+            msg = f"Unresolved DYNAMIC placeholder(s) in timm recipe: {unresolved}"
+            raise ValueError(msg)
+
+    @staticmethod
     def _get_params(hyperparameters: dict) -> dict:
-        """Get configuraable parameters from ModelTemplate config hyperparameters field."""
+        """Get configurable parameters from ModelTemplate config hyperparameters field."""
         param_dict = {}
         for param_name, param_info in hyperparameters.items():
             if isinstance(param_info, dict):

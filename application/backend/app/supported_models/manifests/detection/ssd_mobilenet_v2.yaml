@@ -2,6 +2,7 @@ id: object-detection-ssd-mobilenet-v2
 name: SSD-MobileNet-V2
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth
   sha_sum: c94e3d76fb60db7de2c6fc824a692564cf7ebb2156a58ed2e0f37ff4c0089d28
 

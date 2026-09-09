@@ -70,6 +70,82 @@ def normalize_high_bit_depth_image(image: Image.Image) -> Image.Image:
     return Image.fromarray(arr.astype(np.uint8), mode="L").convert("RGB")
 
 
+def normalize_high_bit_depth_array(array: np.ndarray) -> np.ndarray:
+    """Min-max scale a high bit depth array to 8-bit values in [0, 255].
+
+    Mirrors :func:`normalize_high_bit_depth_image` but operates on a raw numpy
+    array so it can be applied to decoded media (e.g. an OpenCV ``IMREAD_UNCHANGED``
+    result) without a PIL round-trip. Scaling is computed over the whole array so
+    that multi-channel images keep their relative channel intensities.
+
+    Args:
+        array: Numeric array of any shape and dtype.
+
+    Returns:
+        An array of the same shape with dtype ``uint8``.
+    """
+    if array.size == 0:
+        return array.astype(np.uint8)
+    arr = array.astype(np.float64)
+    lo, hi = float(arr.min()), float(arr.max())
+    if hi > lo:
+        arr = (arr - lo) / (hi - lo) * 255.0
+    else:
+        arr = np.zeros_like(arr)
+    return arr.astype(np.uint8)
+
+
+def to_uint8_rgb(array: np.ndarray) -> np.ndarray:
+    """Convert a decoded image array to a 3-channel 8-bit RGB array.
+
+    Models such as the SAM image encoder accept only ``(H, W, 3)`` ``uint8`` inputs,
+    whereas media is decoded with the original bit depth and channel count preserved
+    (e.g. 16-bit grayscale TIFF/PNG images decode to ``(H, W, 1)`` ``uint16``).
+    This normalizes any decoded array to what those models expect:
+
+    * high bit depth (non-``uint8``) data is min-max scaled to ``[0, 255]``, which
+      matches the normalization applied when displaying such images in the UI, so
+      the model sees the same pixels as the user;
+    * single-channel data is replicated across three channels;
+    * a fourth (alpha) channel is dropped, leaving the existing channel order intact.
+
+    Channel order is never changed: colour input must already be in RGB(A) order.
+    OpenCV decodes BGR(A), so callers reading with ``cv2.imread`` have to convert first
+    (:meth:`app.services.media_numpy_loader.MediaNumpyLoader.load_media_binary` does this
+    for both 3- and 4-channel images).
+
+    Args:
+        array: Decoded image array of shape ``(H, W)``, ``(H, W, 1)``, ``(H, W, 3)``
+            or ``(H, W, 4)``, in RGB(A) order for colour input.
+
+    Returns:
+        A ``(H, W, 3)`` ``uint8`` array.
+
+    Raises:
+        ValueError: If the array does not have a supported shape or channel count.
+    """
+    if array.ndim == 2:
+        array = array[..., np.newaxis]
+    if array.ndim != 3:
+        raise ValueError(f"Expected a 2D or 3D image array, got shape {array.shape}")
+
+    channels = array.shape[-1]
+    if channels == 4:
+        # Drop the alpha channel; the remaining channels keep their original order.
+        array = array[..., :3]
+        channels = 3
+    if channels not in (1, 3):
+        raise ValueError(f"Unsupported number of image channels: {channels}")
+
+    if array.dtype != np.uint8:
+        array = normalize_high_bit_depth_array(array)
+
+    if channels == 1:
+        array = np.repeat(array, 3, axis=-1)
+
+    return np.ascontiguousarray(array)
+
+
 def convert_to_jpeg_compatible(image: Image.Image) -> Image.Image:
     """Convert an image to a JPEG-compatible mode (RGB, L, or CMYK).
 

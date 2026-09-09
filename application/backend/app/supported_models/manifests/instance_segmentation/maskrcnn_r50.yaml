@@ -2,6 +2,7 @@ id: instance-segmentation-mask-rcnn-resnet50
 name: Mask-RCNN-ResNet50
 
 pretrained_weights:
+  source: direct_link
   url: https://download.pytorch.org/models/maskrcnn_resnet50_fpn_v2_coco-73cbd019.pth
   sha_sum: 73cbd0190fcbe3ba339921fbce2c3a0b6bb9126c9a133c85e43a2a8e060a109e
 

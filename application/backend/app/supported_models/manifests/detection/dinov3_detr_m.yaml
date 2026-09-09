@@ -2,6 +2,7 @@ id: object-detection-dinov3-detr-m
 name: DINOv3-DETR-M
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/kprokofi/DEIMv2/releases/download/1.0.0/deimv2_dinov3_m_coco.pth
   sha_sum: 3ef951bfc71b177df65009d97506b3ed50a3b3b306729cc4584e37dc222c6706
 

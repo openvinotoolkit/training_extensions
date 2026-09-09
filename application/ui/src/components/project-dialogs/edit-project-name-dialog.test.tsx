@@ -29,6 +29,7 @@ describe('EditProjectNameDialog', () => {
         fireEvent.change(input, { target: { value: '' } });
 
         expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
+        expect(screen.getByText('Project name cannot be empty')).toBeVisible();
     });
 
     it('disables save button when name is unchanged', () => {

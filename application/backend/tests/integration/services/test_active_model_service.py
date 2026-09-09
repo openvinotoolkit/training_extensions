@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from app.db.schema import ModelRevisionDB, ModelVariantDB, PipelineDB, ProjectDB
+from app.db.schema import LabelDB, ModelRevisionDB, ModelVariantDB, PipelineDB, ProjectDB
 from app.models.model_revision import ModelFormat, ModelPrecision, TrainingStatus
 from app.models.system import DeviceInfo, DeviceType
 from app.services import ActiveModelService, SystemService
@@ -243,3 +243,57 @@ class TestActiveModelServiceConfidenceThreshold:
 
         mock_load.assert_called_once()  # the model was not reloaded
         assert model.set_param.call_args_list[-1].args == ("confidence_threshold", 0.2)
+
+
+class TestActiveModelServiceLabelColors:
+    """The colors of the project labels must be exposed so that the predictions can be
+    rendered with the same colors as the labels defined in the project."""
+
+    @pytest.fixture
+    def fxt_pipeline_with_labels(self, fxt_project, fxt_successful_model, fxt_fp16_openvino_variant, db_session):
+        def _create(labels: dict[str, str]) -> list[LabelDB]:
+            db_labels = [
+                LabelDB(id=str(uuid4()), project_id=fxt_project.id, name=name, color=color)
+                for name, color in labels.items()
+            ]
+            db_session.add_all([fxt_successful_model, fxt_fp16_openvino_variant, *db_labels])
+            db_session.flush()
+            db_session.add(
+                PipelineDB(
+                    project_id=fxt_project.id,
+                    is_running=True,
+                    model_revision_id=fxt_successful_model.id,
+                    model_variant_id=fxt_fp16_openvino_variant.id,
+                    device="cpu",
+                )
+            )
+            db_session.flush()
+            return db_labels
+
+        return _create
+
+    def test_label_colors_of_the_active_project_are_loaded(self, fxt_pipeline_with_labels, db_session, tmp_path):
+        fxt_pipeline_with_labels({"cat": "#00FF00", "dog": "#FF0000"})
+
+        with _make_db_session_patcher(db_session):
+            service = ActiveModelService(data_dir=tmp_path, system_service=SystemService())
+
+        assert service.label_colors == {"cat": "#00FF00", "dog": "#FF0000"}
+
+    def test_label_colors_are_empty_without_active_model(self, db_session, tmp_path):
+        with _make_db_session_patcher(db_session):
+            service = ActiveModelService(data_dir=tmp_path, system_service=SystemService())
+
+        assert service.label_colors == {}
+
+    def test_recolored_labels_are_picked_up_on_refresh(self, fxt_pipeline_with_labels, db_session, tmp_path):
+        """Recoloring a label in the project is reflected without reloading the model."""
+        db_labels = fxt_pipeline_with_labels({"cat": "#00FF00"})
+
+        with _make_db_session_patcher(db_session):
+            service = ActiveModelService(data_dir=tmp_path, system_service=SystemService())
+            db_labels[0].color = "#123456"
+            db_session.flush()
+            service.refresh_inference_params()
+
+        assert service.label_colors == {"cat": "#123456"}

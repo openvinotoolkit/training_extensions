@@ -11,16 +11,12 @@ import { render } from 'test-utils/render';
 import { getMockedJobExportJob } from '../../../../../../../mocks/mock-job';
 import { http } from '../../../../../../api/utils';
 import { server } from '../../../../../../msw-node-setup';
-import { downloadFile } from '../../../../../../shared/util';
+import { downloadFile } from '../../../../../../platform/download-file';
 import { ExportCompletedJob } from './export-completed-job.component';
 
-vi.mock('../../../../../../shared/util', async (importActual) => {
-    const actual = await importActual<typeof import('../../../../../../shared/util')>();
-    return {
-        ...actual,
-        downloadFile: vi.fn(),
-    };
-});
+vi.mock('../../../../../../platform/download-file', () => ({
+    downloadFile: vi.fn(),
+}));
 
 const mockedRemoveLsExportId = vi.fn();
 

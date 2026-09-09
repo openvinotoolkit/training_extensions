@@ -1,0 +1,91 @@
+.workflow {
+    --circle-size: var(--spectrum-global-dimension-size-900);
+    --line-color: var(--spectrum-global-color-gray-500);
+
+    width: max-content;
+    margin: auto auto 0; // pins the chain to the bottom of the empty state
+    padding-block: 2vw;
+}
+
+.steps {
+    display: flex;
+    align-items: center;
+    gap: var(--spectrum-global-dimension-size-300);
+    margin: 0 0 var(--spectrum-global-dimension-size-200);
+    padding: 0;
+    list-style: none;
+    font-size: clamp(
+        var(--spectrum-global-dimension-font-size-75),
+        0.5rem + 0.7vw,
+        var(--spectrum-global-dimension-font-size-300)
+    );
+    color: var(--spectrum-global-color-gray-800);
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: var(--spectrum-global-dimension-size-200);
+    white-space: nowrap;
+
+    &:not(:last-child)::after {
+        content: '';
+        width: var(--spectrum-global-dimension-size-600);
+        border-top: 1px solid var(--line-color);
+    }
+}
+
+.circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--circle-size);
+    height: var(--circle-size);
+    border: 1px solid var(--line-color);
+    border-radius: 50%;
+    background: var(--spectrum-global-color-gray-200);
+    color: var(--energy-blue);
+
+    svg {
+        width: var(--spectrum-global-dimension-size-350);
+        height: var(--spectrum-global-dimension-size-350);
+
+        // Adjustments and Deployments hardcode fill="#E3E3E5", so force every shape to follow `color`.
+        path {
+            fill: currentColor;
+        }
+    }
+}
+
+// Dashed U-shape running from the centre of the last circle back to the first one.
+.loop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: var(--spectrum-global-dimension-size-400);
+    margin-inline: calc(var(--circle-size) / 2);
+    border: 1px dashed var(--line-color);
+    border-top: none;
+    border-radius: 0 0 var(--spectrum-global-dimension-size-150) var(--spectrum-global-dimension-size-150);
+}
+
+.loopText {
+    padding: var(--spectrum-global-dimension-size-100);
+    transform: translateY(50%);
+    background: var(--spectrum-global-color-gray-100);
+    font-size: var(--spectrum-global-dimension-font-size-75);
+}
+
+@media (max-width: 1000px) {
+    .workflow {
+        --circle-size: var(--spectrum-global-dimension-size-600);
+    }
+
+    .steps {
+        gap: var(--spectrum-global-dimension-size-100);
+    }
+
+    .step {
+        gap: var(--spectrum-global-dimension-size-100);
+    }
+}

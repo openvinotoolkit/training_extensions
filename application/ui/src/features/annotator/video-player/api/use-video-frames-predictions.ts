@@ -26,7 +26,7 @@ const useVideoFramesPredictionsQueryOptions = ({
 }) => {
     const projectId = useProjectIdentifier();
     const { videoFrame } = useVideoPlayer();
-    const { selectedModel, selectedDevice } = usePredictionSetup();
+    const { selectedModel, selectedDevice, confidenceThreshold } = usePredictionSetup();
 
     const { startFrameIndex, endFrameIndex } = getVideoFrameRangeIndexes({
         frames: videoFrame.frame_count - 1,
@@ -39,6 +39,7 @@ const useVideoFramesPredictionsQueryOptions = ({
         projectId,
         selectedModel,
         device: selectedDevice,
+        confidenceThreshold,
         mediaId: videoFrame.id,
         range: { stride: rangeStride ?? frameSkip, start_frame: startFrameIndex, end_frame: endFrameIndex },
     });

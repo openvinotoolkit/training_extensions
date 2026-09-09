@@ -4,7 +4,7 @@
          xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
 
-    <Identity Name="intel.geti" Publisher="CN=Intel Corporation, O=Intel Corporation, S=California, C=US" Version="3.1.0.0"/>
+    <Identity Name="intel.geti" Publisher="CN=Intel Corporation, O=Intel Corporation, S=California, C=US" Version="3.2.0.0"/>
 
     <Properties>
         <DisplayName>Intel Geti</DisplayName>

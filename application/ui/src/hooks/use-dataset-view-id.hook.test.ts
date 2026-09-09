@@ -8,7 +8,7 @@ import { renderHook } from '../test-utils/render';
 import { DATASET_VIEW_ID_PARAM, ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from './use-dataset-view-id.hook';
 
 describe('useDatasetViewId', () => {
-    it('returns the "entire-dataset-id" when no param is present', () => {
+    it('returns the entire dataset id when no param is present', () => {
         const { result } = renderHook(() => useDatasetViewId(), {
             route: '/projects/123',
             path: '/projects/:projectId',
@@ -19,7 +19,7 @@ describe('useDatasetViewId', () => {
         expect(datasetViewId).toBe(ENTIRE_DATASET_VIEW_ID);
     });
 
-    it('returns the "entire-dataset-id" when the param is an empty string', () => {
+    it('returns the entire dataset id when the param is an empty string', () => {
         const { result } = renderHook(() => useDatasetViewId(), {
             route: `/projects/123?${DATASET_VIEW_ID_PARAM}=`,
             path: '/projects/:projectId',
@@ -57,7 +57,7 @@ describe('useDatasetViewId', () => {
         expect(datasetViewId).toBe('collection-one');
     });
 
-    it('removes the param when setting the "entire-dataset-id" id', () => {
+    it('removes the param when setting the entire dataset id', () => {
         const { result } = renderHook(() => useDatasetViewId(), {
             route: `/projects/123?${DATASET_VIEW_ID_PARAM}=collection-one`,
             path: '/projects/:projectId',

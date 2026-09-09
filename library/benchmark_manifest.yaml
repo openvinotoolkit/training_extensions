@@ -50,6 +50,9 @@ experiments:
         "export:test/{metric}": { compare: ">=", margin: 0.10 }
         "training:train/iter_time": { compare: "<=", margin: 0.10 }
         "training:gpu_mem": { compare: "<=", margin: 0.10 }
+        "training:ram_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/gpu_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/ram_mem": { compare: "<=", margin: 0.10 }
         "torch:test/latency": { compare: "<=", margin: 0.15 }
   classification/multi_label_cls:
     models:
@@ -85,6 +88,9 @@ experiments:
         "export:test/{metric}": { compare: ">=", margin: 0.10 }
         "training:train/iter_time": { compare: "<=", margin: 0.10 }
         "training:gpu_mem": { compare: "<=", margin: 0.10 }
+        "training:ram_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/gpu_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/ram_mem": { compare: "<=", margin: 0.10 }
         "torch:test/latency": { compare: "<=", margin: 0.15 }
   detection:
     models:
@@ -194,6 +200,9 @@ experiments:
         "export:test/{metric}": { compare: ">=", margin: 0.10 }
         "training:train/iter_time": { compare: "<=", margin: 0.10 }
         "training:gpu_mem": { compare: "<=", margin: 0.10 }
+        "training:ram_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/gpu_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/ram_mem": { compare: "<=", margin: 0.10 }
         "torch:test/latency": { compare: "<=", margin: 0.15 }
   semantic_segmentation:
     models:
@@ -241,6 +250,9 @@ experiments:
         "export:test/{metric}": { compare: ">=", margin: 0.10 }
         "training:train/iter_time": { compare: "<=", margin: 0.10 }
         "training:gpu_mem": { compare: "<=", margin: 0.10 }
+        "training:ram_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/gpu_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/ram_mem": { compare: "<=", margin: 0.10 }
         "torch:test/latency": { compare: "<=", margin: 0.15 }
   instance_segmentation:
     models:
@@ -309,4 +321,7 @@ experiments:
         "export:test/{metric}": { compare: ">=", margin: 0.10 }
         "training:train/iter_time": { compare: "<=", margin: 0.10 }
         "training:gpu_mem": { compare: "<=", margin: 0.10 }
+        "training:ram_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/gpu_mem": { compare: "<=", margin: 0.10 }
+        "torch:test/ram_mem": { compare: "<=", margin: 0.10 }
         "torch:test/latency": { compare: "<=", margin: 0.15 }

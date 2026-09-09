@@ -3,6 +3,7 @@ name: YOLO26-L
 license: AGPL-3.0
 
 pretrained_weights:
+  source: direct_link
   url: https://huggingface.co/Ultralytics/YOLO26/resolve/main/yolo26l-cls.pt
   mirror_url: https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26l-cls.pt
   sha_sum: "7a3aebb7de6f5d79f0153da627a5f68bd3d7df30e648c0fdb7f9217986ee129e"

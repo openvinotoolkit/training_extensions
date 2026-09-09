@@ -2,6 +2,7 @@ id: object-detection-yolox-tiny
 name: YOLOX-Tiny
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth
   sha_sum: 4ff3b67e005a6356a5794f5fbc42b133e077aa30ddcb0449b2153cfd953a0030
 

@@ -11,6 +11,7 @@ import { http } from '../api/utils';
 import { server } from '../msw-node-setup';
 import { SORT_DIRECTION_PARAM } from './use-dataset-filters-search-params.hook';
 import { useDatasetMediaWithReviewStatus } from './use-dataset-media-with-review-status.hook';
+import { DATASET_VIEW_ID_PARAM } from './use-dataset-view-id.hook';
 
 type HandlerOptions = {
     mediaTotal: number;
@@ -91,6 +92,12 @@ const setupHandlers = ({
             });
         })
     );
+};
+
+const getDatasetViewIdFromRequest = (request: Request) => {
+    const url = new URL(request.url);
+
+    return url.searchParams.get('dataset_view_id');
 };
 
 describe('useDatasetMediaWithReviewStatus', () => {
@@ -252,6 +259,66 @@ describe('useDatasetMediaWithReviewStatus', () => {
 
             expect(getMediaSortParams()).toEqual({ sortBy: 'upload_date', sortDirection: 'asc' });
             expect(getDatasetSortParams()).toEqual({ sortBy: 'creation_date', sortDirection: 'asc' });
+        });
+    });
+
+    describe('dataset view', () => {
+        const mockDatasetViewIdCapture = () => {
+            let mediaDatasetViewId: string | null | undefined;
+            let itemsDatasetViewId: string | null | undefined;
+
+            server.use(
+                http.get('/api/projects/{project_id}/dataset/media', ({ request }) => {
+                    mediaDatasetViewId = getDatasetViewIdFromRequest(request);
+
+                    return HttpResponse.json({
+                        items: [getMockedMediaImage({ id: 'media-1' })],
+                        pagination: { offset: 0, count: 1, total: 1, limit: 0 },
+                    });
+                }),
+                http.get('/api/projects/{project_id}/dataset/items', ({ request }) => {
+                    itemsDatasetViewId = getDatasetViewIdFromRequest(request);
+
+                    return HttpResponse.json({
+                        items: [getMockedDatasetItem({ id: 'item-1', user_reviewed: false })],
+                        pagination: { offset: 0, count: 1, total: 1, limit: 0 },
+                    });
+                })
+            );
+
+            return {
+                getMediaDatasetViewId: () => mediaDatasetViewId,
+                getItemsDatasetViewId: () => itemsDatasetViewId,
+            };
+        };
+
+        it('omits dataset_view_id from both requests when the entire dataset is selected', async () => {
+            const { getMediaDatasetViewId, getItemsDatasetViewId } = mockDatasetViewIdCapture();
+
+            const { result } = renderHook(() => useDatasetMediaWithReviewStatus());
+
+            await waitFor(() => {
+                expect(result.current.isPending).toBe(false);
+            });
+
+            expect(getMediaDatasetViewId()).toBeNull();
+            expect(getItemsDatasetViewId()).toBeNull();
+        });
+
+        it('sends dataset_view_id on both requests when a view is selected', async () => {
+            const { getMediaDatasetViewId, getItemsDatasetViewId } = mockDatasetViewIdCapture();
+
+            const { result } = renderHook(() => useDatasetMediaWithReviewStatus(), {
+                route: `/projects/123?${DATASET_VIEW_ID_PARAM}=collection-one`,
+                path: '/projects/:projectId',
+            });
+
+            await waitFor(() => {
+                expect(result.current.isPending).toBe(false);
+            });
+
+            expect(getMediaDatasetViewId()).toBe('collection-one');
+            expect(getItemsDatasetViewId()).toBe('collection-one');
         });
     });
 });

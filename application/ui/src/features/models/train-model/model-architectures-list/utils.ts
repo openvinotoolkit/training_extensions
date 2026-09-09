@@ -17,10 +17,10 @@ const ACCURACY_METRIC_LABELS: Partial<Record<BenchmarkMetricKey, string>> = {
 export const getAccuracyMetric = (
     modelArchitecture: ModelArchitectureWithPerformanceCategory
 ): AccuracyMetric | undefined => {
-    const benchmarkMetrics = modelArchitecture.stats.benchmark_metrics;
+    const benchmarkMetrics = modelArchitecture.stats?.benchmark_metrics;
 
     for (const [key, label] of Object.entries(ACCURACY_METRIC_LABELS)) {
-        const value = benchmarkMetrics[key as BenchmarkMetricKey];
+        const value = benchmarkMetrics?.[key as BenchmarkMetricKey];
 
         if (!isNil(value)) {
             return { label, value };

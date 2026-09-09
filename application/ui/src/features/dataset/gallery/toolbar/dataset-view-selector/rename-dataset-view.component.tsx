@@ -9,6 +9,7 @@ import { isEmpty } from 'lodash-es';
 
 import { useRenameDatasetViewMutation } from './api/use-rename-dataset-view-mutation';
 import { DatasetView } from './type';
+import { DUPLICATE_DATASET_VIEW_NAME_ERROR } from './util';
 
 type RenameDatasetViewProps = {
     datasetView: DatasetView;
@@ -58,7 +59,7 @@ export const RenameDatasetView = ({ datasetView, onClose, datasetViews }: Rename
                         onChange={setNewName}
                         label={'View name'}
                         validationState={isDuplicateName ? 'invalid' : undefined}
-                        errorMessage={isDuplicateName ? 'A dataset view with this name already exists' : undefined}
+                        errorMessage={isDuplicateName ? DUPLICATE_DATASET_VIEW_NAME_ERROR : undefined}
                     />
                 </Form>
             </Content>

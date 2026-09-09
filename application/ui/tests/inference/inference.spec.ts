@@ -5,6 +5,7 @@ import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 
+import { FEATURE_FLAGS } from '../../src/constants/feature-flags';
 import { expect, http, test } from '../fixtures';
 
 test.describe('Inference', () => {
@@ -281,6 +282,57 @@ test.describe('Inference', () => {
             await confidenceSlider.fill('0.7');
             await expect(confidenceSlider).toHaveValue('0.7');
         });
+
+        // TODO: drop the guard once CONFIDENCE_THRESHOLD is enabled by default
+        if (FEATURE_FLAGS.CONFIDENCE_THRESHOLD) {
+            await test.step('updates the inference confidence threshold', async () => {
+                let confidenceThreshold = 0.35;
+                const patchedBodies: unknown[] = [];
+
+                network.use(
+                    http.get('/api/projects/{project_id}/pipeline', ({ response }) => {
+                        return response(200).json(
+                            getMockedPipeline({
+                                status: 'idle',
+                                model_variant: {
+                                    id: 'variant-id',
+                                    model_revision_id: 'model-id',
+                                    format: 'openvino',
+                                    precision: 'fp16',
+                                    weights_size: 1024,
+                                    evaluations: [],
+                                    files_deleted: false,
+                                    optimal_confidence_threshold: 0.65,
+                                },
+                                inference: { confidence_threshold: confidenceThreshold },
+                            })
+                        );
+                    }),
+                    http.patch('/api/projects/{project_id}/pipeline', async ({ request }) => {
+                        const body = (await request.json()) as { inference?: { confidence_threshold: number } };
+                        patchedBodies.push(body);
+
+                        if (body.inference !== undefined) {
+                            confidenceThreshold = body.inference.confidence_threshold;
+                        }
+
+                        return HttpResponse.json(getMockedPipeline({ status: 'idle' }));
+                    })
+                );
+
+                await page.goto('/projects/id-1/inference');
+
+                const thresholdField = page.getByRole('textbox', { name: 'Change Confidence threshold' });
+
+                await expect(thresholdField).toHaveValue('0.35');
+
+                await thresholdField.fill('0.8');
+                await thresholdField.press('Enter');
+
+                await expect(thresholdField).toHaveValue('0.8');
+                await expect.poll(() => patchedBodies).toContainEqual({ inference: { confidence_threshold: 0.8 } });
+            });
+        }
 
         await test.step('updates input and output source', async () => {
             network.use(

@@ -6,27 +6,24 @@ import { Key, ReactNode } from 'react';
 import { ActionButton, Divider, Flex, Heading, Item, Menu, MenuTrigger, View } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
+import { ENTIRE_DATASET_VIEW_ID } from 'hooks/use-dataset-view-id.hook';
 import { isEmpty } from 'lodash-es';
 
 import { DatasetView } from '../type';
+import { ENTIRE_DATASET_NAME } from '../util';
 
 import classes from './dataset-view-items-list.module.scss';
 
 type DatasetViewItemContainerProps = {
-    datasetView: DatasetView;
+    name: string;
     isSelected: boolean;
-    onSelectDatasetView: (datasetViewId: string) => void;
+    onSelect: () => void;
     children: ReactNode;
 };
 
-const DatasetViewItemContainer = ({
-    datasetView,
-    isSelected,
-    onSelectDatasetView,
-    children,
-}: DatasetViewItemContainerProps) => {
+const DatasetViewItemContainer = ({ name, isSelected, onSelect, children }: DatasetViewItemContainerProps) => {
     return (
-        <li aria-label={datasetView.name} onClick={() => onSelectDatasetView(datasetView.id)}>
+        <li aria-label={name} aria-current={isSelected ? true : undefined} onClick={onSelect}>
             <View
                 padding={'size-200'}
                 borderRadius={'regular'}
@@ -69,62 +66,55 @@ const DatasetViewItem = ({
     };
 
     return (
-        <li aria-label={datasetView.name} onClick={() => onSelectDatasetView(datasetView.id)}>
-            <View
-                padding={'size-200'}
-                borderRadius={'regular'}
-                UNSAFE_className={clsx(classes.datasetViewInListItem, {
-                    [classes.datasetViewListItemSelected]: isSelected,
-                })}
-            >
-                <Flex minWidth={0} alignItems={'center'} justifyContent={'space-between'}>
-                    <Heading UNSAFE_className={classes.datasetViewInList}>{datasetView.name}</Heading>
-                    <MenuTrigger>
-                        <ActionButton isQuiet aria-label={`Dataset view actions for ${datasetView.name}`}>
-                            <MoreMenu />
-                        </ActionButton>
-                        <Menu onAction={handleAction} aria-label={'Dataset view actions menu'}>
-                            <Item key={DATASET_VIEW_ITEM_OPTIONS.RENAME}>{DATASET_VIEW_ITEM_OPTIONS.RENAME}</Item>
-                            <Item key={DATASET_VIEW_ITEM_OPTIONS.DELETE}>{DATASET_VIEW_ITEM_OPTIONS.DELETE}</Item>
-                        </Menu>
-                    </MenuTrigger>
-                </Flex>
-            </View>
-        </li>
+        <DatasetViewItemContainer
+            name={datasetView.name}
+            isSelected={isSelected}
+            onSelect={() => onSelectDatasetView(datasetView.id)}
+        >
+            <Flex minWidth={0} alignItems={'center'} justifyContent={'space-between'}>
+                <Heading UNSAFE_className={classes.datasetViewInList}>{datasetView.name}</Heading>
+                <MenuTrigger>
+                    <ActionButton isQuiet aria-label={`Dataset view actions for ${datasetView.name}`}>
+                        <MoreMenu />
+                    </ActionButton>
+                    <Menu onAction={handleAction} aria-label={'Dataset view actions menu'}>
+                        <Item key={DATASET_VIEW_ITEM_OPTIONS.RENAME}>{DATASET_VIEW_ITEM_OPTIONS.RENAME}</Item>
+                        <Item key={DATASET_VIEW_ITEM_OPTIONS.DELETE}>{DATASET_VIEW_ITEM_OPTIONS.DELETE}</Item>
+                    </Menu>
+                </MenuTrigger>
+            </Flex>
+        </DatasetViewItemContainer>
     );
 };
 
 type EntireDatasetViewItemProps = {
-    datasetView: DatasetView;
     isSelected: boolean;
-    onSelectDatasetView: (datasetViewId: string) => void;
+    onSelectDatasetView: (datasetViewId: string | null) => void;
 };
 
-const EntireDatasetViewItem = ({ datasetView, isSelected, onSelectDatasetView }: EntireDatasetViewItemProps) => {
+const EntireDatasetViewItem = ({ isSelected, onSelectDatasetView }: EntireDatasetViewItemProps) => {
     return (
         <DatasetViewItemContainer
-            datasetView={datasetView}
+            name={ENTIRE_DATASET_NAME}
             isSelected={isSelected}
-            onSelectDatasetView={onSelectDatasetView}
+            onSelect={() => onSelectDatasetView(ENTIRE_DATASET_VIEW_ID)}
         >
-            <Heading UNSAFE_className={classes.datasetViewInList}>{datasetView.name}</Heading>
+            <Heading UNSAFE_className={classes.datasetViewInList}>{ENTIRE_DATASET_NAME}</Heading>
         </DatasetViewItemContainer>
     );
 };
 
 type DatasetViewItemsListProps = {
-    selectedDatasetViewId: string;
+    selectedDatasetViewId: string | null;
     onOpenDeleteConfirmationDialog: (datasetView: DatasetView) => void;
-    entireDatasetView: DatasetView;
-    otherDatasetViews: DatasetView[];
+    datasetViews: DatasetView[];
     onOpenRenameDialog: (datasetView: DatasetView) => void;
-    onSelectDatasetView: (datasetViewId: string) => void;
+    onSelectDatasetView: (datasetViewId: string | null) => void;
 };
 
 export const DatasetViewItemsList = ({
     selectedDatasetViewId,
-    entireDatasetView,
-    otherDatasetViews,
+    datasetViews,
     onSelectDatasetView,
     onOpenRenameDialog,
     onOpenDeleteConfirmationDialog,
@@ -132,14 +122,13 @@ export const DatasetViewItemsList = ({
     return (
         <ul className={classes.datasetViewsList} aria-label={'Dataset views list'}>
             <EntireDatasetViewItem
-                datasetView={entireDatasetView}
-                isSelected={selectedDatasetViewId === entireDatasetView.id}
+                isSelected={selectedDatasetViewId === ENTIRE_DATASET_VIEW_ID}
                 onSelectDatasetView={onSelectDatasetView}
             />
 
-            {!isEmpty(otherDatasetViews) && <Divider size={'S'} />}
+            {!isEmpty(datasetViews) && <Divider size={'S'} />}
 
-            {otherDatasetViews.map((datasetView) => (
+            {datasetViews.map((datasetView) => (
                 <DatasetViewItem
                     key={datasetView.id}
                     datasetView={datasetView}

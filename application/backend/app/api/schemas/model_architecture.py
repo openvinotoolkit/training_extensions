@@ -5,7 +5,7 @@
 from pydantic import BaseModel, Field
 
 from app.models import TaskType
-from app.models.model_manifest import Capabilities, ModelManifestDeprecationStatus, ModelStats
+from app.models.model_manifest import Capabilities, ModelManifestDeprecationStatus, ModelStats, TimmMetadata
 
 
 class ModelArchitectureView(BaseModel):
@@ -15,11 +15,14 @@ class ModelArchitectureView(BaseModel):
     task: TaskType = Field(title="Task Type", description="Type of machine learning task addressed by the model")
     name: str = Field(title="Model architecture name", description="Friendly name of the model architecture")
     description: str = Field(title="Description", description="Detailed description of the model capabilities")
+    timm_metadata: TimmMetadata | None = Field(
+        default=None, title="TIMM Model Metadata", description="Metadata about the specific TIMM model architecture"
+    )
     capabilities: Capabilities = Field(
         title="Model Capabilities", description="Special capabilities supported by the model"
     )
     license: str = Field(title="License", description="License under which the model architecture is released")
-    stats: ModelStats = Field(title="Model Statistics", description="Statistics about the model")
+    stats: ModelStats | None = Field(title="Model Statistics", description="Statistics about the model")
     support_status: ModelManifestDeprecationStatus = Field(
         title="Support Status", description="Current support level (active, deprecated, or obsolete)"
     )

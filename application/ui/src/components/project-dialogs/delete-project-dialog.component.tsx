@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { AlertDialog, DialogContainer } from '@geti-ui/ui';
 import { useDeleteProject } from 'hooks/api/project.hook';
 
@@ -21,6 +22,7 @@ export const DeleteProjectDialog = ({
     onClose,
     onDeleted,
 }: DeleteProjectDialogProps) => {
+    const { t } = useTranslation();
     const deleteMutation = useDeleteProject();
 
     const handleDelete = () => {
@@ -29,7 +31,7 @@ export const DeleteProjectDialog = ({
             {
                 onSuccess: () => {
                     onDeleted?.();
-                    toast({ type: 'success', message: 'Project deleted successfully' });
+                    toast({ type: 'success', message: t('project.delete.success') });
                 },
             }
         );
@@ -39,16 +41,16 @@ export const DeleteProjectDialog = ({
         <DialogContainer onDismiss={onClose}>
             {isOpen && (
                 <AlertDialog
-                    title='Delete'
+                    title={t('project.delete.title')}
                     variant='destructive'
-                    cancelLabel='Cancel'
-                    primaryActionLabel='Delete'
+                    cancelLabel={t('common.actions.cancel')}
+                    primaryActionLabel={t('common.actions.delete')}
                     onPrimaryAction={handleDelete}
                     onSecondaryAction={onClose}
                     autoFocusButton='primary'
                     isPrimaryActionDisabled={deleteMutation.isPending}
                 >
-                    {`Are you sure you want to delete project "${projectName}"?`}
+                    {t('project.delete.confirmation', { projectName })}
                 </AlertDialog>
             )}
         </DialogContainer>

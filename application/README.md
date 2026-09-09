@@ -7,8 +7,8 @@
 **Full-stack web application to build and deploy computer vision AI models, powered by the [getitune](../library) library.**
 
 [![python](https://img.shields.io/badge/python-3.13-green)]()
-[![pytorch](https://img.shields.io/badge/pytorch-2.10-orange)]()
-[![openvino](https://img.shields.io/badge/openvino-2026.2-purple)]()
+[![pytorch](https://img.shields.io/badge/pytorch-2.14-orange)]()
+[![openvino](https://img.shields.io/badge/openvino-2026.3-purple)]()
 
 [Application](#geti-application) •
 [Docs](#documentation) •

@@ -1,13 +1,5 @@
 {
-    "include": [
-        "src",
-        "tests",
-        "rsbuild.config.ts",
-        "vitest.config.ts",
-        "playwright.config.ts",
-        "playwright.e2e.config.ts",
-        "mocks"
-    ],
+    "include": ["src", "tests", "rsbuild.config.ts", "vitest.config.ts", "playwright.config.ts", "mocks"],
     "compilerOptions": {
         "target": "esnext",
         "lib": ["dom", "dom.iterable", "esnext"],
@@ -30,7 +22,9 @@
             "hooks/*": ["./src/hooks/*"],
             "mocks/*": ["./mocks/*"],
             "@/api": ["./src/api/index.ts"],
-            "@/api/types": ["./src/api/shared-types.ts"]
+            "@/api/types": ["./src/api/shared-types.ts"],
+            "@/components/*": ["./src/components/*"],
+            "@/i18n": ["./src/i18n/index.ts"]
         }
     }
 }

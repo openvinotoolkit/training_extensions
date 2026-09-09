@@ -2,6 +2,7 @@ id: image-classification-vit-tiny
 name: ViT-Tiny
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.googleapis.com/vit_models/augreg/Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz
   sha_sum: 0c5c4818ecf1049ae34194223c908172a2967334bab6d86670351b59d608b5dd
 

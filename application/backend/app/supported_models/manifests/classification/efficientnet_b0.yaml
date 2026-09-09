@@ -2,6 +2,7 @@ id: image-classification-efficientnet-b0
 name: EfficientNet-B0
 
 pretrained_weights:
+  source: direct_link
   url: https://github.com/osmr/imgclsmob/releases/download/v0.0.364/efficientnet_b0-0752-0e386130.pth.zip
   sha_sum: 79f2b405a15399a0772337bd7f58052cb88299a65ed838a43c1ea8d3e0253f70
 

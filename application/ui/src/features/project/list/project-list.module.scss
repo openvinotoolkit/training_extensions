@@ -1,32 +1,19 @@
 @use '../../../shared/styles/line-clamp' as lineClamp;
 
-.dialog {
-    background-color: var(--spectrum-gray-100);
-    background-image: url('./../../../assets/background.webp');
-    background-blend-mode: luminosity;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+.content {
+    padding: 0 var(--spectrum-global-dimension-size-500);
 }
 
-.button {
-    path {
-        fill: currentColor;
+.newProjectRow {
+    height: var(--spectrum-global-dimension-size-900);
+
+    @media (max-width: 848px) {
+        height: var(--spectrum-global-dimension-size-800);
     }
 }
 
-.description {
-    display: block;
-    text-align: center;
-    margin: auto;
-    max-width: 50rem;
-    font-size: var(--spectrum-global-dimension-font-size-200);
-    line-height: var(--spectrum-global-dimension-font-size-500);
-    margin-bottom: var(--spectrum-global-dimension-font-size-1000);
-}
-
-.content {
-    padding: var(--spectrum-global-dimension-size-500);
+.projectGrid {
+    overflow-y: auto;
 }
 
 .card {
@@ -76,6 +63,10 @@
     color: var(--spectrum-global-color-gray-900);
 }
 
+.heading {
+    font-size: var(--spectrum-global-dimension-font-size-700);
+}
+
 .projectCardName {
     @include lineClamp.clamp(1);
     @include lineClamp.breakableText;
@@ -83,10 +74,6 @@
 
 .labelList {
     @include lineClamp.clamp(2);
-}
-
-.projectCreationDate {
-    font-size: var(--spectrum-global-dimension-font-size-75);
 }
 
 .projectMetadata {

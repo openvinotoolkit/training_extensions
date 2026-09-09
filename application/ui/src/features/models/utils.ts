@@ -3,7 +3,12 @@
 
 import type { Model } from '@/api/types';
 
-export type SelectableModel = { modelVariantId: string; name: string; modelId: string };
+export type SelectableModel = {
+    modelVariantId: string;
+    name: string;
+    modelId: string;
+    optimalConfidenceThreshold: number | null;
+};
 
 export const getModelIdentifierPayload = (model: SelectableModel): { model_id: string; model_variant_id: string } => ({
     model_id: model.modelId,
@@ -43,10 +48,15 @@ export const getAllModelsWithOpenVINOVariants = (models: Model[]): SelectableMod
                 modelVariantId: variant.id,
                 modelId: model.id,
                 name: `${model.name} [${variant.precision.toUpperCase()}]`,
+                optimalConfidenceThreshold: variant.optimal_confidence_threshold ?? null,
             }))
     );
 };
 
 export const isUltralyticsModel = (identifier: string): boolean => {
     return /yolo\d+-/.test(identifier.toLocaleLowerCase());
+};
+
+export const isEdgeCrafterModel = (identifier: string): boolean => {
+    return /edgecrafter-/.test(identifier.toLocaleLowerCase());
 };

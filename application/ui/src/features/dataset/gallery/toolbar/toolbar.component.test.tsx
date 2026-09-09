@@ -3,7 +3,7 @@
 
 import type { Media } from '@/api/types';
 import { ViewModes } from '@geti-ui/ui';
-import { fireEvent, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { getMockedDatasetStatistics } from 'mocks/mock-dataset-item';
 import { getMockedDatasetView } from 'mocks/mock-dataset-view';
 import { getMockedMediaImage } from 'mocks/mock-media';
@@ -51,6 +51,7 @@ vi.mock('../../import-export/import-export.component', () => ({
 vi.mock('hooks/use-project-identifier.hook', () => ({
     useProjectIdentifier: () => 'project-123',
 }));
+
 vi.mock('../../providers/selected-data-provider.component', () => ({
     useSelectedData: vi.fn(() => ({
         selectedKeys: new Set(),
@@ -61,7 +62,7 @@ vi.mock('../../providers/selected-data-provider.component', () => ({
 }));
 
 describe('Toolbar', () => {
-    const renderToolbar = async (items: Media[] = []) => {
+    const renderToolbar = async (items: Media[] = [], route: string = '/projects/123') => {
         server.use(
             http.get('/api/projects/{project_id}', () => {
                 return HttpResponse.json(getMockedProject({ id: 'project-123' }));
@@ -95,13 +96,16 @@ describe('Toolbar', () => {
                 });
             }),
             http.get('/api/projects/{project_id}/dataset/views', () => {
-                return HttpResponse.json([getMockedDatasetView()]);
+                return HttpResponse.json([getMockedDatasetView({ id: 'collection-one', name: 'Collection One' })]);
             })
         );
 
-        const result = render(<Toolbar items={items} viewMode={ViewModes.LARGE} setViewMode={vi.fn()} />);
+        const result = render(<Toolbar items={items} viewMode={ViewModes.LARGE} setViewMode={vi.fn()} />, {
+            route,
+            path: '/projects/:projectId',
+        });
 
-        await waitForElementToBeRemoved(screen.getByRole('progressbar'));
+        await screen.findByRole('button', { name: 'Select dataset view' });
 
         return result;
     };
@@ -280,5 +284,68 @@ describe('Toolbar', () => {
 
         expect(screen.queryByRole('button', { name: 'Newest first' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Oldest first' })).not.toBeInTheDocument();
+    });
+
+    it('does not display dataset view actions until media is selected', async () => {
+        await renderToolbar();
+
+        expect(screen.getByRole('button', { name: 'Annotate' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Save view' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Assign to existing view' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Unassign from this view' })).not.toBeInTheDocument();
+    });
+
+    it('displays save or assign when at least one media is selected on the entire dataset', async () => {
+        const firstItem = getMockedMediaImage({ id: 'first-item' });
+
+        vi.mocked(useSelectedData).mockReturnValue({
+            selectedKeys: new Set([firstItem.id]),
+            setSelectedKeys: vi.fn(),
+            toggleSelectedKeys: vi.fn(),
+            isSelected: vi.fn().mockReturnValue(false),
+        });
+
+        await renderToolbar([firstItem]);
+
+        expect(await screen.findByText('1 selected')).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Save view' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Assign to existing view' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Unassign from this view' })).not.toBeInTheDocument();
+    });
+
+    it('displays unassign media when at least one media is selected on a dataset view', async () => {
+        const firstItem = getMockedMediaImage({ id: 'first-item' });
+
+        vi.mocked(useSelectedData).mockReturnValue({
+            selectedKeys: new Set([firstItem.id]),
+            setSelectedKeys: vi.fn(),
+            toggleSelectedKeys: vi.fn(),
+            isSelected: vi.fn().mockReturnValue(false),
+        });
+
+        await renderToolbar([firstItem], '/projects/123?datasetViewId=collection-one');
+
+        expect(await screen.findByText('1 selected')).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Unassign from this view' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Save view' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Assign to existing view' })).not.toBeInTheDocument();
+    });
+
+    it('always shows the dataset views selector, with or without a selection', async () => {
+        const firstItem = getMockedMediaImage({ id: 'first-item' });
+
+        const { unmount } = await renderToolbar([firstItem]);
+        expect(screen.getByRole('button', { name: 'Select dataset view' })).toBeInTheDocument();
+        unmount();
+
+        vi.mocked(useSelectedData).mockReturnValue({
+            selectedKeys: new Set([firstItem.id]),
+            setSelectedKeys: vi.fn(),
+            toggleSelectedKeys: vi.fn(),
+            isSelected: vi.fn().mockReturnValue(false),
+        });
+
+        await renderToolbar([firstItem]);
+        expect(screen.getByRole('button', { name: 'Select dataset view' })).toBeInTheDocument();
     });
 });

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { TaskType } from '@/api/types';
+import { FilterPopoverButton } from '@/components/filter-popover-button/filter-popover-button.component';
+import { useTranslation } from '@/i18n';
 import { Checkbox, CheckboxGroup, Flex, SearchField, View } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
 
-import { FilterPopoverButton } from '../../../../components/filter-popover-button/filter-popover-button.component';
-import { pluralize } from '../../../../shared/util';
-import { MAP_PROJECT_TYPE_TO_TITLE } from '../util';
+import { MAP_PROJECT_TYPE_TO_TITLE_KEY } from '../util';
 import { TASK_TYPE_OPTIONS } from './utils';
 
 type ProjectFiltersProps = {
@@ -23,36 +23,38 @@ export const ProjectFilters = ({
     selectedTaskTypes,
     onSelectedTaskTypesChange,
 }: ProjectFiltersProps) => {
+    const { t } = useTranslation();
+
     const summary = isEmpty(selectedTaskTypes)
         ? null
-        : `${selectedTaskTypes.length} ${pluralize(selectedTaskTypes.length, 'type', 'types')} selected`;
+        : t('project.list.filters.typesSelected', { count: selectedTaskTypes.length });
 
     return (
         <Flex alignItems={'center'} gap={'size-200'} flex={1}>
             <SearchField
                 value={searchName}
                 onChange={onSearchChange}
-                placeholder={'Search by name...'}
-                aria-label={'Search projects by name'}
+                placeholder={t('project.list.filters.searchPlaceholder')}
+                aria-label={t('project.list.filters.searchLabel')}
                 flex={1}
             />
 
             <View backgroundColor={'gray-50'}>
                 <FilterPopoverButton
-                    ariaLabel={'Filter by task type'}
-                    placeholder={'Filter by task type'}
+                    ariaLabel={t('project.list.filters.taskType')}
+                    placeholder={t('project.list.filters.taskType')}
                     summary={summary}
                     minWidth={'size-2400'}
                     dialogWidth={'size-1600'}
                 >
                     <CheckboxGroup
-                        aria-label={'Filter by task type'}
+                        aria-label={t('project.list.filters.taskType')}
                         value={selectedTaskTypes}
                         onChange={(values) => onSelectedTaskTypesChange(values as TaskType[])}
                     >
                         {TASK_TYPE_OPTIONS.map((taskType) => (
                             <Checkbox key={taskType} value={taskType}>
-                                {MAP_PROJECT_TYPE_TO_TITLE[taskType]}
+                                {t(MAP_PROJECT_TYPE_TO_TITLE_KEY[taskType])}
                             </Checkbox>
                         ))}
                     </CheckboxGroup>

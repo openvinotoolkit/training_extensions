@@ -336,9 +336,10 @@ def get_dataset_revision_service(
 
 def get_demo_files_service(
     media_service: Annotated[MediaService, Depends(get_media_service)],
+    label_service: Annotated[LabelService, Depends(get_label_service)],
 ) -> DemoFilesService:
     """Provides a DemoFilesService instance."""
-    return DemoFilesService(media_service=media_service)
+    return DemoFilesService(media_service=media_service, label_service=label_service)
 
 
 def get_project(

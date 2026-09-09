@@ -43,6 +43,7 @@ const selectableModel: SelectableModel = {
     modelId: 'model-1',
     modelVariantId: 'variant-1',
     name: 'Model [FP16]',
+    optimalConfidenceThreshold: 0.65,
 };
 
 const PREDICTION_DELAY_MS = 500;
@@ -84,7 +85,7 @@ describe('SubsetMediaDialog', () => {
             http.get('/api/projects/{project_id}/dataset/media/{media_id}/annotations', () =>
                 HttpResponse.json(annotationsResponse)
             ),
-            http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+            http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
                 await delay(PREDICTION_DELAY_MS);
 
                 return HttpResponse.json({
@@ -112,7 +113,7 @@ describe('SubsetMediaDialog', () => {
 
                 return HttpResponse.json(annotationsResponse);
             }),
-            http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+            http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
                 await delay(PREDICTION_DELAY_MS);
 
                 return HttpResponse.json({

@@ -2,6 +2,7 @@ id: image-classification-mobilenet-v3-large
 name: MobileNet-V3-Large
 
 pretrained_weights:
+  source: direct_link
   url: https://raw.githubusercontent.com/d-li14/mobilenetv3.pytorch/master/pretrained/mobilenetv3-large-1cd25616.pth
   sha_sum: 1cd25616db4b6481677fcbe5f6932520894cb34860ed86f7080f03eedf937b11
 

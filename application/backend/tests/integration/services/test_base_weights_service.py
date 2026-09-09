@@ -4,11 +4,13 @@
 import hashlib
 from collections.abc import Generator
 from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 
 import pytest
 
 from app.models import ModelManifest, TaskType
+from app.models.model_manifest import PretrainedWeights
 from app.services.base_weights_service import BaseWeightsService
 from app.services.model_manifest_service import ManifestNotFoundException, ModelManifestService
 
@@ -37,7 +39,8 @@ def fxt_base_weights_service(fxt_pretrained_weights_dir: Path) -> BaseWeightsSer
 def fxt_manifest_with_cache_filename() -> ModelManifest:
     """Manifest whose url/mirror_url filenames differ from its explicit cache_filename."""
     manifest = ModelManifestService.get_model_manifest_by_id(DETECTION_MODEL_MANIFEST_ID)
-    new_weights = manifest.pretrained_weights.model_copy(
+    pretrained_weights = cast(PretrainedWeights, manifest.pretrained_weights)
+    new_weights = pretrained_weights.model_copy(
         update={
             "url": "https://example.com/some/remote-name.pth",
             "mirror_url": "https://example.com/mirror/other-name.pth",

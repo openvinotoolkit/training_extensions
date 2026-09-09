@@ -289,7 +289,7 @@ test.describe('Annotator video player', () => {
             http.get('/api/projects/{project_id}/dataset/media/{media_id}/frames', async () => {
                 return HttpResponse.json(ANNOTATIONS_MOCKS);
             }),
-            http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+            http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
                 return HttpResponse.json({
                     predictions: PREDICTIONS_MOCKS,
                 });
@@ -344,7 +344,7 @@ test.describe('Annotator video player', () => {
             http.get('/api/projects/{project_id}/dataset/media/{media_id}/frames', async () => {
                 return HttpResponse.json(ANNOTATIONS_MOCKS);
             }),
-            http.post('/api/projects/{project_id}/dataset/media/media:predict', async ({ request }) => {
+            http.post('/api/projects/{project_id}/dataset/media:predict', async ({ request }) => {
                 const body = (await request.json()) as MediaListPredictionRequest;
                 predictRequests.push(body);
 

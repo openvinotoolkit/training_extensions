@@ -10,6 +10,7 @@ import yaml
 
 from app.models.model_manifest import ModelManifest
 from app.supported_models import manifests
+from app.supported_models.timm import TimmManifestProvider, id_to_model_name
 
 
 class ManifestNotFoundException(Exception):
@@ -85,10 +86,11 @@ class ModelManifestService:
     @classmethod
     def get_model_manifest_by_id(cls, model_manifest_id: str) -> ModelManifest:
         """
-        Retrieve a specific model manifest by its ID.
+        Retrieve a model manifest by its ID, static or timm-derived.
 
-        Args:
-            model_manifest_id: The unique identifier of the model manifest to retrieve.
+        Looks up the ID among statically loaded YAML manifests first; if not
+        found and the ID matches the timm-backed namespace, builds the manifest
+        on the fly via `TimmManifestProvider`.
 
         Returns:
             ModelManifest: The ModelManifest object corresponding to the given ID.
@@ -97,10 +99,12 @@ class ModelManifestService:
             ManifestNotFoundException: If the model manifest with the given ID does not exist
                                     in the available model manifests.
         """
-        model_manifests = cls.get_model_manifests()
-        if model_manifest_id not in model_manifests:
-            raise ManifestNotFoundException(model_manifest_id=model_manifest_id)
-        return model_manifests[model_manifest_id]
+        static = cls.get_model_manifests()
+        if model_manifest_id in static:
+            return static[model_manifest_id]
+        if TimmManifestProvider.is_timm_id(model_manifest_id):
+            return TimmManifestProvider.build_manifest(id_to_model_name(model_manifest_id))
+        raise ManifestNotFoundException(model_manifest_id=model_manifest_id)
 
     @classmethod
     @cache

@@ -3,6 +3,7 @@ name: YOLO26-S-Seg
 license: AGPL-3.0
 
 pretrained_weights:
+  source: direct_link
   url: https://huggingface.co/Ultralytics/YOLO26/resolve/main/yolo26s-seg.pt
   mirror_url: https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26s-seg.pt
   sha_sum: "3da1d83e31caec96f9300eb4064f4f62882c133c7c264d63dfe61a7c197837a4"

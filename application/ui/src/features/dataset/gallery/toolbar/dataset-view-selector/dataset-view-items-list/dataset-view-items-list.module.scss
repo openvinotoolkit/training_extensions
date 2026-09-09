@@ -12,6 +12,10 @@
     background-color: var(--spectrum-global-color-gray-100);
 
     transition: all 0.2s ease-in-out;
+
+    &:hover {
+        background-color: var(--spectrum-global-color-gray-200);
+    }
 }
 
 .datasetViewListItemSelected {

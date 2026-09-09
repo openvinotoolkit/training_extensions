@@ -15,6 +15,7 @@ type UseGetDatasetItemsByIdOptions = {
     labelIds?: string[];
     startDate?: string;
     endDate?: string;
+    datasetViewId?: string;
 };
 
 export const useGetDatasetItemsById = ({
@@ -24,6 +25,7 @@ export const useGetDatasetItemsById = ({
     labelIds,
     startDate,
     endDate,
+    datasetViewId,
 }: UseGetDatasetItemsByIdOptions) => {
     const datasetItemsQuery = useGetDatasetItems({
         annotationStatus,
@@ -32,6 +34,7 @@ export const useGetDatasetItemsById = ({
         labelIds,
         startDate,
         endDate,
+        datasetViewId,
     });
 
     const accumulatedReviewStatusRef = useRef(new Map<string, boolean>());

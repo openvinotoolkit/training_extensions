@@ -27,6 +27,8 @@ type DatasetLabelsChartProps = {
 
 const BAR_SIZE = 36;
 const MIN_CHART_HEIGHT = 192;
+const ESTIMATED_CHARACTER_WIDTH = 10;
+const LABEL_HORIZONTAL_PADDING = 8;
 
 const getAxisTicks = (total: number): number[] => {
     const TICK_SPACING = 20;
@@ -36,14 +38,29 @@ const getAxisTicks = (total: number): number[] => {
     return total % TICK_SPACING !== 0 ? [...ticks, total] : ticks;
 };
 
+const getContrastingFill = (labelColor?: string): string =>
+    labelColor ? `lch(from ${labelColor} calc((50 - l) * infinity) 0 0)` : 'white';
+
 const ItemLabel = (props: LabelProps & { labelColor?: string }) => {
-    const { labelColor, value, ...rest } = props;
-    return value === 0 ? null : (
+    const { labelColor, value, width, ...rest } = props;
+
+    if (value === 0) {
+        return null;
+    }
+
+    // A bar holding a handful of instances next to one holding thousands is only a few pixels
+    // wide, so its value is moved next to the bar instead of being clipped inside it.
+    const barWidth = typeof width === 'number' ? width : 0;
+    const fitsInsideBar = barWidth >= String(value).length * ESTIMATED_CHARACTER_WIDTH + LABEL_HORIZONTAL_PADDING;
+
+    return (
         <Label
             {...rest}
+            width={width}
             value={value}
+            position={fitsInsideBar ? 'insideRight' : 'right'}
             style={{
-                fill: labelColor ? `lch(from ${labelColor} calc((50 - l) * infinity) 0 0)` : 'white',
+                fill: fitsInsideBar ? getContrastingFill(labelColor) : 'var(--spectrum-global-color-gray-800)',
             }}
         />
     );
@@ -97,7 +114,7 @@ export const DatasetLabelsChart = ({ totalItems, instancesPerLabel }: DatasetLab
                 <Bar dataKey='score' radius={[4, 4, 4, 4]} fill={'color'} barSize={BAR_SIZE}>
                     <LabelList
                         dataKey='score'
-                        position='insideEnd'
+                        position='insideRight'
                         content={(props) => (
                             <ItemLabel {...props} labelColor={chartData?.at(props.index ?? 0)?.color} />
                         )}

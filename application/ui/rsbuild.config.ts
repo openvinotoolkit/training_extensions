@@ -177,8 +177,22 @@ export default defineConfig({
             // `exports` map is keyed on `browser`.
             const conditionNames = ['onnxruntime-web-use-extern-wasm', '...'];
 
+            // `@geti-ui/smart-tools` still builds both model URLs eagerly at module scope
+            // (`new URL('./mobile_sam.encoder.onnx', import.meta.url)`), which makes rspack
+            // emit the 27 MB encoder regardless. `emit: false` keeps the reference
+            // resolvable while dropping the binary from the output.
+            const rules = [
+                ...(config.module?.rules ?? []),
+                {
+                    test: /[\\/]@geti-ui[\\/]smart-tools[\\/].*mobile_sam\.encoder\.onnx$/,
+                    type: 'asset/resource' as const,
+                    generator: { emit: false },
+                },
+            ];
+
             return {
                 ...config,
+                module: { ...config.module, rules },
                 resolve: { ...config.resolve, extensions, conditionNames },
                 watchOptions: { ...config.watchOptions, ignored: ['**/src-tauri/**'] },
             };

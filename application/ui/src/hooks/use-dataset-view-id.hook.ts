@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import { isNonEmptyString } from '../shared/util';
 
 export const DATASET_VIEW_ID_PARAM = 'datasetViewId';
-export const ENTIRE_DATASET_VIEW_ID = 'entire-dataset-id';
+export const ENTIRE_DATASET_VIEW_ID = null;
 
 export const useDatasetViewId = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -14,7 +14,7 @@ export const useDatasetViewId = () => {
     const rawValue = searchParams.get(DATASET_VIEW_ID_PARAM);
     const datasetViewId = isNonEmptyString(rawValue) ? rawValue : ENTIRE_DATASET_VIEW_ID;
 
-    const setDatasetViewId = (id: string) => {
+    const setDatasetViewId = (id: string | null) => {
         setSearchParams(
             (prev) => {
                 if (id === ENTIRE_DATASET_VIEW_ID) {

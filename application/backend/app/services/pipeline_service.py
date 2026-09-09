@@ -300,11 +300,17 @@ class PipelineService(BaseSessionManagedService):
         The stored value is kept in sync with the model by :meth:`update_pipeline`, so this fallback only
         applies to pipelines configured before the threshold became part of the pipeline configuration.
         """
-        if pipeline.inference.confidence_threshold is not None:
-            return pipeline
-        pipeline.inference.confidence_threshold = self._get_model_confidence_threshold(
-            project_id=pipeline.project_id, model_id=pipeline.model_id, model_variant_id=pipeline.model_variant_id
-        )
+        model_confidence_threshold = None
+        if pipeline.model_variant is not None or pipeline.inference.confidence_threshold is None:
+            model_confidence_threshold = self._get_model_confidence_threshold(
+                project_id=pipeline.project_id, model_id=pipeline.model_id, model_variant_id=pipeline.model_variant_id
+            )
+        if pipeline.model_variant is not None:
+            # optimal_confidence_threshold is a runtime-only field: it is never populated by the ORM mapping,
+            # so it must be read explicitly from the model file, same as ModelService.get_model_variants does.
+            pipeline.model_variant.optimal_confidence_threshold = model_confidence_threshold
+        if pipeline.inference.confidence_threshold is None:
+            pipeline.inference.confidence_threshold = model_confidence_threshold
         return pipeline
 
     @staticmethod

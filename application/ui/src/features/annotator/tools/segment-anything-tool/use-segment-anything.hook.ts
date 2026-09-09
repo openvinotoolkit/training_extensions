@@ -92,6 +92,12 @@ const segmentAnythingWorkerQueryOptions = (enabled = true) =>
 const getEncodingQueryParams = (mediaItem: Media) =>
     isVideoFrame(mediaItem) ? { frame_index: mediaItem.frame_number } : undefined;
 
+// Prefix matching every media's encoding query, so callers can cancel them all at once.
+export const SEGMENT_ANYTHING_ENCODING_QUERY_KEY_PREFIX: QueryKey = [
+    'get',
+    '/api/projects/{project_id}/dataset/media/{media_id}/embeddings',
+];
+
 const getSegmentAnythingEncodingQueryKey = (projectId: string, mediaItem: Media): QueryKey =>
     getQueryKey([
         'get',

@@ -2,6 +2,7 @@ id: instance-segmentation-mask-rcnn-swin-t
 name: Mask-RCNN-Swin-T
 
 pretrained_weights:
+  source: direct_link
   url: https://download.openmmlab.com/mmdetection/v2.0/swin/mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco/mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco_20210908_165006-90a4008c.pth
   sha_sum: 90a4008ce84011fc0d75a08db1b65b01ee1f145e9a1dffe8acc15ea8894b348d
 

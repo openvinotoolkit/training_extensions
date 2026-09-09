@@ -148,46 +148,17 @@ class TestDatasetViewEndpoints:
             project_id=fxt_get_project.id, dataset_view_id=fxt_get_dataset_view.id, media_ids=[media_id]
         )
 
-    def test_list_dataset_view_media_success(
+    def test_list_dataset_view_media_endpoint_removed(
         self, fxt_get_project, fxt_get_dataset_view, fxt_dataset_view_service, fxt_client
     ):
-        fxt_dataset_view_service.count_dataset_view_media.return_value = 0
-        fxt_dataset_view_service.list_dataset_view_media.return_value = []
-
+        """Listing the media of a view is only served by `GET /dataset/media?dataset_view_id=...`."""
         response = fxt_client.get(
             f"/api/projects/{fxt_get_project.id}/dataset/views/{fxt_get_dataset_view.id}/media",
             params={"limit": 5, "offset": 0},
         )
 
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert data["items"] == []
-        assert data["pagination"]["limit"] == 5
-        fxt_dataset_view_service.count_dataset_view_media.assert_called_once()
-        fxt_dataset_view_service.list_dataset_view_media.assert_called_once()
-        _, kwargs = fxt_dataset_view_service.list_dataset_view_media.call_args
-        assert kwargs["project_id"] == fxt_get_project.id
-        assert kwargs["dataset_view_id"] == fxt_get_dataset_view.id
-
-    def test_list_dataset_view_media_not_implemented(
-        self, fxt_get_project, fxt_get_dataset_view, fxt_dataset_view_service, fxt_client
-    ):
-        fxt_dataset_view_service.count_dataset_view_media.side_effect = NotImplementedError
-
-        response = fxt_client.get(f"/api/projects/{fxt_get_project.id}/dataset/views/{fxt_get_dataset_view.id}/media")
-
-        assert response.status_code == status.HTTP_501_NOT_IMPLEMENTED
-
-    def test_list_dataset_view_media_invalid_date_range(
-        self, fxt_get_project, fxt_get_dataset_view, fxt_dataset_view_service, fxt_client
-    ):
-        response = fxt_client.get(
-            f"/api/projects/{fxt_get_project.id}/dataset/views/{fxt_get_dataset_view.id}/media",
-            params={"start_date": "2026-01-02T00:00:00Z", "end_date": "2026-01-01T00:00:00Z"},
-        )
-
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-        fxt_dataset_view_service.count_dataset_view_media.assert_not_called()
+        assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+        fxt_dataset_view_service.list_dataset_view_media.assert_not_called()
 
     def test_rename_dataset_view_invalid_id(self, fxt_get_project, fxt_dataset_view_service, fxt_client):
         response = fxt_client.patch(

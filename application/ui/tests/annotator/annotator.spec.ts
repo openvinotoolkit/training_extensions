@@ -9,6 +9,7 @@ import { getMockedVariant } from 'mocks/mock-model-variant';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 
+import { FEATURE_FLAGS } from '../../src/constants/feature-flags';
 import { Polygon } from '../../src/shared/types';
 import { http, test } from '../fixtures';
 import { blueLabel, candyBinaryHandler, redLabel } from './annotator-fixtures';
@@ -53,7 +54,7 @@ test.describe('Annotator', () => {
         });
 
         await test.step('Change annotation label by clicking label badge', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await page.getByLabel('annotation rect').nth(1).click();
 
             await expect(page.getByRole('button', { name: `Label ${redLabel.name}` })).toHaveAttribute(
@@ -78,7 +79,7 @@ test.describe('Annotator', () => {
         });
 
         await test.step('Change second annotation to red label', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await page.getByLabel('annotation rect').nth(3).click();
             await page.getByRole('button', { name: `Label ${redLabel.name}` }).click();
 
@@ -111,7 +112,7 @@ test.describe('Annotator', () => {
         });
 
         await test.step('Remove labels', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             const labels = page.getByLabel('Remove red-label');
 
             await labels.nth(0).click();
@@ -394,7 +395,7 @@ test.describe('Annotator', () => {
         await annotatorPage.goto(mockedDetectionProject.id, 'media-selection-reset-1');
 
         await test.step('Select annotation on media 1', async () => {
-            await page.getByRole('button', { name: 'selection tool' }).click();
+            await page.getByRole('button', { name: 'Selection' }).click();
             await page.getByLabel('annotation rect').nth(1).click();
 
             const selectedAnnotations = annotatorPage.getAnnotationsList().getByLabel('selected annotation');
@@ -515,7 +516,7 @@ test.describe('Annotator', () => {
                         subset: 'training',
                     });
                 }),
-                http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+                http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
                     return HttpResponse.json({
                         predictions: [
                             {
@@ -613,7 +614,7 @@ test.describe('Annotator', () => {
                         }),
                     ]);
                 }),
-                http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+                http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
                     return HttpResponse.json({
                         predictions: [
                             {
@@ -710,7 +711,7 @@ test.describe('Annotator', () => {
                         { status: 404 }
                     );
                 }),
-                http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+                http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
                     return HttpResponse.json({
                         predictions: [
                             {
@@ -930,7 +931,7 @@ test.describe('Annotator', () => {
                 });
 
                 await test.step('Enter edit mode via selection tool', async () => {
-                    await page.getByRole('button', { name: 'selection tool' }).click();
+                    await page.getByRole('button', { name: 'Selection' }).click();
                     await page.getByLabel('annotation rect').nth(1).click();
 
                     await expect(page.getByLabel(/^Edit bounding box points/)).toHaveCount(1);
@@ -1003,7 +1004,7 @@ test.describe('Annotator', () => {
                 });
 
                 await test.step('Enter edit mode via selection tool', async () => {
-                    await page.getByRole('button', { name: 'selection tool' }).click();
+                    await page.getByRole('button', { name: 'Selection' }).click();
                     await page.getByLabel('annotation polygon').nth(1).click();
 
                     await expect(page.locator('[id^="edit-polygon-points-"]')).toHaveCount(1);
@@ -1109,7 +1110,14 @@ test.describe('Annotator', () => {
         const olderModel = getMockedModel({
             id: 'older-model-id',
             name: 'Older_Model (older)',
-            variants: [getMockedVariant({ id: 'older-variant-id', format: 'openvino', precision: 'fp32' })],
+            variants: [
+                getMockedVariant({
+                    id: 'older-variant-id',
+                    format: 'openvino',
+                    precision: 'fp32',
+                    optimal_confidence_threshold: 0.2,
+                }),
+            ],
             training_info: {
                 status: 'successful',
                 label_schema_revision: { labels: [{ id: 'label-1', name: 'cat' }] },
@@ -1122,7 +1130,14 @@ test.describe('Annotator', () => {
         const newerModel = getMockedModel({
             id: 'newer-model-id',
             name: 'Newer_Model (newer)',
-            variants: [getMockedVariant({ id: 'newer-variant-id', format: 'openvino', precision: 'fp16' })],
+            variants: [
+                getMockedVariant({
+                    id: 'newer-variant-id',
+                    format: 'openvino',
+                    precision: 'fp16',
+                    optimal_confidence_threshold: 0.65,
+                }),
+            ],
             training_info: {
                 status: 'successful',
                 label_schema_revision: { labels: [{ id: 'label-1', name: 'cat' }] },
@@ -1132,7 +1147,7 @@ test.describe('Annotator', () => {
             },
         });
 
-        const emptyPredictHandler = http.post('/api/projects/{project_id}/dataset/media/media:predict', async () => {
+        const emptyPredictHandler = http.post('/api/projects/{project_id}/dataset/media:predict', async () => {
             return HttpResponse.json({ predictions: [{ media: { id: 'item-1' }, prediction: [] }] });
         });
 
@@ -1256,14 +1271,19 @@ test.describe('Annotator', () => {
             network,
         }) => {
             let capturedModelVariantId: string | undefined;
+            let capturedConfidenceThreshold: number | undefined;
 
             network.use(
                 http.get('/api/projects/{project_id}/models', async () => {
                     return HttpResponse.json([olderModel, newerModel]);
                 }),
-                http.post('/api/projects/{project_id}/dataset/media/media:predict', async ({ request }) => {
-                    const body = await request.json();
-                    capturedModelVariantId = (body as unknown as Record<string, string>).model_variant_id;
+                http.post('/api/projects/{project_id}/dataset/media:predict', async ({ request }) => {
+                    const body = (await request.json()) as unknown as {
+                        model_variant_id?: string;
+                        confidence_threshold?: number;
+                    };
+                    capturedModelVariantId = body.model_variant_id;
+                    capturedConfidenceThreshold = body.confidence_threshold;
 
                     return HttpResponse.json({ predictions: [{ media: { id: 'item-1' }, prediction: [] }] });
                 })
@@ -1296,6 +1316,14 @@ test.describe('Annotator', () => {
             await test.step('predictions are requested with the newly selected model variant', async () => {
                 expect(capturedModelVariantId).toBe(olderModel.variants[0].id);
             });
+
+            // TODO: drop the guard once CONFIDENCE_THRESHOLD is enabled by default
+            if (FEATURE_FLAGS.CONFIDENCE_THRESHOLD) {
+                await test.step('the confidence threshold follows the selected model', async () => {
+                    await expect(page.getByRole('textbox', { name: 'Change Confidence threshold' })).toHaveValue('0.2');
+                    expect(capturedConfidenceThreshold).toBe(0.2);
+                });
+            }
         });
 
         test('changing device selection uses the new device for predictions', async ({
@@ -1324,7 +1352,7 @@ test.describe('Annotator', () => {
                         device: 'cpu',
                     });
                 }),
-                http.post('/api/projects/{project_id}/dataset/media/media:predict', async ({ request }) => {
+                http.post('/api/projects/{project_id}/dataset/media:predict', async ({ request }) => {
                     const body = await request.json();
                     capturedDevice = body.device;
 

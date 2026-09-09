@@ -92,6 +92,7 @@ class DEIMDFine(RTDETR):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
         pretrained: bool = True,
         pretrained_weights: PathLike | None = None,
+        export_nms: bool = False,
     ) -> None:
         super().__init__(
             model_name=model_name,  # type: ignore[arg-type]
@@ -105,6 +106,7 @@ class DEIMDFine(RTDETR):
             multi_scale=multi_scale,
             pretrained=pretrained,
             pretrained_weights=pretrained_weights,
+            export_nms=export_nms,
         )
 
     def _create_model(self, num_classes: int | None = None) -> DETR:

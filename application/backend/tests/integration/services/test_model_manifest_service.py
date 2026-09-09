@@ -12,10 +12,10 @@ from app.models import TaskType
 from app.models.model_manifest import (
     BenchmarkMetrics,
     Capabilities,
+    DirectLinkPretrainedWeights,
     ModelManifest,
     ModelManifestDeprecationStatus,
     ModelStats,
-    PretrainedWeights,
 )
 from app.models.training_configuration import (
     AlgoLevelDatasetPreparationParameters,
@@ -46,7 +46,7 @@ def fxt_dummy_model_stats():
 
 @pytest.fixture
 def fxt_dummy_pretrained_weights():
-    yield PretrainedWeights(
+    yield DirectLinkPretrainedWeights(
         url="https://example.com/dummy_model_weights.pth",
         mirror_url="https://mirror.example.com/dummy_model_weights.pth",
         sha_sum="example_sha256_checksum",
@@ -101,6 +101,7 @@ class TestModelManifestService:
             "id": "test",
             "name": "Test Model",
             "pretrained_weights": {
+                "source": "direct_link",
                 "url": "https://example.com/test_model_weights.pth",
                 "mirror_url": "https://mirror.example.com/test_model_weights.pth",
                 "sha_sum": "test_sha256_checksum",

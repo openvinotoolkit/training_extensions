@@ -3,7 +3,8 @@
 
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from 'react';
 
-import { ZoomTransform } from '../../../components/zoom/zoom-transform';
+import { ZoomTransform } from '@/components/zoom/zoom-transform';
+
 import { useWebRTCConnection } from './web-rtc-connection-provider';
 
 const useStreamToVideo = () => {

@@ -3,6 +3,7 @@ name: YOLO11-S
 license: AGPL-3.0
 
 pretrained_weights:
+  source: direct_link
   url: https://huggingface.co/Ultralytics/YOLO11/resolve/main/yolo11s.pt
   mirror_url: https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo11s.pt
   sha_sum: "85a76fe86dd8afe384648546b56a7a78580c7cb7b404fc595f97969322d502d5"

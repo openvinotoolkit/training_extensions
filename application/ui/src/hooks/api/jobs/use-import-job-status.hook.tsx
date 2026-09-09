@@ -4,9 +4,9 @@
 import { useEffect } from 'react';
 
 import { $api } from '@/api';
+import { toast } from '@/components/toast/toast.component';
 import { isFunction } from 'lodash-es';
 
-import { toast } from '../../../components/toast/toast.component';
 import { isNonEmptyString } from '../../../shared/util';
 import { isInvalidJob, isJobDone, isJobFailed } from '../util';
 import { useStreamJobDetail } from './jobs.hook';

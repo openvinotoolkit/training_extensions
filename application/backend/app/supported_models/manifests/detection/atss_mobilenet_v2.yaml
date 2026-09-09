@@ -2,6 +2,7 @@ id: object-detection-atss-mobilenet-v2
 name: ATSS-MobileNet-V2
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth
   sha_sum: f0caa5966a77f4f74b1f051f626d942e60b30d53cbf2f7af93fe2951a2295602
 

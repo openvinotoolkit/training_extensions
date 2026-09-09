@@ -5,7 +5,6 @@ import { PointerEvent, useCallback } from 'react';
 
 import { v4 as uuid } from 'uuid';
 
-import { useZoom } from '../../../../components/zoom/zoom.provider';
 import { useLabelResolver } from '../../../../shared/annotator/labels';
 import type { AnnotationLabel, AnnotationLabelRef } from '../../../../shared/types';
 import { isPrediction } from '../utils';
@@ -39,7 +38,6 @@ export const AnnotationLabels = ({
     useBottomCorners = false,
     isRemovable = true,
 }: AnnotationLabelsProps) => {
-    const { scale } = useZoom();
     const { resolveAnnotationLabel } = useLabelResolver();
 
     const onDeleteLabel = useCallback(
@@ -54,17 +52,14 @@ export const AnnotationLabels = ({
     const resolvedLabels = labels.map(resolveAnnotationLabel).filter((label) => label !== undefined);
     const displayLabels = resolvedLabels.length ? resolvedLabels : [placeholderLabel];
 
-    // Need to round up to preveent sub-pixel render issues when zoomed in
-    const foreignObjectHeight = Math.ceil(LABEL_HEIGHT_PX / scale) + 1;
-    const foreignObjectWidth = Math.ceil(LABEL_MAX_WIDTH_PX / scale) + 1;
-
     return (
         <foreignObject
             x={0}
-            y={useBottomCorners ? 0 : -foreignObjectHeight}
-            width={foreignObjectWidth}
-            height={foreignObjectHeight}
+            y={useBottomCorners ? 0 : -LABEL_HEIGHT_PX}
+            width={LABEL_MAX_WIDTH_PX}
+            height={LABEL_HEIGHT_PX}
             overflow='visible'
+            className={useBottomCorners ? classes.labelsScalePolygon : classes.labelsScaleRect}
             aria-label={`Annotation labels`}
         >
             <div className={useBottomCorners ? classes.labelsContainerPolygon : classes.labelsContainerRect}>

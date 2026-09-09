@@ -5,8 +5,9 @@ import { API_BASE_URL, fetchClient } from '@/api';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
+import { downloadFile } from '../../../../platform/download-file';
 import { getQueryKey } from '../../../../query-client/query-client';
-import { assertIsNotNullable, downloadFile } from '../../../../shared/util';
+import { assertIsNotNullable } from '../../../../shared/util';
 import { type LogEntry } from '../log-types';
 import { parseLogLine } from '../log-utils';
 

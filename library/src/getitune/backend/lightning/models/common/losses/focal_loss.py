@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 def py_sigmoid_focal_loss(
     pred: Tensor,
     target: Tensor,
-    weight: None | Tensor = None,
+    weight: Tensor | None = None,
     gamma: float = 2.0,
     alpha: float = 0.25,
     reduction: str = "mean",

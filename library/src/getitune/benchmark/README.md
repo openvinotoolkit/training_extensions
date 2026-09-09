@@ -49,10 +49,10 @@ Run commands from `library/`.
 
 The `Model Benchmark` GitHub workflow runs in two modes: a weekly scheduled run and a manual run.
 
-| Trigger             | Timeline                  | Source ref                   | Model groups / categories                                            | Dataset size tiers          | Dataset data group          | Scenario                   | Eval phase                                    | Seeds                       | Accelerators                   |
-| ------------------- | ------------------------- | ---------------------------- | -------------------------------------------------------------------- | --------------------------- | ---------------------------- | --------------------------- | --------------------------------------------- | --------------------------- | ------------------------------ |
-| `schedule`          | Every Friday, `19:00 UTC` | `develop`                    | `core,extended`                                                      | `tiny,small,medium,large`   | `weekly`                    | `default`                  | `optimize`                                    | `2`                         | `gpu` and `xpu`                |
-| `workflow_dispatch` | On demand                 | User-selected (`source_ref`) | User-selected (`core`, `core,extended`, `core,extended,deferred`)    | User-selected (`size_tier`) | User-selected (`data_group`) | User-selected (`scenario`) | User-selected (`train`, `export`, `optimize`) | User-selected (`num_seeds`) | User-selected (`gpu` or `xpu`) |
+| Trigger             | Timeline                  | Source ref                   | Model groups / categories                                         | Dataset size tiers          | Dataset data group           | Scenario                   | Eval phase                                    | Seeds                       | Accelerators                   |
+| ------------------- | ------------------------- | ---------------------------- | ----------------------------------------------------------------- | --------------------------- | ---------------------------- | -------------------------- | --------------------------------------------- | --------------------------- | ------------------------------ |
+| `schedule`          | Every Friday, `19:00 UTC` | `develop`                    | `core,extended`                                                   | `tiny,small,medium,large`   | `weekly`                     | `default`                  | `optimize`                                    | `2`                         | `gpu` and `xpu`                |
+| `workflow_dispatch` | On demand                 | User-selected (`source_ref`) | User-selected (`core`, `core,extended`, `core,extended,deferred`) | User-selected (`size_tier`) | User-selected (`data_group`) | User-selected (`scenario`) | User-selected (`train`, `export`, `optimize`) | User-selected (`num_seeds`) | User-selected (`gpu` or `xpu`) |
 
 ### Rotation and timeline details
 
@@ -127,6 +127,27 @@ Dataset provisioning writes readiness markers at:
 - `data/<dataset>/.ready` (script-provisioned datasets only — `local_path` datasets are
   externally managed and never get a `.ready` marker; see "Datasets requiring
   credentials or manual placement" below)
+
+## Memory profiling
+
+The `train` and `test/torch` phases record peak accelerator and host memory
+alongside their accuracy/timing metrics:
+
+- `training:gpu_mem`, `torch:test/gpu_mem` - peak CUDA/XPU memory allocated by
+  PyTorch during that phase (MB).
+- `training:ram_mem`, `torch:test/ram_mem` - peak host RSS during that phase (MB),
+  summed across the process and any DataLoader worker subprocesses.
+
+These metrics flow through the same MLflow logging, CSV export, and
+baseline-comparison paths as every other metric, so they support the usual
+regression thresholds in `benchmark_manifest.yaml` (10% margin by default) and
+appear in `aggregated.csv`; the Markdown report additionally surfaces the
+train-phase values as "GPU Mem" and "Peak RAM" columns.
+
+RAM sampling requires `psutil`, which is only installed via the `benchmark`
+extra (`just venv-benchmark`, or `uv sync --extra benchmark`); without it,
+`*_ram_mem` values are best-effort and read as `0.0`. `export`/`optimize`
+(OpenVINO) phases are not currently instrumented.
 
 ## Add a new dataset or model
 
@@ -226,12 +247,12 @@ datasets:
 ```
 
 - `raw_dir` is only valid together with `script`, and is forwarded to it as `--raw-dir
-  <resolved-path>`.
+<resolved-path>`.
 - It's a **best-effort accelerant, not a requirement**: if the variable is unset or the
   path doesn't exist, provisioning logs a warning and falls back to the script's normal
   (e.g. network/credentialed) download path instead of failing.
 - In the script, use `getitune.benchmark.dataset_helpers.resolve_raw_source(args,
-  download_fn)` — it returns `args.raw_dir` directly (extracting it first if it's a
+download_fn)` — it returns `args.raw_dir` directly (extracting it first if it's a
   single archive file) when set, or calls `download_fn` otherwise. See
   `scripts/benchmark_datasets/prepare_brain_tumor.py` for a full example.
 
@@ -275,7 +296,6 @@ A single dataset failing to provision (missing credentials, transient network er
 aborting the whole invocation.
 
 ### Add a new model
-
 
 1. Ensure the model recipe exists under `src/getitune/recipe/<task>/<name>.yaml` — the recipe path is
    always derived from the model's `name` and its task, there's no separate path to configure.

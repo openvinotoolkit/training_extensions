@@ -56,13 +56,13 @@ describe('SORTING_HANDLERS', () => {
         it('sorts ascending by gigaflops (fastest = lowest GFLOPs first)', () => {
             const result = SORTING_HANDLERS[SortingOptions.SPEED_ASC](architectures);
 
-            expect(result.map((a) => a.stats.gigaflops)).toEqual([50, 120, 200]);
+            expect(result.map((a) => a.stats?.gigaflops)).toEqual([50, 120, 200]);
         });
 
         it('sorts descending by gigaflops (slowest = highest GFLOPs first)', () => {
             const result = SORTING_HANDLERS[SortingOptions.SPEED_DESC](architectures);
 
-            expect(result.map((a) => a.stats.gigaflops)).toEqual([200, 120, 50]);
+            expect(result.map((a) => a.stats?.gigaflops)).toEqual([200, 120, 50]);
         });
     });
 

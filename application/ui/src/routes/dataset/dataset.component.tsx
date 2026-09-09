@@ -1,9 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { Suspense } from 'react';
-
-import { dimensionValue, Grid, Loading, View } from '@geti-ui/ui';
+import { dimensionValue, Grid, View } from '@geti-ui/ui';
 import { useDatasetMediaWithReviewStatus } from 'hooks/use-dataset-media-with-review-status.hook';
 import { useViewMode } from 'hooks/use-view-mode.hook';
 
@@ -40,9 +38,7 @@ export const Dataset = () => {
                 </View>
 
                 <View gridRow='2 / 3'>
-                    <Suspense fallback={<Loading mode={'inline'} />}>
-                        <Toolbar items={items} viewMode={viewMode} setViewMode={setViewMode} />
-                    </Suspense>
+                    <Toolbar items={items} viewMode={viewMode} setViewMode={setViewMode} />
                 </View>
 
                 <View gridRow='3 / 4' marginBottom={hasActiveFilter ? 'size-200' : undefined}>

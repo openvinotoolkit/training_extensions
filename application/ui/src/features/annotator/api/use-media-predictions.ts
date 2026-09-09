@@ -15,38 +15,44 @@ import { PREDICTION_CHUNK_SIZE, PREDICTION_FRAME_SKIP } from '../video-player/ap
 import { getVideoFrameRangeIndexes } from '../video-player/api/utils';
 import { useVideoPlayerContext } from '../video-player/video-player-provider.component';
 
+// Prefix matching every prediction query of a project, so callers can cancel them all at once.
+export const getMediaPredictionsQueryKeyPrefix = (projectId: string) => [projectId, 'media-predictions'];
+
 export const mediaPredictionsQueryOptions = ({
     projectId,
     selectedModel,
     mediaId,
     device,
+    confidenceThreshold,
     range = null,
 }: {
     projectId: string;
     selectedModel: SelectableModel | undefined;
     mediaId: string;
     device: string;
+    confidenceThreshold: number | null;
     range?: PredictionVideoRangePayload | null;
 }) =>
     queryOptions({
         queryKey: [
-            projectId,
-            'media-predictions',
+            ...getMediaPredictionsQueryKeyPrefix(projectId),
             mediaId,
             device,
             selectedModel?.modelId,
             selectedModel?.modelVariantId,
+            confidenceThreshold,
             range,
         ],
         queryFn: async ({ signal }) => {
             if (selectedModel === undefined) return [];
 
-            const response = await fetchClient.POST('/api/projects/{project_id}/dataset/media/media:predict', {
+            const response = await fetchClient.POST('/api/projects/{project_id}/dataset/media:predict', {
                 signal,
                 params: { path: { project_id: projectId } },
                 body: {
                     ...getModelIdentifierPayload(selectedModel),
                     device,
+                    confidence_threshold: confidenceThreshold,
                     media: [{ media_id: mediaId, range }],
                 },
             });
@@ -81,16 +87,25 @@ export const useMediaPredictions = ({
     selectedModel,
     range,
     device,
+    confidenceThreshold,
     enabled = true,
 }: {
     mediaId: string;
     selectedModel: SelectableModel | undefined;
     range?: PredictionVideoRangePayload | null;
     device: string;
+    confidenceThreshold: number | null;
     enabled?: boolean;
 }) => {
     const projectId = useProjectIdentifier();
-    const options = mediaPredictionsQueryOptions({ projectId, selectedModel, mediaId, range, device });
+    const options = mediaPredictionsQueryOptions({
+        projectId,
+        selectedModel,
+        mediaId,
+        range,
+        device,
+        confidenceThreshold,
+    });
 
     return useQuery({ ...options, enabled: options.enabled && enabled });
 };
@@ -99,21 +114,30 @@ export const useIsFetchingMediaPredictions = ({
     mediaId,
     selectedModel,
     device,
+    confidenceThreshold,
     range = null,
 }: {
     mediaId: string;
     selectedModel: SelectableModel | undefined;
     device: string;
+    confidenceThreshold: number | null;
     range?: PredictionVideoRangePayload | null;
 }) => {
     const projectId = useProjectIdentifier();
-    const { queryKey } = mediaPredictionsQueryOptions({ projectId, selectedModel, mediaId, device, range });
+    const { queryKey } = mediaPredictionsQueryOptions({
+        projectId,
+        selectedModel,
+        mediaId,
+        device,
+        confidenceThreshold,
+        range,
+    });
 
     return useIsFetching({ queryKey, exact: true }) > 0;
 };
 
 export const useIsFetchingCurrentRangeFramesPredictions = (mediaId: string) => {
-    const { selectedModel, selectedDevice } = usePredictionSetup();
+    const { selectedModel, selectedDevice, confidenceThreshold } = usePredictionSetup();
     const videoContext = useVideoPlayerContext();
 
     const frameNumber = videoContext?.videoFrame.frame_number ?? 0;
@@ -131,12 +155,13 @@ export const useIsFetchingCurrentRangeFramesPredictions = (mediaId: string) => {
         mediaId,
         selectedModel,
         device: selectedDevice,
+        confidenceThreshold,
         range: { stride: PREDICTION_FRAME_SKIP, start_frame: startFrameIndex, end_frame: endFrameIndex },
     });
 };
 
 const useIsFetchingCurrentFramePredictions = (mediaId: string) => {
-    const { selectedModel, selectedDevice } = usePredictionSetup();
+    const { selectedModel, selectedDevice, confidenceThreshold } = usePredictionSetup();
     const { mediaItem } = useSelectedMediaItem();
 
     const singleFrameRange = isVideoFrame(mediaItem)
@@ -147,6 +172,7 @@ const useIsFetchingCurrentFramePredictions = (mediaId: string) => {
         mediaId,
         selectedModel,
         device: selectedDevice,
+        confidenceThreshold,
         range: singleFrameRange,
     });
 };

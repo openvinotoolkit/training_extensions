@@ -2,6 +2,7 @@ id: object-detection-rfdetr-n
 name: RF-DETR-N
 
 pretrained_weights:
+  source: direct_link
   url: https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth
   cache_filename: rf-detr-nano-2026.pth
   sha_sum: d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d

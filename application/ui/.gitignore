@@ -27,5 +27,8 @@ packages/
 /blob-report/
 /playwright/.cache/
 
+# Vitest
+/coverage/
+
 src/api/openapi-spec.d.ts
 src/api/openapi-spec.json

@@ -7,7 +7,7 @@ import { ImportDatasetAsNewProjectState } from '../../features/dataset/import-ex
 import { useDatasetImportStorage } from './use-dataset-import-storage.hook';
 import { DatasetImportState } from './utils';
 
-export type DatasetImportAsNewProjectState = DatasetImportState<ImportDatasetAsNewProjectState> & {
+type DatasetImportAsNewProjectState = DatasetImportState<ImportDatasetAsNewProjectState> & {
     project?: { name: string; task_type: TaskType };
     filters?: { labels: string[]; include_unannotated: boolean };
 };

@@ -3,6 +3,8 @@
 
 import { type Page } from '@playwright/test';
 
+import { DatasetViewsPage } from './dataset-views-page';
+
 const pluralizeItems = (count: number) => {
     const pluralRules = new Intl.PluralRules('en');
 
@@ -10,10 +12,14 @@ const pluralizeItems = (count: number) => {
 };
 
 export class DatasetPage {
-    constructor(private readonly page: Page) {}
+    readonly views: DatasetViewsPage;
 
-    goto(projectId = 'id-1') {
-        return this.page.goto(`projects/${projectId}/dataset`);
+    constructor(private readonly page: Page) {
+        this.views = new DatasetViewsPage(page);
+    }
+
+    goto(projectId = 'id-1', search = '') {
+        return this.page.goto(`projects/${projectId}/dataset${search}`);
     }
 
     async openAnnotator() {
@@ -24,13 +30,21 @@ export class DatasetPage {
         return this.page.getByRole('listbox', { name: 'data-collection-grid' });
     }
 
+    getMediaItemById(mediaId: string) {
+        return this.getMediaGrid()
+            .getByRole('option')
+            .filter({
+                has: this.page.getByRole('checkbox', {
+                    name: `Selection state of media item ${mediaId}`,
+                    exact: true,
+                }),
+            });
+    }
+
     async selectMediaItem(mediaId: string) {
-        await this.getMediaGrid()
-            .getByRole('checkbox', {
-                name: `Select media item ${mediaId}`,
-                exact: true,
-            })
-            .click();
+        // The checkbox only reflects the state, selection happens on the item itself,
+        // where a plain click replaces the selection and a ctrl click adds to it
+        await this.getMediaItemById(mediaId).click({ modifiers: ['Control'] });
     }
 
     getMediaItemByName(name: string) {

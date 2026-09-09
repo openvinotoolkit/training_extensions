@@ -103,7 +103,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run SkillSpector scan
-        uses: open-edge-platform/geti-ci/actions/skill-scan@0745e2b1612e4c25c3e83eb37bddeba8743a2439 # skill-scan/v0.1.1
+        uses: open-edge-platform/geti-ci/actions/skill-scan@fd69b9f71343db7a4a88d8d7b984a281dd475a98 # skill-scan/v0.1.2
         with:
           severity-level: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && 'HIGH' || github.event.inputs.severity || 'LOW' }}
           fail-on-findings: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && 'true' || 'false' }}
