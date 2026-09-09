@@ -6,4 +6,4 @@ support_status: active
 
 hyperparameters:
   training:
-    max_epochs: 200
+    max_epochs: 100
