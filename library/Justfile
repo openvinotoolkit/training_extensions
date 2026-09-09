@@ -78,6 +78,10 @@ test-unit-models *ARGS: _ensure_uv
 test-unit-ultralytics *ARGS: _ensure_uv
     uv run pytest ./tests/unit/backend/ultralytics -v {{ ARGS }}
 
+# Run huggingface backend
+test-unit-huggingface *ARGS: _ensure_uv
+    uv run pytest ./tests/unit/backend/huggingface -v {{ ARGS }}
+
 # Run openvino backend
 test-unit-openvino *ARGS: _ensure_uv
     uv run pytest ./tests/unit/backend/openvino -v {{ ARGS }}

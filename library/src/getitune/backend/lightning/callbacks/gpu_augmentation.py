@@ -7,16 +7,16 @@ from __future__ import annotations
 
 import logging as log
 import typing
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 import torch
 from lightning import Callback
 from torchvision import tv_tensors
 
 from getitune.data.augmentation import GPUAugmentationPipeline
+from getitune.data.augmentation.task_keys import DATA_KEYS_BY_TASK
 from getitune.data.entity.sample import SampleBatch
 from getitune.data.entity.tile import TileBatchData
-from getitune.types.task import TaskType
 
 if TYPE_CHECKING:
     from lightning import LightningModule, Trainer
@@ -49,17 +49,6 @@ class GPUAugmentationCallback(Callback):
         >>> trainer = Trainer(callbacks=[callback])
     """
 
-    # Data keys for each task type. Masks for instance segmentation are handled
-    # with special preprocessing (add channel dim) in GPUAugmentationPipeline.forward().
-    _DATA_KEYS_BY_TASK: ClassVar[dict[TaskType, tuple[str, ...]]] = {
-        TaskType.MULTI_CLASS_CLS: ("label",),
-        TaskType.MULTI_LABEL_CLS: ("label",),
-        TaskType.DETECTION: ("bbox_xyxy", "label"),
-        TaskType.INSTANCE_SEGMENTATION: ("bbox_xyxy", "mask", "label"),
-        TaskType.KEYPOINT_DETECTION: ("keypoints", "label"),
-        TaskType.SEMANTIC_SEGMENTATION: ("mask",),
-    }
-
     def __init__(
         self,
         train_config: SubsetConfig | None = None,
@@ -80,7 +69,7 @@ class GPUAugmentationCallback(Callback):
 
         This is called once when the trainer is setup.
         """
-        data_keys = ["input", *self._DATA_KEYS_BY_TASK.get(pl_module.task, [])]  # type: ignore[arg-type]
+        data_keys = ["input", *DATA_KEYS_BY_TASK.get(pl_module.task, ())]  # type: ignore[arg-type]
         if self.train_config is not None:
             self._train_pipeline = GPUAugmentationPipeline.from_config(self.train_config, data_keys=data_keys)
             log.info(f"GPU train augmentation pipeline:\n{self._train_pipeline}")

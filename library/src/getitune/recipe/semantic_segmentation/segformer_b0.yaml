@@ -1,0 +1,31 @@
+backend: huggingface
+task: SEMANTIC_SEGMENTATION
+
+model:
+  class_path: getitune.backend.huggingface.models.semantic_segmentation.HFSemanticSegModel
+  init_args:
+    checkpoint: nvidia/segformer-b0-finetuned-ade-512-512
+    pretrained: true
+
+engine:
+  device: auto
+
+training:
+  max_epochs: 100
+  batch: 8
+  learning_rate: 0.0001
+  precision: bf16-mixed
+  patience: 10
+  optim: adamw_torch
+  weight_decay: 0.01
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.05
+  max_grad_norm: 0.1
+
+data: ../_base_/data/semantic_segmentation.yaml
+
+overrides:
+  data:
+    input_size:
+      - 512
+      - 512
