@@ -453,11 +453,7 @@ USER root
 # Includes Intel graphics drivers (steps from https://dgpu-docs.intel.com/driver/client/overview.html#ubuntu-latest)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG RENDER_GID=992
-RUN if ! getent group render_host >/dev/null; then \
-        groupadd -g "${RENDER_GID}" render_host || groupadd render_host; \
-    fi && \
-    usermod -aG render_host "${USER_NAME}"
+RUN getent group render_host >/dev/null || groupadd -g 992 render_host && usermod -aG render_host "${USER_NAME}"
 
 # WARNING: this is an Ubuntu 'noble' PPA being added to a Debian 13 (trixie) base image,
 # with signature verification disabled (trusted=yes) and no version pins. That makes the
