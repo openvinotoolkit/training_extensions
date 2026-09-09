@@ -1120,7 +1120,7 @@ requires-dist = [
     { name = "onnxscript", specifier = "==0.6.2" },
     { name = "onnxslim", specifier = "~=0.1.71" },
     { name = "openvino", specifier = "~=2026.3.0" },
-    { name = "openvino-model-api", specifier = "==0.4.7" },
+    { name = "openvino-model-api", git = "https://github.com/open-edge-platform/model_api?subdirectory=model_api&branch=master" },
     { name = "psutil", marker = "extra == 'benchmark'", specifier = ">=6.0" },
     { name = "pydata-sphinx-theme", marker = "extra == 'docs'", specifier = "==0.12.0" },
     { name = "pytorchcv", specifier = "==0.0.74" },
@@ -2437,16 +2437,12 @@ wheels = [
 [[package]]
 name = "openvino-model-api"
 version = "0.4.7"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/open-edge-platform/model_api?subdirectory=model_api&branch=master#ae87a3d8c38bd08f61c289203bb16bd9e97a699c" }
 dependencies = [
     { name = "numpy", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
     { name = "opencv-python-headless", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
     { name = "openvino", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
     { name = "pillow", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/eb/8f6c819839c17587626bddc5a7c86af9cde2af0faeb08875f05f3c3d7052/openvino_model_api-0.4.7.tar.gz", hash = "sha256:778146c4263a7ce557b38ed35ae16056dc465d0f44cbbeb41df3c4043a1cbd03", size = 574117, upload-time = "2026-09-01T14:44:22.962Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/1b/74d9812a2ec295192c7776809e071d796c9d439f7b8468b62168282ebdb7/openvino_model_api-0.4.7-py3-none-any.whl", hash = "sha256:483e1a38f5dd9ac5a76d325fe54acfa438b906395c6687975d3adbc2766f88d6", size = 143098, upload-time = "2026-09-01T14:44:21.191Z" },
 ]
 
 [[package]]
