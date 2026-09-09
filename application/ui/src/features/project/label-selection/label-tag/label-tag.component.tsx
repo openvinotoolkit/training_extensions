@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Label } from '@/api/types';
-import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, PressableElement, Text, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Cross } from '@geti-ui/ui/icons';
 
@@ -16,8 +15,6 @@ type LabelTagProps = {
 };
 
 const LabelTagContent = ({ label, onDelete }: LabelTagProps) => {
-    const { t } = useTranslation();
-
     return (
         <Flex
             alignItems={'center'}

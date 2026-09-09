@@ -56,8 +56,6 @@ type TaskOptionProps = {
 };
 
 const Option = ({ taskOption, onPress }: TaskOptionProps) => {
-    const { t } = useTranslation();
-
     return (
         <div onClick={onPress} className={classes.option} aria-label={`Task option: ${taskOption.title}`}>
             <View>
