@@ -32,11 +32,15 @@ export const SortProjects = ({ sortBy, onSort }: SortProjectsProps) => {
             {(item) => {
                 return (
                     <Section key={item.map((option) => option.key).join('-')}>
-                        {item.map((option) => (
-                            <Item key={option.key} textValue={t(option.nameKey)}>
-                                {t(option.nameKey)}
-                            </Item>
-                        ))}
+                        {item.map((option) => {
+                            const name = t(option.nameKey);
+
+                            return (
+                                <Item key={option.key} textValue={name}>
+                                    {name}
+                                </Item>
+                            );
+                        })}
                     </Section>
                 );
             }}

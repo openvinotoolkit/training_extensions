@@ -12,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 
 import { paths } from '../../../constants/paths';
 import { LabelSelection } from '../label-selection/label-selection.component';
-import { getTaskOptions, TaskSelection } from '../task-selection/task-selection.component';
+import { MAP_TASK_TYPE_TO_VERB_KEY, TaskSelection } from '../task-selection/task-selection.component';
 import { isClassificationTask } from '../task-type-guards';
 import { PROJECT_NAME_MAX_LENGTH, validateProjectName } from '../validator';
 import {
@@ -32,7 +32,7 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
     const [selectedTask, setSelectedTask] = useState<TaskType | null>(null);
     const [labels, setLabels] = useState<Label[]>([]);
     const [name, setName] = useState<string>(() => generateUniqueProjectName(projects.map((project) => project.name)));
-    const selectedTaskOption = getTaskOptions(t).find((task) => task.value === selectedTask);
+    const taskVerb = selectedTask === null ? undefined : t(MAP_TASK_TYPE_TO_VERB_KEY[selectedTask]);
 
     const [classificationTaskType, setClassificationTaskType] = useState<ClassificationTaskType>('single-label');
 
@@ -134,7 +134,7 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
                         <Flex direction={'column'} alignItems={'center'} gap={'size-350'}>
                             <Flex>
                                 <Text UNSAFE_className={classes.objectsToLearnTitle}>
-                                    {t('project.create.labelsQuestion', { verb: selectedTaskOption?.verb })}
+                                    {t('project.create.labelsQuestion', { verb: taskVerb })}
                                 </Text>
                             </Flex>
                             <LabelSelection labels={labels} setLabels={setLabels} taskType={selectedTask} />

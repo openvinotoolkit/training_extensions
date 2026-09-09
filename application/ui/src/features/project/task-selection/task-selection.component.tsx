@@ -15,7 +15,13 @@ import type { TaskOption } from './interface';
 
 import classes from './task-selection.module.scss';
 
-export const getTaskOptions = (t: TFunction): TaskOption[] => [
+export const MAP_TASK_TYPE_TO_VERB_KEY = {
+    detection: 'project.create.tasks.detection.verb',
+    instance_segmentation: 'project.create.tasks.instanceSegmentation.verb',
+    classification: 'project.create.tasks.classification.verb',
+} as const satisfies Record<TaskType, string>;
+
+const getTaskOptions = (t: TFunction): TaskOption[] => [
     {
         id: 'detection_task',
         imageSrc: detectionImageUrl,

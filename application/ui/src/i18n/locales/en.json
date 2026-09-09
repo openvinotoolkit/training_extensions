@@ -82,7 +82,7 @@
             "empty": {
                 "intro": "Welcome to <name>Geti</name>, a vision AI platform that guides you through the <highlight>complete model lifecycle</highlight>, from dataset preparation to training, optimization and deployment.",
                 "imageLabel": "empty list",
-                "createNewProject": "Create new Project",
+                "createNewProject": "Create new project",
                 "createFromDataset": "Create from dataset"
             },
             "workflow": {
