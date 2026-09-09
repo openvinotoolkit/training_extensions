@@ -19,7 +19,9 @@ from typing import Callable
 
 import numpy as np
 from numpy import dtypes as np_dtypes
-from numpy.core.multiarray import _reconstruct  # noqa: SLF001 - private numpy API; numpy.core legacy shim for 1.x pickles
+from numpy.core.multiarray import (
+    _reconstruct,
+)
 
 # Checkpoints saved by getitune <= 0.3.0 capture the model's `pretrained_weights`
 # init argument into `hyper_parameters`, which pickles a `pathlib.Path` object.
