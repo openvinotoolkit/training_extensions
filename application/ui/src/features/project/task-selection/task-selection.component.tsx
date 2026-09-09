@@ -5,6 +5,8 @@ import type { Dispatch, SetStateAction } from 'react';
 
 import type { TaskType } from '@/api/types';
 import { Divider, Flex, Grid, Heading, Image, Radio, RadioGroup, Text, View } from '@geti-ui/ui';
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import classificationImageUrl from '../../../assets/classification.webp';
 import detectionImageUrl from '../../../assets/detection.webp';
@@ -13,32 +15,32 @@ import type { TaskOption } from './interface';
 
 import classes from './task-selection.module.scss';
 
-export const TASK_OPTIONS: TaskOption[] = [
+export const getTaskOptions = (t: TFunction): TaskOption[] => [
     {
         id: 'detection_task',
         imageSrc: detectionImageUrl,
-        title: 'Object Detection',
-        description: 'Identify and locate objects in your images',
-        advice: 'Best for: Counting, Tracking',
-        verb: 'detect',
+        title: t('project.create.tasks.detection.title'),
+        description: t('project.create.tasks.detection.description'),
+        advice: t('project.create.tasks.detection.advice'),
+        verb: t('project.create.tasks.detection.verb'),
         value: 'detection',
     },
     {
         id: 'segmentation_task',
         imageSrc: segmentationImageUrl,
-        title: 'Instance Segmentation',
-        description: 'Detect and outline specific regions or shapes',
-        advice: 'Best for: Measurement, Odd shapes',
-        verb: 'segment',
+        title: t('project.create.tasks.instanceSegmentation.title'),
+        description: t('project.create.tasks.instanceSegmentation.description'),
+        advice: t('project.create.tasks.instanceSegmentation.advice'),
+        verb: t('project.create.tasks.instanceSegmentation.verb'),
         value: 'instance_segmentation',
     },
     {
         id: 'classification_task',
         imageSrc: classificationImageUrl,
-        title: 'Image Classification',
-        description: 'Categorize entire images based on their content',
-        advice: 'Best for: Filtering, Content Moderation',
-        verb: 'classify',
+        title: t('project.create.tasks.classification.title'),
+        description: t('project.create.tasks.classification.description'),
+        advice: t('project.create.tasks.classification.advice'),
+        verb: t('project.create.tasks.classification.verb'),
         value: 'classification',
     },
 ];
@@ -49,8 +51,14 @@ type TaskOptionProps = {
 };
 
 const Option = ({ taskOption, onPress }: TaskOptionProps) => {
+    const { t } = useTranslation();
+
     return (
-        <div onClick={onPress} className={classes.option} aria-label={`Task option: ${taskOption.title}`}>
+        <div
+            onClick={onPress}
+            className={classes.option}
+            aria-label={t('project.create.taskSelection.optionLabel', { title: taskOption.title })}
+        >
             <View>
                 <Image height={'size-2400'} width={'100%'} src={taskOption.imageSrc} alt={taskOption.title} />
             </View>
@@ -76,16 +84,18 @@ const Option = ({ taskOption, onPress }: TaskOptionProps) => {
 type TaskSelectionProps = { selectedTask: TaskType | null; setSelectedTask: Dispatch<SetStateAction<TaskType | null>> };
 
 export const TaskSelection = ({ selectedTask, setSelectedTask }: TaskSelectionProps) => {
-    const selectedTaskOption = TASK_OPTIONS.find((task) => task.value === selectedTask);
+    const { t } = useTranslation();
+    const taskOptions = getTaskOptions(t);
+    const selectedTaskOption = taskOptions.find((task) => task.value === selectedTask);
 
     return (
         <Flex direction={'column'} gap={'size-300'} alignItems={'center'}>
             <RadioGroup
-                aria-label='Task selection'
+                aria-label={t('project.create.taskSelection.groupLabel')}
                 width={'100%'}
                 value={selectedTaskOption?.value}
                 onChange={(value: string) => {
-                    const option = TASK_OPTIONS.find((taskOption) => taskOption.value === value);
+                    const option = taskOptions.find((taskOption) => taskOption.value === value);
 
                     if (option) setSelectedTask(option.value);
                 }}
@@ -99,7 +109,7 @@ export const TaskSelection = ({ selectedTask, setSelectedTask }: TaskSelectionPr
                     width={'100%'}
                     justifyContent={'center'}
                 >
-                    {TASK_OPTIONS.map((taskOption) => (
+                    {taskOptions.map((taskOption) => (
                         <Option
                             key={taskOption.value}
                             taskOption={taskOption}

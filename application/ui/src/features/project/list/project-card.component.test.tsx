@@ -9,6 +9,7 @@ import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
+import { i18n } from '../../../i18n';
 import { server } from '../../../msw-node-setup';
 import { ProjectCard } from './project-card.component';
 import { formatCreationDate, getProjectTypeTitle } from './util';
@@ -142,16 +143,19 @@ describe('ProjectCard', () => {
 
 describe('getProjectTypeTitle', () => {
     it('returns undefined when task is missing', () => {
-        expect(getProjectTypeTitle()).toBeUndefined();
+        expect(getProjectTypeTitle(undefined, i18n.t)).toBeUndefined();
     });
 
     it('returns multi-label classification for non-exclusive classification tasks', () => {
         expect(
-            getProjectTypeTitle({
-                task_type: 'classification',
-                exclusive_labels: false,
-                labels: [],
-            })
+            getProjectTypeTitle(
+                {
+                    task_type: 'classification',
+                    exclusive_labels: false,
+                    labels: [],
+                },
+                i18n.t
+            )
         ).toBe('Multi-label classification');
     });
 });
