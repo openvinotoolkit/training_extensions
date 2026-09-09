@@ -15,7 +15,6 @@ import shutil
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from pickle import UnpicklingError  # nosec B403: UnpicklingError is used only for exception handling
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Iterable, Iterator, Literal
 from warnings import warn
 
@@ -47,6 +46,7 @@ from getitune.types.export import ExportFormat
 from getitune.types.precision import Precision
 from getitune.types.task import TaskType
 from getitune.utils.device import get_available_device, is_xpu_available
+from getitune.utils.safe_globals import CHECKPOINT_SAFE_GLOBALS
 from getitune.utils.utils import measure_flops
 
 if TYPE_CHECKING:
@@ -503,7 +503,9 @@ class LightningEngine(Engine):
         r"""Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
-            checkpoint (PathLike | None, optional): Checkpoint to export. Defaults to None.
+            checkpoint (PathLike | None, optional): Checkpoint to export. If None, the model is exported
+                with its current weights (e.g. pretrained backbone with a randomly initialized head).
+                Defaults to None.
             export_format (ExportFormat, optional): Export format. Defaults to ExportFormat.OPENVINO.
             export_precision (Precision, optional): Export precision. Defaults to Precision.FP32.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
@@ -552,9 +554,6 @@ class LightningEngine(Engine):
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
-        if checkpoint is None:
-            msg = "To make export, checkpoint must be specified."
-            raise RuntimeError(msg)
         if export_demo_package and export_format == ExportFormat.ONNX:
             msg = (
                 "ONNX export is not supported in exportable code mode. Exportable code parameter will be disregarded. "
@@ -562,8 +561,9 @@ class LightningEngine(Engine):
             warn(msg, stacklevel=1)
             export_demo_package = False
 
-        ckpt = self._load_model_checkpoint(checkpoint, map_location="cpu")
-        self.model.load_state_dict(ckpt)
+        if checkpoint is not None:
+            ckpt = self._load_model_checkpoint(checkpoint, map_location="cpu")
+            self.model.load_state_dict(ckpt)
         self.model.eval()
 
         self.model.explain_mode = explain
@@ -1256,14 +1256,16 @@ class LightningEngine(Engine):
             raise FileNotFoundError(msg)
 
         try:
-            ckpt = torch.load(checkpoint, map_location=map_location)
-        except UnpicklingError:
-            from getitune.backend.lightning.utils.utils import mock_modules_for_chkpt
-
-            with mock_modules_for_chkpt():
-                ckpt = torch.load(checkpoint, map_location=map_location, weights_only=False)
+            with torch.serialization.safe_globals(CHECKPOINT_SAFE_GLOBALS):
+                ckpt = torch.load(checkpoint, map_location=map_location)
         except Exception as e:
-            msg = f"Failed to load checkpoint from {checkpoint}. Please check the file."
+            msg = (
+                f"Failed to load checkpoint from {checkpoint}. Please check the file. "
+                "Checkpoints are loaded with PyTorch's safe deserialization (weights_only=True); "
+                "pickled objects outside the safe allowlist are refused to prevent arbitrary code "
+                "execution from untrusted checkpoint files. Re-save the checkpoint with getitune, or "
+                "load only its state_dict manually if you fully trust the file."
+            )
             raise RuntimeError(msg) from e
 
         if "hyper_parameters" in ckpt and "label_info" in ckpt.get("hyper_parameters", {}):

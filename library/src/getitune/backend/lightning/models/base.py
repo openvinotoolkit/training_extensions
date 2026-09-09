@@ -219,7 +219,15 @@ class LightningModel(LightningModule):
 
         self.save_hyperparameters(
             logger=False,
-            ignore=["optimizer", "scheduler", "metric", "label_info", "tile_config", "data_input_params"],
+            ignore=[
+                "optimizer",
+                "scheduler",
+                "metric",
+                "label_info",
+                "tile_config",
+                "data_input_params",
+                "pretrained_weights",
+            ],
         )
 
     def training_step(self, batch: SampleBatch, batch_idx: int) -> Tensor:
