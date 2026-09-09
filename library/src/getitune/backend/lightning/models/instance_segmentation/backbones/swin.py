@@ -705,7 +705,10 @@ class SwinTransformer(BaseModule):
             if ckpt_path.startswith("http"):
                 ckpt = load_from_http(ckpt_path, map_location="cpu")
             elif Path(ckpt_path).exists():
-                ckpt = torch.load(ckpt_path, map_location="cpu")
+                from getitune.utils.safe_globals import PRETRAINED_SAFE_GLOBALS
+
+                with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
+                    ckpt = torch.load(ckpt_path, map_location="cpu")
             else:
                 raise FileNotFoundError(ckpt_path)
 
