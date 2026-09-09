@@ -29,7 +29,7 @@ const LabelTagContent = ({ label, onDelete }: LabelTagProps) => {
             <ActionButton
                 isQuiet
                 onPress={() => onDelete(label.id)}
-                aria-label={t('project.create.labels.deleteAction', { name: label.name })}
+                aria-label={`Delete label ${label.name}`}
                 UNSAFE_className={styles.deleteLabel}
             >
                 <Cross />

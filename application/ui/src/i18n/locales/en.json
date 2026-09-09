@@ -25,7 +25,6 @@
         },
         "rename": {
             "title": "Edit project name",
-            "fieldLabel": "Edit project name field",
             "success": "Project updated successfully"
         },
         "validation": {
@@ -49,12 +48,10 @@
             "createProjectFromDataset": "Create project from dataset",
             "activeBadge": "Active",
             "card": {
-                "label": "Project: {{projectName}}",
                 "created": "• Created: {{date}}",
                 "labels": "• Labels: {{labels}}"
             },
             "menu": {
-                "trigger": "open project options",
                 "enablePipeline": "Enable pipeline",
                 "disablePipeline": "Disable pipeline",
                 "pipelineEnabled": "Pipeline enabled successfully",
@@ -69,24 +66,20 @@
             },
             "filters": {
                 "searchPlaceholder": "Search by name...",
-                "searchLabel": "Search projects by name",
                 "taskType": "Filter by task type",
                 "typesSelected_one": "{{count}} type selected",
                 "typesSelected_other": "{{count}} types selected"
             },
             "noMatches": {
-                "imageLabel": "no matching projects",
                 "title": "No projects match your filters",
                 "description": "Try adjusting your search or task type filters to find what you are looking for."
             },
             "empty": {
                 "intro": "Welcome to <name>Geti</name>, a vision AI platform that guides you through the <highlight>complete model lifecycle</highlight>, from dataset preparation to training, optimization and deployment.",
-                "imageLabel": "empty list",
                 "createNewProject": "Create new project",
                 "createFromDataset": "Create from dataset"
             },
             "workflow": {
-                "label": "Geti workflow",
                 "addData": "Add data",
                 "annotate": "Annotate",
                 "train": "Train",
@@ -96,14 +89,9 @@
             }
         },
         "create": {
-            "nameFieldLabel": "Project name input",
             "taskQuestion": "What type of task would you like the model to perform?",
             "labelsQuestion": "What objects should the model learn to {{verb}}?",
             "submit": "Create project",
-            "taskSelection": {
-                "groupLabel": "Task selection",
-                "optionLabel": "Task option: {{title}}"
-            },
             "tasks": {
                 "detection": {
                     "title": "Object Detection",
@@ -126,7 +114,6 @@
             },
             "classificationType": {
                 "title": "What classification type should the model use?",
-                "groupLabel": "Classification type",
                 "singleLabel": {
                     "label": "Single-label",
                     "description": "Assign one label from mutually exclusive labels",
@@ -139,10 +126,7 @@
             },
             "labels": {
                 "atLeastOneRequired": "At least one object is required",
-                "inputLabel": "Create label input",
-                "inputPlaceholder": "Create label",
-                "createAction": "Create label {{name}}",
-                "deleteAction": "Delete label {{name}}"
+                "inputPlaceholder": "Create label"
             }
         }
     }

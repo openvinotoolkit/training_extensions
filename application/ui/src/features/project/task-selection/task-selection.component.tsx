@@ -59,11 +59,7 @@ const Option = ({ taskOption, onPress }: TaskOptionProps) => {
     const { t } = useTranslation();
 
     return (
-        <div
-            onClick={onPress}
-            className={classes.option}
-            aria-label={t('project.create.taskSelection.optionLabel', { title: taskOption.title })}
-        >
+        <div onClick={onPress} className={classes.option} aria-label={`Task option: ${taskOption.title}`}>
             <View>
                 <Image height={'size-2400'} width={'100%'} src={taskOption.imageSrc} alt={taskOption.title} />
             </View>
@@ -96,7 +92,7 @@ export const TaskSelection = ({ selectedTask, setSelectedTask }: TaskSelectionPr
     return (
         <Flex direction={'column'} gap={'size-300'} alignItems={'center'}>
             <RadioGroup
-                aria-label={t('project.create.taskSelection.groupLabel')}
+                aria-label='Task selection'
                 width={'100%'}
                 value={selectedTaskOption?.value}
                 onChange={(value: string) => {

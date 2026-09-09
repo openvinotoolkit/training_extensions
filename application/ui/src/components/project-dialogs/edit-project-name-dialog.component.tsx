@@ -79,7 +79,7 @@ export const EditProjectNameDialog = ({
                                 value={newProjectName}
                                 onChange={setNewProjectName}
                                 width='100%'
-                                aria-label={t('project.rename.fieldLabel')}
+                                aria-label={'Edit project name field'}
                                 isReadOnly={patchProjectMutation.isPending}
                                 errorMessage={validationErrorMessage}
                                 validationState={validationErrorMessage === undefined ? undefined : 'invalid'}

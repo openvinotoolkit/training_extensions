@@ -102,7 +102,7 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
             >
                 <Flex justifyContent={'center'} marginTop={'size-600'}>
                     <TextField
-                        aria-label={t('project.create.nameFieldLabel')}
+                        aria-label={'Project name input'}
                         maxLength={PROJECT_NAME_MAX_LENGTH}
                         isRequired
                         value={name}

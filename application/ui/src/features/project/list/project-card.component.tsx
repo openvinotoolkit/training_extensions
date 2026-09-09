@@ -73,7 +73,7 @@ export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: Pro
     };
 
     return (
-        <div style={{ position: 'relative' }} aria-label={t('project.list.card.label', { projectName: item.name })}>
+        <div style={{ position: 'relative' }} aria-label={`Project: ${item.name}`}>
             <NavLink
                 to={paths.project.dataset.index({ projectId: item.id })}
                 viewTransition
