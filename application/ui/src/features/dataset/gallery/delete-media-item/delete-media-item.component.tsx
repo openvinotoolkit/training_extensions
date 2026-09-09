@@ -35,7 +35,7 @@ export const DeleteMediaItem = ({ itemsIds = [], onDeleted, isHotkeyEnabled = fa
             enableOnFormTags: ['option'],
             preventDefault: true,
         },
-        [openDeleteDialog]
+        [isHotkeyEnabled, openDeleteDialog, isPending, itemsIds]
     );
 
     return (

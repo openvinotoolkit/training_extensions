@@ -81,16 +81,19 @@ describe('DeleteMediaItem', () => {
         expect(mockedOnDeleted).not.toHaveBeenCalled();
     });
 
-    describe('backspace hotkey', () => {
-        it('opens the confirmation dialog when the hotkey is enabled', async () => {
-            const itemsIds = ['123', '456'];
+    describe('delete and backspace hotkeys', () => {
+        it.each(['Backspace', 'Delete'])(
+            'opens the confirmation dialog on %s when the hotkey is enabled',
+            async (key) => {
+                const itemsIds = ['123', '456'];
 
-            render(<DeleteMediaItem itemsIds={itemsIds} isHotkeyEnabled />);
+                render(<DeleteMediaItem itemsIds={itemsIds} isHotkeyEnabled />);
 
-            fireEvent.keyDown(document, { key: 'Backspace', code: 'Backspace' });
+                fireEvent.keyDown(document, { key, code: key });
 
-            expect(await screen.findByText(/Are you sure you want to delete 2 items\?/i)).toBeVisible();
-        });
+                expect(await screen.findByText(/Are you sure you want to delete 2 items\?/i)).toBeVisible();
+            }
+        );
 
         it('opens the confirmation dialog while a gallery item is focused', async () => {
             render(

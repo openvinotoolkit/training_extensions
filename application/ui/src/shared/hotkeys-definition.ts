@@ -15,7 +15,7 @@ export const HOTKEYS = {
     toggleAnnotationsVisibility: 'a',
     deleteAnnotation: 'delete',
     deleteAnnotationAlternative: 'backspace',
-    deleteMedia: 'backspace',
+    deleteMedia: 'backspace, delete',
     fitToScreen: 'r',
     selectionTool: 'v',
     boundingBoxTool: 'b',
