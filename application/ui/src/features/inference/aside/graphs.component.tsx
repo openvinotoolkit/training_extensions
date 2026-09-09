@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Content, Heading, IllustratedMessage, View } from '@geti-ui/ui';
 import { usePipelineMetrics } from 'hooks/api/pipeline.hook';
-import { CartesianGrid, Label, Line, LineChart, ReferenceLine, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Label, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface DataPoint {
     name: string;
@@ -54,42 +54,58 @@ const useMetricsData = () => {
     return { latencyData, throughputData, metrics };
 };
 
+const AXIS_LABEL_STYLE = {
+    textAnchor: 'middle',
+    fill: 'var(--spectrum-global-color-gray-900)',
+    fontSize: '10px',
+} as const;
+
+const formatValue = (value: number) => (value > 10 ? value.toFixed(0) : value.toFixed(2));
+
 const Graph = ({ label, data }: { label: string; data: DataPoint[] }) => {
     return (
-        <LineChart responsive width={'100%'} style={{ aspectRatio: 1.6 }} data={data}>
+        <LineChart
+            responsive
+            width={'100%'}
+            style={{ aspectRatio: 1.6 }}
+            data={data}
+            margin={{ top: 5, right: 5, left: 5, bottom: 16 }}
+        >
             <XAxis
                 minTickGap={32}
                 stroke='var(--spectrum-global-color-gray-800)'
                 dataKey='name'
                 tickLine={false}
                 tickMargin={8}
-            />
+            >
+                <Label value='samples' position='insideBottom' offset={-14} style={AXIS_LABEL_STYLE} />
+            </XAxis>
             <YAxis
                 tickLine={false}
                 stroke='var(--spectrum-global-color-gray-900)'
                 dataKey='value'
-                tickFormatter={(value: number) => {
-                    return value > 10 ? value.toFixed(0) : value.toFixed(2);
-                }}
+                tickFormatter={formatValue}
             >
-                <Label
-                    angle={-90}
-                    value={label}
-                    position='insideLeft'
-                    style={{
-                        textAnchor: 'middle',
-                        fill: 'var(--spectrum-global-color-gray-900)',
-                        fontSize: '10px',
-                    }}
-                />
+                <Label angle={-90} value={label} position='insideLeft' style={AXIS_LABEL_STYLE} />
             </YAxis>
             <CartesianGrid stroke='var(--spectrum-global-color-gray-400)' />
+            <Tooltip
+                contentStyle={{
+                    backgroundColor: 'var(--spectrum-global-color-gray-100)',
+                    border: '1px solid var(--spectrum-global-color-gray-400)',
+                }}
+                labelStyle={{ color: 'var(--spectrum-global-color-gray-900)' }}
+                itemStyle={{ color: 'var(--spectrum-global-color-gray-900)' }}
+                labelFormatter={(name) => `Sample ${name}`}
+                formatter={(value) => formatValue(Number(value))}
+            />
             {data.length > 0 && (
                 <ReferenceLine x={data[0].name} stroke='var(--spectrum-global-color-gray-600)' strokeWidth={2} />
             )}
             <Line
                 type='linear'
                 dataKey='value'
+                name={label}
                 dot={false}
                 stroke='var(--energy-blue)'
                 isAnimationActive={false}
