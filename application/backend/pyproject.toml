@@ -24,7 +24,7 @@ dependencies = [
     "aiofiles==25.1.0",
     "pydantic-settings~=2.14.2",
     "aiortc~=1.14.0",
-    "datumaro[experimental]~=1.13.10",
+    "datumaro[experimental]~=1.13.11",
     "defusedxml~=0.7.1",
     "scikit-learn~=1.7.2",
     "faster-coco-eval~=1.7.0",

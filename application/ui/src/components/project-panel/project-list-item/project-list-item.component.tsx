@@ -3,6 +3,7 @@
 
 import type { Project } from '@/api/types';
 import { Badge, Flex, Text } from '@geti-ui/ui';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { paths } from '../../../constants/paths';
@@ -31,9 +32,10 @@ export const ProjectListItem = ({
     onDelete,
     onEnableBlocked,
 }: ProjectListItemProps) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const taskType = getProjectTypeTitle(project.task);
+    const taskType = getProjectTypeTitle(project.task, t);
 
     const handleNavigateToProject = () => {
         navigate(paths.project.dataset.index({ projectId: project.id }), {

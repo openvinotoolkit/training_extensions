@@ -53,7 +53,7 @@ export const ProgressStepper = ({ currentStep }: ProgressStepperProps) => {
             />
 
             <Text gridArea={'label1'}>Dataset</Text>
-            <Text gridArea={'label2'} UNSAFE_style={{ width: dimensionValue('size-800'), textAlign: 'center' }}>
+            <Text gridArea={'label2'} UNSAFE_style={{ width: dimensionValue('size-900'), textAlign: 'center' }}>
                 Task type
             </Text>
             <Text gridArea={'label3'}>Labels</Text>
