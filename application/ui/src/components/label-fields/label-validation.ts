@@ -18,7 +18,10 @@ export const validateLabelName = (name: string, existingLabels: Label[], exclude
 };
 
 export const validateLabelHotkey = (hotkey: string, allHotkeys: string[]): string | undefined => {
-    const osFormatHotkeys = allHotkeys.map(convertHotkeyToOSFormat).map((key) => key.toLowerCase());
+    const osFormatHotkeys = allHotkeys
+        // Some hotkeys bind several keys at once, e.g. 'backspace, delete'
+        .flatMap((key) => key.split(','))
+        .map((key) => convertHotkeyToOSFormat(key.trim()).toLowerCase());
 
     if (osFormatHotkeys.includes(hotkey.toLowerCase())) {
         return 'That hotkey is already in use';
