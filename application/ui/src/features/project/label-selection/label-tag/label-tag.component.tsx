@@ -4,6 +4,7 @@
 import type { Label } from '@/api/types';
 import { ActionButton, Flex, PressableElement, Text, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Cross } from '@geti-ui/ui/icons';
+import { useTranslation } from 'react-i18next';
 
 import { formatHotkeyForDisplay } from '../../../../shared/hotkeys-definition';
 
@@ -15,6 +16,8 @@ type LabelTagProps = {
 };
 
 const LabelTagContent = ({ label, onDelete }: LabelTagProps) => {
+    const { t } = useTranslation();
+
     return (
         <Flex
             alignItems={'center'}
@@ -26,7 +29,7 @@ const LabelTagContent = ({ label, onDelete }: LabelTagProps) => {
             <ActionButton
                 isQuiet
                 onPress={() => onDelete(label.id)}
-                aria-label={`Delete label ${label.name}`}
+                aria-label={t('project.create.labels.deleteAction', { name: label.name })}
                 UNSAFE_className={styles.deleteLabel}
             >
                 <Cross />

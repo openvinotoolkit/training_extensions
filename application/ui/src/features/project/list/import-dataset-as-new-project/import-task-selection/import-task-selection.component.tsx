@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { generateUniqueProjectName } from '../../../create/utils';
 import { useImportDatasetDialog } from '../../../providers/import-dataset-dialog-provider.component';
 import { validateProjectName } from '../../../validator';
-import { MAP_PROJECT_TYPE_TO_TITLE } from '../../util';
+import { MAP_PROJECT_TYPE_TO_TITLE_KEY } from '../../util';
 import { getAllowedTaskTypes, getRecommendedTaskType, TASK_SELECTION_FORM_ID } from './util';
 
 type ImportTaskSelectionProps = {
@@ -76,8 +76,8 @@ export const ImportTaskSelection = ({ stagedDatasetId }: ImportTaskSelectionProp
         key: taskType,
         label:
             defaultTaskType === taskType
-                ? `${MAP_PROJECT_TYPE_TO_TITLE[taskType]} (Recommended)`
-                : MAP_PROJECT_TYPE_TO_TITLE[taskType],
+                ? t('project.taskTypes.recommended', { taskType: t(MAP_PROJECT_TYPE_TO_TITLE_KEY[taskType]) })
+                : t(MAP_PROJECT_TYPE_TO_TITLE_KEY[taskType]),
     }));
 
     return (

@@ -9,6 +9,7 @@ import { EditProjectNameDialog } from '@/components/project-dialogs/edit-project
 import { ActionButton, Item, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { useOverlayTriggerState } from '@react-stately/overlays';
+import { useTranslation } from 'react-i18next';
 
 import { useProjectMenuActions } from './use-project-menu-actions';
 
@@ -44,6 +45,7 @@ export const ProjectActionsMenu = ({
     onDelete,
     onEnableBlocked,
 }: ProjectActionsMenuProps) => {
+    const { t } = useTranslation();
     const metadata = { projectId, projectName, projectNames };
     const { menuActions, handleAction } = useProjectMenuActions(
         projectId,
@@ -63,7 +65,7 @@ export const ProjectActionsMenu = ({
                     fill: 'var(--spectrum-gray-900)',
                     ...actionButtonStyle,
                 }}
-                aria-label={'open project options'}
+                aria-label={t('project.list.menu.trigger')}
                 data-testid={projectId}
             >
                 <MoreMenu />

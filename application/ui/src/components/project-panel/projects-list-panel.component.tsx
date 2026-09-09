@@ -21,6 +21,7 @@ import { Edit } from '@geti-ui/ui/icons';
 import { useProjects } from 'hooks/api/project.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { partition } from 'lodash-es';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { EnablePipelineBlockedDialog } from '../../components/enable-pipeline-blocked-dialog/enable-pipeline-blocked-dialog.component';
@@ -94,6 +95,7 @@ const ManageProjects = () => {
 };
 
 export const ProjectsListPanel = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const projectId = useProjectIdentifier();
     const { data } = useProjects();
@@ -105,7 +107,7 @@ export const ProjectsListPanel = () => {
 
     const otherProjectNames = otherProjects.map(({ name }) => name);
 
-    const taskType = getProjectTypeTitle(selectedProject?.task);
+    const taskType = getProjectTypeTitle(selectedProject?.task, t);
 
     const {
         projectActionMetadata,
