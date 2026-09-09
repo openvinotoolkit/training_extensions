@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 
 import { $api } from '@/api';
 import { ProjectsListPanel } from '@/components/project-panel/projects-list-panel.component';
+import { useTranslation } from '@/i18n';
 import { Flex, Grid, Item, Loading, TabList, Tabs, Text, View } from '@geti-ui/ui';
 import { usePrefetchQuery } from '@tanstack/react-query';
 import { usePrefetchPipeline } from 'hooks/api/pipeline.hook';
@@ -21,6 +22,7 @@ import classes from './layout.module.scss';
 
 const Header = () => {
     const projectId = useProjectIdentifier();
+    const { t } = useTranslation();
 
     return (
         <View backgroundColor={'gray-200'} gridArea={'header'}>
@@ -36,7 +38,7 @@ const Header = () => {
                 <View paddingEnd={'size-200'}>
                     <Link to={paths.project.index({})} viewTransition>
                         <Flex alignItems='center' gap='size-50'>
-                            <img src={getiLogo} alt={'Geti logo'} className={classes.logo} />
+                            <img src={getiLogo} alt={t('navigation.logoAlt')} className={classes.logo} />
                             <Text UNSAFE_className={classes.logoText}>Geti™</Text>
                         </Flex>
                     </Link>
@@ -44,25 +46,25 @@ const Header = () => {
 
                 <TabList height={'100%'} UNSAFE_className={classes.tabList}>
                     <Item
-                        textValue='Data collection page to visualise your media items'
+                        textValue={t('navigation.datasetDescription')}
                         key={'dataset'}
                         href={paths.project.dataset.index({ projectId })}
                     >
-                        Dataset
+                        {t('navigation.dataset')}
                     </Item>
                     <Item
-                        textValue='Models page to visualise your models'
+                        textValue={t('navigation.modelsDescription')}
                         key={'models'}
                         href={paths.project.models({ projectId })}
                     >
-                        Models
+                        {t('navigation.models')}
                     </Item>
                     <Item
-                        textValue='Inference page showing live inference on your project'
+                        textValue={t('navigation.inferenceDescription')}
                         key={'inference'}
                         href={paths.project.inference({ projectId })}
                     >
-                        Inference
+                        {t('navigation.inference')}
                     </Item>
                 </TabList>
 

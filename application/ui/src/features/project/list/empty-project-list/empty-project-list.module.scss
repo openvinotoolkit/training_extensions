@@ -5,15 +5,23 @@
 }
 
 .intro {
-    max-width: 60vw;
     text-align: center;
-    margin: 0 auto var(--spectrum-global-dimension-size-600);
-    font-size: var(--spectrum-global-dimension-font-size-500);
+    max-width: 60vw;
+    margin: 0 auto 3vh;
+    font-size: clamp(
+        var(--spectrum-global-dimension-font-size-200),
+        0.5rem + 0.8vw,
+        var(--spectrum-global-dimension-font-size-500)
+    );
     color: var(--spectrum-global-color-gray-700);
 }
 
 .introName {
-    font-size: var(--spectrum-global-dimension-font-size-700);
+    font-size: clamp(
+        var(--spectrum-global-dimension-font-size-400),
+        0.5rem + 1.1vw,
+        var(--spectrum-global-dimension-font-size-700)
+    );
     font-weight: 700;
     letter-spacing: -0.02em;
     background: linear-gradient(92deg, var(--energy-blue), var(--energy-blue-light));
@@ -28,7 +36,19 @@
 
 .container {
     border: 1px dashed var(--spectrum-global-color-gray-700);
-    padding: var(--spectrum-global-dimension-size-500) var(--spectrum-global-dimension-size-200);
+    padding: 4vh 2vw;
     background: var(--spectrum-global-color-gray-300);
     border-radius: var(--spectrum-global-dimension-size-200);
+}
+
+@media (max-width: 1300px) {
+    .intro {
+        max-width: 80vw;
+    }
+}
+
+@media (max-height: 700px) {
+    .container {
+        height: 340px;
+    }
 }

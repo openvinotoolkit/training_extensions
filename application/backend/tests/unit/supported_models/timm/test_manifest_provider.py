@@ -77,8 +77,16 @@ class TestTimmManifestProvider:
         assert manifest.stats.benchmark_metrics.imagenet_top1_accuracy == 70.0
         assert manifest.hyperparameters.training.input_size_width == 224
         assert manifest.hyperparameters.training.input_size_height == 224
+        assert manifest.hyperparameters.training.allowed_values_input_size == [224]
         assert manifest.hyperparameters.training.learning_rate == 0.01
         assert manifest.hyperparameters.training.weight_decay == 0.001
+
+    def test_build_manifest_allowed_input_sizes_for_non_square_model(self) -> None:
+        entry = {**_FAKE_ENTRY, "input_size": [3, 256, 224]}
+        with patch.object(manifest_provider, "_snapshot", return_value={entry["model_name"]: entry}):
+            manifest = TimmManifestProvider.build_manifest("resnet18.a1_in1k")
+
+        assert manifest.hyperparameters.training.allowed_values_input_size == [224, 256]
 
     def test_build_manifest_missing_model_raises_key_error(self) -> None:
         with pytest.raises(KeyError):

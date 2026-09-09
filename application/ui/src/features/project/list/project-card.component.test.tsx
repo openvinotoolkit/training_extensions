@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { API_BASE_URL } from '@/api';
+import { i18n } from '@/i18n';
 import { screen } from '@testing-library/react';
 import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
@@ -142,16 +143,19 @@ describe('ProjectCard', () => {
 
 describe('getProjectTypeTitle', () => {
     it('returns undefined when task is missing', () => {
-        expect(getProjectTypeTitle()).toBeUndefined();
+        expect(getProjectTypeTitle(undefined, i18n.t)).toBeUndefined();
     });
 
     it('returns multi-label classification for non-exclusive classification tasks', () => {
         expect(
-            getProjectTypeTitle({
-                task_type: 'classification',
-                exclusive_labels: false,
-                labels: [],
-            })
+            getProjectTypeTitle(
+                {
+                    task_type: 'classification',
+                    exclusive_labels: false,
+                    labels: [],
+                },
+                i18n.t
+            )
         ).toBe('Multi-label classification');
     });
 });

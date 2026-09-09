@@ -3,6 +3,7 @@
 
 import { FormEvent, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, TextField } from '@geti-ui/ui';
 import { usePatchProject } from 'hooks/api/project.hook';
 import { isEmpty } from 'lodash-es';
@@ -25,12 +26,13 @@ export const EditProjectNameDialog = ({
     projectName,
     projectNames,
 }: EditProjectNameDialogProps) => {
+    const { t } = useTranslation();
     const patchProjectMutation = usePatchProject();
     const [newProjectName, setNewProjectName] = useState(projectName);
 
     const trimmedProjectName = newProjectName.trim();
     const isNameUnchanged = trimmedProjectName === projectName;
-    const validationErrorMessage = validateProjectName(newProjectName, projectNames);
+    const validationErrorMessage = validateProjectName(newProjectName, projectNames, t);
     const isSaveButtonDisabled =
         isEmpty(trimmedProjectName) ||
         isNameUnchanged ||
@@ -46,7 +48,7 @@ export const EditProjectNameDialog = ({
             {
                 onSuccess: () => {
                     onClose();
-                    toast({ type: 'success', message: 'Project updated successfully' });
+                    toast({ type: 'success', message: t('project.rename.success') });
                 },
             }
         );
@@ -66,7 +68,7 @@ export const EditProjectNameDialog = ({
         <DialogContainer onDismiss={onClose}>
             {isOpen && (
                 <Dialog>
-                    <Heading>Edit project name</Heading>
+                    <Heading>{t('project.rename.title')}</Heading>
                     <Divider />
                     <Content>
                         <Form onSubmit={handleEditProjectName}>
@@ -77,7 +79,7 @@ export const EditProjectNameDialog = ({
                                 value={newProjectName}
                                 onChange={setNewProjectName}
                                 width='100%'
-                                aria-label={'Edit project name field'}
+                                aria-label={t('project.rename.fieldLabel')}
                                 isReadOnly={patchProjectMutation.isPending}
                                 errorMessage={validationErrorMessage}
                                 validationState={validationErrorMessage === undefined ? undefined : 'invalid'}
@@ -88,7 +90,7 @@ export const EditProjectNameDialog = ({
                                     onPress={onClose}
                                     isDisabled={patchProjectMutation.isPending}
                                 >
-                                    Cancel
+                                    {t('common.actions.cancel')}
                                 </Button>
                                 <Button
                                     type='submit'
@@ -96,7 +98,7 @@ export const EditProjectNameDialog = ({
                                     isDisabled={isSaveButtonDisabled}
                                     isPending={patchProjectMutation.isPending}
                                 >
-                                    Save
+                                    {t('common.actions.save')}
                                 </Button>
                             </ButtonGroup>
                         </Form>

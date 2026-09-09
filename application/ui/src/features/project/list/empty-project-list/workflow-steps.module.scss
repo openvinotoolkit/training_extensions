@@ -4,7 +4,7 @@
 
     width: max-content;
     margin: auto auto 0; // pins the chain to the bottom of the empty state
-    padding-block: var(--spectrum-global-dimension-size-600);
+    padding-block: 2vw;
 }
 
 .steps {
@@ -14,7 +14,11 @@
     margin: 0 0 var(--spectrum-global-dimension-size-200);
     padding: 0;
     list-style: none;
-    font-size: var(--spectrum-global-dimension-font-size-300);
+    font-size: clamp(
+        var(--spectrum-global-dimension-font-size-75),
+        0.5rem + 0.7vw,
+        var(--spectrum-global-dimension-font-size-300)
+    );
     color: var(--spectrum-global-color-gray-800);
 }
 
@@ -70,4 +74,18 @@
     transform: translateY(50%);
     background: var(--spectrum-global-color-gray-100);
     font-size: var(--spectrum-global-dimension-font-size-75);
+}
+
+@media (max-width: 1000px) {
+    .workflow {
+        --circle-size: var(--spectrum-global-dimension-size-600);
+    }
+
+    .steps {
+        gap: var(--spectrum-global-dimension-size-100);
+    }
+
+    .step {
+        gap: var(--spectrum-global-dimension-size-100);
+    }
 }

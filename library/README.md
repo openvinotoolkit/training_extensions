@@ -101,23 +101,23 @@ pip install "getitune"
 
 | Extra    | PyTorch wheel                                                          | Use when                             | Setup Guide                                                                      |
 | -------- | ---------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
-| `[cpu]`  | `torch==2.12.1+cpu` (Linux/Windows) or default `torch==2.12.1` (macOS) | No GPU, or running on Apple silicon. | —                                                                                |
-| `[xpu]`  | `torch==2.12.1+xpu` + `triton-xpu`                                     | Intel discrete or integrated GPUs.   | [Intel GPU drivers](https://github.com/intel/compute-runtime/releases)           |
-| `[cuda]` | `torch==2.12.1+cu130`                                                  | NVIDIA GPUs with CUDA 13.0 drivers.  | [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-13-0-0-download-archive) |
+| `[cpu]`  | `torch==2.14.0+cpu` (Linux/Windows) or default `torch==2.14.0` (macOS) | No GPU, or running on Apple silicon. | —                                                                                |
+| `[xpu]`  | `torch==2.14.0+xpu` + `triton-xpu`                                     | Intel discrete or integrated GPUs.   | [Intel GPU drivers](https://github.com/intel/compute-runtime/releases)           |
+| `[cuda]` | `torch==2.14.0+cu130`                                                  | NVIDIA GPUs with CUDA 13.0 drivers.  | [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-13-0-0-download-archive) |
 
 ```bash
 # Intel GPU (XPU)
 uv pip install "getitune[xpu]" --extra-index-url https://download.pytorch.org/whl/xpu
 
 # NVIDIA GPU (CUDA 13.0)
-uv pip install "getitune[cuda]" --extra-index-url https://download.pytorch.org/whl/cu128
+uv pip install "getitune[cuda]" --extra-index-url https://download.pytorch.org/whl/cu130
 
 # CPU-only (no extra index needed)
 uv pip install "getitune[cpu]"
 ```
 
 > [!NOTE]
-> For **macOS** users: PyTorch's `+cpu` wheel is only published for Linux and Windows. The `[cpu]` extra resolves this automatically and installs the default `torch==2.12.1` wheel on macOS.
+> For **macOS** users: PyTorch's `+cpu` wheel is only published for Linux and Windows. The `[cpu]` extra resolves this automatically and installs the default `torch==2.14.0` wheel on macOS.
 
 </details>
 

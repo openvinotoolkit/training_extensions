@@ -1,37 +1,38 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Text, View } from '@geti-ui/ui';
 import { Adjustments, AICPUIcon, AutoTraining, Edit, FolderLight } from '@geti-ui/ui/icons';
 
 import classes from './workflow-steps.module.scss';
 
 const STEPS = [
-    { label: 'Add data', Icon: FolderLight },
-    { label: 'Annotate', Icon: Edit },
-    { label: 'Train', Icon: AutoTraining },
-    { label: 'Optimize', Icon: Adjustments },
-    { label: 'Run inference', Icon: AICPUIcon },
-];
+    { labelKey: 'project.list.workflow.addData', Icon: FolderLight },
+    { labelKey: 'project.list.workflow.annotate', Icon: Edit },
+    { labelKey: 'project.list.workflow.train', Icon: AutoTraining },
+    { labelKey: 'project.list.workflow.optimize', Icon: Adjustments },
+    { labelKey: 'project.list.workflow.runInference', Icon: AICPUIcon },
+] as const;
 
 export const WorkflowSteps = () => {
+    const { t } = useTranslation();
+
     return (
         <View UNSAFE_className={classes.workflow}>
-            <ol aria-label='Geti workflow' className={classes.steps}>
-                {STEPS.map(({ label, Icon }) => (
-                    <li key={label} className={classes.step}>
+            <ol aria-label={t('project.list.workflow.label')} className={classes.steps}>
+                {STEPS.map(({ labelKey, Icon }) => (
+                    <li key={labelKey} className={classes.step}>
                         <Text UNSAFE_className={classes.circle}>
                             <Icon aria-hidden />
                         </Text>
-                        {label}
+                        {t(labelKey)}
                     </li>
                 ))}
             </ol>
 
             <View UNSAFE_className={classes.loop}>
-                <Text UNSAFE_className={classes.loopText}>
-                    Monitor predictions and collect more data to iteratively fine-tune your model
-                </Text>
+                <Text UNSAFE_className={classes.loopText}>{t('project.list.workflow.loop')}</Text>
             </View>
         </View>
     );

@@ -7,6 +7,7 @@ import type { Label, TaskType } from '@/api/types';
 import { HotkeyField } from '@/components/label-fields/hotkey-field.component';
 import { LabelColorPicker } from '@/components/label-fields/label-color-picker.component';
 import { validateLabelHotkey, validateLabelName } from '@/components/label-fields/label-validation';
+import { useTranslation } from '@/i18n';
 import { ActionButton, DOMRefValue, Grid, TextField, TextFieldRef, useUnwrapDOMRef, View } from '@geti-ui/ui';
 import { Add } from '@geti-ui/ui/icons';
 import { useEventListener } from 'hooks/event-listener.hook';
@@ -24,6 +25,7 @@ type CreateLabelProps = {
 };
 
 export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) => {
+    const { t } = useTranslation();
     const [newLabel, setNewLabel] = useState<Label>(getInitialLabel);
     const containerRef = useRef<DOMRefValue<HTMLDivElement>>(null);
     const inputRef = useRef<TextFieldRef<HTMLInputElement>>(null);
@@ -77,8 +79,8 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
             <View>
                 <TextField
                     ref={inputRef}
-                    aria-label={'Create label input'}
-                    placeholder={'Create label'}
+                    aria-label={t('project.create.labels.inputLabel')}
+                    placeholder={t('project.create.labels.inputPlaceholder')}
                     value={newLabel.name}
                     onChange={(newName) => setNewLabel((prevLabel) => ({ ...prevLabel, name: newName }))}
                     errorMessage={validationResult}
@@ -98,7 +100,7 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
                 isQuiet
                 onPress={createLabel}
                 isDisabled={isCreateLabelDisabled}
-                aria-label={`Create label ${newLabel.name}`}
+                aria-label={t('project.create.labels.createAction', { name: newLabel.name })}
             >
                 <Add />
             </ActionButton>
