@@ -65,10 +65,15 @@ pub fn spawn_backend(app: &AppHandle) -> std::io::Result<Sidecar> {
     let mut command = Command::new(&backend_path);
     apply_default_env(&mut command, app);
 
-    // Put the backend into its own console process group. This is what makes a
-    // targeted `CTRL_BREAK_EVENT` (i.e. graceful shutdown, see
-    // `job::send_ctrl_break`) deliverable to it and it alone. In release we
-    // additionally suppress the console window.
+    // Put the backend into its own console process group, and in release
+    // suppress its console window.
+    //
+    // Note that `CREATE_NO_WINDOW` leaves the child *without a console handle*,
+    // so the release side-car cannot be stopped with `GenerateConsoleCtrlEvent`.
+    // Graceful shutdown therefore goes through the backend's named event (see
+    // `job::signal_shutdown_event`); `CREATE_NEW_PROCESS_GROUP` only keeps the
+    // Ctrl+Break fallback usable in `tauri dev`, where the child does inherit
+    // the shell's console.
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;

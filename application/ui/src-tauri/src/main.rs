@@ -220,13 +220,15 @@ fn kill_process_tree(pid: u32) {
 
 /// Politely ask the backend tree to stop.
 ///
-/// Windows gets a targeted `CTRL_BREAK_EVENT` (the backend runs in its own
-/// console process group); Unix gets `SIGTERM` on the process group. Returns
-/// `true` when the request was delivered.
+/// On Windows the primary channel is the backend's named shutdown event, which
+/// works regardless of whether the side-car has a console — the release build is
+/// spawned with `CREATE_NO_WINDOW` and therefore has none, so the console-based
+/// `CTRL_BREAK_EVENT` is only a fallback for `tauri dev`. Unix gets `SIGTERM` on
+/// the process group. Returns `true` when the request was delivered.
 fn request_graceful_stop(pid: u32) -> bool {
     #[cfg(windows)]
     {
-        job::send_ctrl_break(pid)
+        job::signal_shutdown_event(pid) || job::send_ctrl_break(pid)
     }
 
     #[cfg(unix)]

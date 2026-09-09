@@ -15,11 +15,28 @@
 //!
 //! 2. **Unclean shutdown.** `taskkill /F /T` hard-kills the backend, leaving
 //!    the SQLite WAL/journal behind and truncating in-flight migrations or
-//!    checkpoints. [`send_ctrl_break`] instead delivers a console control event
-//!    so the backend can run its ASGI lifespan shutdown and close the database
-//!    properly; the hard kill stays only as a last-resort fallback.
+//!    checkpoints. [`signal_shutdown_event`] instead asks the backend to stop,
+//!    so it can run its ASGI lifespan shutdown and close the database properly;
+//!    the hard kill stays only as a last-resort fallback.
+//!
+//! # Why a named event rather than Ctrl+Break
+//!
+//! The obvious way to stop a console child is `GenerateConsoleCtrlEvent`, but it
+//! only reaches processes attached to the *caller's* console. The shell is a GUI
+//! (`windows_subsystem = "windows"`) process with no console, and the release
+//! side-car is spawned with `CREATE_NO_WINDOW`, which per [MSDN] means "the
+//! console handle for the application is not set". With no console to borrow,
+//! `AttachConsole` fails and every shutdown would silently fall through to the
+//! forced kill — exactly the behaviour this module exists to avoid.
+//!
+//! So the primary channel is a named Win32 event ([`signal_shutdown_event`]),
+//! which is completely independent of consoles: the backend creates it at
+//! startup and waits on it in a background thread. [`send_ctrl_break`] is kept
+//! only as a fallback for the console-attached `tauri dev` case and for older
+//! backends that do not create the event yet.
 //!
 //! [Job Object]: https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects
+//! [MSDN]: https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
 
 use std::os::windows::io::AsRawHandle;
 use std::process::Child;
@@ -35,6 +52,13 @@ use windows::Win32::System::JobObjects::{
     SetInformationJobObject, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
     JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
 };
+use windows::Win32::System::Threading::{OpenEventW, SetEvent, EVENT_MODIFY_STATE};
+
+/// Prefix of the per-process shutdown event the backend creates.
+///
+/// The full name is `Local\<prefix><pid>`. Keep in sync with
+/// `SHUTDOWN_EVENT_PREFIX` in `application/backend/app/main.py`.
+const SHUTDOWN_EVENT_PREFIX: &str = "geti-backend-shutdown-";
 
 /// Owned handle to a job object configured to kill every contained process when
 /// the handle is dropped (i.e. when this process exits, normally or not).
@@ -98,12 +122,56 @@ pub fn contain(child: &Child) -> Option<JobHandle> {
     Some(job)
 }
 
+/// Ask the side-car to shut down gracefully by signalling its named event.
+///
+/// The backend creates a manual-reset event called
+/// `Local\geti-backend-shutdown-<pid>` during startup and waits on it in a
+/// background thread; setting it makes the backend run its normal shutdown path.
+/// The other half of this contract lives in
+/// `application/backend/pyinstaller/windows/shutdown.py` — keep the name format
+/// in sync with `SHUTDOWN_EVENT_PREFIX` there.
+///
+/// The `Local\` namespace is per-session, so the event is visible to every
+/// process in the user's session and to nothing outside it. The MSIX package is
+/// full-trust, so it is not AppContainer-isolated and named-object access works
+/// normally.
+///
+/// Returns `true` when the event was found and set.
+pub fn signal_shutdown_event(pid: u32) -> bool {
+    let name: Vec<u16> = format!("Local\\{SHUTDOWN_EVENT_PREFIX}{pid}\0")
+        .encode_utf16()
+        .collect();
+
+    unsafe {
+        let handle = match OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr())) {
+            Ok(handle) => handle,
+            Err(e) => {
+                // Expected when the backend predates this mechanism, or has not
+                // finished starting up yet. The caller falls back to Ctrl+Break.
+                log::warn!("No shutdown event for the backend (pid {pid}): {e}");
+                return false;
+            }
+        };
+
+        let signalled = SetEvent(handle);
+        if let Err(e) = &signalled {
+            log::warn!("Failed to set the backend shutdown event (pid {pid}): {e}");
+        }
+        let _ = CloseHandle(handle);
+
+        signalled.is_ok()
+    }
+}
+
 /// Ask the side-car to shut down gracefully by sending it `CTRL_BREAK_EVENT`.
 ///
+/// **Fallback only** — see the module docs. This works in `tauri dev`, where the
+/// shell owns a console the child inherits, but not for the release side-car
+/// spawned with `CREATE_NO_WINDOW`, which has no console to attach to. Prefer
+/// [`signal_shutdown_event`].
+///
 /// The backend is spawned with `CREATE_NEW_PROCESS_GROUP` (see `backend.rs`), so
-/// it is its own console process group and can be signalled by PID. Because the
-/// shell is a GUI (`windows_subsystem = "windows"`) process without a console,
-/// we temporarily attach to the child's console to be allowed to signal it.
+/// it is its own console process group and can be signalled by PID.
 ///
 /// `CTRL_C_EVENT` is deliberately not used: `CREATE_NEW_PROCESS_GROUP`
 /// implicitly disables Ctrl+C handling for the new group, so only Ctrl+Break is
