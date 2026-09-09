@@ -13,6 +13,15 @@ describe('DeleteProjectDialog', () => {
     const projectId = 'test-project-id';
     const projectName = 'Test Project';
 
+    it('preserves punctuation and markup-like text in the project name', () => {
+        const name = 'A "quoted" project & <sample>';
+
+        render(<DeleteProjectDialog projectId={projectId} projectName={name} isOpen onClose={vi.fn()} />);
+
+        expect(screen.getByText(`Are you sure you want to delete project "${name}"?`)).toBeVisible();
+        expect(document.querySelector('sample')).toBeNull();
+    });
+
     it('successfully deletes project and shows success toast', async () => {
         server.use(
             http.delete('/api/projects/{project_id}', () => {

@@ -1,4 +1,11 @@
 {
+    "common": {
+        "actions": {
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "save": "Save"
+        }
+    },
     "navigation": {
         "logoAlt": "Geti logo",
         "dataset": "Dataset",
@@ -7,5 +14,21 @@
         "modelsDescription": "Models page to visualise your models",
         "inference": "Inference",
         "inferenceDescription": "Inference page showing live inference on your project"
+    },
+    "project": {
+        "delete": {
+            "title": "Delete",
+            "confirmation": "Are you sure you want to delete project \"{{projectName}}\"?",
+            "success": "Project deleted successfully"
+        },
+        "rename": {
+            "title": "Edit project name",
+            "fieldLabel": "Edit project name field",
+            "success": "Project updated successfully"
+        },
+        "validation": {
+            "nameEmpty": "Project name cannot be empty",
+            "nameExists": "That project name already exists"
+        }
     }
 }

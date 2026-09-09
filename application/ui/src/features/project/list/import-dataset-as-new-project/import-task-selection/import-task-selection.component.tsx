@@ -9,6 +9,7 @@ import { InfoOutline } from '@geti-ui/ui/icons';
 import { useProjects } from 'hooks/api/project.hook';
 import { useStagedDatasetSuspense } from 'hooks/api/staged-dataset.hook';
 import { useImportDatasetAsNewProject } from 'hooks/storage/use-import-dataset-as-new-project.hook';
+import { useTranslation } from 'react-i18next';
 
 import { generateUniqueProjectName } from '../../../create/utils';
 import { useImportDatasetDialog } from '../../../providers/import-dataset-dialog-provider.component';
@@ -53,6 +54,7 @@ const useFormConfig = (
 };
 
 export const ImportTaskSelection = ({ stagedDatasetId }: ImportTaskSelectionProps) => {
+    const { t } = useTranslation();
     const { data: projects } = useProjects();
     const { data: stagedDataset } = useStagedDatasetSuspense(stagedDatasetId);
 
@@ -66,7 +68,8 @@ export const ImportTaskSelection = ({ stagedDatasetId }: ImportTaskSelectionProp
 
     const validationErrorMessage = validateProjectName(
         name.trim(),
-        projects.map((project) => project.name)
+        projects.map((project) => project.name),
+        t
     );
 
     const items = allowedTaskTypes.map((taskType) => ({
