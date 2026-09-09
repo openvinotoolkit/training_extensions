@@ -466,7 +466,10 @@ class TestRunnerBenchmarkIsolation:
         )
         with patch.object(runner, "_run_single_stage", side_effect=[prepared, measured]) as run_stage:
             result = runner._run_single(
-                experiment=MagicMock(), seed=0, data_path=tmp_path / "data", allowed_phases={"train", "benchmark/export"}
+                experiment=MagicMock(),
+                seed=0,
+                data_path=tmp_path / "data",
+                allowed_phases={"train", "benchmark/export"},
             )
         assert result.success
         assert [phase.phase for phase in result.phases] == ["benchmark/export"]

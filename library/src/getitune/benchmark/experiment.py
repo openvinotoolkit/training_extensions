@@ -1032,6 +1032,7 @@ class ExperimentExecutor:
     def _update_performance_result(self, precision: str, phase: PhaseResult) -> None:
         """Update the canonical per-seed performance result."""
         from getitune.benchmark.hardware import get_openvino_device_name
+
         output = self.work_dir / "performance_result.json"
         try:
             current = json.loads(output.read_text(encoding="utf-8"))
