@@ -357,12 +357,7 @@ class AutoConfigurator:
         # Capture the tiling intent before overwriting the subset augmentations below.
         tiling_enabled = datamodule.tile_config.enable_tiler
 
-        # The OV recipe owns the whole loading configuration for this subset, including
-        # `num_workers`. It used to be silently ignored (only batch_size/augmentations were
-        # copied over), so recipes that deliberately reduce the worker count for OpenVINO
-        # evaluation - e.g. semantic_segmentation's `num_workers: 4` - kept running with the
-        # training recipe's value. Each worker is a *spawned* process that re-imports torch
-        # and the whole accelerator runtime, so the difference is significant.
+        # The OV recipe owns the loading configuration, including `num_workers`. Ensure that it is copied over.
         if "num_workers" in ov_subset:
             subset_config.num_workers = ov_subset["num_workers"]
 
@@ -483,7 +478,7 @@ class AutoConfigurator:
             ignore_index=datamodule.ignore_index,
             unannotated_items_ratio=datamodule.unannotated_items_ratio,
             auto_num_workers=datamodule.auto_num_workers,
-            device=DeviceType.cpu,
+            device=DeviceType.cpu,  # The rebuilt datamodule must not inherit the training device (cuda/xpu)
         )
 
     @staticmethod
