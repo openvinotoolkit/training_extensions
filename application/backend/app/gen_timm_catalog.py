@@ -182,8 +182,8 @@ def _compute_stats(model_name: str) -> dict[str, float]:
     flops = measure_flops(lambda: model(inputs))
 
     return {
-        "trainable_parameters": round(params / 1_000_000, 1),
         "gigaflops": round(flops / 1_000_000_000, 2),
+        "trainable_parameters": round(params / 1_000_000, 1),
     }
 
 
@@ -217,8 +217,8 @@ def _build_entry(
         "license": model_licenses.get(model_name, {}).get("weights_license", _UNKNOWN_LICENSE),
     }
 
-    cached_keys = {"gigaflops", "trainable_parameters"}
-    if existing is not None and cached_keys.issubset(existing.keys()):
+    cached_keys = ("gigaflops", "trainable_parameters")
+    if existing is not None and set(cached_keys).issubset(existing.keys()):
         logger.debug("Reusing cached stats for %s", model_name)
         entry.update({k: existing[k] for k in cached_keys})
     else:
