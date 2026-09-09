@@ -45,7 +45,7 @@ export const CircularProgress = ({
     );
 
     return (
-        <svg width={size} height={size} viewBox={viewBox} aria-label='progress-circular-loader'>
+        <svg width={size} height={size} viewBox={viewBox} aria-label='progress circular loader'>
             <circle
                 fill='none'
                 stroke={`var(--spectrum-global-color-${backStrokeColor})`}
