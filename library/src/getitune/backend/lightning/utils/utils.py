@@ -5,8 +5,7 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
-from typing import Any, Callable, Iterator, TypeVar
+from typing import Any, Callable, TypeVar
 
 _T = TypeVar("_T")
 _V = TypeVar("_V")
@@ -38,42 +37,3 @@ def ensure_callable(func: Callable[[_T], _V]) -> Callable[[_T], _V]:
     if not callable(func):
         raise TypeError(func)
     return func
-
-
-@contextmanager
-def mock_modules_for_chkpt() -> Iterator[None]:
-    """Context manager to mock modules for getitune v2.2-2.4 checkpoint loading and restore sys.modules after."""
-    import sys
-    import types
-
-    import getitune
-    from getitune.types.label import LabelInfo, SegLabelInfo
-
-    # Save original sys.modules
-    original_sys_modules = dict(sys.modules)
-
-    try:
-        # Fake modules
-        OTXTrainType = type("OTXTrainType", (object,), {"__init__": lambda *_: None})  # noqa: N806
-        UnlabeledDataConfig = type("UnlabeledDataConfig", (object,), {"__init__": lambda *_: None})  # noqa: N806
-        VisualPromptingConfig = type("VisualPromptingConfig", (object,), {"__init__": lambda *_: None})  # noqa: N806
-
-        # Register all missing modules in sys.modules
-        setattr(sys.modules["getitune.config.data"], "UnlabeledDataConfig", UnlabeledDataConfig)  # noqa: B010
-        setattr(sys.modules["getitune.config.data"], "VisualPromptingConfig", VisualPromptingConfig)  # noqa: B010
-        setattr(sys.modules["getitune.types.label"], "LabelInfo", LabelInfo)  # noqa: B010
-        setattr(sys.modules["getitune.types.label"], "SegLabelInfo", SegLabelInfo)  # noqa: B010
-        setattr(sys.modules["getitune.types.task"], "OTXTrainType", OTXTrainType)  # noqa: B010
-
-        sys.modules["getitune.core"] = types.ModuleType("getitune.core")
-        sys.modules["getitune.core.config"] = getitune.config  # type: ignore[attr-defined]
-        sys.modules["getitune.core.config.data"] = getitune.config.data  # type: ignore[attr-defined]
-        sys.modules["getitune.core.types"] = getitune.types
-        sys.modules["getitune.core.types.task"] = getitune.types.task
-        sys.modules["getitune.core.types.label"] = getitune.types.label
-        sys.modules["getitune.core.model"] = getitune.backend.lightning.models  # type: ignore[attr-defined]
-
-        yield
-    finally:
-        sys.modules.clear()
-        sys.modules.update(original_sys_modules)

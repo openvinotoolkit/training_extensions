@@ -118,9 +118,9 @@ def run(args: argparse.Namespace) -> None:
         "model": args.recipe if is_torch else str(model_path),
         "data": str(args.data_root),
         "work_dir": str(args.work_dir),
-        "device": args.device,
     }
     if is_torch:
+        create_kwargs["device"] = args.device
         create_kwargs["checkpoint"] = str(args.checkpoint)
         create_kwargs["task"] = args.task
 
@@ -130,7 +130,7 @@ def run(args: argparse.Namespace) -> None:
     if args.metric:
         metric = _resolve_metric(engine.task, args.metric, engine.model.label_info)
 
-    print(f"Evaluating {args.model} on {args.data_root} (task={engine.task})")
+    print(f"Evaluating {args.model} on {args.data_root} (task={engine.model.task})")
     metrics = engine.test(metric=metric)
     print("Test metrics:")
     for key, value in metrics.items():
