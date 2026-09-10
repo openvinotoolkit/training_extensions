@@ -1,15 +1,18 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import type { TranslateFn } from '@/i18n';
 import dayjs from 'dayjs';
 
 const DATE_TIME_FORMAT = 'DD MMM YYYY, hh:mm A';
 
-const formatFilterDate = (date: string): string => dayjs(date).format('DD/MM/YYYY HH:mm');
+export const formatFilterDate = (date: string): string => dayjs(date).format('DD/MM/YYYY HH:mm');
 
-export const formatDateRangeStart = (date: string): string => `From ${formatFilterDate(date)}`;
+export const formatDateRangeStart = (date: string, t: TranslateFn): string =>
+    t('dataset.filters.dateRange.from', { date: formatFilterDate(date) });
 
-export const formatDateRangeEnd = (date: string): string => `To ${formatFilterDate(date)}`;
+export const formatDateRangeEnd = (date: string, t: TranslateFn): string =>
+    t('dataset.filters.dateRange.to', { date: formatFilterDate(date) });
 
 export const formatDateTime = (dateString: string | null | undefined, fallback = '-'): string => {
     if (!dateString) return fallback;

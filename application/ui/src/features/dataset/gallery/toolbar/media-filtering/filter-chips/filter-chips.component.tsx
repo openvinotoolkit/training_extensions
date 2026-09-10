@@ -8,20 +8,16 @@ import classes from './filter-chips.module.scss';
 
 type FilterChipsProps = {
     name: string;
+    ariaLabel: string;
     onClose: () => void;
 };
 
-export const FilterChips = ({ name, onClose }: FilterChipsProps) => {
+export const FilterChips = ({ name, ariaLabel, onClose }: FilterChipsProps) => {
     return (
         <Flex UNSAFE_className={classes.container} alignItems={'center'}>
             <Text>{name}</Text>
 
-            <ActionButton
-                UNSAFE_className={classes.closeIcon}
-                isQuiet
-                aria-label={`Remove ${name} filter`}
-                onPress={onClose}
-            >
+            <ActionButton UNSAFE_className={classes.closeIcon} isQuiet aria-label={ariaLabel} onPress={onClose}>
                 <BorderClose
                     width={'var(--spectrum-global-dimension-size-175)'}
                     height={'var(--spectrum-global-dimension-size-175)'}
