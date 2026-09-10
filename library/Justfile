@@ -32,6 +32,9 @@ venv device="cpu": _ensure_uv
 [arg("device", short="d", long="device")]
 venv-benchmark device="cpu": _ensure_uv
     uv lock --check
+    # CUDA Triton and XPU Triton share the same Python package paths. When an
+    # existing environment changes accelerator, reinstall XPU Triton last so
+    # uninstalling CUDA Triton cannot remove files owned by triton-xpu.
     if [ "{{ device }}" = "xpu" ]; then \
         uv sync --frozen --extra xpu --extra ultralytics --extra benchmark --reinstall-package triton-xpu; \
     else \
@@ -45,7 +48,7 @@ venv-lock: _ensure_uv
 # Patch pyproject.toml to build torch/torchvision against CUDA 12.6 instead of 13.0 for the 'cuda' target,
 # needed for legacy Nvidia GPUs (Volta, Maxwell, Pascal). See https://github.com/open-edge-platform/geti/issues/7163
 patch-for-legacy-gpu-support: _ensure_uv
-    uv run --no-sync python -c "from pathlib import Path; p = Path('pyproject.toml'); p.write_text(p.read_text().replace('cu130', 'cu126'))"
+    uv run python -c "from pathlib import Path; p = Path('pyproject.toml'); p.write_text(p.read_text().replace('cu130', 'cu126'))"
     just venv-lock
 
 # -------------------------------------------------------------------------------------------------
