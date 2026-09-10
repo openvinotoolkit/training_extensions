@@ -183,6 +183,7 @@ torchvision = [
     { index = "torch-cuda", extra = "cuda"},
 ]
 ultralytics = { git = "https://github.com/ultralytics/ultralytics.git", branch = "exp27-clean" }
+openvino-model-api = { git = "https://github.com/open-edge-platform/model_api.git", branch = "master", subdirectory = "model_api" }
 
 [[tool.uv.index]]
 name = "torch-cpu"
