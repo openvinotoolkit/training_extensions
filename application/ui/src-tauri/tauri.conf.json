@@ -12,6 +12,7 @@
     "app": {
         "windows": [
             {
+                "label": "main",
                 "title": "Geti",
                 "width": 1280,
                 "height": 800,
@@ -21,7 +22,7 @@
                 "fullscreen": false,
                 "useHttpsScheme": true,
                 "dragDropEnabled": false,
-                "additionalBrowserArgs": "--enable-unsafe-webgpu --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --ignore-certificate-errors --unsafely-treat-insecure-origin-as-secure=https://localhost:7860"
+                "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --ignore-certificate-errors --unsafely-treat-insecure-origin-as-secure=https://localhost:7860"
             }
         ],
         "security": {
