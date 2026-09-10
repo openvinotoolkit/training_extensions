@@ -293,7 +293,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          LIBVPL_COMMIT: "674d015bcb294bc39fa276e99a652ea045423e82"
+          LIBVPL_COMMIT: "778a66d6c6537f08eabb91955dbbf1bce3812894"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"

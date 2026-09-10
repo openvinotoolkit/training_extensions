@@ -174,9 +174,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 # silently change these builds. Each SHA was resolved from its release tag via:
 #   git ls-remote <repo-url> refs/tags/<tag>
 #
-# LIBVPL_REF:  tag v2.17.0
-#   git ls-remote https://github.com/intel/libvpl.git refs/tags/v2.17.0
-ARG LIBVPL_REF=d77f9195cf495b937631607333288fd917ae8939
+# LIBVPL_REF:  tag v2.16.0
+#   git ls-remote https://github.com/intel/libvpl.git refs/tags/v2.16.0
+ARG LIBVPL_REF=778a66d6c6537f08eabb91955dbbf1bce3812894
 # FFMPEG_REF: PyAV 17.1.0's smoke-test matrix validates against FFmpeg 8.1
 # (see https://github.com/PyAV-Org/PyAV/blob/v17.1.0/.github/workflows/smoke.yml); n8.1.2 is a same-branch patch
 # release of 8.1, so it stays within the tested/compatible range.
