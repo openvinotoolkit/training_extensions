@@ -17,7 +17,7 @@ const useMediaUploadProgress = () => {
     const upload = useMediaUpload();
     const state = useMediaUploadState();
 
-    return { upload, state, uploadProgress: computeSummary(state.items, state.isUploading) };
+    return { upload, state, uploadProgress: computeSummary(state.items) };
 };
 
 const renderUpload = () => renderHook(() => useMediaUploadProgress(), { wrapper: MediaUploadProvider });
@@ -61,7 +61,7 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             files,
-            () => result.current.uploadProgress.isUploading
+            () => result.current.state.isUploading
         );
 
         expect(uploadedFileNames).toEqual(['image-1.jpg', 'image-2.jpg']);
@@ -96,11 +96,11 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             mockFiles,
-            () => result.current.uploadProgress.isUploading
+            () => result.current.state.isUploading
         );
 
         expect(maxRunningUploads).toBeLessThanOrEqual(MEDIA_UPLOAD_CONCURRENCY);
-        expect(result.current.uploadProgress.completed).toBe(12);
+        expect(result.current.uploadProgress.succeeded).toBe(12);
     });
 
     it('tracks upload progress counters', async () => {
@@ -130,15 +130,13 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             files,
-            () => result.current.uploadProgress.isUploading
+            () => result.current.state.isUploading
         );
 
         expect(result.current.uploadProgress).toEqual({
             total: 2,
-            completed: 2,
             succeeded: 1,
             failed: 1,
-            isUploading: false,
         });
     });
 
@@ -168,7 +166,7 @@ describe('useMediaUpload', () => {
         await uploadMediaAndWaitForCompletion(
             result.current.upload.uploadMedia,
             files,
-            () => result.current.uploadProgress.isUploading
+            () => result.current.state.isUploading
         );
 
         const items = result.current.state.items;

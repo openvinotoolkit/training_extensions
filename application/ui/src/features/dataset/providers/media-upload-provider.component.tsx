@@ -88,7 +88,7 @@ export const MediaUploadProvider = ({ children }: { children: ReactNode }) => {
         if (state.items.length === 0) return;
 
         const openDialog = () => dispatch({ type: 'OPEN_DIALOG' });
-        const summary = computeSummary(state.items, state.isUploading);
+        const summary = computeSummary(state.items);
 
         if (!state.isUploading) {
             lastToastUpdateRef.current = 0;

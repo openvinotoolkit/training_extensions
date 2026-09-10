@@ -125,10 +125,10 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
         failed: t('dataset.upload.failed'),
     };
     const state = useMediaUploadState();
-    const summary = computeSummary(state.items, state.isUploading);
+    const summary = computeSummary(state.items);
     const items = state.items;
 
-    const subheader = buildSubheader(t, summary.total, summary.succeeded, summary.failed, summary.isUploading);
+    const subheader = buildSubheader(t, summary.total, summary.succeeded, summary.failed, state.isUploading);
 
     return (
         <Dialog size={'L'}>

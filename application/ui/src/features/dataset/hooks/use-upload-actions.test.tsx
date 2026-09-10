@@ -17,7 +17,7 @@ const renderUploadHook = () =>
         () => {
             const { items, isUploading } = useMediaUploadState();
 
-            return { ...useUploadActions(), uploadProgress: computeSummary(items, isUploading) };
+            return { ...useUploadActions(), isUploading, uploadProgress: computeSummary(items) };
         },
         { wrapper: MediaUploadProvider }
     );
@@ -32,11 +32,10 @@ describe('useUploadActions', () => {
 
         expect(result.current.uploadProgress).toEqual({
             total: 3,
-            completed: 0,
             succeeded: 0,
             failed: 0,
-            isUploading: true,
         });
+        expect(result.current.isUploading).toBe(true);
     });
 
     it('shows a spinner toast immediately when upload starts', async () => {
@@ -120,11 +119,10 @@ describe('useUploadActions', () => {
 
         expect(result.current.uploadProgress).toEqual({
             total: 2,
-            completed: 2,
             succeeded: 2,
             failed: 0,
-            isUploading: false,
         });
+        expect(result.current.isUploading).toBe(false);
         await waitFor(() => expect(screen.getByText('Uploaded 2 items')).toBeVisible());
     });
 

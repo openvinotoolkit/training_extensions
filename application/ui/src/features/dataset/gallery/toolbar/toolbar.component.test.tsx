@@ -24,13 +24,6 @@ const onSelectedMediaItemChangeMock = vi.fn();
 vi.mock('../../api/use-media-upload', () => ({
     useMediaUpload: () => ({
         uploadMedia: uploadMediaMock,
-        uploadProgress: {
-            total: 0,
-            completed: 0,
-            succeeded: 0,
-            failed: 0,
-            isUploading: false,
-        },
     }),
 }));
 
