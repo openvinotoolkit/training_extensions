@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { useImportJobStatus } from 'hooks/api/jobs/use-import-job-status.hook';
 import { useDeleteStagedDataset } from 'hooks/api/staged-dataset.hook';
 import { isInvalidJob, isJobFailed, isJobPending, isJobRunning } from 'hooks/api/util';
@@ -27,6 +28,7 @@ export const LoadingImportDataset = ({
     onSuccess,
     deleteEntry,
 }: LoadingImportDatasetProps) => {
+    const { t } = useTranslation();
     const deleteStagedFileMutation = useDeleteStagedDataset({ stagedDatasetId });
 
     const { data: job, ...response } = useImportJobStatus({
@@ -37,7 +39,7 @@ export const LoadingImportDataset = ({
             await onSuccess();
 
             toast({
-                message: `Dataset ${fileName} ${formatBytes(size)} imported successfully.`,
+                message: t('dataset.import.importedSuccess', { fileName, size: formatBytes(size) }),
                 type: 'success',
             });
         },
@@ -68,8 +70,8 @@ export const LoadingImportDataset = ({
                 <ImportFailedJob
                     size={size}
                     fileName={fileName}
-                    error={`${response.error?.detail ?? 'Unknown error'}`}
-                    message={'An error occurred during import.'}
+                    error={`${response.error?.detail ?? t('dataset.import.unknownErrorDetail')}`}
+                    message={t('dataset.import.genericError')}
                     stagedDatasetId={stagedDatasetId}
                     deleteEntry={deleteEntry}
                 />

@@ -73,6 +73,7 @@ const SelectedProjectButton = ({ name, id, isActive }: SelectedProjectProps) => 
 };
 
 const ManageProjects = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const navigateToProjectsList = () => {
@@ -89,7 +90,7 @@ const ManageProjects = () => {
             onPress={navigateToProjectsList}
         >
             <Edit />
-            <Text>Manage projects</Text>
+            <Text>{t('project.panel.manageProjects')}</Text>
         </ActionButton>
     );
 };

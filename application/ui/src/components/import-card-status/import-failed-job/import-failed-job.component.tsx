@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, Text } from '@geti-ui/ui';
 import { useDeleteStagedDataset } from 'hooks/api/staged-dataset.hook';
 
@@ -18,12 +19,16 @@ type ImportFailedJobProps = {
     deleteEntry: () => void;
 };
 
-const TechnicalDetails = ({ error }: { error: string }) => (
-    <details className={classes.details} aria-label={'Technical details of the job failure'}>
-        <summary className={classes.summary}>Technical details</summary>
-        <pre className={classes.traceback}>{error}</pre>
-    </details>
-);
+const TechnicalDetails = ({ error }: { error: string }) => {
+    const { t } = useTranslation();
+
+    return (
+        <details className={classes.details} aria-label={'Technical details of the job failure'}>
+            <summary className={classes.summary}>{t('dataset.import.technicalDetails')}</summary>
+            <pre className={classes.traceback}>{error}</pre>
+        </details>
+    );
+};
 
 const BottomMessage = ({ error, message }: { error: string; message: string }) => {
     return (
@@ -42,14 +47,15 @@ export const ImportFailedJob = ({
     stagedDatasetId,
     deleteEntry,
 }: ImportFailedJobProps) => {
+    const { t } = useTranslation();
     const deleteFileMutation = useDeleteStagedDataset({ stagedDatasetId, deleteEntry });
 
-    const errorMessage = isNonEmptyString(message) ? message : 'An unknown error occurred';
+    const errorMessage = isNonEmptyString(message) ? message : t('dataset.import.unknownError');
     const errorDetails = isNonEmptyString(error) ? error : undefined;
 
     return (
         <JobStatusCard
-            title={`Import dataset - ${fileName} - ${formatBytes(size)}`}
+            title={t('dataset.import.jobTitle', { fileName, size: formatBytes(size) })}
             actionButtons={
                 <Button
                     variant='secondary'
@@ -59,7 +65,7 @@ export const ImportFailedJob = ({
                     isPending={deleteFileMutation.isPending}
                     isDisabled={deleteFileMutation.isPending}
                 >
-                    Close
+                    {t('dataset.import.close')}
                 </Button>
             }
             bottomLeftMessage={

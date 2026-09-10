@@ -3,6 +3,7 @@
 
 import { KeyboardEvent } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { TextField } from '@geti-ui/ui';
 
 import { formatHotkeyForDisplay } from '../../shared/hotkeys-definition';
@@ -28,6 +29,7 @@ const isTab = (event: KeyboardEvent) => {
 };
 
 export const HotkeyField = ({ hotkey, errorMessage, onEnter, onHotkeyChange, onBlur }: HotkeyFieldProps) => {
+    const { t } = useTranslation();
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         event.preventDefault();
 
@@ -67,7 +69,7 @@ export const HotkeyField = ({ hotkey, errorMessage, onEnter, onHotkeyChange, onB
     return (
         <TextField
             aria-label={'Hotkey input'}
-            placeholder={'Hotkey'}
+            placeholder={t('project.labels.hotkeyPlaceholder')}
             value={formattedHotkey}
             onKeyDown={handleKeyDown}
             onBlur={onBlur}

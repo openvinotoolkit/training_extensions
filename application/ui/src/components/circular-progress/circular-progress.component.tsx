@@ -3,6 +3,7 @@
 
 import { useMemo } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { type ColorValue } from '@geti-ui/ui';
 
 interface CircularProgressProps {
@@ -32,6 +33,7 @@ export const CircularProgress = ({
     checkMarkOnComplete = true,
     checkMarkColor = '--energy-blue-shade',
 }: CircularProgressProps) => {
+    const { t } = useTranslation();
     const progress = Math.floor(Math.max(0, Math.min(100, percentage)));
 
     const viewBox = useMemo<string>((): string => `0 0 ${size} ${size}`, [size]);
@@ -98,7 +100,13 @@ export const CircularProgress = ({
                 x='50%'
                 y='50%'
             >
-                {hasError ? 'N/A' : checkMarkOnComplete ? (progress < 100 ? `${progress}%` : '✓') : `${progress}%`}
+                {hasError
+                    ? t('dataset.import.progressUnavailable')
+                    : checkMarkOnComplete
+                      ? progress < 100
+                          ? `${progress}%`
+                          : '✓'
+                      : `${progress}%`}
             </text>
         </svg>
     );
