@@ -304,6 +304,17 @@ jobs:
           git fetch --depth 1 origin "${LIBVPL_COMMIT}"
           git checkout FETCH_HEAD
 
+          # Workaround for a libvpl bug on MinGW/GCC: `_MSC_VER` is undefined
+          # under non-MSVC compilers, and the C preprocessor evaluates an
+          # undefined identifier as 0 in #if expressions, so the guard
+          # `#if _MSC_VER < 1400` is unconditionally TRUE on MinGW. This
+          # redefines wcscpy_s/wcscat_s even though MinGW-w64 UCRT64 already
+          # provides real implementations, corrupting the preprocessor
+          # expansion of MinGW's own <stralign.h>. Fix by requiring
+          # `defined(_MSC_VER)` before the version check.
+          sed -i 's/#if _MSC_VER < 1400/#if defined(_MSC_VER) \&\& _MSC_VER < 1400/' \
+            libvpl/src/windows/mfx_dispatcher_defs.h
+
           cmake -B build -G "Ninja" \
             -DCMAKE_INSTALL_PREFIX="$PREFIX" \
             -DCMAKE_BUILD_TYPE=Release \
