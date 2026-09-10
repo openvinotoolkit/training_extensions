@@ -74,7 +74,7 @@ env:
   UI_TARGET_PATH: .\application\ui\src-tauri\target
   MAKEAPP_PATH: "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\makeappx.exe"
   SIGNTOOL_PATH: "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\signtool.exe"
-  FFMPEG_COMMIT: "n8.1.2"
+  FFMPEG_COMMIT: "1c2c67c0b9f7f66ab32c19dcf7f227bcd290aa4c"
 
 permissions: {} # No permissions by default on workflow level
 
@@ -263,7 +263,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          SVT_AV1_COMMIT: "v4.2.0"
+          SVT_AV1_COMMIT: "9292ec8e32bce26f781f277ec8739b53426c4300"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -293,7 +293,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          LIBVPL_COMMIT: "v2.17.0"
+          LIBVPL_COMMIT: "674d015bcb294bc39fa276e99a652ea045423e82"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"

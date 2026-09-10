@@ -170,14 +170,26 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Pinned refs/versions for reproducible builds.
-ARG LIBVPL_REF=v2.17.0
+# Full commit SHAs are used instead of tag names so a retag upstream cannot
+# silently change these builds. Each SHA was resolved from its release tag via:
+#   git ls-remote <repo-url> refs/tags/<tag>
+#
+# LIBVPL_REF:  tag v2.17.0
+#   git ls-remote https://github.com/intel/libvpl.git refs/tags/v2.17.0
+ARG LIBVPL_REF=d77f9195cf495b937631607333288fd917ae8939
 # FFMPEG_REF: PyAV 17.1.0's smoke-test matrix validates against FFmpeg 8.1
 # (see https://github.com/PyAV-Org/PyAV/blob/v17.1.0/.github/workflows/smoke.yml); n8.1.2 is a same-branch patch
 # release of 8.1, so it stays within the tested/compatible range.
-ARG FFMPEG_REF=n8.1.2
+#   git ls-remote https://github.com/FFmpeg/FFmpeg.git refs/tags/n8.1.2
+ARG FFMPEG_REF=1c2c67c0b9f7f66ab32c19dcf7f227bcd290aa4c
 ARG PYAV_VERSION=17.1.0
+# OPENH264_REF: OpenH264 has slow release cycles (latest tag as of writing is
+# from 2025), so this is pinned directly to a commit on the default branch
+# rather than resolved from a release tag.
 ARG OPENH264_REF=0bab7fe805b6aa56a7886deb7de357e514268688
-ARG SVTAV1_REF=v4.2.0
+# SVTAV1_REF: tag v4.2.0
+#   git ls-remote https://gitlab.com/AOMediaCodec/SVT-AV1.git refs/tags/v4.2.0
+ARG SVTAV1_REF=9292ec8e32bce26f781f277ec8739b53426c4300
 
 # Install build and runtime dependencies.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
