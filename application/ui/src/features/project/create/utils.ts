@@ -1,7 +1,9 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-export const generateUniqueProjectName = (existingNames: string[]): string => {
+import type { TranslateFn } from '@/i18n';
+
+export const generateUniqueProjectName = (existingNames: string[], t: TranslateFn): string => {
     const usedNumbers: number[] = [];
 
     existingNames.forEach((name) => {
@@ -11,10 +13,7 @@ export const generateUniqueProjectName = (existingNames: string[]): string => {
         }
     });
 
-    if (usedNumbers.length === 0) {
-        return 'Project #1';
-    }
+    const nextNumber = usedNumbers.length === 0 ? 1 : Math.max(...usedNumbers) + 1;
 
-    const maxNumber = Math.max(...usedNumbers);
-    return `Project #${maxNumber + 1}`;
+    return t('project.create.defaultName', { number: nextNumber });
 };

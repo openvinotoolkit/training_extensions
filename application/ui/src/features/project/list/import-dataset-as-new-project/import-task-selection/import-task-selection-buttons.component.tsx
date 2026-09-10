@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup } from '@geti-ui/ui';
 import { useDeleteStagedDataset, useStagedDataset } from 'hooks/api/staged-dataset.hook';
 
@@ -17,6 +18,7 @@ export const ImportTaskSelectionButtons = ({
     onClose,
     deleteEntry,
 }: ImportTaskSelectionButtonsProps) => {
+    const { t } = useTranslation();
     const stagedDatasetQuery = useStagedDataset(stagedDatasetId);
     const deleteFileMutation = useDeleteStagedDataset({ stagedDatasetId, onSuccess: onClose, deleteEntry });
 
@@ -30,15 +32,15 @@ export const ImportTaskSelectionButtons = ({
     return (
         <ButtonGroup>
             <Button variant='negative' isPending={isPending} isDisabled={isDisabled} onPress={handleDeleteJob}>
-                Delete
+                {t('project.import.actions.delete')}
             </Button>
 
             <Button onPress={onClose} isPending={isPending} isDisabled={isDisabled} variant='secondary'>
-                Hide
+                {t('project.import.actions.hide')}
             </Button>
 
             <Button type='submit' form={TASK_SELECTION_FORM_ID} variant='primary' isDisabled={isDisabled}>
-                Next
+                {t('project.import.actions.next')}
             </Button>
         </ButtonGroup>
     );

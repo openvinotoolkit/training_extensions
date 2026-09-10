@@ -320,6 +320,45 @@
             "labels": {
                 "atLeastOneRequired": "At least one object is required",
                 "inputPlaceholder": "Create label"
+            },
+            "defaultName": "Project #{{number}}"
+        },
+        "import": {
+            "title": "Create project from a dataset - Import",
+            "actions": {
+                "cancel": "Cancel",
+                "delete": "Delete",
+                "hide": "Hide",
+                "back": "Back",
+                "create": "Create",
+                "next": "Next"
+            },
+            "statistics": {
+                "title": "Imported dataset statistics",
+                "images": "images",
+                "frames": "frames"
+            },
+            "labelMapping": {
+                "title": "Label mapping",
+                "datasetLabels": "Dataset labels",
+                "includeUnannotated": "Include media without annotations"
+            },
+            "preparingMessage": "Prepare dataset import as new project",
+            "taskSelection": {
+                "projectName": "Project name",
+                "taskType": "Task type",
+                "selectTaskPlaceholder": "Select task",
+                "recommendationHint": "The recommended choice is based on the type of the annotations detected in the dataset. If you choose a different type, the annotations will be automatically transformed during import to fit the selected type."
+            },
+            "progress": {
+                "dataset": "Dataset",
+                "taskType": "Task type",
+                "labels": "Labels"
+            },
+            "jobsList": {
+                "selectTaskType": "Select task type",
+                "mapLabelsMessage": "Map labels for the uploaded dataset",
+                "mapLabelsButton": "Map labels"
             }
         }
     },

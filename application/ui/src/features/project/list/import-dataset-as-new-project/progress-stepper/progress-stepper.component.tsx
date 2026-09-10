@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Divider, Grid, Text } from '@geti-ui/ui';
 
 import { ImportDatasetAsNewProjectState } from '../../../../dataset/import-export/import-dataset/util';
@@ -16,6 +17,8 @@ const isTaskTypeSelection = (step: ImportDatasetAsNewProjectState) => ['taskType
 const isUploadingOrPreparing = (step: ImportDatasetAsNewProjectState) => ['uploading', 'preparing'].includes(step);
 
 export const ProgressStepper = ({ currentStep }: ProgressStepperProps) => {
+    const { t } = useTranslation();
+
     return (
         <Grid
             gap={'size-100'}
@@ -52,11 +55,11 @@ export const ProgressStepper = ({ currentStep }: ProgressStepperProps) => {
                 style={{ gridArea: 'step3' }}
             />
 
-            <Text gridArea={'label1'}>Dataset</Text>
+            <Text gridArea={'label1'}>{t('project.import.progress.dataset')}</Text>
             <Text gridArea={'label2'} UNSAFE_style={{ width: dimensionValue('size-900'), textAlign: 'center' }}>
-                Task type
+                {t('project.import.progress.taskType')}
             </Text>
-            <Text gridArea={'label3'}>Labels</Text>
+            <Text gridArea={'label3'}>{t('project.import.progress.labels')}</Text>
         </Grid>
     );
 };

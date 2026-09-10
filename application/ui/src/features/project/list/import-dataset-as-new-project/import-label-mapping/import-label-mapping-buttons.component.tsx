@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup } from '@geti-ui/ui';
 import { useDeleteStagedDataset } from 'hooks/api/staged-dataset.hook';
 
@@ -18,6 +19,7 @@ export const ImportLabelMappingButtons = ({
     onClose,
     deleteEntry,
 }: ImportLabelMappingButtonsProps) => {
+    const { t } = useTranslation();
     const { setCurrentStep } = useImportDatasetDialog();
     const deleteFileMutation = useDeleteStagedDataset({ stagedDatasetId, onSuccess: onClose, deleteEntry });
 
@@ -34,19 +36,19 @@ export const ImportLabelMappingButtons = ({
     return (
         <ButtonGroup>
             <Button variant='negative' isPending={isPending} isDisabled={isPending} onPress={handleDeleteJob}>
-                Delete
+                {t('project.import.actions.delete')}
             </Button>
 
             <Button onPress={onClose} isPending={isPending} isDisabled={isPending} variant='secondary'>
-                Hide
+                {t('project.import.actions.hide')}
             </Button>
 
             <Button onPress={handleBack} isPending={isPending} isDisabled={isPending} variant='secondary'>
-                Back
+                {t('project.import.actions.back')}
             </Button>
 
             <Button type='submit' variant='accent' form={LABEL_MAPPING_FORM_ID}>
-                Create
+                {t('project.import.actions.create')}
             </Button>
         </ButtonGroup>
     );
