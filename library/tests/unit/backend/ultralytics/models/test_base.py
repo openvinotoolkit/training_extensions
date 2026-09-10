@@ -53,7 +53,7 @@ def test_load_checkpoint_creates_fresh_yolo(tmp_path: Path) -> None:
     assert model._yolo is mock_yolo
 
 
-def test_build_yolo_from_checkpoint_path_skips_yaml_lookup() -> None:
+def test_build_yolo_from_checkpoint_path_skips_yaml_lookup(caplog: pytest.LogCaptureFixture) -> None:
     model = UltralyticsDetectionModel(model_name="yolo26n.pt", pretrained=False, label_info=_label_info())
     mock_yolo = MagicMock()
     with patch("getitune.backend.ultralytics.models.base.YOLO", return_value=mock_yolo) as mock_yolo_cls:
@@ -61,6 +61,9 @@ def test_build_yolo_from_checkpoint_path_skips_yaml_lookup() -> None:
 
     mock_yolo_cls.assert_called_once_with("yolo26n.pt", task="detect")
     assert yolo is mock_yolo
+    # The checkpoint carries its own weights, so ``pretrained=False`` cannot
+    # take effect — a warning is logged instead of silently ignoring the flag.
+    assert "pretrained=False is ignored" in caplog.text
 
 
 def test_load_checkpoint_raises_on_missing_file() -> None:

@@ -139,8 +139,13 @@ class UltralyticsModel:
         return self._yolo
 
     def _build_yolo(self) -> YOLO:
-        """Create the ``ultralytics.YOLO`` model and optionally load pretrained weights."""
+        """Create the ``Ultralytics`` model and optionally load pretrained weights."""
         if self.model_name.endswith(".pt"):
+            # A checkpoint already carries its weights, so the ``pretrained``
+            # flag (which only governs the config + weight-download path
+            # below) has no effect here.
+            if not self.pretrained:
+                logger.warning(f"pretrained=False is ignored when model_name is a checkpoint: {self.model_name}")
             logger.info(f"Building Ultralytics model from checkpoint: {self.model_name} (task={self.task})")
             return YOLO(self.model_name, task=self.task or None)
 
