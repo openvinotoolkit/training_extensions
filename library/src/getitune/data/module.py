@@ -521,17 +521,10 @@ class DataModule(LightningDataModule):
 
     @property
     def _pin_memory(self) -> bool:
-        """Whether batches should be copied into accelerator-pinned host memory.
+        """Whether batches should be staged in page-locked ("pinned") host memory.
 
-        ``DataLoader(pin_memory=True)`` does not pin into ordinary host memory: it
-        pins into memory owned by the *current accelerator* (CUDA / XPU), from a
-        dedicated pinning thread. That is only worth doing when the batches are
-        actually going to be copied to that accelerator.
-
-        For CPU-only consumers - most importantly the OpenVINO evaluation pipeline,
-        which always runs on CPU - pinning adds an extra copy per batch and, worse,
-        makes a CPU-only workload depend on the GPU runtime (Level Zero on XPU,
-        CUDA on NVIDIA) for a large, non-pageable allocation. Keep it off in that case.
+        For CPU-only consumers it never is (eg OV evaluation), the copy is redundant and the
+        locked pages just reduce the memory available to the rest of the process.
         """
         return self.device != DeviceType.cpu
 

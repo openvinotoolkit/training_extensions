@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
-import gc
 import shutil
 from collections.abc import Callable
 from contextlib import AbstractContextManager
@@ -551,11 +550,6 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         If evaluation of the OpenVINO or ONNX variant fails (e.g. an export/runtime quirk),
         the job is not failed: the PyTorch variant's results are reused instead, so training
         can still complete successfully with a valid (if not fully independent) evaluation record.
-
-        Note that this fallback only covers *Python* exceptions. If the runtime dies at the
-        native level (OOM kill, segfault) the whole job process disappears and the job log
-        simply stops mid-step, so this method is deliberately careful to release the
-        accelerator/host memory of each engine as soon as it is no longer needed.
         """
         from getitune.backend.openvino.engine import OVEngine
 
@@ -566,7 +560,6 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         pytorch_metrics: dict | None = None
         for variant in model_variants:
             logger.info("Evaluating the {} model...", variant.format.value)
-            engine: Engine | None = None
             try:
                 match variant.format:
                     case ModelFormat.PYTORCH:
@@ -592,7 +585,7 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
                 # fallback is available yet, there is nothing to reuse, so let the job fail as usual.
                 if variant.format == ModelFormat.PYTORCH or pytorch_metrics is None:
                     raise
-                logger.opt(exception=True).warning(
+                logger.warning(
                     "Evaluation of the {} model failed ({}); reusing the PyTorch evaluation results instead",
                     variant.format.value,
                     eval_exc,
@@ -601,14 +594,6 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             else:
                 if variant.format == ModelFormat.PYTORCH:
                     pytorch_metrics = metrics
-                    # The trained model, optimizer state and the trainer's dataloader
-                    # workers are no longer needed, release them for a clean evaluation env.
-                    self._release_accelerator_memory()
-            finally:
-                # Drop the per-variant engine *before* the next variant compiles its own.
-                if engine is not None and engine is not getitune_engine:
-                    del engine
-                    gc.collect()
 
             self._save_evaluation_result(
                 metrics=metrics,
@@ -616,31 +601,6 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
                 model_variant_id=variant.id,
                 dataset_revision_id=dataset_revision_id,
             )
-
-    @staticmethod
-    def _release_accelerator_memory() -> None:
-        """Best-effort release of cached accelerator memory held by the training run.
-
-        Evaluation of the exported models runs entirely on CPU, but it happens in the same
-        process that just finished training on CUDA/XPU. Without this, the accelerator
-        caching allocator and the training graph stay resident for the whole evaluation.
-        """
-        import torch
-
-        gc.collect()
-        try:
-            accelerator = torch.accelerator.current_accelerator()
-        except Exception:
-            accelerator = None
-        if accelerator is None:
-            return
-        module = getattr(torch, accelerator.type, None)
-        empty_cache = getattr(module, "empty_cache", None)
-        if callable(empty_cache):
-            try:
-                empty_cache()
-            except Exception as exc:
-                logger.debug("Could not empty the {} cache: {}", accelerator.type, exc)
 
     def _save_evaluation_result(
         self,
