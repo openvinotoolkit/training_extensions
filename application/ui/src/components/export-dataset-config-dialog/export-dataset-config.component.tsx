@@ -24,6 +24,7 @@ import { Alert, LinkOut } from '@geti-ui/ui/icons';
 import { OverlayTriggerState } from '@react-stately/overlays';
 import { useDatasetStatisticsQuery } from 'hooks/api/dataset.hook';
 import { useProject } from 'hooks/api/project.hook';
+import { isEmpty } from 'lodash-es';
 
 import { useExportDatasetJobAction } from '../../hooks/use-export-dataset-job-action.hook';
 import { Link } from '../../platform/components/link.component';
@@ -34,7 +35,9 @@ import { getFormatOptions } from '../util';
 import classes from './export-dataset-config.module.scss';
 
 const WarningMessages = ({ selectedExportFormat }: { selectedExportFormat: string | null }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const language = i18n.resolvedLanguage ?? i18n.language;
+    const warningFormatter = new Intl.ListFormat(language, { type: 'disjunction' });
     const isVisible = selectedExportFormat !== 'geti';
 
     const { data: statistics } = useDatasetStatisticsQuery(isVisible);
@@ -50,12 +53,16 @@ const WarningMessages = ({ selectedExportFormat }: { selectedExportFormat: strin
         ? emptyLabel?.name
         : undefined;
 
-    const unsupportedItems = [
+    const unsupportedItemNames = [
         hasVideos && t('dataset.export.warnings.unsupportedItemsVideos'),
         emptyLabelName !== undefined && t('dataset.export.warnings.unsupportedItemsEmptyLabels'),
-    ]
-        .filter(Boolean)
-        .join(' or ');
+    ].filter((name): name is string => Boolean(name));
+
+    const unsupportedItemsMessage = isEmpty(unsupportedItemNames)
+        ? undefined
+        : t('dataset.export.warnings.unsupportedItems', {
+              items: warningFormatter.format(unsupportedItemNames),
+          });
 
     if (!isVisible || (!hasVideos && emptyLabelName === undefined && !isCocoFormatSelected)) {
         return null;
@@ -71,9 +78,7 @@ const WarningMessages = ({ selectedExportFormat }: { selectedExportFormat: strin
                 {emptyLabelName !== undefined && (
                     <Text>{t('dataset.export.warnings.emptyLabel', { emptyLabelName })}</Text>
                 )}
-                {unsupportedItems && (
-                    <Text>{t('dataset.export.warnings.unsupportedItems', { items: unsupportedItems })}</Text>
-                )}
+                {unsupportedItemsMessage && <Text>{unsupportedItemsMessage}</Text>}
                 {isCocoFormatSelected && <Text>{t('dataset.export.warnings.subsetNotIncluded')}</Text>}
             </Flex>
         </Flex>
