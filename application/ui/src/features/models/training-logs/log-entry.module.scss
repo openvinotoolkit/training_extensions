@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 .logEntry {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spectrum-global-dimension-size-100);
     padding: var(--spectrum-global-dimension-size-50) var(--spectrum-global-dimension-size-200);
     font-family: var(--spectrum-global-font-family-code);
     font-size: var(--spectrum-global-dimension-font-size-75);
@@ -14,6 +11,12 @@
     &:hover {
         background-color: var(--spectrum-global-color-gray-100);
     }
+}
+
+.logEntryRow {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spectrum-global-dimension-size-100);
 }
 
 .timestamp {
@@ -45,6 +48,24 @@
     white-space: pre-wrap;
     word-break: break-word;
     min-width: 0;
+}
+
+.traceback {
+    margin-top: var(--spectrum-global-dimension-size-50);
+}
+
+.tracebackSummary {
+    width: fit-content;
+    color: var(--spectrum-global-color-static-white);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tracebackBody {
+    margin-top: var(--spectrum-global-dimension-size-50);
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--spectrum-global-color-gray-700);
 }
 
 .path {
