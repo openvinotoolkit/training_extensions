@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { useImportJobStatus } from 'hooks/api/jobs/use-import-job-status.hook';
 import { isJobFailed, isJobPending, isJobRunning } from 'hooks/api/util';
 
@@ -24,6 +25,7 @@ export const PrepareImportDataset = ({
     onSuccess,
     deleteEntry,
 }: PrepareImportDatasetProps) => {
+    const { t } = useTranslation();
     const { data: job, isError, error } = useImportJobStatus({ jobId, onSuccess });
 
     const isRunningOrPending = job !== undefined && (isJobRunning(job) || isJobPending(job));
@@ -45,8 +47,8 @@ export const PrepareImportDataset = ({
                 <ImportFailedJob
                     size={size}
                     fileName={fileName}
-                    error={`${error?.detail ?? 'Unknown error'}`}
-                    message={'An error occurred during import preparation.'}
+                    error={`${error?.detail ?? t('dataset.import.unknownErrorDetail')}`}
+                    message={t('dataset.import.prepareError')}
                     stagedDatasetId={stagedDatasetId}
                     deleteEntry={deleteEntry}
                 />

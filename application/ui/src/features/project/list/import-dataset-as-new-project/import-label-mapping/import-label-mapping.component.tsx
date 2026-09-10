@@ -105,6 +105,7 @@ export const ImportLabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
                     <MultiSelectList
                         name='labels'
                         label='Dataset labels'
+                        ariaLabel='Dataset labels'
                         maxHeight='size-2000'
                         defaultSelectedKeys={new Set(datasetLabels.map((label) => label))}
                         items={datasetLabels.map((label) => ({ id: label, name: label }))}

@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup } from '@geti-ui/ui';
 import { useCancelJob } from 'hooks/api/jobs/jobs.hook';
 import { useDeleteStagedDataset } from 'hooks/api/staged-dataset.hook';
@@ -18,6 +19,7 @@ export const ImportJobProcessButtons = ({
     onClose,
     deleteEntry,
 }: ImportJobProcessButtonsProps) => {
+    const { t } = useTranslation();
     const cancelJobMutation = useCancelJob();
     const deleteFileMutation = useDeleteStagedDataset({ stagedDatasetId, onSuccess: onClose, deleteEntry });
 
@@ -36,10 +38,10 @@ export const ImportJobProcessButtons = ({
                 isDisabled={isPending}
                 onPress={() => handleCancelJob(prepareJobId)}
             >
-                Cancel
+                {t('dataset.import.cancel')}
             </Button>
             <Button onPress={onClose} variant='secondary' isPending={isPending} isDisabled={isPending}>
-                Hide
+                {t('dataset.import.hide')}
             </Button>
         </ButtonGroup>
     );

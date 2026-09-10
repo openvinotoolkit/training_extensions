@@ -88,7 +88,9 @@
             "annotatedImages": "Annotated images",
             "annotatedVideosFrames": "Annotated videos / frames",
             "numberOfObjectsPerLabel": "Number of objects per label",
-            "close": "Close"
+            "close": "Close",
+            "unannotated": "Unannotated",
+            "annotated": "Annotated"
         },
         "delete": {
             "title": "Delete Items",
@@ -116,12 +118,79 @@
             "annotate": "Annotate",
             "download": "Download",
             "downloadStarted": "{{fileName}} download has started"
+        },
+        "multiSelect": {
+            "selectAll": "Select all"
+        },
+        "jobs": {
+            "status": {
+                "error": "Error",
+                "connected": "Connected",
+                "disconnected": "Disconnected"
+            }
+        },
+        "import": {
+            "jobTitle": "Import dataset - {{fileName}} - {{size}}",
+            "processingMessage": "{{fileName}} file is being processed for import",
+            "unknownError": "An unknown error occurred",
+            "unknownErrorDetail": "Unknown error",
+            "technicalDetails": "Technical details",
+            "close": "Close",
+            "cancel": "Cancel",
+            "hide": "Hide",
+            "preparingJob": "Preparing",
+            "progressUnavailable": "N/A",
+            "stagedFileReadError": "An error occurred during staged file reading",
+            "prepareError": "An error occurred during import preparation.",
+            "genericError": "An error occurred during import.",
+            "importedSuccess": "Dataset {{fileName}} {{size}} imported successfully.",
+            "multipleFilesError": "Adding folders or multiple files is not allowed. Please load a single file.",
+            "unsupportedFormatError": "Unsupported file format. Please upload a valid .zip file.",
+            "uploading": "Uploading",
+            "datasetBeingUploaded": "Dataset is being uploaded",
+            "dropZipHere": "Drop the dataset .zip file here",
+            "upload": "Upload",
+            "learnMoreFormats": "Learn more about the different formats",
+            "deleteStagedFile": {
+                "title": "Delete Staged File",
+                "confirmation": "Are you sure you want to delete the dataset file \"{{stagedDatasetId}}\"?",
+                "cancel": "Cancel",
+                "delete": "Delete"
+            }
+        },
+        "export": {
+            "heading": "Export {{name}}",
+            "statisticsHeading": "Exported dataset statistics",
+            "settingsHeading": "Export settings",
+            "filterByLabel": "Filter annotations by label",
+            "includeUnannotated": "Include media without annotations",
+            "selectFormat": "Select dataset export format",
+            "learnMoreFormats": "Learn more about export formats",
+            "cancel": "Cancel",
+            "submit": "Export",
+            "warnings": {
+                "videos": "Exporting videos is not supported by this dataset format. All annotated frames from videos will be exported as images.",
+                "emptyLabel": "The selected format does not support empty labels (e.g. \"{{emptyLabelName}}\"). Images and frames containing them will be exported as unannotated.",
+                "unsupportedItemsVideos": "videos",
+                "unsupportedItemsEmptyLabels": "empty labels",
+                "unsupportedItems": "To preserve {{items}}, please use the Geti export format.",
+                "subsetNotIncluded": "The exported dataset won't include any information about the subset assigned to each media."
+            }
         }
     },
     "inference": {
         "validation": {
             "keyEmpty": "Key cannot be empty",
             "valueEmpty": "Value cannot be empty"
+        },
+        "connection": {
+            "testing": "Testing connection...",
+            "inUse": "In use",
+            "unreachable": "Unreachable",
+            "ready": "Ready"
+        },
+        "confidenceThreshold": {
+            "label": "Confidence threshold"
         }
     },
     "project": {
@@ -139,6 +208,17 @@
             "nameExists": "That project name already exists",
             "labelNameExists": "That label name already exists",
             "hotkeyExists": "That hotkey is already in use"
+        },
+        "labels": {
+            "hotkeyPlaceholder": "Hotkey"
+        },
+        "panel": {
+            "manageProjects": "Manage projects",
+            "enablePipelineBlocked": {
+                "title": "Cannot enable pipeline",
+                "close": "Close",
+                "message": "Make sure you selected a model and source before enabling the pipeline."
+            }
         },
         "taskTypes": {
             "detection": "Object detection",

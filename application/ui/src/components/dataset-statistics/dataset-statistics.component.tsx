@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Text, View } from '@geti-ui/ui';
 import { Pie, PieChart, Sector } from 'recharts';
 
@@ -18,6 +19,7 @@ type DatasetStatisticsProps = {
 };
 
 export const DatasetStatistics = ({ label, totalMediaItems, totalAnnotatedItems }: DatasetStatisticsProps) => {
+    const { t } = useTranslation();
     const totalUnannotatedItems = totalMediaItems - totalAnnotatedItems;
     const percentageAnnotated = totalMediaItems > 0 ? Math.round((totalAnnotatedItems / totalMediaItems) * 100) : 0;
     const percentageUnannotated = totalMediaItems > 0 ? Math.round((totalUnannotatedItems / totalMediaItems) * 100) : 0;
@@ -31,7 +33,7 @@ export const DatasetStatistics = ({ label, totalMediaItems, totalAnnotatedItems 
                     justifyContent='center'
                     UNSAFE_className={classes.unannotatedStats}
                 >
-                    <Text>Unannotated</Text>
+                    <Text>{t('dataset.statistics.unannotated')}</Text>
                     <Text>{percentageUnannotated}%</Text>
                     <Text>
                         {totalUnannotatedItems} {label}
@@ -79,7 +81,7 @@ export const DatasetStatistics = ({ label, totalMediaItems, totalAnnotatedItems 
                     justifyContent='center'
                     UNSAFE_className={classes.unannotatedStats}
                 >
-                    <Text>Annotated</Text>
+                    <Text>{t('dataset.statistics.annotated')}</Text>
                     <Text>{percentageAnnotated}%</Text>
                     <Text>
                         {totalAnnotatedItems} {label}

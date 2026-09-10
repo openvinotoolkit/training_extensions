@@ -3,6 +3,7 @@
 
 import { useRef, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, NumberField, Slider, View } from '@geti-ui/ui';
 import { Refresh } from '@geti-ui/ui/icons';
 
@@ -12,14 +13,18 @@ const THRESHOLD_CONFIG = {
     max: 1,
 };
 
+// Fixed-English aria-label text; kept independent of the translated visible label.
+const CONFIDENCE_THRESHOLD_ARIA_LABEL = 'Confidence threshold';
+
 type ThresholdFieldProps = {
-    name: string;
+    label: string;
+    ariaLabel: string;
     onChange: (value: number) => void;
     isDisabled?: boolean;
     value: number;
 };
 
-const ThresholdField = ({ onChange, value, isDisabled, name }: ThresholdFieldProps) => {
+const ThresholdField = ({ onChange, value, isDisabled, label, ariaLabel }: ThresholdFieldProps) => {
     const [parameterValue, setParameterValue] = useState<number>(value);
     const previousValueRef = useRef<number>(value);
 
@@ -36,7 +41,7 @@ const ThresholdField = ({ onChange, value, isDisabled, name }: ThresholdFieldPro
     return (
         <Flex gap={'size-100'} alignItems={'end'}>
             <Slider
-                label={name}
+                label={label}
                 showValueLabel={false}
                 value={parameterValue}
                 minValue={THRESHOLD_CONFIG.min}
@@ -56,7 +61,7 @@ const ThresholdField = ({ onChange, value, isDisabled, name }: ThresholdFieldPro
                 maxValue={THRESHOLD_CONFIG.max}
                 onChange={handleValueChange}
                 isDisabled={isDisabled}
-                aria-label={`Change ${name}`}
+                aria-label={`Change ${ariaLabel}`}
                 step={THRESHOLD_CONFIG.step}
             />
         </Flex>
@@ -80,12 +85,15 @@ export const ConfidenceThreshold = ({
     maxWidth,
     width = '100%',
 }: ConfidenceThresholdProps) => {
+    const { t } = useTranslation();
+
     return (
         <View maxWidth={maxWidth} width={width}>
             <Flex width={'100%'} justifyContent={'space-between'} gap={'size-175'} alignItems={'end'}>
                 <ThresholdField
                     onChange={onChange}
-                    name={'Confidence threshold'}
+                    label={t('inference.confidenceThreshold.label')}
+                    ariaLabel={CONFIDENCE_THRESHOLD_ARIA_LABEL}
                     value={value}
                     isDisabled={isDisabled}
                 />

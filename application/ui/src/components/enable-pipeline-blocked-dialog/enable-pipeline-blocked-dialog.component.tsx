@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { AlertDialog, DialogContainer } from '@geti-ui/ui';
 
 type EnablePipelineBlockedDialogProps = {
@@ -9,16 +10,18 @@ type EnablePipelineBlockedDialogProps = {
 };
 
 export const EnablePipelineBlockedDialog = ({ isOpen, onClose }: EnablePipelineBlockedDialogProps) => {
+    const { t } = useTranslation();
+
     return (
         <DialogContainer onDismiss={onClose}>
             {isOpen && (
                 <AlertDialog
-                    title={'Cannot enable pipeline'}
-                    primaryActionLabel={'Close'}
+                    title={t('project.panel.enablePipelineBlocked.title')}
+                    primaryActionLabel={t('project.panel.enablePipelineBlocked.close')}
                     variant={'warning'}
                     onPrimaryAction={onClose}
                 >
-                    Make sure you selected a model and source before enabling the pipeline.
+                    {t('project.panel.enablePipelineBlocked.message')}
                 </AlertDialog>
             )}
         </DialogContainer>

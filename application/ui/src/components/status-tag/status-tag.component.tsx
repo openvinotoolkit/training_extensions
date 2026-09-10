@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Text } from '@geti-ui/ui';
 import { clsx } from 'clsx';
 
@@ -12,11 +13,13 @@ interface StatusTagProps {
 }
 
 export const StatusTag = ({ isConnected = false, isError = false }: StatusTagProps) => {
+    const { t } = useTranslation();
+
     if (isError) {
         return (
             <Flex gap={'size-75'} alignItems={'center'} UNSAFE_className={classes.container}>
                 <div className={classes.status}></div>
-                <Text>Error</Text>
+                <Text>{t('dataset.jobs.status.error')}</Text>
             </Flex>
         );
     }
@@ -29,7 +32,7 @@ export const StatusTag = ({ isConnected = false, isError = false }: StatusTagPro
                     [classes.disconnected]: !isConnected,
                 })}
             ></div>
-            <Text>{isConnected ? 'Connected' : 'Disconnected'}</Text>
+            <Text>{isConnected ? t('dataset.jobs.status.connected') : t('dataset.jobs.status.disconnected')}</Text>
         </Flex>
     );
 };
