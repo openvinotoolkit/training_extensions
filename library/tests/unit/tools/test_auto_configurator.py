@@ -12,6 +12,7 @@ from getitune.tools.auto_configurator import (
     DEFAULT_CONFIG_PER_TASK,
     AutoConfigurator,
 )
+from getitune.types.device import DeviceType
 from getitune.types.label import LabelInfo, SegLabelInfo
 from getitune.types.task import TaskType
 from getitune.utils.utils import should_pass_label_info
@@ -228,3 +229,65 @@ class TestAutoConfigurator:
         # Verify subsets are preserved
         assert "train" in updated_datamodule.subsets
         assert "val" in updated_datamodule.subsets
+
+    @pytest.mark.parametrize("training_device", [DeviceType.xpu, DeviceType.gpu, DeviceType.auto])
+    def test_update_ov_subset_pipeline_resets_device_to_cpu(self, training_device: DeviceType) -> None:
+        """The rebuilt datamodule must run on CPU, whatever device training used.
+
+        OpenVINO evaluation always runs on CPU, so the rebuilt datamodule must not
+        inherit the training accelerator. If it did, ``DataLoader(pin_memory=True)``
+        would page-lock every batch through the accelerator runtime (Level Zero on
+        XPU, CUDA on NVIDIA) for a workload that never transfers anything to the
+        device - pure overhead, and it drags the GPU stack into a CPU-only step.
+
+        This covers the ``data_root``-backed reconstruction path.
+        """
+        data_root = "tests/assets/detection_coco"
+        auto_configurator = AutoConfigurator(data_root=data_root, task=TaskType.DETECTION)
+
+        datamodule = auto_configurator.get_datamodule()
+        datamodule.device = training_device
+
+        # Precondition: the source datamodule *would* pin. Without this the assertions
+        # below could pass trivially even if the device reset were removed.
+        assert datamodule._pin_memory is True
+
+        updated_datamodule = auto_configurator.update_ov_subset_pipeline(datamodule, subset="test")
+
+        assert updated_datamodule.device == DeviceType.cpu
+        assert updated_datamodule._pin_memory is False
+        # The consequence that actually matters: the loader handed to OV eval does not pin.
+        assert updated_datamodule.test_dataloader().pin_memory is False
+
+    @pytest.mark.parametrize("training_device", [DeviceType.xpu, DeviceType.gpu, DeviceType.auto])
+    def test_update_ov_subset_pipeline_resets_device_to_cpu_pre_constructed(
+        self,
+        training_device: DeviceType,
+    ) -> None:
+        """Same CPU/pinned-memory guarantee for the pre-constructed-dataset path.
+
+        This branch returns via ``DataModule.from_vision_datasets`` instead of the
+        ``DataModule`` constructor, so it needs its own coverage.
+        """
+        data_root = "tests/assets/detection_coco"
+        auto_configurator = AutoConfigurator(data_root=data_root, task=TaskType.DETECTION)
+
+        datamodule = auto_configurator.get_datamodule()
+        pre_constructed_datamodule = DataModule.from_vision_datasets(
+            train_dataset=datamodule.subsets["train"],
+            val_dataset=datamodule.subsets["val"],
+            test_dataset=datamodule.subsets.get("test"),
+            train_subset=datamodule.train_subset,
+            val_subset=datamodule.val_subset,
+            test_subset=datamodule.test_subset,
+            device=training_device,
+        )
+        # Confirm the pre-constructed branch is the one under test.
+        assert pre_constructed_datamodule.data_root == ""
+        assert pre_constructed_datamodule._pin_memory is True
+
+        updated_datamodule = auto_configurator.update_ov_subset_pipeline(pre_constructed_datamodule, subset="test")
+
+        assert updated_datamodule.device == DeviceType.cpu
+        assert updated_datamodule._pin_memory is False
+        assert updated_datamodule.test_dataloader().pin_memory is False
