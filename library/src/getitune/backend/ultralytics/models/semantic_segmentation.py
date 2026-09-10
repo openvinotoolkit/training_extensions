@@ -5,19 +5,66 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, ClassVar
 
 from getitune.backend.lightning.models.base import DataInputParams
 from getitune.backend.ultralytics.trainers.semantic_segmentation import SemanticSegmentationTrainer
 from getitune.backend.ultralytics.validators.semantic_segmentation import SemanticSegmentationValidator
 from getitune.config.data import IntensityConfig
-from getitune.types.export import TaskLevelExportParameters
+from getitune.types.export import ExportFormat, TaskLevelExportParameters
 from getitune.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
+from getitune.types.precision import Precision
 
 from .base import UltralyticsModel
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
+
     from getitune.backend.ultralytics.exporter import UltralyticsModelExporter
+
+
+@contextmanager
+def _force_logits_semantic_export() -> Iterator[None]:
+    """Temporarily disable the Ultralytics semantic head's baked class map.
+
+    Ultralytics branches the ``SemanticSegment`` head on the export format: for
+    ``onnx``/``mnn``/``openvino`` it bakes ``argmax`` into the graph and emits a
+    single-channel ``[B, H, W]`` class map. ModelAPI's ``SegmentationModel``
+    cannot consume that layout — it misclassifies the 3D output as an
+    ``[H, W, num_classes]`` tensor with ``num_classes == 1`` and fails on
+    ``np.argmax(soft_prediction, axis=2)``. getitune's export contract
+    (``return_soft_prediction=True``) requires float logits so ModelAPI can
+    compute the hard prediction itself, so the head's format attribute is
+    temporarily cleared during the raw export to force the logits branch.
+
+    Upstream may add a configuration knob for this bake; this workaround should
+    be replaced once it exists.
+    """
+    try:
+        from ultralytics.nn.modules.head import SemanticSegment
+    except ImportError:
+        yield
+        return
+    original_forward = SemanticSegment.forward
+
+    def forward_with_logits(
+        self: SemanticSegment,
+        x: object,
+    ) -> object:
+        original_format = self.format
+        self.format = None
+        try:
+            return original_forward(self, x)
+        finally:
+            self.format = original_format
+
+    SemanticSegment.forward = forward_with_logits  # pyrefly: ignore[assignment-type]
+    try:
+        yield
+    finally:
+        SemanticSegment.forward = original_forward
 
 
 class UltralyticsSemanticSegModel(UltralyticsModel):
@@ -124,3 +171,23 @@ class UltralyticsSemanticSegModel(UltralyticsModel):
             pad_value=0,
             swap_rgb=False,
         )
+
+    def export(
+        self,
+        output_dir: Path,
+        base_name: str,
+        export_format: ExportFormat,
+        precision: Precision = Precision.FP32,
+        export_args: dict[str, object] | None = None,
+    ) -> Path:
+        """Export the model with float logits, never a baked argmax class map.
+
+        Wraps the base export with ``_force_logits_semantic_export`` because the
+        Ultralytics ``SemanticSegment`` head otherwise bakes ``argmax`` into the
+        ONNX/OpenVINO graph, producing an output layout that ModelAPI's
+        ``SegmentationModel`` rejects (see that context manager for details).
+
+        Args and return mirror :meth:`UltralyticsModel.export`.
+        """
+        with _force_logits_semantic_export():
+            return super().export(output_dir, base_name, export_format, precision, export_args)

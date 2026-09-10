@@ -88,9 +88,13 @@ def test_forward_explain(
         # scores are essentially tied, so always compare scores approximately
         # and require label agreement only when the top-2 gap is clear.
         assert torch.allclose(plain_batch_scores, explain_batch_scores, rtol=1e-4, atol=1e-5)
-        sorted_scores = torch.sort(plain_batch_scores, descending=True).values
-        if sorted_scores[0] - sorted_scores[1] > 2e-4:
-            assert (plain_batch_labels == explain_batch_labels).all()
+        # Detection scores are per-detection and may be empty (no boxes pass
+        # the threshold) or hold a single box, so the top-2 gap check below
+        # only applies when at least two detections exist.
+        if plain_batch_scores.numel() >= 2:
+            sorted_scores = torch.sort(plain_batch_scores, descending=True).values
+            if sorted_scores[0] - sorted_scores[1] > 2e-4:
+                assert (plain_batch_labels == explain_batch_labels).all()
 
 
 @pytest.mark.parametrize(
