@@ -238,7 +238,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          OPENH264_COMMIT: "e3f5b10438e2bacc155cf54578222bd4236c9f06"
+          OPENH264_COMMIT: "0bab7fe805b6aa56a7886deb7de357e514268688"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -263,7 +263,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          SVT_AV1_COMMIT: "e7fcc226994c87b76b66389545eb73a844f13002"
+          SVT_AV1_COMMIT: "v4.2.0"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -293,7 +293,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          LIBVPL_COMMIT: "778a66d6c6537f08eabb91955dbbf1bce3812894"
+          LIBVPL_COMMIT: "v2.17.0"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
