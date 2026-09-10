@@ -1,57 +1,46 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Content, Heading, IllustratedMessage, View } from '@geti-ui/ui';
+import dayjs from 'dayjs';
 import { usePipelineMetrics } from 'hooks/api/pipeline.hook';
-import { CartesianGrid, Label, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 
 type DataPoint = {
-    name: string;
+    timestamp: number;
     value: number;
 };
 
-const MAX_DATA_POINTS = 60; // Keep last 60 data points
+const DISPLAYED_WINDOW_MS = 5 * 60 * 1000;
+
+const formatTime = (timestamp: number) => dayjs(timestamp).format('HH:mm:ss');
+
+const appendDataPoint = (points: DataPoint[], point: DataPoint): DataPoint[] =>
+    [...points, point].filter(({ timestamp }) => timestamp > point.timestamp - DISPLAYED_WINDOW_MS);
 
 const useMetricsData = () => {
     const [latencyData, setLatencyData] = useState<DataPoint[]>([]);
     const [throughputData, setThroughputData] = useState<DataPoint[]>([]);
-    const counterRef = useRef(0);
 
     const { data: metrics } = usePipelineMetrics();
 
     useEffect(() => {
         if (!metrics) return;
 
-        const dataPointName = `${counterRef.current++}`;
+        const timestamp = dayjs(metrics.time_window.end).valueOf();
 
-        setLatencyData((prev) => {
-            const newData = [
-                ...prev,
-                {
-                    name: dataPointName,
-                    value: metrics.inference.latency.avg_ms ?? 0,
-                },
-            ];
-
-            // Keep only last MAX_DATA_POINTS
-            return newData.slice(-MAX_DATA_POINTS);
-        });
-
-        setThroughputData((prev) => {
-            const newData = [
-                ...prev,
-                {
-                    name: dataPointName,
-                    value: metrics.inference.throughput.avg_requests_per_second ?? 0,
-                },
-            ];
-            return newData.slice(-MAX_DATA_POINTS);
-        });
+        setLatencyData((prev) => appendDataPoint(prev, { timestamp, value: metrics.inference.latency.avg_ms ?? 0 }));
+        setThroughputData((prev) =>
+            appendDataPoint(prev, {
+                timestamp,
+                value: metrics.inference.throughput.avg_requests_per_second ?? 0,
+            })
+        );
     }, [metrics]);
 
-    return { latencyData, throughputData, metrics };
+    return { latencyData, throughputData };
 };
 
 const AXIS_LABEL_STYLE = {
@@ -60,18 +49,15 @@ const AXIS_LABEL_STYLE = {
     fontSize: '10px',
 } as const;
 
-const formatValue = (value: unknown) => {
-    const raw = Array.isArray(value) ? value[0] : value;
-    const num = typeof raw === 'number' ? raw : Number(raw);
-
-    if (!Number.isFinite(num)) {
-        return String(raw ?? '');
-    }
-
-    return num > 10 ? num.toFixed(0) : num.toFixed(2);
+type GraphProps = {
+    label: string;
+    data: DataPoint[];
+    fractionDigits: number;
 };
 
-const Graph = ({ label, data }: { label: string; data: DataPoint[] }) => {
+const Graph = ({ label, data, fractionDigits }: GraphProps) => {
+    const end = data.at(-1)?.timestamp ?? Date.now();
+
     return (
         <LineChart
             responsive
@@ -83,17 +69,21 @@ const Graph = ({ label, data }: { label: string; data: DataPoint[] }) => {
             <XAxis
                 minTickGap={32}
                 stroke='var(--spectrum-global-color-gray-800)'
-                dataKey='name'
+                dataKey='timestamp'
+                type='number'
+                scale='time'
+                domain={[end - DISPLAYED_WINDOW_MS, end]}
+                tickFormatter={formatTime}
                 tickLine={false}
                 tickMargin={8}
             >
-                <Label value='samples' position='insideBottom' offset={-14} style={AXIS_LABEL_STYLE} />
+                <Label value='time' position='insideBottom' offset={-14} style={AXIS_LABEL_STYLE} />
             </XAxis>
             <YAxis
                 tickLine={false}
                 stroke='var(--spectrum-global-color-gray-900)'
                 dataKey='value'
-                tickFormatter={formatValue}
+                tickFormatter={(value: number) => value.toFixed(0)}
             >
                 <Label angle={-90} value={label} position='insideLeft' style={AXIS_LABEL_STYLE} />
             </YAxis>
@@ -105,12 +95,9 @@ const Graph = ({ label, data }: { label: string; data: DataPoint[] }) => {
                 }}
                 labelStyle={{ color: 'var(--spectrum-global-color-gray-900)' }}
                 itemStyle={{ color: 'var(--spectrum-global-color-gray-900)' }}
-                labelFormatter={(name) => `Sample ${name}`}
-                formatter={(value) => formatValue(Number(value))}
+                labelFormatter={(timestamp) => formatTime(Number(timestamp))}
+                formatter={(value) => Number(value).toFixed(fractionDigits)}
             />
-            {data.length > 0 && (
-                <ReferenceLine x={data[0].name} stroke='var(--spectrum-global-color-gray-600)' strokeWidth={2} />
-            )}
             <Line
                 type='linear'
                 dataKey='value'
@@ -125,13 +112,11 @@ const Graph = ({ label, data }: { label: string; data: DataPoint[] }) => {
 };
 
 export const Graphs = () => {
-    const { latencyData, throughputData, metrics } = useMetricsData();
-
-    const hasData = latencyData.length > 0 || throughputData.length > 0;
+    const { latencyData, throughputData } = useMetricsData();
 
     return (
         <View height={'100%'} UNSAFE_style={{ overflow: 'hidden auto' }}>
-            {!hasData && !metrics ? (
+            {latencyData.length === 0 ? (
                 <IllustratedMessage>
                     <Heading>No statistics available</Heading>
                     <Content>
@@ -144,13 +129,13 @@ export const Graphs = () => {
                         <Heading level={4} marginBottom={'size-300'}>
                             Throughput
                         </Heading>
-                        <Graph label='requests/sec' data={throughputData} />
+                        <Graph label='requests/sec' data={throughputData} fractionDigits={2} />
                     </View>
                     <View>
                         <Heading level={4} marginBottom={'size-300'}>
                             Latency
                         </Heading>
-                        <Graph label='ms' data={latencyData} />
+                        <Graph label='ms' data={latencyData} fractionDigits={1} />
                     </View>
                 </>
             )}
