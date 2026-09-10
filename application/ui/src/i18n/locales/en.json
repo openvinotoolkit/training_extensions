@@ -23,15 +23,31 @@
             "invalidDateRange": "End date must be later than start date"
         },
         "views": {
+            "title": "Views",
+            "entireDataset": "Entire dataset",
             "assignTitle": "Assign to existing view",
+            "assignToExistingView": "Assign to existing view",
             "assignTo": "Assign to",
+            "assign": "Assign",
             "selectView": "Select a view",
             "assignmentNote": "This operation will not affect other media that were already assigned to this view.",
             "mediaAssigned_one": "Media {{count}} item assigned successfully.",
             "mediaAssigned_other": "Media {{count}} items assigned successfully.",
             "openView": "Open {{viewName}} view",
+            "saveView": "Save view",
+            "viewNameLabel": "View name",
+            "renameTitle": "Rename dataset view",
+            "rename": "Rename",
+            "save": "Save",
+            "cancel": "Cancel",
+            "close": "Close",
             "deleteTitle": "Delete confirmation",
-            "deleteConfirmation": "Are you sure you want to delete the \"{{viewName}}\" dataset view?"
+            "deleteConfirmation": "Are you sure you want to delete the \"{{viewName}}\" dataset view?",
+            "delete": "Delete",
+            "deleteSuccess": "Dataset view \"{{viewName}}\" has been deleted successfully.",
+            "unassignFromView": "Unassign from this view",
+            "selectedMediaCount_one": "Selected {{count}} media item",
+            "selectedMediaCount_other": "Selected {{count}} media items"
         },
         "filters": {
             "allMedia": "All media",

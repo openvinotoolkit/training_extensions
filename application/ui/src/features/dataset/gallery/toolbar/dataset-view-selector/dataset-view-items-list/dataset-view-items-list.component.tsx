@@ -3,6 +3,7 @@
 
 import { Key, ReactNode } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Divider, Flex, Heading, Item, Menu, MenuTrigger, View } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
@@ -57,6 +58,8 @@ const DatasetViewItem = ({
     onSelectDatasetView,
     onOpenDeleteConfirmationDialog,
 }: DatasetViewItemProps) => {
+    const { t } = useTranslation();
+
     const handleAction = (key: Key) => {
         if (key === DATASET_VIEW_ITEM_OPTIONS.DELETE) {
             onOpenDeleteConfirmationDialog(datasetView);
@@ -78,8 +81,8 @@ const DatasetViewItem = ({
                         <MoreMenu />
                     </ActionButton>
                     <Menu onAction={handleAction} aria-label={'Dataset view actions menu'}>
-                        <Item key={DATASET_VIEW_ITEM_OPTIONS.RENAME}>{DATASET_VIEW_ITEM_OPTIONS.RENAME}</Item>
-                        <Item key={DATASET_VIEW_ITEM_OPTIONS.DELETE}>{DATASET_VIEW_ITEM_OPTIONS.DELETE}</Item>
+                        <Item key={DATASET_VIEW_ITEM_OPTIONS.RENAME}>{t('dataset.views.rename')}</Item>
+                        <Item key={DATASET_VIEW_ITEM_OPTIONS.DELETE}>{t('dataset.views.delete')}</Item>
                     </Menu>
                 </MenuTrigger>
             </Flex>
@@ -93,13 +96,15 @@ type EntireDatasetViewItemProps = {
 };
 
 const EntireDatasetViewItem = ({ isSelected, onSelectDatasetView }: EntireDatasetViewItemProps) => {
+    const { t } = useTranslation();
+
     return (
         <DatasetViewItemContainer
             name={ENTIRE_DATASET_NAME}
             isSelected={isSelected}
             onSelect={() => onSelectDatasetView(ENTIRE_DATASET_VIEW_ID)}
         >
-            <Heading UNSAFE_className={classes.datasetViewInList}>{ENTIRE_DATASET_NAME}</Heading>
+            <Heading UNSAFE_className={classes.datasetViewInList}>{t('dataset.views.entireDataset')}</Heading>
         </DatasetViewItemContainer>
     );
 };

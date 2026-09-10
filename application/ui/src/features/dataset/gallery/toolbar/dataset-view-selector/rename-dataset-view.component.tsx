@@ -49,7 +49,7 @@ export const RenameDatasetView = ({ datasetView, onClose, datasetViews }: Rename
 
     return (
         <Dialog>
-            <Heading>Rename dataset view</Heading>
+            <Heading>{t('dataset.views.renameTitle')}</Heading>
             <Divider />
             <Content>
                 <Form id={'rename-dataset-view-name'} onSubmit={rename}>
@@ -58,7 +58,7 @@ export const RenameDatasetView = ({ datasetView, onClose, datasetViews }: Rename
                         autoFocus
                         value={newName}
                         onChange={setNewName}
-                        label={'View name'}
+                        label={t('dataset.views.viewNameLabel')}
                         validationState={isDuplicateName ? 'invalid' : undefined}
                         errorMessage={isDuplicateName ? t('dataset.validation.datasetViewNameExists') : undefined}
                     />
@@ -66,7 +66,7 @@ export const RenameDatasetView = ({ datasetView, onClose, datasetViews }: Rename
             </Content>
             <ButtonGroup>
                 <Button variant={'secondary'} onPress={onClose}>
-                    Cancel
+                    {t('dataset.views.cancel')}
                 </Button>
                 <Button
                     type={'submit'}
@@ -74,7 +74,7 @@ export const RenameDatasetView = ({ datasetView, onClose, datasetViews }: Rename
                     isDisabled={isSaveDisabled}
                     isPending={renameDatasetViewMutation.isPending}
                 >
-                    Save
+                    {t('dataset.views.save')}
                 </Button>
             </ButtonGroup>
         </Dialog>

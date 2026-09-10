@@ -9,7 +9,6 @@ import { ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view
 
 import { ReactComponent as EmptyDatasetImage } from '../../../assets/empty-dataset.svg';
 import { useImportDatasetDialogState } from '../providers/export-import-dataset-dialog-provider.component';
-import { ENTIRE_DATASET_NAME } from './toolbar/dataset-view-selector/util';
 import { MediaUpload } from './toolbar/media-upload.component';
 
 const ImportDatasetButton = () => {
@@ -54,7 +53,7 @@ const EmptyDatasetView = () => {
                 {t('dataset.empty.assignOrBack')}
             </EmptyMessage>
             <Button variant={'secondary'} onPress={() => setDatasetViewId(ENTIRE_DATASET_VIEW_ID)}>
-                {t('dataset.empty.goToEntireDataset', { datasetName: ENTIRE_DATASET_NAME })}
+                {t('dataset.empty.goToEntireDataset', { datasetName: t('dataset.views.entireDataset') })}
             </Button>
         </>
     );
