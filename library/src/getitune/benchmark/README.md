@@ -94,25 +94,23 @@ Each IR is measured twice:
 
 The application selects its default warmup and measurement duration/iteration
 count. The same measurements are repeated for the optimized INT8 IR when
-`eval_upto=optimize`. The default executable is `benchmark_app` next to the
-active Python interpreter; override it with `--benchmark-app`. Override the
-OpenVINO target with `--openvino-device CPU`, `GPU`, or another supported
-device string when the Geti accelerator label is not sufficient.
-Physical names are detected with PyTorch and OpenVINO `FULL_DEVICE_NAME` and
-stored per seed. If a driver exposes only a PCI identifier instead of a market
-name, pass `--training-device-name` and/or `--openvino-device-name` explicitly
-(for example, `--openvino-device-name "Intel Arc B70"`).
+`eval_upto=optimize`. The executable is `benchmark_app` next to the active
+Python interpreter. Override the OpenVINO target with `--openvino-device CPU`,
+`GPU`, `GPU.1`, or another supported device string when the Geti accelerator
+label is not sufficient. Physical names are detected with PyTorch and OpenVINO
+`FULL_DEVICE_NAME` and stored per seed. If a driver exposes only a PCI
+identifier instead of a market name, pass `--training-device-name` and/or
+`--openvino-full-device-name` explicitly (for example,
+`--openvino-full-device-name "Intel Arc B70"`).
 
 Example:
 
 ```bash
 python -m getitune.benchmark run --accelerator xpu --eval-upto optimize \
-  --max-epochs 2 --num-seeds 1 --benchmark --no-validation
+  --max-epochs 2 --num-seeds 1 --benchmark --skip-test
 ```
 
-Supplying `--benchmark-app` also enables benchmarking implicitly, which is
-useful when the executable is installed outside the active Python environment.
-Use `--no-validation` to skip the Torch/OpenVINO accuracy-test phases when the
+Use `--skip-test` to skip the Torch/OpenVINO accuracy-test phases when the
 purpose is performance collection; training, export, INT8 optimization, and
 benchmark-app measurements still run.
 

@@ -136,16 +136,10 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--scenario-tag", type=str, nargs="*", default=None, help="Scenario tag filter.")
     run.add_argument("--accelerator", type=str, default="gpu", help="Device: gpu, xpu, or cpu.")
     run.add_argument(
-        "--benchmark-app",
-        type=str,
-        default=None,
-        help="Path to the OpenVINO benchmark_app executable.",
-    )
-    run.add_argument(
         "--openvino-device",
         type=str,
         default=None,
-        help="OpenVINO target device (default follows accelerator).",
+        help="OpenVINO target device, e.g. CPU, GPU, GPU.1, AUTO (default follows accelerator).",
     )
     run.add_argument(
         "--training-device-name",
@@ -154,10 +148,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Physical training device name override when the driver does not expose its marketed name.",
     )
     run.add_argument(
-        "--openvino-device-name",
+        "--openvino-full-device-name",
+        dest="openvino_device_name",
         type=str,
         default=None,
-        help="Physical OpenVINO device name override when FULL_DEVICE_NAME is not descriptive.",
+        help=(
+            "Human-readable OpenVINO device name for the report; overrides the benchmark_app property name. "
+            "Distinct from --openvino-device, which selects the inference target."
+        ),
     )
     run.add_argument(
         "--benchmark",
@@ -166,11 +164,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Run OpenVINO benchmark_app in throughput and latency modes.",
     )
     run.add_argument(
-        "--no-validation",
+        "--skip-test",
         dest="enable_validation",
         action="store_false",
         default=True,
-        help="Skip Torch and OpenVINO accuracy validation phases.",
+        help=(
+            "Skip the accuracy test phases; the pipeline still runs training, export, INT8 optimization, "
+            "and benchmark_app measurements."
+        ),
     )
     run.add_argument("--num-seeds", type=int, default=None, help="Override number of seeds.")
     run.add_argument(
@@ -348,11 +349,10 @@ def _cmd_run(args: argparse.Namespace) -> int:
         keep_checkpoints=args.keep_checkpoints,
         ad_hoc_overrides=ad_hoc_overrides,
         ad_hoc_train_kwargs=ad_hoc_train_kwargs,
-        benchmark_app=args.benchmark_app,
         openvino_device=args.openvino_device,
         training_device_name=args.training_device_name,
         openvino_device_name=args.openvino_device_name,
-        enable_openvino_benchmark=args.enable_openvino_benchmark or args.benchmark_app is not None,
+        enable_openvino_benchmark=args.enable_openvino_benchmark,
         enable_validation=args.enable_validation,
         rotation_group=args.rotation_group,
         no_rotation=args.no_rotation,

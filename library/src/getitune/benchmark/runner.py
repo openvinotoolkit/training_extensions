@@ -237,7 +237,6 @@ class RunConfig:
     # Ad-hoc overrides (from CLI --override / --train-kwarg flags)
     ad_hoc_overrides: dict[str, str] = field(default_factory=dict)
     ad_hoc_train_kwargs: dict[str, str] = field(default_factory=dict)
-    benchmark_app: str | None = None
     openvino_device: str | None = None
     training_device_name: str | None = None
     openvino_device_name: str | None = None
@@ -871,7 +870,6 @@ class BenchmarkRunner:
             seed=seed,
             deterministic=deterministic,
             max_epochs=self.config.max_epochs,
-            benchmark_app=self.config.benchmark_app,
             openvino_device=self.config.openvino_device,
             training_device_name=self.config.training_device_name,
             openvino_device_name=self.config.openvino_device_name,
