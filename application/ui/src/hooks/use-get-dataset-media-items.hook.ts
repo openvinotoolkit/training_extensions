@@ -126,7 +126,11 @@ export const useGetDatasetMediaItems = (options?: UseGetDatasetMediaItemsOptions
     const items = useMemo(() => {
         const mediaItems = data?.pages?.flatMap((page) => page.items) ?? [];
 
-        return getMediaEntities(mediaItems);
+        // Offset based pagination: uploads and deletions shift items across page boundaries
+        // between refetches, so the same item can end up in two of the loaded pages.
+        const uniqueMediaItems = Array.from(new Map(mediaItems.map((item) => [item.id, item])).values());
+
+        return getMediaEntities(uniqueMediaItems);
     }, [data?.pages]);
 
     const totalCount = data?.pages[0]?.pagination?.total ?? 0;
