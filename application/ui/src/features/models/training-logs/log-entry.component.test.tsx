@@ -89,4 +89,30 @@ describe('LogEntry', () => {
             expect(mockCopy).toHaveBeenCalledWith('/tmp/output/result.json');
         });
     });
+
+    describe('exception traceback rendering', () => {
+        it('renders the traceback appended in `text` when the record has an exception', () => {
+            const entry = getMockedLogEntry({
+                message: 'Unhandled exception in worker',
+                exception: { type: 'ValueError', value: 'bad value', traceback: true },
+            });
+            entry.text =
+                '2026-09-10 10:00:00 | ERROR | mod:fn:1 - Unhandled exception in worker\n' +
+                'Traceback (most recent call last):\n  raise ValueError("bad value")\nValueError: bad value';
+
+            render(<LogEntry entry={entry} />);
+
+            expect(screen.getByText(/Traceback \(most recent call last\)/)).toBeInTheDocument();
+            expect(screen.getByText(/ValueError: bad value/)).toBeInTheDocument();
+        });
+
+        it('falls back to record.message when there is no exception', () => {
+            const entry = getMockedLogEntry({ message: 'Plain message' });
+            entry.text = 'unrelated formatted text';
+
+            render(<LogEntry entry={entry} />);
+
+            expect(screen.getByText('Plain message')).toBeInTheDocument();
+        });
+    });
 });

@@ -39,6 +39,17 @@ const formatSource = (name: string, func: string, line: number): string => {
     return parts.filter(Boolean).join(':');
 };
 
+// `record.message` never includes a traceback (loguru keeps it separate); `text` has it appended after the message.
+const getDisplayMessage = ({ text, record }: LogEntryType): string => {
+    if (!record.exception) {
+        return record.message.trim();
+    }
+
+    const messageStart = text.indexOf(record.message);
+
+    return messageStart === -1 ? record.message.trim() : text.slice(messageStart).trim();
+};
+
 const MessageWithPaths = ({ message }: { message: string }) => {
     const { copy } = useClipboard();
 
@@ -86,7 +97,7 @@ export const LogEntry = ({ entry }: LogEntryProps) => {
             </span>
             {source ? <span className={classes.source}>{source}</span> : null}
             <span className={classes.message}>
-                <MessageWithPaths message={record.message.trim()} />
+                <MessageWithPaths message={getDisplayMessage(entry)} />
             </span>
         </div>
     );
