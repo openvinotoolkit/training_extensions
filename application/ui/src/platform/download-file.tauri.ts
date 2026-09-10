@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { toast } from '@/components/toast/toast.component';
+import { i18n } from '@/i18n';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 
@@ -34,7 +35,7 @@ const saveDownload = async (url: string, name?: string, startedMessage?: string)
         await writeFile(selectedPath, fileData);
     } catch (error: unknown) {
         console.error('[tauri downloadFile] failed', error);
-        toast({ type: 'error', message: 'Failed to download file' });
+        toast({ type: 'error', message: i18n.t('downloads.failure.genericError') });
     }
 };
 
@@ -42,10 +43,13 @@ const getFilterForFilename = (filename: string): { name: string; extensions: str
     const extension = filename.split('.').pop();
 
     if (extension === undefined || extension === '' || extension === filename) {
-        return { name: 'All Files', extensions: ['*'] };
+        return { name: i18n.t('downloads.saveDialog.allFiles'), extensions: ['*'] };
     }
 
-    return { name: `${extension.toUpperCase()} File`, extensions: [extension.toLowerCase()] };
+    return {
+        name: i18n.t('downloads.saveDialog.fileTypeFilter', { extension: extension.toUpperCase() }),
+        extensions: [extension.toLowerCase()],
+    };
 };
 
 const getFallbackFilename = (url: string): string => {

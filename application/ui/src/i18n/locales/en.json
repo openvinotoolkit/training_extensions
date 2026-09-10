@@ -67,7 +67,8 @@
             "failedSummary_one": "Failed to upload {{count}} item",
             "failedSummary_other": "Failed to upload {{count}} items",
             "mixedSummary_one": "Uploaded {{uploaded}} item, {{failed}} failed",
-            "mixedSummary_other": "Uploaded {{uploaded}} items, {{failed}} failed"
+            "mixedSummary_other": "Uploaded {{uploaded}} items, {{failed}} failed",
+            "genericError": "Failed to upload media."
         },
         "empty": {
             "noMatches": "No media items match your filter.",
@@ -191,6 +192,9 @@
         },
         "confidenceThreshold": {
             "label": "Confidence threshold"
+        },
+        "sources": {
+            "uploadError": "Failed to upload video file."
         }
     },
     "project": {
@@ -334,6 +338,38 @@
                 "copySuccess": "Copied Successfully",
                 "copyError": "Copy failed"
             }
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "Loading...Please wait."
+        },
+        "serverError": {
+            "heading": "Server Error",
+            "refresh": "Refresh"
+        },
+        "errorPage": {
+            "badRequest": "The server cannot or will not process the current request.",
+            "forbidden": "You do not have permission to access this page.",
+            "notFound": "This page doesn't exist!",
+            "unauthorized": "You aren't authorized to see this",
+            "serverError": "The server encountered an error and could not complete your request.",
+            "serviceUnavailable": "Looks like our API is down",
+            "unknownError": "An unknown error occurred",
+            "goHome": "Go back to home page"
+        },
+        "notifications": {
+            "unexpectedError": "An unexpected error occurred. Please try again.",
+            "networkError": "Network error. Please check your connection and try again."
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "Failed to download file"
+        },
+        "saveDialog": {
+            "allFiles": "All Files",
+            "fileTypeFilter": "{{extension}} File"
         }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, Heading, IllustratedMessage, View } from '@geti-ui/ui';
 import { NotFound } from '@geti-ui/ui/icons';
 import { isObject, isString } from 'lodash-es';
@@ -10,31 +11,32 @@ import { paths } from '../../constants/paths';
 import { redirectTo } from '../utils';
 
 const useErrorMessage = () => {
+    const { t } = useTranslation();
     const error = useRouteError();
 
     if (isRouteErrorResponse(error)) {
         if (error.status === 400) {
-            return 'The server cannot or will not process the current request.';
+            return t('application.errorPage.badRequest');
         }
 
         if (error.status === 403) {
-            return 'You do not have permission to access this page.';
+            return t('application.errorPage.forbidden');
         }
 
         if (error.status === 404) {
-            return "This page doesn't exist!";
+            return t('application.errorPage.notFound');
         }
 
         if (error.status === 401) {
-            return "You aren't authorized to see this";
+            return t('application.errorPage.unauthorized');
         }
 
         if (error.status === 500) {
-            return 'The server encountered an error and could not complete your request.';
+            return t('application.errorPage.serverError');
         }
 
         if (error.status === 503) {
-            return 'Looks like our API is down';
+            return t('application.errorPage.serviceUnavailable');
         }
     }
 
@@ -46,10 +48,11 @@ const useErrorMessage = () => {
         return error.detail;
     }
 
-    return 'An unknown error occurred';
+    return t('application.errorPage.unknownError');
 };
 
 export const ErrorPage = () => {
+    const { t } = useTranslation();
     const message = useErrorMessage();
 
     return (
@@ -65,7 +68,7 @@ export const ErrorPage = () => {
                         redirectTo(paths.root({}));
                     }}
                 >
-                    Go back to home page
+                    {t('application.errorPage.goHome')}
                 </Button>
             </IllustratedMessage>
         </View>

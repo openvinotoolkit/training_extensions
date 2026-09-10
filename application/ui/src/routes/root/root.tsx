@@ -5,6 +5,7 @@ import { ReactNode, Suspense } from 'react';
 
 import { $api } from '@/api';
 import { Toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { Flex, Heading, Loading } from '@geti-ui/ui';
 import { Outlet } from 'react-router-dom';
 
@@ -16,6 +17,7 @@ const MAX_RETRIES = 30;
 const retryDelay = (attempt: number) => Math.min(1000 * 2 ** attempt, 5000);
 
 const HealthCheck = ({ children }: { children: ReactNode }) => {
+    const { t } = useTranslation();
     const { data, isPending, isError } = $api.useQuery('get', '/health', undefined, {
         retry: MAX_RETRIES,
         retryDelay,
@@ -29,7 +31,7 @@ const HealthCheck = ({ children }: { children: ReactNode }) => {
             <Flex direction={'column'} justifyContent={'center'} alignItems={'center'} height={'100vh'}>
                 <Loading variant={'intel'} mode={'inline'} />
                 <Heading bottom={'size-4600'} level={2}>
-                    Loading...Please wait.
+                    {t('application.startup.loading')}
                 </Heading>
             </Flex>
         );
