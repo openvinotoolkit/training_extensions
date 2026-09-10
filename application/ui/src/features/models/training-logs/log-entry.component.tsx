@@ -3,6 +3,7 @@
 
 import { Fragment } from 'react';
 
+import { useTranslation } from '@/i18n';
 import dayjs from 'dayjs';
 import { useClipboard } from 'hooks/use-clipboard/use-clipboard.hook';
 
@@ -56,7 +57,11 @@ const getTraceback = ({ text, record }: LogEntryType): string | null => {
 };
 
 const MessageWithPaths = ({ message }: { message: string }) => {
+    const { t } = useTranslation();
     const { copy } = useClipboard();
+
+    const copyPath = (part: string) =>
+        copy(part, t('models.training.logs.copySuccess'), t('models.training.logs.copyError'));
 
     return message.split(PATH_REGEX).map((part, index) => {
         if (index % 2 === 1) {
@@ -65,7 +70,7 @@ const MessageWithPaths = ({ message }: { message: string }) => {
                     key={index}
                     className={classes.path}
                     title={'Click to copy path'}
-                    onClick={() => copy(part)}
+                    onClick={() => copyPath(part)}
                     onKeyDown={(event) => {
                         if (event.repeat) {
                             return;
@@ -73,7 +78,7 @@ const MessageWithPaths = ({ message }: { message: string }) => {
 
                         if (event.key === 'Enter' || event.key === ' ') {
                             event.preventDefault();
-                            copy(part);
+                            copyPath(part);
                         }
                     }}
                     role={'button'}

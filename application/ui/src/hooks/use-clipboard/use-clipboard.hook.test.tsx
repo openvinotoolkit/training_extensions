@@ -28,7 +28,7 @@ describe('useClipboard', () => {
         const confirmationMessage = 'copied';
         const { result } = renderHook(() => useClipboard());
 
-        await result.current.copy(textToCopy, confirmationMessage);
+        await result.current.copy(textToCopy, confirmationMessage, 'unused error message');
 
         expect(mockwriteText).toHaveBeenCalledWith(textToCopy);
         expect(mockedToast).toHaveBeenCalledWith({
