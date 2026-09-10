@@ -3,6 +3,7 @@
 
 import { ReactNode } from 'react';
 
+import { useTranslation } from '@/i18n';
 import {
     AriaDropZone,
     Content,
@@ -27,6 +28,8 @@ type DatasetDropZoneProps = {
 type DropEvent = Parameters<NonNullable<SpectrumDropZoneProps['onDrop']>>[0];
 
 export const DatasetDropZone = ({ children, onFilesDropped }: DatasetDropZoneProps) => {
+    const { t } = useTranslation();
+
     const handleDrop = async (event: DropEvent) => {
         const files = await getFilesFromDropEvent(event);
 
@@ -46,9 +49,9 @@ export const DatasetDropZone = ({ children, onFilesDropped }: DatasetDropZonePro
 
                                 <Content>
                                     <Flex alignItems={'center'} direction={'column'} gap={'size-100'}>
-                                        <Heading level={2}>Drop media files here</Heading>
+                                        <Heading level={2}>{t('dataset.gallery.dropZone.title')}</Heading>
                                         <Text UNSAFE_className={classes.dropMessage}>
-                                            Images and videos will be uploaded to this dataset.
+                                            {t('dataset.gallery.dropZone.description')}
                                         </Text>
                                     </Flex>
                                 </Content>

@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction, Suspense, useMemo } from 'react';
 
 import type { Media } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Button,
@@ -51,9 +52,11 @@ type AnnotateButtonProps = {
 };
 
 const AnnotateButton = ({ isDisabled, onClick }: AnnotateButtonProps) => {
+    const { t } = useTranslation();
+
     return (
         <Button margin={0} variant={'primary'} onPress={onClick} isDisabled={isDisabled}>
-            Annotate
+            {t('dataset.mediaActions.annotate')}
         </Button>
     );
 };
@@ -98,24 +101,26 @@ const DatasetViewActions = ({ selectedMediaIds, resetSelectedMediaIds }: Dataset
 };
 
 const SortMediaByUploadDate = () => {
+    const { t } = useTranslation();
     const { sortDirection, setSortDirection } = useDatasetFiltersSearchParams();
 
     if (sortDirection === 'asc') {
         return (
             <ActionButton isQuiet onPress={() => setSortDirection('desc')}>
-                Oldest first <SortUp />
+                {t('dataset.gallery.sortOldestFirst')} <SortUp />
             </ActionButton>
         );
     }
 
     return (
         <ActionButton isQuiet onPress={() => setSortDirection('asc')}>
-            Newest first <SortDown />
+            {t('dataset.gallery.sortNewestFirst')} <SortDown />
         </ActionButton>
     );
 };
 
 export const Toolbar = ({ items, viewMode, setViewMode }: ToolbarProps) => {
+    const { t } = useTranslation();
     const { selectedMediaItem, onSelectedMediaItemChange } = useSelectDatasetItem();
     const { selectedKeys, setSelectedKeys, toggleSelectedKeys } = useSelectedData();
 
@@ -148,7 +153,7 @@ export const Toolbar = ({ items, viewMode, setViewMode }: ToolbarProps) => {
         <Flex direction={'column'} gridArea={'toolbar'} gap={'size-200'} marginBottom={'size-200'}>
             <Flex alignItems={'center'} justifyContent={'space-between'}>
                 <Flex alignItems={'center'} gap={'size-200'}>
-                    <Heading margin={0}>Dataset</Heading>
+                    <Heading margin={0}>{t('dataset.gallery.heading')}</Heading>
 
                     {FEATURE_FLAGS.DATASET_VIEWS && (
                         <Suspense fallback={null}>

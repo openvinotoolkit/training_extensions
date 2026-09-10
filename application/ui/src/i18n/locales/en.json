@@ -68,7 +68,14 @@
             "failedSummary_other": "Failed to upload {{count}} items",
             "mixedSummary_one": "Uploaded {{uploaded}} item, {{failed}} failed",
             "mixedSummary_other": "Uploaded {{uploaded}} items, {{failed}} failed",
-            "genericError": "Failed to upload media."
+            "genericError": "Failed to upload media.",
+            "uploadMedia": "Upload media",
+            "showDetails": "Show details",
+            "inProgressToast_one": "Uploading {{count}} item...",
+            "inProgressToast_other": "Uploading {{count}} items...",
+            "inProgressSucceededPart": "{{count}} succeeded",
+            "inProgressFailedPart": "{{count}} failed",
+            "close": "Close"
         },
         "empty": {
             "noMatches": "No media items match your filter.",
@@ -98,7 +105,11 @@
             "confirm": "Confirm",
             "mediaItem": "Delete media item",
             "confirmation_one": "Are you sure you want to delete {{count}} item?",
-            "confirmation_other": "Are you sure you want to delete {{count}} items?"
+            "confirmation_other": "Are you sure you want to delete {{count}} items?",
+            "deletingItems": "Deleting items...",
+            "deleteError": "Failed to delete, {{detail}}",
+            "deletedSuccess_one": "{{count}} item deleted successfully",
+            "deletedSuccess_other": "{{count}} items deleted successfully"
         },
         "bulkLabels": {
             "title": "Label assignment",
@@ -110,7 +121,11 @@
             "cancelUpload": "Cancel upload",
             "skip": "Skip",
             "continue": "Continue",
-            "assign": "Assign"
+            "assign": "Assign",
+            "assignLabelTooltip": "Assign label",
+            "assignAllSuccess": "Successfully assigned label(s) to all {{count}} image(s)",
+            "assignAllFailure": "Failed to assign label(s) to all {{count}} image(s)",
+            "assignPartialSuccess": "Assigned label(s) to {{succeeded}} of {{total}} image(s) ({{failed}} failed)"
         },
         "filtersActive": {
             "clearAll": "Clear all"
@@ -119,6 +134,22 @@
             "annotate": "Annotate",
             "download": "Download",
             "downloadStarted": "{{fileName}} download has started"
+        },
+        "gallery": {
+            "heading": "Dataset",
+            "sortOldestFirst": "Oldest first",
+            "sortNewestFirst": "Newest first",
+            "selectedCount": "{{count}} selected",
+            "totalMediaCount_one": "{{count}} media item",
+            "totalMediaCount_other": "{{count}} media items",
+            "dropZone": {
+                "title": "Drop media files here",
+                "description": "Images and videos will be uploaded to this dataset."
+            },
+            "mediaInfo": {
+                "annotatedFrames": "Number of annotated frames: {{count}}",
+                "totalFrames": "Total frames: {{count}}"
+            }
         },
         "multiSelect": {
             "selectAll": "Select all"

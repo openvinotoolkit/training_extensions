@@ -104,6 +104,7 @@ const buildSubheader = (
 ): string => {
     if (isUploading) {
         return t(failed > 0 ? 'dataset.upload.uploadingFailedSummary' : 'dataset.upload.uploadingSummary', {
+            count: total,
             total,
             uploaded: succeeded,
             failed,
@@ -113,7 +114,7 @@ const buildSubheader = (
     if (failed === 0) return t('dataset.upload.uploadedSummary', { count: succeeded });
     if (succeeded === 0) return t('dataset.upload.failedSummary', { count: failed });
 
-    return t('dataset.upload.mixedSummary', { uploaded: succeeded, failed });
+    return t('dataset.upload.mixedSummary', { count: succeeded, uploaded: succeeded, failed });
 };
 
 const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
@@ -172,7 +173,7 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
             </Content>
             <ButtonGroup>
                 <Button variant={'primary'} onPress={onClose}>
-                    Close
+                    {t('dataset.upload.close')}
                 </Button>
             </ButtonGroup>
         </Dialog>

@@ -3,40 +3,41 @@
 
 import { $api } from '@/api';
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation, type TranslateFn } from '@/i18n';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isFunction } from 'lodash-es';
 
 import { getQueryKey } from '../../../query-client/query-client';
-import { pluralizeItems } from '../../../shared/util';
 
 const toastId = 'deleting-notification';
 
-const useDeleteMediaItemsMutation = () => {
+const useDeleteMediaItemsMutation = (t: TranslateFn) => {
     return $api.useMutation('delete', `/api/projects/{project_id}/dataset/media`, {
         meta: { error: { notify: () => false } },
         onError: (error) => {
             toast({
                 id: toastId,
                 type: 'error',
-                message: `Failed to delete, ${error?.detail}`,
+                message: t('dataset.delete.deleteError', { detail: error?.detail }),
             });
         },
     });
 };
 
 export const useDeleteMediaItem = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const projectId = useProjectIdentifier();
-    const deleteItemsMutation = useDeleteMediaItemsMutation();
+    const deleteItemsMutation = useDeleteMediaItemsMutation(t);
 
     const alertDialogState = useOverlayTriggerState({});
 
     const handleDeleteItems = async (media_ids: string[], onDeleted?: (ids: string[]) => void) => {
         alertDialogState.close();
 
-        toast({ id: toastId, type: 'info', message: `Deleting items...` });
+        toast({ id: toastId, type: 'info', message: t('dataset.delete.deletingItems') });
 
         deleteItemsMutation.mutate(
             {
@@ -68,7 +69,7 @@ export const useDeleteMediaItem = () => {
         toast({
             id: toastId,
             type: 'success',
-            message: `${deletedIds.length} ${pluralizeItems(deletedIds.length)} deleted successfully`,
+            message: t('dataset.delete.deletedSuccess', { count: deletedIds.length }),
             duration: 3000,
         });
     };
