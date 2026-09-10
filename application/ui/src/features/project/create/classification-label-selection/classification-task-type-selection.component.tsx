@@ -55,7 +55,7 @@ export const ClassificationTaskSelection = ({
             <Text UNSAFE_className={classes.title}>{t('project.create.classificationType.title')}</Text>
             <RadioGroup
                 isEmphasized
-                aria-label={t('project.create.classificationType.groupLabel')}
+                aria-label={'Classification type'}
                 value={selectedType}
                 onChange={(value) => onSelectedTypeChange(value as ClassificationTaskType)}
             >

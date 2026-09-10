@@ -3,6 +3,7 @@
 
 import { ReactNode } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, Flex, Heading } from '@geti-ui/ui';
 import { ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
 
@@ -12,11 +13,12 @@ import { ENTIRE_DATASET_NAME } from './toolbar/dataset-view-selector/util';
 import { MediaUpload } from './toolbar/media-upload.component';
 
 const ImportDatasetButton = () => {
+    const { t } = useTranslation();
     const { datasetImportDialogState } = useImportDatasetDialogState();
 
     return (
         <Button variant={'secondary'} onPress={() => datasetImportDialogState.open()}>
-            Import dataset
+            {t('dataset.empty.importDataset')}
         </Button>
     );
 };
@@ -30,39 +32,42 @@ const EmptyMessage = ({ children }: { children: ReactNode }) => {
 };
 
 const NoMatchingMediaItems = () => {
+    const { t } = useTranslation();
     return (
         <EmptyMessage>
-            No media items match your filter.
+            {t('dataset.empty.noMatches')}
             <br />
-            Remove or select a new filter.
+            {t('dataset.empty.changeFilter')}
         </EmptyMessage>
     );
 };
 
 const EmptyDatasetView = () => {
+    const { t } = useTranslation();
     const [, setDatasetViewId] = useDatasetViewId();
 
     return (
         <>
             <EmptyMessage>
-                This view has no media items.
+                {t('dataset.empty.viewEmpty')}
                 <br />
-                Assign media items to it, or go back to the entire dataset.
+                {t('dataset.empty.assignOrBack')}
             </EmptyMessage>
             <Button variant={'secondary'} onPress={() => setDatasetViewId(ENTIRE_DATASET_VIEW_ID)}>
-                {`Go to ${ENTIRE_DATASET_NAME}`}
+                {t('dataset.empty.goToEntireDataset', { datasetName: ENTIRE_DATASET_NAME })}
             </Button>
         </>
     );
 };
 
 const EmptyEntireDataset = () => {
+    const { t } = useTranslation();
     return (
         <>
             <EmptyMessage>
-                Your dataset is empty.
+                {t('dataset.empty.datasetEmpty')}
                 <br />
-                Upload your first media item to get started.
+                {t('dataset.empty.uploadToStart')}
             </EmptyMessage>
             <Flex gap={'size-100'}>
                 <MediaUpload testId={'upload-media-input-empty-dataset'} />

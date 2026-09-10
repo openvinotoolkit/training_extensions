@@ -4,7 +4,7 @@
 import { Suspense, type ReactNode } from 'react';
 
 import { Toast } from '@/components/toast/toast.component';
-import { IntelBrandedLoading, ThemeProvider } from '@geti-ui/ui';
+import { Loading, ThemeProvider } from '@geti-ui/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
     render as rtlRender,
@@ -26,7 +26,7 @@ const TestProviders = ({ children, queryClient }: { children: ReactNode; queryCl
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-                <Suspense fallback={<IntelBrandedLoading />}>{children}</Suspense>
+                <Suspense fallback={<Loading variant='intel' />}>{children}</Suspense>
                 <Toast />
             </ThemeProvider>
         </QueryClientProvider>

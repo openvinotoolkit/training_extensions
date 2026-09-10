@@ -11,7 +11,7 @@ export class ImportDatasetPage {
     }
 
     async openImportDialog() {
-        await this.page.getByRole('button', { name: 'import-export dataset' }).click();
+        await this.page.getByRole('button', { name: 'import export dataset' }).click();
         await this.page.getByText('Import dataset').click();
     }
 

@@ -556,10 +556,12 @@ class PretrainedInit:
             load_from_http,
             load_state_dict,
         )
+        from getitune.utils.safe_globals import PRETRAINED_SAFE_GLOBALS
 
         if self.prefix is None:
             if Path(self.checkpoint).exists():
-                checkpoint = torch.load(self.checkpoint, map_location=self.map_location)
+                with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
+                    checkpoint = torch.load(self.checkpoint, map_location=self.map_location)
             elif self.checkpoint.startswith("http"):
                 checkpoint = load_from_http(self.checkpoint)
             if checkpoint is not None:
@@ -567,7 +569,8 @@ class PretrainedInit:
                 logger.info(f"load model from: {self.checkpoint}")
         else:
             logger.info(f"load {self.prefix} in model from: {self.checkpoint}")
-            checkpoint = torch.load(self.checkpoint, map_location=self.map_location)
+            with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
+                checkpoint = torch.load(self.checkpoint, map_location=self.map_location)
             state_dict = checkpoint.get("state_dict", checkpoint)
             prefix = self.prefix
             if not prefix.endswith("."):

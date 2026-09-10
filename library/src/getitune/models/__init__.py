@@ -3,6 +3,14 @@
 
 """Reimport models from differnt backends for user frendly imports."""
 
+from getitune.backend.huggingface.models import (
+    HFDetectionModel,
+    HFInstSegModel,
+    HFModel,
+    HFMulticlassClsModel,
+    HFMultilabelClsModel,
+    HFSemanticSegModel,
+)
 from getitune.backend.lightning.models import (
     ATSS,
     DEIMV2,
@@ -66,6 +74,12 @@ __all__ = [
     "DinoV2Seg",
     "EdgeCrafter",
     "EfficientNet",
+    "HFDetectionModel",
+    "HFInstSegModel",
+    "HFModel",
+    "HFMulticlassClsModel",
+    "HFMultilabelClsModel",
+    "HFSemanticSegModel",
     "LiteHRNet",
     "MaskRCNN",
     "MaskRCNNTV",

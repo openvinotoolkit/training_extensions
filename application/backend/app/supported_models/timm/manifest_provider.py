@@ -62,6 +62,7 @@ class TimmManifestProvider:
             # ---- Dynamic hyperparameters keyed on the chosen architecture ----
             hyperparameters=AlgoLevelParameters(
                 training=AlgoLevelTrainingParameters(
+                    max_epochs=100,
                     learning_rate=e["default_lr"],
                     weight_decay=e["default_weight_decay"],
                     input_size_width=w,

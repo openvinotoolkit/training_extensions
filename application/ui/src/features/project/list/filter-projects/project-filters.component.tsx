@@ -35,20 +35,20 @@ export const ProjectFilters = ({
                 value={searchName}
                 onChange={onSearchChange}
                 placeholder={t('project.list.filters.searchPlaceholder')}
-                aria-label={t('project.list.filters.searchLabel')}
+                aria-label={'Search projects by name'}
                 flex={1}
             />
 
             <View backgroundColor={'gray-50'}>
                 <FilterPopoverButton
-                    ariaLabel={t('project.list.filters.taskType')}
+                    ariaLabel={'Filter by task type'}
                     placeholder={t('project.list.filters.taskType')}
                     summary={summary}
                     minWidth={'size-2400'}
                     dialogWidth={'size-1600'}
                 >
                     <CheckboxGroup
-                        aria-label={t('project.list.filters.taskType')}
+                        aria-label={'Filter by task type'}
                         value={selectedTaskTypes}
                         onChange={(values) => onSelectedTaskTypesChange(values as TaskType[])}
                     >

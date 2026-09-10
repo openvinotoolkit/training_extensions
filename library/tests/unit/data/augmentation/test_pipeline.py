@@ -1200,7 +1200,7 @@ class TestGPUAugmentationCallback:
 
     def test_data_keys_per_task(self):
         """Verify correct data_keys are used for different task types."""
-        from getitune.backend.lightning.callbacks.gpu_augmentation import GPUAugmentationCallback
+        from getitune.data.augmentation.task_keys import DATA_KEYS_BY_TASK
         from getitune.types.task import TaskType
 
         expected_keys = {
@@ -1211,7 +1211,7 @@ class TestGPUAugmentationCallback:
         }
 
         for task_type, expected in expected_keys.items():
-            data_keys = ["input", *GPUAugmentationCallback._DATA_KEYS_BY_TASK.get(task_type, [])]
+            data_keys = ["input", *DATA_KEYS_BY_TASK.get(task_type, ())]
             assert data_keys == expected, f"Mismatch for {task_type}: {data_keys} != {expected}"
 
     def _make_detection_tile_batch(self):  # noqa: ANN202

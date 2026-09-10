@@ -3,6 +3,7 @@
 
 import { FormEvent, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, TextField } from '@geti-ui/ui';
 import { ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -11,7 +12,6 @@ import { isEmpty } from 'lodash-es';
 import { useCreateDatasetViewMutation } from '../api/use-create-dataset-view';
 import { SelectedMediaCount } from '../selected-media-count/selected-media-count.component';
 import { DatasetView } from '../type';
-import { DUPLICATE_DATASET_VIEW_NAME_ERROR } from '../util';
 
 type SaveDatasetViewDialogProps = {
     onClose: (datasetViewId?: string) => void;
@@ -20,6 +20,7 @@ type SaveDatasetViewDialogProps = {
 };
 
 const SaveDatasetViewDialog = ({ onClose, selectedMediaIds, datasetViews }: SaveDatasetViewDialogProps) => {
+    const { t } = useTranslation();
     const [viewName, setViewName] = useState<string>('');
     const projectId = useProjectIdentifier();
     const createDatasetViewMutation = useCreateDatasetViewMutation();
@@ -64,7 +65,7 @@ const SaveDatasetViewDialog = ({ onClose, selectedMediaIds, datasetViews }: Save
                         value={viewName}
                         onChange={setViewName}
                         validationState={isDuplicatedName ? 'invalid' : undefined}
-                        errorMessage={isDuplicatedName ? DUPLICATE_DATASET_VIEW_NAME_ERROR : undefined}
+                        errorMessage={isDuplicatedName ? t('dataset.validation.datasetViewNameExists') : undefined}
                     />
                 </Form>
             </Content>

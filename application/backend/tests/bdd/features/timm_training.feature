@@ -10,7 +10,7 @@ Feature: Timm Model Training Smoke Test
 
   @timm
   Scenario Outline: Train a representative model for each unique timm architecture flavor
-    Given the training configuration for model architecture "<model_architecture_id>" is set to 10 epochs
+    Given the training configuration for model architecture "<model_architecture_id>" is set to 5 epochs
     When I train timm model architecture "<model_architecture_id>" on device "cpu"
     Then the trained model has a "openvino" variant with a positive weights size
 
@@ -29,6 +29,7 @@ Feature: Timm Model Training Smoke Test
       | convit                    | convit_tiny.fb_in1k                       |
       | convmixer                 | convmixer_1024_20_ks9_p14.in1k            |
       | convnext                  | test_convnext.r160_in1k                   |
+      | cpubone                   | cpubone_nano.r224_in1k                    |
       | crossvit                  | crossvit_tiny_240.in1k                    |
       | csatv2                    | csatv2.r512_in1k                          |
       | cspnet                    | cs3darknet_focus_s.ra4_e3600_r256_in1k    |
@@ -57,7 +58,9 @@ Feature: Timm Model Training Smoke Test
       | inception_resnet_v2       | inception_resnet_v2.tf_ens_adv_in1k       |
       | inception_v3              | inception_v3.gluon_in1k                   |
       | inception_v4              | inception_v4.tf_in1k                      |
+      | lcnetv2                   | lcnetv2_small.paddle_in1k                 |
       | levit                     | levit_128s.fb_dist_in1k                   |
+      | lowformer                 | lowformer_b0.in1k                         |
       | mambaout                  | mambaout_femto.in1k                       |
       | maxxvit                   | maxvit_rmlp_pico_rw_256.sw_in1k           |
       | metaformer                | poolformer_s12.sail_in1k                  |

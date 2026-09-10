@@ -10,15 +10,8 @@ import { server } from './msw-node-setup';
 
 import './test-utils/mock-event-source';
 
-import { createI18nInstance } from './i18n/config';
-import { resources } from './i18n/locales';
-
 beforeAll(() => {
     server.listen({ onUnhandledRequest: 'bypass' });
-});
-
-beforeEach(() => {
-    createI18nInstance({ lng: 'en', resources: structuredClone(resources) });
 });
 
 afterEach(() => {
