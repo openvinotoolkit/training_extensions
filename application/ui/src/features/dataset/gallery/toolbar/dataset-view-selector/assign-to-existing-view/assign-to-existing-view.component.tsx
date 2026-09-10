@@ -4,6 +4,7 @@
 import { FormEvent, useState } from 'react';
 
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import {
     Button,
     ButtonGroup,
@@ -24,7 +25,6 @@ import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isEmpty } from 'lodash-es';
 import { createSearchParams, Link, useLocation } from 'react-router-dom';
 
-import { pluralizeItems } from '../../../../../../shared/util';
 import { useAssignMediaToExistingDatasetView } from '../api/use-assign-media-to-existing-dataset-view';
 import { SelectedMediaCount } from '../selected-media-count/selected-media-count.component';
 import { DatasetView } from '../type';
@@ -78,6 +78,7 @@ type AssignToExistingViewDialogProps = {
 };
 
 const AssignToExistingViewDialog = ({ datasetViews, selectedMediaIds, onClose }: AssignToExistingViewDialogProps) => {
+    const { t } = useTranslation();
     const [selectedDatasetViewId, setSelectedDatasetViewId] = useState<string | null>(null);
     const { assignToExistingView, isPending } = useAssignMediaToExistingView();
     const isAssignDisabled = selectedDatasetViewId === null;
@@ -94,15 +95,15 @@ const AssignToExistingViewDialog = ({ datasetViews, selectedMediaIds, onClose }:
 
     return (
         <Dialog>
-            <Heading>Assign to existing view</Heading>
+            <Heading>{t('dataset.views.assignTitle')}</Heading>
             <Divider size={'S'} />
             <Content>
                 <SelectedMediaCount count={selectedMediaIds.length} />
                 <Form id={'assign-to-existing-view-form'} onSubmit={assignMedia} marginTop={'size-200'}>
                     <Picker
                         items={datasetViews}
-                        label={'Assign to'}
-                        placeholder={'Select a view'}
+                        label={t('dataset.views.assignTo')}
+                        placeholder={t('dataset.views.selectView')}
                         selectedKey={selectedDatasetViewId}
                         onSelectionChange={(viewId) => setSelectedDatasetViewId(viewId?.toString() ?? null)}
                     >
@@ -111,9 +112,7 @@ const AssignToExistingViewDialog = ({ datasetViews, selectedMediaIds, onClose }:
                 </Form>
                 <Flex gap={'size-50'} marginTop={'size-250'}>
                     <Info />
-                    <Text UNSAFE_className={classes.note}>
-                        This operation will not affect other media that were already assigned to this view.
-                    </Text>
+                    <Text UNSAFE_className={classes.note}>{t('dataset.views.assignmentNote')}</Text>
                 </Flex>
             </Content>
             <ButtonGroup>
@@ -145,6 +144,7 @@ export const AssignToExistingView = ({
     selectedMediaIds,
     resetSelectedMediaIds,
 }: AssignToExistingViewProps) => {
+    const { t } = useTranslation();
     const [datasetViewId] = useDatasetViewId();
     const [isAssignToExistingViewOpen, setIsAssignToExistingViewOpen] = useState<boolean>(false);
     const isAssignToExistingViewDisabled = isEmpty(datasetViews);
@@ -161,12 +161,12 @@ export const AssignToExistingView = ({
                 message: (
                     <Flex alignItems={'center'} wrap={'wrap'}>
                         <Text>
-                            Media {pluralizeItems(selectedMediaIds.length)} assigned successfully.{' '}
+                            {t('dataset.views.mediaAssigned', { count: selectedMediaIds.length })}{' '}
                             <Link
                                 to={{ pathname: location.pathname, search: searchParams.toString() }}
                                 className={classes.link}
                             >
-                                Open {selectedDatasetView?.name} view
+                                {t('dataset.views.openView', { viewName: selectedDatasetView?.name })}
                             </Link>
                         </Text>
                     </Flex>

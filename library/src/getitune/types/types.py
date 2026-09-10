@@ -5,6 +5,11 @@
 
 from __future__ import annotations
 
+import functools
+import operator
+from typing import TYPE_CHECKING
+
+from getitune.backend.huggingface.models.base import HFModel
 from getitune.backend.lightning.models.base import LightningModel
 from getitune.backend.openvino.models.base import OVModel
 from getitune.data.entity import BaseSample
@@ -18,8 +23,19 @@ except ImportError:  # ultralytics not installed
 
 METRICS = dict[str, float]
 ANNOTATIONS = list[BaseSample]
-if UltralyticsModel is not None:
-    MODEL = LightningModel | OVModel | UltralyticsModel | PathLike
-else:
-    MODEL = LightningModel | OVModel | PathLike
 DATA = DataModule | PathLike
+
+if TYPE_CHECKING:
+    # Static view: assume every optional backend is available so annotations
+    # referring to MODEL type-check against all model classes.
+    MODEL = LightningModel | OVModel | UltralyticsModel | HFModel | PathLike
+else:
+    # Runtime view: build the union from whichever optional backends
+    # imported. Hugging Face is a standard dependency, so HFModel is always
+    # part of the union; only Ultralytics (an optional extra) needs the
+    # None-check dance.
+    MODEL = functools.reduce(
+        operator.or_,
+        [m for m in (UltralyticsModel,) if m is not None],
+        LightningModel | OVModel | HFModel | PathLike,
+    )

@@ -57,17 +57,17 @@ lint: ruff pyrefly
 
 # Run ruff for linting and format checking
 ruff: _ensure_uv
-    uv run --no-sync ruff check --output-format=github
-    uv run --no-sync ruff format --check
+    uv run ruff check --output-format=github
+    uv run ruff format --check
 
 # Run ruff to format the code and apply fixes
 ruff-fix: _ensure_uv
-    uv run --no-sync ruff check --fix
-    uv run --no-sync ruff format
+    uv run ruff check --fix
+    uv run ruff format
 
 # Run pyrefly to detect potential type errors
 pyrefly: _ensure_uv
-    uv run --no-sync pyrefly check --baseline=pyrefly-baseline.json
+    uv run pyrefly check --baseline=pyrefly-baseline.json
 
 # -------------------------------------------------------------------------------------------------
 # Testing
@@ -75,24 +75,28 @@ pyrefly: _ensure_uv
 
 # Run unit tests with pytest
 test-unit *ARGS: _ensure_uv
-    uv run --no-sync pytest ./tests/unit -v {{ ARGS }}
+    uv run pytest ./tests/unit -v {{ ARGS }}
 
 # Run lightning backend
 test-unit-lightning *ARGS: _ensure_uv
-    uv run --no-sync pytest ./tests/unit/backend/lightning -v {{ ARGS }}
+    uv run pytest ./tests/unit/backend/lightning -v {{ ARGS }}
 
 # Run model-related unit tests with pytest
 test-unit-models *ARGS: _ensure_uv
-    uv run --no-sync pytest ./tests/unit/backend/*/models -v {{ ARGS }}
+    uv run pytest ./tests/unit/backend/*/models -v {{ ARGS }}
 
 # Run ultralytics backend
 test-unit-ultralytics *ARGS: _ensure_uv
-    uv run --no-sync pytest ./tests/unit/backend/ultralytics -v {{ ARGS }}
+    uv run pytest ./tests/unit/backend/ultralytics -v {{ ARGS }}
+
+# Run huggingface backend
+test-unit-huggingface *ARGS: _ensure_uv
+    uv run pytest ./tests/unit/backend/huggingface -v {{ ARGS }}
 
 # Run openvino backend
 test-unit-openvino *ARGS: _ensure_uv
-    uv run --no-sync pytest ./tests/unit/backend/openvino -v {{ ARGS }}
+    uv run pytest ./tests/unit/backend/openvino -v {{ ARGS }}
 
 # Run integration tests with pytest
 test-integration *ARGS: _ensure_uv
-    uv run --no-sync pytest ./tests/integration -v {{ ARGS }}
+    uv run pytest ./tests/integration -v {{ ARGS }}

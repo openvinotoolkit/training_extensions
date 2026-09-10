@@ -54,6 +54,11 @@ dependencies = [
     "rfdetr==1.8.0",
     "certifi>=2026",
     "roboflow~=1.2",
+    "accelerate>=1.1.0,<2",
+    # Pinned explicitly: transformers otherwise resolves only transitively via
+    # rfdetr, so an unrelated rfdetr bump would silently move the API surface
+    # the Trainer bridge and export wrappers are coupled to.
+    "transformers>=5.14,<6",
 ]
 
 [dependency-groups]

@@ -29,7 +29,7 @@ export const ImportExport = () => {
     return (
         <>
             <MenuTrigger>
-                <Button variant='secondary' aria-label='import-export dataset'>
+                <Button variant='secondary' aria-label='import export dataset'>
                     Export/Import
                 </Button>
                 <Menu onAction={handleMenuAction}>

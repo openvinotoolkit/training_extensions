@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, DialogContainer, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Delete } from '@geti-ui/ui/icons';
 import { isEmpty } from 'lodash-es';
@@ -20,6 +21,7 @@ type DeleteMediaItemProps = {
 };
 
 export const DeleteMediaItem = ({ itemsIds = [], onDeleted, isHotkeyEnabled = false }: DeleteMediaItemProps) => {
+    const { t } = useTranslation();
     const { deleteMedia, openDeleteDialog, closeDeleteDialog, isPending, isDeleteDialogOpen } = useDeleteMediaItem();
 
     const handleDelete = async () => {
@@ -43,14 +45,14 @@ export const DeleteMediaItem = ({ itemsIds = [], onDeleted, isHotkeyEnabled = fa
             <TooltipTrigger>
                 <ActionButton
                     isQuiet
-                    aria-label='delete media item'
+                    aria-label={'delete media item'}
                     isDisabled={isPending}
                     UNSAFE_className={classes.deleteButton}
                     onPress={openDeleteDialog}
                 >
                     <Delete />
                 </ActionButton>
-                <Tooltip>Delete media item</Tooltip>
+                <Tooltip>{t('dataset.delete.mediaItem')}</Tooltip>
             </TooltipTrigger>
 
             <DialogContainer onDismiss={closeDeleteDialog}>

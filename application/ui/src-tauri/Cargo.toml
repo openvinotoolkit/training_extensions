@@ -22,3 +22,27 @@ tauri-plugin-dialog = "=2.7.1"
 tauri-plugin-fs = "=2.5.1"
 tauri-plugin-log = "2.8.0"
 tauri-plugin-opener = "2.5.3"
+
+# Desktop-only: guarantees a single running instance so no two
+# backends are spawned competing for the same TCP port and SQLite database.
+[target.'cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))'.dependencies]
+tauri-plugin-single-instance = "=2.4.4"
+
+# Windows-only: Job Objects to bind the side-car's process tree to the shell's
+# lifetime, and the WebView2 COM interfaces needed to observe `ProcessFailed`
+# (Evergreen runtime updates / GPU crashes) instead of dying.
+#
+# Deliberately *not* pinned with `=`: these must resolve to the very same crate
+# versions that tauri 2.11 / wry 0.55 already depend on, otherwise the COM types
+# we hand to `add_ProcessFailed` come from a different copy of the crate and no
+# longer match wry's. Caret ranges let Cargo unify them into a single build;
+# Cargo.lock records the exact versions (windows 0.61.3, webview2-com 0.38.2).
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_JobObjects",
+] }
+webview2-com = "0.38"
+

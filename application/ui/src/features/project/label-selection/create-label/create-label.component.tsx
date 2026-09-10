@@ -35,8 +35,8 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
     const appHotkeys = Object.values(TASK_HOTKEYS[taskType]);
     const allHotkeys = [...labelsHotkeys, ...appHotkeys];
 
-    const validationResult = validateLabelName(newLabel.name, labels);
-    const hotkeyError = newLabel.hotkey ? validateLabelHotkey(newLabel.hotkey, allHotkeys) : undefined;
+    const validationResult = validateLabelName(newLabel.name, labels, t);
+    const hotkeyError = newLabel.hotkey ? validateLabelHotkey(newLabel.hotkey, allHotkeys, t) : undefined;
     const isCreateLabelDisabled = newLabel.name.trim().length === 0 || validationResult !== undefined;
 
     const createLabel = () => {
@@ -79,7 +79,7 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
             <View>
                 <TextField
                     ref={inputRef}
-                    aria-label={t('project.create.labels.inputLabel')}
+                    aria-label={'Create label input'}
                     placeholder={t('project.create.labels.inputPlaceholder')}
                     value={newLabel.name}
                     onChange={(newName) => setNewLabel((prevLabel) => ({ ...prevLabel, name: newName }))}
@@ -100,7 +100,7 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
                 isQuiet
                 onPress={createLabel}
                 isDisabled={isCreateLabelDisabled}
-                aria-label={t('project.create.labels.createAction', { name: newLabel.name })}
+                aria-label={`Create label ${newLabel.name}`}
             >
                 <Add />
             </ActionButton>

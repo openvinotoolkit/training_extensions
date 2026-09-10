@@ -134,13 +134,21 @@ class TestEngine:
         assert mock_process_saliency_maps.called == explain
 
     def test_exporting(self, fxt_engine, mocker) -> None:
-        with pytest.raises(RuntimeError, match="To make export, checkpoint must be specified."):
-            fxt_engine.export()
-
         mock_export = mocker.patch("getitune.backend.lightning.engine.LightningModel.export")
 
         mock_load_from_checkpoint = mocker.patch.object(fxt_engine, "_load_model_checkpoint", return_value={})
         mocker.patch.object(fxt_engine.model, "load_state_dict", return_value=fxt_engine.model)
+
+        # Export without a checkpoint uses the current model weights
+        fxt_engine.export()
+        mock_load_from_checkpoint.assert_not_called()
+        mock_export.assert_called_once_with(
+            output_dir=Path(fxt_engine.work_dir),
+            base_name="exported_model",
+            export_format=ExportFormat.OPENVINO,
+            precision=Precision.FP32,
+        )
+        mock_export.reset_mock()
 
         # Fetch Checkpoint
         checkpoint = "path/to/checkpoint.ckpt"
