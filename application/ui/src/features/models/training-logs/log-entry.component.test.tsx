@@ -91,7 +91,7 @@ describe('LogEntry', () => {
     });
 
     describe('exception traceback rendering', () => {
-        it('renders the traceback appended in `text` when the record has an exception', () => {
+        const buildExceptionEntry = () => {
             const entry = getMockedLogEntry({
                 message: 'Unhandled exception in worker',
                 exception: { type: 'ValueError', value: 'bad value', traceback: true },
@@ -100,19 +100,35 @@ describe('LogEntry', () => {
                 '2026-09-10 10:00:00 | ERROR | mod:fn:1 - Unhandled exception in worker\n' +
                 'Traceback (most recent call last):\n  raise ValueError("bad value")\nValueError: bad value';
 
-            render(<LogEntry entry={entry} />);
+            return entry;
+        };
 
-            expect(screen.getByText(/Traceback \(most recent call last\)/)).toBeInTheDocument();
-            expect(screen.getByText(/ValueError: bad value/)).toBeInTheDocument();
+        it('shows a "Show traceback" toggle and keeps the traceback collapsed by default', () => {
+            render(<LogEntry entry={buildExceptionEntry()} />);
+
+            expect(screen.getByText('Unhandled exception in worker')).toBeInTheDocument();
+            expect(screen.getByText('Show traceback')).toBeInTheDocument();
+            expect(screen.queryByText(/Traceback \(most recent call last\)/)).not.toBeVisible();
         });
 
-        it('falls back to record.message when there is no exception', () => {
-            const entry = getMockedLogEntry({ message: 'Plain message' });
-            entry.text = 'unrelated formatted text';
+        it('reveals the traceback appended in `text` when the toggle is opened', () => {
+            const { container } = render(<LogEntry entry={buildExceptionEntry()} />);
 
-            render(<LogEntry entry={entry} />);
+            const details = container.querySelector('details');
+            expect(details).not.toBeNull();
+
+            fireEvent.click(screen.getByText('Show traceback'));
+
+            expect(details).toHaveAttribute('open');
+            expect(screen.getByText(/Traceback \(most recent call last\)/)).toBeVisible();
+            expect(screen.getByText(/ValueError: bad value/)).toBeVisible();
+        });
+
+        it('does not render a toggle when there is no exception', () => {
+            renderLogEntry({ message: 'Plain message' });
 
             expect(screen.getByText('Plain message')).toBeInTheDocument();
+            expect(screen.queryByText('Show traceback')).not.toBeInTheDocument();
         });
     });
 });

@@ -40,14 +40,19 @@ const formatSource = (name: string, func: string, line: number): string => {
 };
 
 // `record.message` never includes a traceback (loguru keeps it separate); `text` has it appended after the message.
-const getDisplayMessage = ({ text, record }: LogEntryType): string => {
+const getTraceback = ({ text, record }: LogEntryType): string | null => {
     if (!record.exception) {
-        return record.message.trim();
+        return null;
     }
 
     const messageStart = text.indexOf(record.message);
+    if (messageStart === -1) {
+        return null;
+    }
 
-    return messageStart === -1 ? record.message.trim() : text.slice(messageStart).trim();
+    const traceback = text.slice(messageStart + record.message.length).trim();
+
+    return traceback.length > 0 ? traceback : null;
 };
 
 const MessageWithPaths = ({ message }: { message: string }) => {
@@ -88,17 +93,28 @@ export const LogEntry = ({ entry }: LogEntryProps) => {
     const levelColor = LOG_LEVEL_COLORS[record.level.name] ?? LOG_LEVEL_COLORS.INFO;
     const timestamp = formatTimestamp(record.time.timestamp);
     const source = formatSource(record.name, record.function, record.line);
+    const traceback = getTraceback(entry);
 
     return (
         <div className={classes.logEntry} role={'listitem'}>
-            {timestamp ? <span className={classes.timestamp}>{timestamp}</span> : null}
-            <span className={classes.level} style={{ color: levelColor }}>
-                {record.level.name}
-            </span>
-            {source ? <span className={classes.source}>{source}</span> : null}
-            <span className={classes.message}>
-                <MessageWithPaths message={getDisplayMessage(entry)} />
-            </span>
+            <div className={classes.logEntryRow}>
+                {timestamp ? <span className={classes.timestamp}>{timestamp}</span> : null}
+                <span className={classes.level} style={{ color: levelColor }}>
+                    {record.level.name}
+                </span>
+                {source ? <span className={classes.source}>{source}</span> : null}
+                <span className={classes.message}>
+                    <MessageWithPaths message={record.message.trim()} />
+                </span>
+            </div>
+            {traceback ? (
+                <details className={classes.traceback}>
+                    <summary className={classes.tracebackSummary}>Show traceback</summary>
+                    <div className={classes.tracebackBody}>
+                        <MessageWithPaths message={traceback} />
+                    </div>
+                </details>
+            ) : null}
         </div>
     );
 };
