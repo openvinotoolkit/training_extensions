@@ -91,8 +91,12 @@ class DETR(BaseModule):
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
         explain_mode: bool = False,
+        with_nms: bool = False,
     ) -> dict[str, Any] | tuple[list[Any], list[Any], list[Any]]:
         """Exports the model."""
+        if with_nms:
+            msg = "DETR does not support embedded NMS export."
+            raise ValueError(msg)
         backbone_feats = self.encoder(self.backbone(batch_inputs))
         predictions = self.decoder(backbone_feats, explain_mode=True)
         results = self.postprocess(

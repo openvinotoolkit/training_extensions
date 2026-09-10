@@ -4,6 +4,7 @@
 import { useActionState, useState } from 'react';
 
 import type { TaskType } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, Form, Item, Picker, Text, TextField, View } from '@geti-ui/ui';
 import { InfoOutline } from '@geti-ui/ui/icons';
 import { useProjects } from 'hooks/api/project.hook';
@@ -13,7 +14,7 @@ import { useImportDatasetAsNewProject } from 'hooks/storage/use-import-dataset-a
 import { generateUniqueProjectName } from '../../../create/utils';
 import { useImportDatasetDialog } from '../../../providers/import-dataset-dialog-provider.component';
 import { validateProjectName } from '../../../validator';
-import { MAP_PROJECT_TYPE_TO_TITLE } from '../../util';
+import { MAP_PROJECT_TYPE_TO_TITLE_KEY } from '../../util';
 import { getAllowedTaskTypes, getRecommendedTaskType, TASK_SELECTION_FORM_ID } from './util';
 
 type ImportTaskSelectionProps = {
@@ -53,6 +54,7 @@ const useFormConfig = (
 };
 
 export const ImportTaskSelection = ({ stagedDatasetId }: ImportTaskSelectionProps) => {
+    const { t } = useTranslation();
     const { data: projects } = useProjects();
     const { data: stagedDataset } = useStagedDatasetSuspense(stagedDatasetId);
 
@@ -66,15 +68,16 @@ export const ImportTaskSelection = ({ stagedDatasetId }: ImportTaskSelectionProp
 
     const validationErrorMessage = validateProjectName(
         name.trim(),
-        projects.map((project) => project.name)
+        projects.map((project) => project.name),
+        t
     );
 
     const items = allowedTaskTypes.map((taskType) => ({
         key: taskType,
         label:
             defaultTaskType === taskType
-                ? `${MAP_PROJECT_TYPE_TO_TITLE[taskType]} (Recommended)`
-                : MAP_PROJECT_TYPE_TO_TITLE[taskType],
+                ? t('project.taskTypes.recommended', { taskType: t(MAP_PROJECT_TYPE_TO_TITLE_KEY[taskType]) })
+                : t(MAP_PROJECT_TYPE_TO_TITLE_KEY[taskType]),
     }));
 
     return (

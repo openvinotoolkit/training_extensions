@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Project } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Badge, Flex, Text } from '@geti-ui/ui';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,9 +32,10 @@ export const ProjectListItem = ({
     onDelete,
     onEnableBlocked,
 }: ProjectListItemProps) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const taskType = getProjectTypeTitle(project.task);
+    const taskType = getProjectTypeTitle(project.task, t);
 
     const handleNavigateToProject = () => {
         navigate(paths.project.dataset.index({ projectId: project.id }), {

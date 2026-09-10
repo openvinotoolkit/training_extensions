@@ -143,7 +143,7 @@ class TestModelArchitecturesEndpoint:
         timm_card = next(arch for arch in data["model_architectures"] if arch["id"] == "image-classification-timm")
 
         assert timm_card["task"] == "classification"
-        assert timm_card["name"] == "PyTorch Image Models (timm)"
+        assert timm_card["name"] == "Other models (TIMM)"
         assert timm_card["timm_metadata"] is None
         assert timm_card["license"] == "varies by model"
         assert f"Geti offers {TimmCatalog.count_backbones()} of these models" in timm_card["description"]

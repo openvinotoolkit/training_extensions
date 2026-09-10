@@ -116,7 +116,7 @@ const SortMediaByUploadDate = () => {
 };
 
 export const Toolbar = ({ items, viewMode, setViewMode }: ToolbarProps) => {
-    const { onSelectedMediaItemChange } = useSelectDatasetItem();
+    const { selectedMediaItem, onSelectedMediaItemChange } = useSelectDatasetItem();
     const { selectedKeys, setSelectedKeys, toggleSelectedKeys } = useSelectedData();
 
     const selectedMediaItems = selectedKeys instanceof Set ? selectedKeys : null;
@@ -197,6 +197,7 @@ export const Toolbar = ({ items, viewMode, setViewMode }: ToolbarProps) => {
                             <DeleteMediaItem
                                 itemsIds={Array.from(selectedKeys) as string[]}
                                 onDeleted={toggleSelectedKeys}
+                                isHotkeyEnabled={selectedMediaItem === null}
                             />
                             {FEATURE_FLAGS.DATASET_VIEWS && (
                                 <>

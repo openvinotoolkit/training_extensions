@@ -63,7 +63,7 @@ export const ProjectActionsMenu = ({
                     fill: 'var(--spectrum-gray-900)',
                     ...actionButtonStyle,
                 }}
-                aria-label={'open project options'}
+                aria-label='open project options'
                 data-testid={projectId}
             >
                 <MoreMenu />

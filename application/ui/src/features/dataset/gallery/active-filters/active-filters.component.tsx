@@ -1,7 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import type { DatasetItemAnnotationStatus, Label } from '@/api/types';
+import type { Label } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Divider, Flex } from '@geti-ui/ui';
 import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
 import { useProjectLabels } from 'hooks/use-project-labels.hook';
@@ -11,12 +12,8 @@ import { formatDateRangeEnd, formatDateRangeStart } from '../../../../shared/dat
 import { isNonEmptyArray } from '../../../../shared/util';
 import { FilterChips } from '../toolbar/media-filtering/filter-chips/filter-chips.component';
 
-const ANNOTATION_STATUS_LABELS: Record<DatasetItemAnnotationStatus, string> = {
-    with_annotations: 'Media with annotations',
-    missing_annotations: 'Media with missing annotations',
-};
-
 export const ActiveFiltersList = () => {
+    const { t } = useTranslation();
     const labels = useProjectLabels();
     const {
         selectedLabelIds,
@@ -47,7 +44,11 @@ export const ActiveFiltersList = () => {
 
             {annotationStatus !== null && (
                 <FilterChips
-                    name={ANNOTATION_STATUS_LABELS[annotationStatus]}
+                    name={
+                        annotationStatus === 'with_annotations'
+                            ? t('dataset.filters.withAnnotations')
+                            : t('dataset.filters.missingAnnotations')
+                    }
                     onClose={() => setAnnotationStatus(null)}
                 />
             )}
@@ -98,6 +99,7 @@ export const useClearAllFilters = () => {
 };
 
 export const ActiveFilters = () => {
+    const { t } = useTranslation();
     const hasActiveFilters = useHasActiveFilters();
     const handleClearAll = useClearAllFilters();
 
@@ -106,9 +108,9 @@ export const ActiveFilters = () => {
     }
 
     return (
-        <Flex gap={'size-150'} wrap={'wrap'} alignItems={'center'} aria-label='Active filters'>
+        <Flex gap={'size-150'} wrap={'wrap'} alignItems={'center'} aria-label={'Active filters'}>
             <ActionButton isQuiet onPress={handleClearAll}>
-                Clear all
+                {t('dataset.filtersActive.clearAll')}
             </ActionButton>
 
             <Divider orientation={'vertical'} size={'S'} />

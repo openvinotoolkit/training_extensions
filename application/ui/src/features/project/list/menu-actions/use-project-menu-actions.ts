@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { Key } from '@geti-ui/ui';
 import { useIsPipelineConfigured } from 'hooks/use-is-pipeline-configured.hook';
 
 import { useDisablePipeline, useEnablePipeline, useProjectPipeline } from '../../../../hooks/api/pipeline.hook';
-
-const PROJECT_ACTIONS = { rename: 'Rename', delete: 'Delete' };
 
 type ProjectMenuCallbacks = {
     onRename: () => void;
@@ -25,6 +24,7 @@ export const useProjectMenuActions = (
     callbacks: ProjectMenuCallbacks,
     isPipelineRunning?: boolean
 ) => {
+    const { t } = useTranslation();
     const enablePipelineMutation = useEnablePipeline();
     const disablePipelineMutation = useDisablePipeline();
     const projectPipelineQuery = useProjectPipeline(projectId);
@@ -33,9 +33,10 @@ export const useProjectMenuActions = (
 
     const menuActions: MenuAction[] = [
         ...(isPipelineRunning
-            ? [{ key: 'disable-pipeline', label: 'Disable pipeline' }]
-            : [{ key: 'enable-pipeline', label: 'Enable pipeline' }]),
-        ...Object.entries(PROJECT_ACTIONS).map(([key, label]) => ({ key, label })),
+            ? [{ key: 'disable-pipeline', label: t('project.list.menu.disablePipeline') }]
+            : [{ key: 'enable-pipeline', label: t('project.list.menu.enablePipeline') }]),
+        { key: 'rename', label: t('common.actions.rename') },
+        { key: 'delete', label: t('common.actions.delete') },
     ];
 
     const handleAction = (key: Key) => {
@@ -50,14 +51,14 @@ export const useProjectMenuActions = (
 
                 enablePipelineMutation.mutate(mutationParams, {
                     onSuccess: () => {
-                        toast({ type: 'success', message: 'Pipeline enabled successfully' });
+                        toast({ type: 'success', message: t('project.list.menu.pipelineEnabled') });
                     },
                 });
                 break;
             case 'disable-pipeline':
                 disablePipelineMutation.mutate(mutationParams, {
                     onSuccess: () => {
-                        toast({ type: 'success', message: 'Pipeline disabled successfully' });
+                        toast({ type: 'success', message: t('project.list.menu.pipelineDisabled') });
                     },
                 });
                 break;

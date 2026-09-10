@@ -7,6 +7,7 @@ import type { Label, TaskType } from '@/api/types';
 import { HotkeyField } from '@/components/label-fields/hotkey-field.component';
 import { LabelColorPicker } from '@/components/label-fields/label-color-picker.component';
 import { validateLabelHotkey, validateLabelName } from '@/components/label-fields/label-validation';
+import { useTranslation } from '@/i18n';
 import { ActionButton, DOMRefValue, Grid, TextField, TextFieldRef, useUnwrapDOMRef, View } from '@geti-ui/ui';
 import { Add } from '@geti-ui/ui/icons';
 import { useEventListener } from 'hooks/event-listener.hook';
@@ -24,6 +25,7 @@ type CreateLabelProps = {
 };
 
 export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) => {
+    const { t } = useTranslation();
     const [newLabel, setNewLabel] = useState<Label>(getInitialLabel);
     const containerRef = useRef<DOMRefValue<HTMLDivElement>>(null);
     const inputRef = useRef<TextFieldRef<HTMLInputElement>>(null);
@@ -33,8 +35,8 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
     const appHotkeys = Object.values(TASK_HOTKEYS[taskType]);
     const allHotkeys = [...labelsHotkeys, ...appHotkeys];
 
-    const validationResult = validateLabelName(newLabel.name, labels);
-    const hotkeyError = newLabel.hotkey ? validateLabelHotkey(newLabel.hotkey, allHotkeys) : undefined;
+    const validationResult = validateLabelName(newLabel.name, labels, t);
+    const hotkeyError = newLabel.hotkey ? validateLabelHotkey(newLabel.hotkey, allHotkeys, t) : undefined;
     const isCreateLabelDisabled = newLabel.name.trim().length === 0 || validationResult !== undefined;
 
     const createLabel = () => {
@@ -78,7 +80,7 @@ export const CreateLabel = ({ labels, onCreate, taskType }: CreateLabelProps) =>
                 <TextField
                     ref={inputRef}
                     aria-label={'Create label input'}
-                    placeholder={'Create label'}
+                    placeholder={t('project.create.labels.inputPlaceholder')}
                     value={newLabel.name}
                     onChange={(newName) => setNewLabel((prevLabel) => ({ ...prevLabel, name: newName }))}
                     errorMessage={validationResult}

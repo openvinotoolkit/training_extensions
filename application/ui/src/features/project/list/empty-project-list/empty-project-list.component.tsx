@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { Trans, useTranslation } from '@/i18n';
 import { Button, Flex, Text } from '@geti-ui/ui';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +14,7 @@ import { WorkflowSteps } from './workflow-steps.component';
 import classes from './empty-project-list.module.scss';
 
 export const EmptyProjectList = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { datasetImportDialogState, setCurrentStep, setCurrentStagedId } = useImportDatasetDialog();
 
@@ -31,9 +33,13 @@ export const EmptyProjectList = () => {
     return (
         <div className={classes.emptyState}>
             <p className={classes.intro}>
-                Welcome to <span className={classes.introName}>Geti</span>, a vision AI platform that guides you through
-                the <span className={classes.introHighlight}>complete model lifecycle</span>, from dataset preparation
-                to training, optimization and deployment.
+                <Trans
+                    i18nKey='project.list.empty.intro'
+                    components={{
+                        name: <span className={classes.introName} />,
+                        highlight: <span className={classes.introHighlight} />,
+                    }}
+                />
             </p>
 
             <Flex
@@ -47,10 +53,10 @@ export const EmptyProjectList = () => {
 
                 <Flex alignItems={'center'} gap={'size-100'}>
                     <Button variant='accent' id='create-new-project-button' onPress={handleCreateProject}>
-                        <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>Create new Project</Text>
+                        <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>{t('project.list.empty.createNewProject')}</Text>
                     </Button>
                     <Button variant='accent' id='create-from-dataset-button' onPress={handleCreateFromDataset}>
-                        <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>Create from dataset</Text>
+                        <Text UNSAFE_style={{ whiteSpace: 'nowrap' }}>{t('project.list.empty.createFromDataset')}</Text>
                     </Button>
                 </Flex>
 

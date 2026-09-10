@@ -86,7 +86,7 @@ def _read_backend(recipe_path: Path) -> str:
         recipe_path: Absolute path to the recipe YAML file.
 
     Returns:
-        Backend name string (e.g. ``'lightning'``, ``'ultralytics'``).
+        Backend name string (e.g. ``'lightning'``, ``'ultralytics'``, ``'huggingface'``).
     """
     with recipe_path.open() as fh:
         raw = yaml.safe_load(fh)
@@ -106,8 +106,9 @@ def create_engine(
 
     Accepts three forms for *model*:
 
-    * **Model instance** (``LightningModel``, ``UltralyticsModel``, ``OVModel``)
-      or a **weights path** (``.xml``, ``.onnx``) — for OpenVINO and ONNX models
+    * **Model instance** (``LightningModel``, ``UltralyticsModel``, ``HFModel``,
+      ``OVModel``) or a **weights path** (``.xml``, ``.onnx``) — for OpenVINO
+      and ONNX models
 
     * **Recipe path** — a ``.yaml`` / ``.yml`` file.  The ``backend`` field in
       the recipe selects the engine; defaults to ``lightning`` when absent.
@@ -140,12 +141,14 @@ def create_engine(
         ValueError: If a model name is ambiguous, the backend is unknown,
             or no engine supports the given model/data pair.
     """
+    from getitune.backend.huggingface.engine import HFEngine
     from getitune.backend.lightning.engine import LightningEngine
     from getitune.backend.openvino.engine import OVEngine
 
     backend_to_engine: dict[str, type[Engine]] = {
         "lightning": LightningEngine,
         "openvino": OVEngine,
+        "huggingface": HFEngine,
     }
     try:
         from getitune.backend.ultralytics.engine import UltralyticsEngine

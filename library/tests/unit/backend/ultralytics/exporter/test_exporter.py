@@ -154,9 +154,10 @@ class TestExporterMetadata:
 class TestToOpenvino:
     """Tests for the to_openvino export path."""
 
-    def test_exports_fp32_with_correct_args(self, tmp_path: Path) -> None:
-        """Should call model.export with half=False and end2end=False."""
-        exporter = _make_exporter()
+    @pytest.mark.parametrize("export_nms", [False, True])
+    def test_exports_fp32_with_correct_args(self, tmp_path: Path, export_nms: bool) -> None:
+        """Should forward graph NMS without overriding end-to-end mode."""
+        exporter = _make_exporter(export_nms=export_nms)
 
         # Setup: Ultralytics produces a directory with a .xml
         raw_dir = tmp_path / "raw_openvino"
@@ -187,6 +188,7 @@ class TestToOpenvino:
             imgsz=640,
             half=False,
             end2end=False,
+            nms=export_nms,
             project=str(tmp_path / "output"),
             name="raw_export",
             exist_ok=True,
@@ -302,8 +304,9 @@ class TestToOpenvino:
 class TestToOnnx:
     """Tests for the to_onnx export path."""
 
-    def test_exports_fp32_with_correct_args(self, tmp_path: Path) -> None:
-        exporter = _make_exporter()
+    @pytest.mark.parametrize("export_nms", [False, True])
+    def test_exports_fp32_with_correct_args(self, tmp_path: Path, export_nms: bool) -> None:
+        exporter = _make_exporter(export_nms=export_nms)
 
         raw_onnx = tmp_path / "raw_model.onnx"
         raw_onnx.touch()
@@ -326,6 +329,7 @@ class TestToOnnx:
             imgsz=640,
             half=False,
             end2end=False,
+            nms=export_nms,
             project=str(tmp_path / "output"),
             name="raw_export",
             exist_ok=True,

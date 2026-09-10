@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, DatePicker, Flex, Text } from '@geti-ui/ui';
 import { getLocalTimeZone, now, parseAbsoluteToLocal, type ZonedDateTime } from '@internationalized/date';
 import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
@@ -11,13 +12,12 @@ import classes from './date-filter.module.scss';
 
 const MIN_DATE = parseAbsoluteToLocal(new Date(2020, 0, 30, 0, 0, 0, 0).toISOString());
 
-export const INVALID_RANGE_MESSAGE = 'End date must be later than start date';
-
 const parseDate = (date: string | null): ZonedDateTime | null => (date === null ? null : parseAbsoluteToLocal(date));
 
 const toISOString = (date: ZonedDateTime | null): string | null => (date === null ? null : date.toDate().toISOString());
 
 export const DateFilter = () => {
+    const { t } = useTranslation();
     const { startDate, endDate, setDateRange } = useDatasetFiltersSearchParams();
 
     // An empty picker emits a date in the timezone of its placeholder, so this keeps the two pickers
@@ -116,7 +116,7 @@ export const DateFilter = () => {
                 value={endValue}
                 onChange={handleEndDateChange}
                 validationState={invalidRange === null ? undefined : 'invalid'}
-                errorMessage={invalidRange === null ? undefined : INVALID_RANGE_MESSAGE}
+                errorMessage={invalidRange === null ? undefined : t('dataset.validation.invalidDateRange')}
             />
         </Flex>
     );

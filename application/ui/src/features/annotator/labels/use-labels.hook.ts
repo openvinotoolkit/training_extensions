@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 
 import type { Label } from '@/api/types';
 import { validateLabelHotkey, validateLabelName } from '@/components/label-fields/label-validation';
+import { useTranslation } from '@/i18n';
 import { useProject } from 'hooks/api/project.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isEmpty } from 'lodash-es';
@@ -32,6 +33,7 @@ export const useLabels = ({ isClassification = false, isMultiLabel = false }: Us
     const project = useProject();
     const projectId = useProjectIdentifier();
     const updateLabelMutation = useUpdateLabel();
+    const { t } = useTranslation();
 
     const editableLabels = labels.filter((label) => label.id !== EMPTY_LABEL_ID);
     const hasLabels = editableLabels.length > 0;
@@ -174,7 +176,7 @@ export const useLabels = ({ isClassification = false, isMultiLabel = false }: Us
     };
 
     const validateName = (name: string, excludeId?: string): string | undefined => {
-        return validateLabelName(name, editableLabels, excludeId);
+        return validateLabelName(name, editableLabels, t, excludeId);
     };
 
     const validateHotkey = (newHotkey: string, excludeId?: string) => {
@@ -187,7 +189,7 @@ export const useLabels = ({ isClassification = false, isMultiLabel = false }: Us
         const appHotkeys = Object.values(TASK_HOTKEYS[taskType]);
         const allHotkeys = [...labelsHotkeys, ...appHotkeys];
 
-        return newHotkey ? validateLabelHotkey(newHotkey, allHotkeys) : undefined;
+        return newHotkey ? validateLabelHotkey(newHotkey, allHotkeys, t) : undefined;
     };
 
     return {

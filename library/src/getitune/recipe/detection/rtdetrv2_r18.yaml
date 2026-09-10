@@ -1,0 +1,32 @@
+backend: huggingface
+task: DETECTION
+
+model:
+  class_path: getitune.backend.huggingface.models.detection.HFDetectionModel
+  init_args:
+    checkpoint: PekingU/rtdetr_v2_r18vd
+    pretrained: true
+    onnx_dynamo: false
+
+engine:
+  device: auto
+
+training:
+  max_epochs: 100
+  batch: 8
+  learning_rate: 0.0001
+  precision: bf16-mixed
+  patience: 10
+  optim: adamw_torch
+  weight_decay: 0.0001
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  max_grad_norm: 0.1
+
+data: ../_base_/data/detection.yaml
+
+overrides:
+  data:
+    input_size:
+      - 640
+      - 640
