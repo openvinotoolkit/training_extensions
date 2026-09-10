@@ -76,6 +76,8 @@ export const reducer = (state: MediaUploadState, action: Action): MediaUploadSta
             return { ...state, isDetailsDialogOpen: true };
         case 'CLOSE_DIALOG':
             return { ...state, isDetailsDialogOpen: false };
+        default:
+            return state;
     }
 };
 
