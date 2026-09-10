@@ -434,6 +434,20 @@ class TestDatasetViewServiceMedia:
         # are not directly assigned to the view.
         assert assigned[0].annotated_frame_count == 1
 
+    def test_list_dataset_view_media_ids(self, fxt_dataset_view_service: DatasetViewService, fxt_project_with_media):
+        """list_dataset_view_media_ids should return the same (id, type) pairs as list_dataset_view_media."""
+        project, media = fxt_project_with_media
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id, name="My view", media_ids=[UUID(media["image1"].id), UUID(media["video1"].id)]
+        )
+
+        assigned = fxt_dataset_view_service.list_dataset_view_media(project_id=project.id, dataset_view_id=view.id)
+        assigned_ids = fxt_dataset_view_service.list_dataset_view_media_ids(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert set(assigned_ids) == {(m.id, m.type) for m in assigned}
+
     def test_count_and_list_dataset_view_media_with_filters(
         self, fxt_dataset_view_service: DatasetViewService, fxt_project_with_media
     ):

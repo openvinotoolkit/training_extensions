@@ -284,6 +284,27 @@ class MediaService(BaseSessionManagedService):
             for media_db in media_dbs
         ]
 
+    def list_media_ids(
+        self,
+        project_id: UUID,
+        filters: MediaFilters | None = None,
+        exclude_types: list[MediaType] | None = None,
+    ) -> tuple[tuple[UUID, MediaType], ...]:
+        """Get the id and type of every media matching the given filters, without loading full media rows"""
+        if filters is None:
+            filters = MediaFilters()
+        repo = MediaRepository(project_id=str(project_id), db=self.db_session)
+        label_ids_str = [str(label_id) for label_id in filters.label_ids] if filters.label_ids else None
+        media_id_rows = repo.list_item_ids(
+            start_date=filters.start_date,
+            end_date=filters.end_date,
+            annotation_status=filters.annotation_status,
+            label_ids=label_ids_str,
+            subsets=filters.subsets,
+            exclude_types=exclude_types,
+        )
+        return tuple((UUID(media_id), MediaType(media_type)) for media_id, media_type in media_id_rows)
+
     def get_media_by_id(self, project_id: UUID, media_id: UUID) -> Media:
         """Get a media by its ID"""
         repo = MediaRepository(project_id=str(project_id), db=self.db_session)

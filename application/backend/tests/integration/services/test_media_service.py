@@ -986,6 +986,19 @@ class TestMediaServiceIntegration:
             else len(media_list) == len(db_media_list)
         )
 
+    def test_list_media_ids(
+        self,
+        fxt_media_service: MediaService,
+        fxt_project_with_media: tuple[Project, list[MediaDB]],
+    ) -> None:
+        """list_media_ids should return the same (id, type) pairs as list_media, without loading full media rows."""
+        project, _ = fxt_project_with_media
+
+        media_list = fxt_media_service.list_media(project_id=project.id, filters=MediaFilters(limit=100))
+        media_id_list = fxt_media_service.list_media_ids(project_id=project.id)
+
+        assert set(media_id_list) == {(media.id, media.type) for media in media_list}
+
     @pytest.mark.parametrize(
         "annotation_status",
         [None, DatasetItemAnnotationStatus.WITH_ANNOTATIONS, DatasetItemAnnotationStatus.MISSING_ANNOTATIONS],

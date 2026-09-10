@@ -69,9 +69,6 @@ router = APIRouter(prefix="/api/projects/{project_id}/dataset/media", tags=["Med
 DEFAULT_MEDIA_NUMBER_RETURNED = 10
 MAX_MEDIA_NUMBER_RETURNED = 100
 
-# Effectively "no limit", for the endpoints that intentionally return every match.
-ALL_MEDIA_LIMIT = 2_147_483_647
-
 DEFAULT_FRAME_INDEX_FROM = 0
 DEFAULT_FRAME_INDEX_TO = 50
 
@@ -345,15 +342,10 @@ def list_media_ids(  # noqa: PLR0913
     """
     List the id and type of every media matching the given filters, without pagination.
 
-    Accepts the same filters as `list_media` and resolves them through the same code path, so the
-    result is always the full set that `list_media` would page through. Clients that need to act on
-    an entire filtered selection (for example "select all" followed by a bulk delete) can do so in a
-    single request, instead of paging through the full metadata of every item.
+    Accepts the same filters as `list_media`.
     """
     start_date, end_date = _normalize_date_range(start_date, end_date)
     filters = MediaFilters(
-        limit=ALL_MEDIA_LIMIT,
-        offset=0,
         start_date=start_date,
         end_date=end_date,
         annotation_status=annotation_status,
@@ -361,16 +353,18 @@ def list_media_ids(  # noqa: PLR0913
         subsets=[item.value for item in subsets] if subsets else None,
     )
     if dataset_view_id is not None:
-        media_list = dataset_view_service.list_dataset_view_media(
+        media_id_list = dataset_view_service.list_dataset_view_media_ids(
             project_id=project.id, dataset_view_id=dataset_view_id, filters=filters
         )
     else:
-        media_list = media_service.list_media(
+        media_id_list = media_service.list_media_ids(
             project_id=project.id,
             filters=filters,
             exclude_types=[MediaType.VIDEO_FRAME],
         )
-    return MediaIdentifiers(items=[MediaIdentifier(id=media.id, type=media.type) for media in media_list])
+    return MediaIdentifiers(
+        items=[MediaIdentifier(id=media_id, type=media_type) for media_id, media_type in media_id_list]
+    )
 
 
 @router.get(
