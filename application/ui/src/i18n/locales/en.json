@@ -17,6 +17,113 @@
         "inference": "Inference",
         "inferenceDescription": "Inference page showing live inference on your project"
     },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "A view with this name already exists.",
+            "invalidDateRange": "End date must be later than start date"
+        },
+        "views": {
+            "assignTitle": "Assign to existing view",
+            "assignTo": "Assign to",
+            "selectView": "Select a view",
+            "assignmentNote": "This operation will not affect other media that were already assigned to this view.",
+            "mediaAssigned_one": "Media {{count}} item assigned successfully.",
+            "mediaAssigned_other": "Media {{count}} items assigned successfully.",
+            "openView": "Open {{viewName}} view",
+            "deleteTitle": "Delete confirmation",
+            "deleteConfirmation": "Are you sure you want to delete the \"{{viewName}}\" dataset view?"
+        },
+        "filters": {
+            "allMedia": "All media",
+            "withAnnotations": "Media with annotations",
+            "missingAnnotations": "Media with missing annotations",
+            "subset": "Filter by subset",
+            "labels": "Filter by labels",
+            "searchLabels": "Search labels",
+            "labelsSelected_one": "{{count}} label selected",
+            "labelsSelected_other": "{{count}} labels selected",
+            "toggleAll": "Toggle all",
+            "more": "More filters",
+            "moreTitle": "More filters",
+            "title": "Filters"
+        },
+        "upload": {
+            "queued": "Queued",
+            "uploading": "Uploading",
+            "uploaded": "Uploaded",
+            "failed": "Failed",
+            "error": "Error",
+            "errorTitle": "Upload error",
+            "details": "Upload details",
+            "filename": "FILENAME",
+            "status": "STATUS",
+            "size": "SIZE",
+            "uploadingSummary_one": "Uploading {{total}} item - {{uploaded}} uploaded",
+            "uploadingSummary_other": "Uploading {{total}} items - {{uploaded}} uploaded",
+            "uploadingFailedSummary_one": "Uploading {{total}} item - {{uploaded}} uploaded, {{failed}} failed",
+            "uploadingFailedSummary_other": "Uploading {{total}} items - {{uploaded}} uploaded, {{failed}} failed",
+            "uploadedSummary_one": "Uploaded {{count}} item",
+            "uploadedSummary_other": "Uploaded {{count}} items",
+            "failedSummary_one": "Failed to upload {{count}} item",
+            "failedSummary_other": "Failed to upload {{count}} items",
+            "mixedSummary_one": "Uploaded {{uploaded}} item, {{failed}} failed",
+            "mixedSummary_other": "Uploaded {{uploaded}} items, {{failed}} failed"
+        },
+        "empty": {
+            "noMatches": "No media items match your filter.",
+            "changeFilter": "Remove or select a new filter.",
+            "viewEmpty": "This view has no media items.",
+            "assignOrBack": "Assign media items to it, or go back to the entire dataset.",
+            "goToEntireDataset": "Go to {{datasetName}}",
+            "datasetEmpty": "Your dataset is empty.",
+            "uploadToStart": "Upload your first media item to get started.",
+            "importDataset": "Import dataset"
+        },
+        "statistics": {
+            "label": "Dataset statistics",
+            "title": "Dataset Statistics",
+            "numberOfMedia": "Number of media",
+            "images": "Images",
+            "videos": "Videos",
+            "annotatedImages": "Annotated images",
+            "annotatedVideosFrames": "Annotated videos / frames",
+            "numberOfObjectsPerLabel": "Number of objects per label",
+            "close": "Close"
+        },
+        "delete": {
+            "title": "Delete Items",
+            "confirm": "Confirm",
+            "mediaItem": "Delete media item",
+            "confirmation_one": "Are you sure you want to delete {{count}} item?",
+            "confirmation_other": "Are you sure you want to delete {{count}} items?"
+        },
+        "bulkLabels": {
+            "title": "Label assignment",
+            "uploadInstructions": "Choose the label(s) to assign to the uploaded images, then click 'Continue'. If you instead prefer to annotate the images at a later time, choose 'Skip'.",
+            "selectedInstructions": "Choose the label(s) to assign to the selected images, then click 'Assign'.",
+            "imageOnlyNote": "The selected labels apply only to images, videos (if any) will be uploaded without annotations.",
+            "selectedImagesNote": "The selected labels apply only to images, videos (if any) remain intact.",
+            "noResults": "No results found. Try searching with different words.",
+            "cancelUpload": "Cancel upload",
+            "skip": "Skip",
+            "continue": "Continue",
+            "assign": "Assign"
+        },
+        "filtersActive": {
+            "clearAll": "Clear all"
+        },
+        "mediaActions": {
+            "annotate": "Annotate",
+            "download": "Download",
+            "downloadStarted": "{{fileName}} download has started"
+        }
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "Key cannot be empty",
+            "valueEmpty": "Value cannot be empty"
+        }
+    },
     "project": {
         "delete": {
             "title": "Delete",
@@ -25,12 +132,13 @@
         },
         "rename": {
             "title": "Edit project name",
-            "fieldLabel": "Edit project name field",
             "success": "Project updated successfully"
         },
         "validation": {
             "nameEmpty": "Project name cannot be empty",
-            "nameExists": "That project name already exists"
+            "nameExists": "That project name already exists",
+            "labelNameExists": "That label name already exists",
+            "hotkeyExists": "That hotkey is already in use"
         },
         "taskTypes": {
             "detection": "Object detection",
@@ -49,12 +157,10 @@
             "createProjectFromDataset": "Create project from dataset",
             "activeBadge": "Active",
             "card": {
-                "label": "Project: {{projectName}}",
                 "created": "• Created: {{date}}",
                 "labels": "• Labels: {{labels}}"
             },
             "menu": {
-                "trigger": "open project options",
                 "enablePipeline": "Enable pipeline",
                 "disablePipeline": "Disable pipeline",
                 "pipelineEnabled": "Pipeline enabled successfully",
@@ -69,24 +175,20 @@
             },
             "filters": {
                 "searchPlaceholder": "Search by name...",
-                "searchLabel": "Search projects by name",
                 "taskType": "Filter by task type",
                 "typesSelected_one": "{{count}} type selected",
                 "typesSelected_other": "{{count}} types selected"
             },
             "noMatches": {
-                "imageLabel": "no matching projects",
                 "title": "No projects match your filters",
                 "description": "Try adjusting your search or task type filters to find what you are looking for."
             },
             "empty": {
                 "intro": "Welcome to <name>Geti</name>, a vision AI platform that guides you through the <highlight>complete model lifecycle</highlight>, from dataset preparation to training, optimization and deployment.",
-                "imageLabel": "empty list",
                 "createNewProject": "Create new project",
                 "createFromDataset": "Create from dataset"
             },
             "workflow": {
-                "label": "Geti workflow",
                 "addData": "Add data",
                 "annotate": "Annotate",
                 "train": "Train",
@@ -96,14 +198,9 @@
             }
         },
         "create": {
-            "nameFieldLabel": "Project name input",
             "taskQuestion": "What type of task would you like the model to perform?",
             "labelsQuestion": "What objects should the model learn to {{verb}}?",
             "submit": "Create project",
-            "taskSelection": {
-                "groupLabel": "Task selection",
-                "optionLabel": "Task option: {{title}}"
-            },
             "tasks": {
                 "detection": {
                     "title": "Object Detection",
@@ -126,7 +223,6 @@
             },
             "classificationType": {
                 "title": "What classification type should the model use?",
-                "groupLabel": "Classification type",
                 "singleLabel": {
                     "label": "Single-label",
                     "description": "Assign one label from mutually exclusive labels",
@@ -139,10 +235,7 @@
             },
             "labels": {
                 "atLeastOneRequired": "At least one object is required",
-                "inputLabel": "Create label input",
-                "inputPlaceholder": "Create label",
-                "createAction": "Create label {{name}}",
-                "deleteAction": "Delete label {{name}}"
+                "inputPlaceholder": "Create label"
             }
         }
     }

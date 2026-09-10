@@ -20,7 +20,7 @@ export const WorkflowSteps = () => {
 
     return (
         <View UNSAFE_className={classes.workflow}>
-            <ol aria-label={t('project.list.workflow.label')} className={classes.steps}>
+            <ol aria-label='Geti workflow' className={classes.steps}>
                 {STEPS.map(({ labelKey, Icon }) => (
                     <li key={labelKey} className={classes.step}>
                         <Text UNSAFE_className={classes.circle}>

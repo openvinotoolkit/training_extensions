@@ -19,7 +19,7 @@ export const NoMatchingProjects = () => {
             justifyContent={'center'}
             UNSAFE_className={classes.container}
         >
-            <EmptyFolderImage aria-label={t('project.list.noMatches.imageLabel')} />
+            <EmptyFolderImage aria-label={'no matching projects'} />
 
             <Heading level={3} margin={0}>
                 {t('project.list.noMatches.title')}
