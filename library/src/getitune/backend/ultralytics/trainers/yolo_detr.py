@@ -57,13 +57,6 @@ class YoloDetrTrainer(
         loss_names = ["giou_loss", "cls_loss", "l1_loss"]
         if head_name == "DeimDecoder":
             loss_names += ["fgl_loss", "ddf_loss"]
-        # Mirrors upstream ``RTDETRTrainer.get_validator`` (rtdetr/train.py):
-        # the loss set depends on the decoder head, which is only known after
-        # ``setup_model``, hence assignment in ``get_validator``, not the
-        # constructor. The suppression is needed because upstream infers
-        # ``loss_names`` from a bare ``self.loss_names = ()`` initializer as
-        # ``tuple[()]``, so any non-empty tuple trips ``bad-assignment``
-        # (read-write attributes cannot change type across a subclass).
         self.loss_names = tuple(loss_names)  # pyrefly: ignore[bad-assignment]
 
         validator = YoloDetrValidator(

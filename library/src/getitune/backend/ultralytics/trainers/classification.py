@@ -80,11 +80,7 @@ class ClassificationTrainer(  # pyrefly: ignore[inconsistent-inheritance]
         return self._move_batch_to_device(batch)
 
     def get_validator(self) -> ClassificationValidator:
-        """Return a custom validator that handles pre-normalised images.
-
-        Loss names need not be assigned here: the upstream ``BaseTrainer``
-        derives them from the criterion's loss dict on the first batch.
-        """
+        """Return a custom validator that handles pre-normalised images."""
         if not self._use_getitune_data:
             return super().get_validator()  # type: ignore[return-value]
 
