@@ -3,6 +3,7 @@
 
 import { API_BASE_URL } from '@/api';
 import type { ExportDatasetJob } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Button, Divider, Flex, Text, View } from '@geti-ui/ui';
 import { useDeleteStagedDataset, useStagedDataset } from 'hooks/api/staged-dataset.hook';
 import { isNil } from 'lodash-es';
@@ -17,6 +18,7 @@ type ExportCompletedJobProps = {
 };
 
 export const ExportCompletedJob = ({ job, datasetName }: ExportCompletedJobProps) => {
+    const { t } = useTranslation();
     const { removeLsExportId } = useExportDataset();
     const stageDatasetResponse = useStagedDataset(job.metadata.dataset_id);
 
@@ -26,7 +28,7 @@ export const ExportCompletedJob = ({ job, datasetName }: ExportCompletedJobProps
     });
 
     const hasInvalidStagedDataset = isNil(job.metadata.dataset_id);
-    const message = hasInvalidStagedDataset ? job.message : 'Dataset is ready for download';
+    const message = hasInvalidStagedDataset ? job.message : t('dataset.export.readyForDownload');
 
     const handleClose = () => {
         if (hasInvalidStagedDataset) {
@@ -39,7 +41,7 @@ export const ExportCompletedJob = ({ job, datasetName }: ExportCompletedJobProps
     const handleDownload = () => {
         const url = `${API_BASE_URL}/api/staged_datasets/${job.metadata.dataset_id}/zip`;
 
-        downloadFile(url, `dataset_${job.metadata.dataset_id}.zip`, 'Dataset download started');
+        downloadFile(url, `dataset_${job.metadata.dataset_id}.zip`, t('dataset.export.downloadStarted'));
     };
 
     return (
@@ -56,7 +58,7 @@ export const ExportCompletedJob = ({ job, datasetName }: ExportCompletedJobProps
                         isPending={removeStagedDatasetMutation.isPending}
                         isDisabled={removeStagedDatasetMutation.isPending}
                     >
-                        Close
+                        {t('dataset.export.close')}
                     </Button>
                     <Button
                         variant='secondary'
@@ -69,7 +71,7 @@ export const ExportCompletedJob = ({ job, datasetName }: ExportCompletedJobProps
                             removeStagedDatasetMutation.isPending
                         }
                     >
-                        Download
+                        {t('dataset.export.download')}
                     </Button>
                 </Flex>
             </Flex>

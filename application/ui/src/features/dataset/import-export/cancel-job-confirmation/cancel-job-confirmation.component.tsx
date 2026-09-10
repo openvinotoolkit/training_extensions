@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { $api } from '@/api';
+import { useTranslation } from '@/i18n';
 import { AlertDialog, Button, DialogTrigger } from '@geti-ui/ui';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 import { isInvalidJob } from 'hooks/api/util';
@@ -12,6 +13,7 @@ type CancelJobConfirmationProps = {
 };
 
 export const CancelJobConfirmation = ({ jobId, onRemove }: CancelJobConfirmationProps) => {
+    const { t } = useTranslation();
     const dialogState = useOverlayTriggerState({});
     const cancelMutation = $api.useMutation('post', `/api/jobs/{job_id}:cancel`);
 
@@ -39,19 +41,19 @@ export const CancelJobConfirmation = ({ jobId, onRemove }: CancelJobConfirmation
                 isDisabled={cancelMutation.isPending}
                 isPending={cancelMutation.isPending}
             >
-                Cancel
+                {t('dataset.jobs.cancel.trigger')}
             </Button>
             <AlertDialog
-                title='Cancel Job'
+                title={t('dataset.jobs.cancel.title')}
                 variant='destructive'
-                cancelLabel='Cancel'
+                cancelLabel={t('dataset.jobs.cancel.dismiss')}
                 autoFocusButton='primary'
-                primaryActionLabel='Cancel Job'
+                primaryActionLabel={t('dataset.jobs.cancel.confirm')}
                 onPrimaryAction={handleCancel}
                 onSecondaryAction={dialogState.close}
                 isPrimaryActionDisabled={cancelMutation.isPending}
             >
-                {`Are you sure you want to cancel the job "${jobId}"?`}
+                {t('dataset.jobs.cancel.confirmation', { jobId })}
             </AlertDialog>
         </DialogTrigger>
     );

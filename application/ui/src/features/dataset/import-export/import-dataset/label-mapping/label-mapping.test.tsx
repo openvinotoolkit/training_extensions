@@ -12,7 +12,6 @@ import { http } from '../../../../../api/utils';
 import { server } from '../../../../../msw-node-setup';
 import { ImportDatasetDialogStateProvider } from '../../../providers/export-import-dataset-dialog-provider.component';
 import { LabelMapping } from './label-mapping.component';
-import { PLACEHOLDER_LABEL } from './util';
 
 const projectLabels = [
     getMockedLabel({ name: 'label-1' }),
@@ -91,6 +90,6 @@ describe('LabelMapping', () => {
 
         const picker = await screen.findByLabelText('Target label for unknown-label');
 
-        expect(within(picker).getByText(PLACEHOLDER_LABEL)).toBeVisible();
+        expect(within(picker).getByText('Select label')).toBeVisible();
     });
 });
