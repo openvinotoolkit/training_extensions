@@ -89,4 +89,46 @@ describe('LogEntry', () => {
             expect(mockCopy).toHaveBeenCalledWith('/tmp/output/result.json');
         });
     });
+
+    describe('exception traceback rendering', () => {
+        const buildExceptionEntry = () => {
+            const entry = getMockedLogEntry({
+                message: 'Unhandled exception in worker',
+                exception: { type: 'ValueError', value: 'bad value', traceback: true },
+            });
+            entry.text =
+                '2026-09-10 10:00:00 | ERROR | mod:fn:1 - Unhandled exception in worker\n' +
+                'Traceback (most recent call last):\n  raise ValueError("bad value")\nValueError: bad value';
+
+            return entry;
+        };
+
+        it('shows a "Show traceback" toggle and keeps the traceback collapsed by default', () => {
+            render(<LogEntry entry={buildExceptionEntry()} />);
+
+            expect(screen.getByText('Unhandled exception in worker')).toBeInTheDocument();
+            expect(screen.getByText('Show traceback')).toBeInTheDocument();
+            expect(screen.queryByText(/Traceback \(most recent call last\)/)).not.toBeVisible();
+        });
+
+        it('reveals the traceback appended in `text` when the toggle is opened', () => {
+            const { container } = render(<LogEntry entry={buildExceptionEntry()} />);
+
+            const details = container.querySelector('details');
+            expect(details).not.toBeNull();
+
+            fireEvent.click(screen.getByText('Show traceback'));
+
+            expect(details).toHaveAttribute('open');
+            expect(screen.getByText(/Traceback \(most recent call last\)/)).toBeVisible();
+            expect(screen.getByText(/ValueError: bad value/)).toBeVisible();
+        });
+
+        it('does not render a toggle when there is no exception', () => {
+            renderLogEntry({ message: 'Plain message' });
+
+            expect(screen.getByText('Plain message')).toBeInTheDocument();
+            expect(screen.queryByText('Show traceback')).not.toBeInTheDocument();
+        });
+    });
 });
