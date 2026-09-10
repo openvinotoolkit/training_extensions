@@ -455,12 +455,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN getent group render_host >/dev/null || groupadd -g 992 render_host && usermod -aG render_host "${USER_NAME}"
 
-# WARNING: this is an Ubuntu 'noble' PPA being added to a Debian 13 (trixie) base image,
-# with signature verification disabled (trusted=yes) and no version pins. That makes the
-# resulting driver stack both unverified and non-reproducible: two builds of the same
-# commit can end up with different Level Zero / compute-runtime versions, and apt is free
-# to satisfy individual dependencies from Debian instead of the PPA.
-# TODO: switch to the signed Intel graphics repository for Debian and pin every package.
 RUN echo "deb [arch=amd64 trusted=yes] https://ppa.launchpadcontent.net/kobuk-team/intel-graphics/ubuntu noble main" \
     | tee /etc/apt/sources.list.d/kobuk-intel.list
 
