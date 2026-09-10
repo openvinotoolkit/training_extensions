@@ -74,7 +74,7 @@ env:
   UI_TARGET_PATH: .\application\ui\src-tauri\target
   MAKEAPP_PATH: "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\makeappx.exe"
   SIGNTOOL_PATH: "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\signtool.exe"
-  FFMPEG_COMMIT: "00d1f41b2eb070803a927c6132c240e14142d0b9"
+  FFMPEG_COMMIT: "n8.1.2"
 
 permissions: {} # No permissions by default on workflow level
 
@@ -136,7 +136,6 @@ jobs:
           Write-Host "MSIX_FILE_PATH=$MSIX_FILE_PATH"
           Add-Content -Path $env:GITHUB_ENV -Value "ARTIFACT_NAME=$ARTIFACT_NAME"
           Add-Content -Path $env:GITHUB_ENV -Value "MSIX_FILE_PATH=$MSIX_FILE_PATH"
-
 
       # Install and setup build tools
 
@@ -259,7 +258,7 @@ jobs:
 
           # Verify install
           pkg-config --modversion openh264
-          
+
       - name: Build SVT-AV1 from source
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
@@ -505,7 +504,6 @@ jobs:
           $patched = $patch + "`n" + $original
           Set-Content -Path $avInit -Value $patched -NoNewline
           Write-Host "Patched $avInit"
-
 
       - name: Verify PyAV import
         working-directory: application/backend
