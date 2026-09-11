@@ -1179,7 +1179,7 @@ requires-dist = [
     { name = "transformers", specifier = ">=5.14,<6" },
     { name = "triton-xpu", marker = "extra == 'xpu'", specifier = "==3.8.0", index = "https://download.pytorch.org/whl/xpu", conflict = { package = "getitune", extra = "xpu" } },
     { name = "typeguard", specifier = ">=4.3,<4.5" },
-    { name = "ultralytics", marker = "extra == 'ultralytics'", git = "https://github.com/ultralytics/ultralytics.git?branch=exp27-clean" },
+    { name = "ultralytics", marker = "extra == 'ultralytics'", git = "https://github.com/ultralytics/ultralytics.git?rev=3d2cc01ee02206e0f7adc2c1e9c559b0b73e66a8" },
 ]
 provides-extras = ["cpu", "cuda", "xpu", "ultralytics", "docs", "ci-publish", "benchmark"]
 
@@ -4311,7 +4311,7 @@ wheels = [
 [[package]]
 name = "ultralytics"
 version = "8.4.144"
-source = { git = "https://github.com/ultralytics/ultralytics.git?branch=exp27-clean#3d2cc01ee02206e0f7adc2c1e9c559b0b73e66a8" }
+source = { git = "https://github.com/ultralytics/ultralytics.git?rev=3d2cc01ee02206e0f7adc2c1e9c559b0b73e66a8#3d2cc01ee02206e0f7adc2c1e9c559b0b73e66a8" }
 dependencies = [
     { name = "cloudpickle", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
     { name = "filelock", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },

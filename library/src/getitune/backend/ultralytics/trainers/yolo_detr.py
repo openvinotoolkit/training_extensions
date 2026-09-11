@@ -43,8 +43,9 @@ class YoloDetrTrainer(
         if not self._use_getitune_data:
             return super().train(*args, **kwargs)
 
-        if self.args.close_mosaic:
-            self.args.close_mosaic = 0
+        # Augmentations are controlled by the getitune DataModule, so the
+        # upstream mosaic-closing logic must not trigger.
+        self.args.close_mosaic = 0
         return _RTDETRTrainer.train(self, *args, **kwargs)
 
     def get_validator(self) -> _RTDETRValidator:
