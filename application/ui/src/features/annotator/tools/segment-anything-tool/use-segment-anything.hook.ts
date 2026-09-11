@@ -3,6 +3,7 @@
 
 import { fetchClient } from '@/api';
 import type { Media } from '@/api/types';
+import { i18n } from '@/i18n';
 import { EncodingOutput, InvalidEncodingError, parseEncoding } from '@geti-ui/smart-tools/segment-anything';
 import { queryOptions, skipToken, useQuery, type QueryKey } from '@tanstack/react-query';
 import { Remote, wrap } from 'comlink';
@@ -62,14 +63,14 @@ const segmentAnythingWorkerQueryOptions = (enabled = true) =>
                 const samWorker = wrap<SegmentAnythingWorkerApi>(worker);
                 const instance = await executeWithTimeout(
                     samWorker.build(),
-                    'SAM worker build',
+                    i18n.t('annotator.tools.autoSegmentation.operations.workerBuild'),
                     SAM_WORKER_BUILD_TIMEOUT_MS
                 );
 
                 // Only the decoder runs locally; image embeddings come from the backend.
                 await executeWithTimeout(
                     instance.init('SEGMENT_ANYTHING_DECODER'),
-                    'SAM worker init',
+                    i18n.t('annotator.tools.autoSegmentation.operations.workerInit'),
                     SAM_WORKER_INIT_TIMEOUT_MS
                 );
 
@@ -115,7 +116,12 @@ class EmbeddingRequestError extends Error {
         readonly status: number,
         statusText: string
     ) {
-        super(`Could not fetch the image embedding (${status}${statusText ? ` ${statusText}` : ''}).`);
+        super(
+            i18n.t('annotator.tools.autoSegmentation.embeddingError', {
+                status,
+                statusText: statusText ? ` ${statusText}` : '',
+            })
+        );
 
         this.name = 'EmbeddingRequestError';
     }
@@ -226,7 +232,7 @@ const useDecodingFn = (model: SegmentAnythingRemoteInstance | undefined, encodin
                     type: decoderOutput,
                 },
             }),
-            'SAM decoder',
+            i18n.t('annotator.tools.autoSegmentation.operations.decoder'),
             SAM_DECODER_TIMEOUT_MS
         );
 

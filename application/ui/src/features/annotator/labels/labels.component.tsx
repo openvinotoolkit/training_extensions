@@ -4,6 +4,7 @@
 import { CSSProperties, Fragment, useMemo } from 'react';
 
 import type { Label } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Divider, Flex, Pressable, Text, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { clsx } from 'clsx';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -27,6 +28,8 @@ type LabelBadgeProps = {
 };
 
 const LabelBadge = ({ label, isSelected, onClick }: LabelBadgeProps) => {
+    const { t } = useTranslation();
+
     return (
         <TooltipTrigger isDisabled={isEmpty(label.hotkey)}>
             <Pressable>
@@ -40,7 +43,9 @@ const LabelBadge = ({ label, isSelected, onClick }: LabelBadgeProps) => {
                     <Text UNSAFE_className={classes.badgeText}>{label.name}</Text>
                 </button>
             </Pressable>
-            <Tooltip>Hotkey: {formatHotkeyForDisplay(label.hotkey ?? '')}</Tooltip>
+            <Tooltip>
+                {t('labels.toolbar.hotkeyTooltip', { hotkey: formatHotkeyForDisplay(label.hotkey ?? '') })}
+            </Tooltip>
         </TooltipTrigger>
     );
 };
@@ -64,6 +69,7 @@ const LabelHotkeyBinding = ({ label, onTrigger }: LabelHotkeyBindingProps) => {
 };
 
 export const Labels = ({ isClassification = false, isMultiLabel = false }: LabelsProps) => {
+    const { t } = useTranslation();
     const { labels, hasLabels, toggleLabelOnAnnotations, isLabelActive, editableLabels } = useLabels({
         isClassification,
         isMultiLabel,
@@ -109,7 +115,9 @@ export const Labels = ({ isClassification = false, isMultiLabel = false }: Label
                         </Fragment>
                     ))}
                     {hiddenLabelsCount > 0 && (
-                        <Text UNSAFE_className={classes.overflowCount}>+ {hiddenLabelsCount} more</Text>
+                        <Text UNSAFE_className={classes.overflowCount}>
+                            {t('labels.toolbar.overflowCount', { count: hiddenLabelsCount })}
+                        </Text>
                     )}
                 </div>
             )}

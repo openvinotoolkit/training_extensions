@@ -1,9 +1,12 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Heading, Loading, View } from '@geti-ui/ui';
 
 export const SAMLoading = ({ isLoading }: { isLoading: boolean }) => {
+    const { t } = useTranslation();
+
     return (
         <View
             position={'absolute'}
@@ -30,7 +33,7 @@ export const SAMLoading = ({ isLoading }: { isLoading: boolean }) => {
                             textShadow: '1px 1px 2px black, 1px 1px 2px white',
                         }}
                     >
-                        {isLoading && 'Processing image, please wait...'}
+                        {isLoading && t('annotator.tools.autoSegmentation.loading')}
                     </Heading>
                 </View>
             </Flex>

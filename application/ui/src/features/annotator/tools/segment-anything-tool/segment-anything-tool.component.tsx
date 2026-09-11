@@ -5,6 +5,7 @@ import { PointerEvent, useEffect, useRef, useState } from 'react';
 
 import { toast } from '@/components/toast/toast.component';
 import { useZoom } from '@/components/zoom/zoom.provider';
+import { useTranslation } from '@/i18n';
 import { clampPointBetweenImage } from '@geti-ui/smart-tools/utils';
 import { useGetDatasetMediaItems } from 'hooks/use-get-dataset-media-items.hook';
 
@@ -59,6 +60,7 @@ export const SegmentAnythingTool = () => {
     const [isDecoding, setIsDecoding] = useState(false);
     const ref = useRef<SVGSVGElement>(null);
 
+    const { t } = useTranslation();
     const zoom = useZoom();
     const { roi, image, mediaItem } = useSelectedMediaItem();
     const { items } = useGetDatasetMediaItems();
@@ -144,8 +146,9 @@ export const SegmentAnythingTool = () => {
         if (isError && !hasShownErrorToastRef.current) {
             toast({
                 type: 'error',
-                message: `
-                Error in Segment Anything tool: ${error?.message ?? 'Unknown error, please try refreshing the page.'}`,
+                message: t('annotator.tools.autoSegmentation.error', {
+                    message: error?.message ?? t('annotator.tools.autoSegmentation.unknownError'),
+                }),
             });
 
             hasShownErrorToastRef.current = true;
@@ -154,7 +157,7 @@ export const SegmentAnythingTool = () => {
         if (!isError) {
             hasShownErrorToastRef.current = false;
         }
-    }, [isError, error]);
+    }, [isError, error, t]);
 
     if (isLoading) {
         return <SAMLoading isLoading={isLoading} />;

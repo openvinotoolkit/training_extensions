@@ -21,13 +21,13 @@ const getEmptyLabel = (taskType: TaskType, exclusiveLabels: boolean, t: Translat
         const isMultiLabel = exclusiveLabels === false;
 
         if (isMultiLabel) {
-            return { id: EMPTY_LABEL_ID, name: t('annotator.labels.noLabel'), color: 'var(--no-label)', hotkey: 'N' };
+            return { id: EMPTY_LABEL_ID, name: t('labels.empty.noLabel'), color: 'var(--no-label)', hotkey: 'N' };
         }
 
         return null;
     }
 
-    return { id: EMPTY_LABEL_ID, name: t('annotator.labels.noObject'), color: 'var(--no-label)', hotkey: 'N' };
+    return { id: EMPTY_LABEL_ID, name: t('labels.empty.noObject'), color: 'var(--no-label)', hotkey: 'N' };
 };
 
 export const useProjectLabelsWithEmptyLabel = (): Label[] => {

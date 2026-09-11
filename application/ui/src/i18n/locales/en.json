@@ -607,12 +607,7 @@
         },
         "validation": {
             "nameEmpty": "Project name cannot be empty",
-            "nameExists": "That project name already exists",
-            "labelNameExists": "That label name already exists",
-            "hotkeyExists": "That hotkey is already in use"
-        },
-        "labels": {
-            "hotkeyPlaceholder": "Hotkey"
+            "nameExists": "That project name already exists"
         },
         "panel": {
             "manageProjects": "Manage projects",
@@ -716,8 +711,7 @@
                 }
             },
             "labels": {
-                "atLeastOneRequired": "At least one object is required",
-                "inputPlaceholder": "Create label"
+                "atLeastOneRequired": "At least one object is required"
             },
             "defaultName": "Project #{{number}}"
         },
@@ -760,11 +754,38 @@
             }
         }
     },
-    "annotator": {
-        "labels": {
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "Hotkey",
+            "nameExists": "That label name already exists",
+            "hotkeyExists": "That hotkey is already in use"
+        },
+        "editor": {
+            "namePlaceholder": "Label name",
+            "pin": "Pin label",
+            "unpin": "Unpin label",
+            "editTrigger": "Edit labels",
+            "createTrigger": "Create label",
+            "delete": {
+                "title": "Delete label",
+                "confirm": "Delete",
+                "cancel": "Cancel",
+                "message": "If you remove the {{labelName}} label, all annotations in your dataset that have this label will be deleted. However, this won't impact any models you've trained in the past."
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "Hotkey: {{hotkey}}",
+            "overflowCount": "+ {{count}} more"
+        },
+        "empty": {
             "noLabel": "No label",
             "noObject": "No object"
         },
+        "creation": {
+            "namePlaceholder": "Create label"
+        }
+    },
+    "annotator": {
         "canvas": {
             "settingsTitle": "Settings",
             "hideLabels": "Hide labels",
@@ -820,15 +841,27 @@
             "autoSegmentation": {
                 "label": "Auto segmentation",
                 "detectionDescription": "Move your cursor over an object to preview a suggested rectangle, then click to create the annotation.",
-                "segmentationDescription": "Move your cursor over an object to preview a suggested polygon, then click to create the annotation."
+                "segmentationDescription": "Move your cursor over an object to preview a suggested polygon, then click to create the annotation.",
+                "loading": "Processing image, please wait...",
+                "error": "Error in Segment Anything tool: {{message}}",
+                "unknownError": "Unknown error, please try refreshing the page.",
+                "timeoutError": "{{operation}} timed out after {{timeoutMs}}ms. Please try refreshing the page.",
+                "embeddingError": "Could not fetch the image embedding ({{status}}{{statusText}}).",
+                "operations": {
+                    "workerBuild": "SAM worker build",
+                    "workerInit": "SAM worker init",
+                    "decoder": "SAM decoder"
+                }
             },
             "polygon": {
                 "label": "Polygon",
-                "description": "Click to place points one by one, or hold and drag to draw freehand. Ideal for irregular shapes requiring pixel-precision."
+                "description": "Click to place points one by one, or hold and drag to draw freehand. Ideal for irregular shapes requiring pixel-precision.",
+                "deletePoint": "Delete"
             },
             "magneticLasso": {
                 "label": "Magnetic Lasso",
-                "description": "Hover along an object's edge and click periodically to snap the outline to its borders."
+                "description": "Hover along an object's edge and click periodically to snap the outline to its borders.",
+                "error": "Failed to select the shape boundaries, could you please try again?"
             }
         }
     },

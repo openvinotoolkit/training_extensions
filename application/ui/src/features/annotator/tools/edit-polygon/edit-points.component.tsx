@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { ActionButton } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
 
@@ -15,6 +16,8 @@ import { EditPointsProps, selectAnchorPointLabel } from './utils';
 export const EditPoints = ({ zoom, shape, addPoint, onComplete, moveAnchorTo, removePoints }: EditPointsProps) => {
     const containerRef = useRef<SVGGElement | null>(null);
     const ref = useRef<SVGRectElement>(null);
+
+    const { t } = useTranslation();
 
     const [selectedAnchorIndexes, setSelectedAnchorIndexes] = useState<number[]>([]);
 
@@ -108,7 +111,7 @@ export const EditPoints = ({ zoom, shape, addPoint, onComplete, moveAnchorTo, re
                                     }}
                                     aria-label={`delete point`}
                                 >
-                                    Delete
+                                    {t('annotator.tools.polygon.deletePoint')}
                                 </ActionButton>
                             )}
                         />
