@@ -3,19 +3,22 @@
 This guide explains how to upgrade an existing Intel Geti installation to a newer
 version while preserving your projects, datasets and models.
 
-> [!IMPORTANT] 
-> An upgrade never deletes your data and prepares a backup before the migration. 
+> [!IMPORTANT]
+> An upgrade never deletes your data and prepares a backup before the migration.
 > If migration fails, data can be easily restored.
 
 ## Table of contents
 
-1. [How upgrades work](#how-upgrades-work)
-2. [Docker deployment](#docker-deployment)
-3. [Windows desktop (MSIX) app](#windows-desktop-msix-app)
-4. [Source installation](#source-installation)
-5. [What happens on failure (rollback)](#what-happens-on-failure-rollback)
-6. [Downgrading](#downgrading)
-7. [Troubleshooting](#troubleshooting)
+- [Upgrading Intel Geti](#upgrading-intel-geti)
+  - [Table of contents](#table-of-contents)
+  - [How upgrades work](#how-upgrades-work)
+  - [Docker deployment](#docker-deployment)
+  - [Windows desktop (MSIX) app](#windows-desktop-msix-app)
+    - [Requirements for in-place upgrade to work](#requirements-for-in-place-upgrade-to-work)
+  - [Source installation](#source-installation)
+  - [What happens on failure](#what-happens-on-failure)
+  - [Downgrading](#downgrading)
+  - [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -38,7 +41,7 @@ by itself.
 The Docker image bundles the whole application. The persistent `geti-data` and
 `geti-logs` volumes are **not** part of the image, so replacing the image with a
 newer one and reusing the same volumes preserves all your data. Because the
-backend migrates data on startup, upgrading is a matter of pulling the newer image 
+backend migrates data on startup, upgrading is a matter of pulling the newer image
 and recreating the container against the same volumes.
 
 > [!WARNING] take a snapshot of the `geti-data` volume before upgrading so
@@ -50,8 +53,8 @@ docker run --rm -v geti-data:/data -v "$PWD":/backup alpine \
     tar czf /backup/geti-data-backup.tar.gz -C /data .
 
 # 2. Pull the new image and retag it (available device choices: cpu, xpu, cuda)
-docker pull ghcr.io/open-edge-platform/geti-cpu:3.1.0
-docker tag  ghcr.io/open-edge-platform/geti-cpu:3.1.0 geti-cpu:latest
+docker pull ghcr.io/open-edge-platform/geti-cpu:3.2.0
+docker tag  ghcr.io/open-edge-platform/geti-cpu:3.2.0 geti-cpu:latest
 
 # 3. Recreate the container against the SAME volumes (data is migrated on startup)
 just run-image --accelerator cpu --reload --detach
@@ -79,8 +82,8 @@ To upgrade:
 2. Launch Geti. On first start the bundled backend migrates your data to the new
    version, taking a database backup first.
 
-If the migration fails, the backend exits with the fatal code `3`. 
-The desktop app detects this and shows a **detailed error dialog** explaining 
+If the migration fails, the backend exits with the fatal code `3`.
+The desktop app detects this and shows a **detailed error dialog** explaining
 that the upgrade failed and where to find the logs, then closes. Because the
 previous package can be reinstalled and backup is available, the app remains
 usable — simply reinstall the previous `.msix` version (see
@@ -183,7 +186,7 @@ fail identically — so the backend:
   ```
 
 - **MSIX:** uninstall the current package and install the previous `.msix`. Your
-  per-user data directory is preserved. If you had upgraded and restored the database from backup, 
+  per-user data directory is preserved. If you had upgraded and restored the database from backup,
   the data is already at the previous version.
 
 ---
