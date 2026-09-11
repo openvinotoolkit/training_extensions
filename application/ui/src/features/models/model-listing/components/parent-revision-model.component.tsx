@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Link } from '@geti-ui/ui';
 
 type ParentRevisionModelProps = {
@@ -10,9 +11,11 @@ type ParentRevisionModelProps = {
 };
 
 export const ParentRevisionModel = ({ id, name, onExpandModel }: ParentRevisionModelProps) => {
+    const { t } = useTranslation();
+
     return (
         <>
-            Fine-tuned from{' '}
+            {t('models.list.fineTunedFrom')}{' '}
             <Link
                 UNSAFE_style={{ textDecoration: 'none' }}
                 onPress={() => {

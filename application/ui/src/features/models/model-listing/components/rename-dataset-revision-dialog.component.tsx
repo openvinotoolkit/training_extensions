@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, Divider, Form, Heading, TextField } from '@geti-ui/ui';
 
 interface RenameDatasetRevisionDialogProps {
@@ -18,6 +19,7 @@ export const RenameDatasetRevisionDialog = ({
     onClose,
     isPending,
 }: RenameDatasetRevisionDialogProps) => {
+    const { t } = useTranslation();
     const [newName, setNewName] = useState(currentName);
 
     const hasSameName = newName.trim() === currentName;
@@ -30,14 +32,14 @@ export const RenameDatasetRevisionDialog = ({
 
     return (
         <Dialog>
-            <Heading>Rename dataset revision</Heading>
+            <Heading>{t('dataset.revisions.rename.title')}</Heading>
 
             <Divider />
 
             <Content>
                 <Form onSubmit={handleSubmit} validationBehavior={'native'}>
                     <TextField
-                        label={'Dataset revision name'}
+                        label={t('dataset.revisions.rename.nameLabel')}
                         value={newName}
                         onChange={setNewName}
                         width={'100%'}
@@ -45,10 +47,10 @@ export const RenameDatasetRevisionDialog = ({
                     />
                     <ButtonGroup align={'end'} marginTop={'size-300'}>
                         <Button variant={'secondary'} onPress={onClose}>
-                            Cancel
+                            {t('dataset.revisions.actions.cancel')}
                         </Button>
                         <Button variant={'accent'} type={'submit'} isPending={isPending} isDisabled={hasSameName}>
-                            Rename
+                            {t('dataset.revisions.actions.rename')}
                         </Button>
                     </ButtonGroup>
                 </Form>

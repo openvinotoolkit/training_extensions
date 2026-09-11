@@ -293,6 +293,30 @@
                 "unsupportedItems": "To preserve {{items}}, please use the Geti export format.",
                 "subsetNotIncluded": "The exported dataset won't include any information about the subset assigned to each media."
             }
+        },
+        "revisions": {
+            "createdOn": "Created {{date}}",
+            "unnamedName": "Dataset #{{id}}",
+            "unknown": "Unknown",
+            "trainingSubsets": {
+                "training": "Training",
+                "validation": "Validation",
+                "test": "Test"
+            },
+            "actions": {
+                "rename": "Rename",
+                "delete": "Delete",
+                "export": "Export",
+                "cancel": "Cancel"
+            },
+            "rename": {
+                "title": "Rename dataset revision",
+                "nameLabel": "Dataset revision name"
+            },
+            "delete": {
+                "title": "Delete dataset revision",
+                "description": "Are you sure you want to delete dataset revision \"{{name}}\"? You will still be able to see the model statistics but you won't be able to access the training dataset files."
+            }
         }
     },
     "inference": {
@@ -813,6 +837,52 @@
             "logs": {
                 "copySuccess": "Copied Successfully",
                 "copyError": "Copy failed"
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "Group by",
+            "groupByDataset": "Group by: Dataset",
+            "groupByArchitecture": "Group by: Architecture",
+            "hideFailedModels": "Hide failed models",
+            "showFailedModels": "Show failed models",
+            "searchPlaceholder": "Search models...",
+            "noModelsFound": "No models found",
+            "empty": {
+                "title": "No models yet.",
+                "description": "Train your first model to get started."
+            },
+            "unknownArchitecture": "Unknown",
+            "failedBadge": "Failed",
+            "deletedWeightsBadge": "Deleted weights",
+            "fineTunedFrom": "Fine-tuned from",
+            "columns": {
+                "modelName": "Model Name",
+                "trained": "Trained",
+                "dataset": "Dataset",
+                "architecture": "Architecture",
+                "device": "Device",
+                "totalSize": "Total size"
+            }
+        },
+        "performance": {
+            "accuracy": "Accuracy",
+            "categories": {
+                "balance": "Balance",
+                "speed": "Speed",
+                "accuracy": "Accuracy"
+            }
+        },
+        "actions": {
+            "rename": "Rename",
+            "deleteWeights": "Delete weights",
+            "deleteModel": "Delete model",
+            "viewLogs": "View training logs",
+            "cancel": "Cancel",
+            "deleteWeightsDescription": "Are you sure you want to delete the weights for model \"{{modelName}}\"?",
+            "deleteModelDescription": "Are you sure you want to delete model \"{{modelName}}\"? This action cannot be undone.",
+            "renameDialog": {
+                "title": "Rename model",
+                "nameLabel": "Model name"
             }
         }
     },

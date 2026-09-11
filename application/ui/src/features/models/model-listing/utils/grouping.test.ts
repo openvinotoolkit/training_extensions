@@ -2,15 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetRevision } from '@/api/types';
+import { createI18nInstance } from '@/i18n';
 import { getMockedDatasetRevision } from 'mocks/mock-dataset-revision';
 import { getMockedModel } from 'mocks/mock-model';
 
 import type { DatasetGroup } from '../types';
 import { groupModelsByArchitecture, groupModelsByDataset } from './grouping';
 
+const { t } = createI18nInstance({ lng: 'en' });
+
 describe('groupModelsByDataset', () => {
     it('should return empty array for empty models', () => {
-        const result = groupModelsByDataset([]);
+        const result = groupModelsByDataset([], t);
 
         expect(result).toEqual([]);
     });
@@ -43,7 +46,7 @@ describe('groupModelsByDataset', () => {
             }),
         ];
 
-        const groupedModels = groupModelsByDataset(models, {
+        const groupedModels = groupModelsByDataset(models, t, {
             datasetRevisions: [
                 getMockedDatasetRevision({ id: 'dataset-1' }),
                 getMockedDatasetRevision({ id: 'dataset-2' }),
@@ -82,7 +85,7 @@ describe('groupModelsByDataset', () => {
             }),
         ];
 
-        const groupedModels = groupModelsByDataset(models, { datasetRevisions });
+        const groupedModels = groupModelsByDataset(models, t, { datasetRevisions });
         const group = groupedModels[0].group as DatasetGroup;
 
         expect(groupedModels).toHaveLength(1);
@@ -110,7 +113,7 @@ describe('groupModelsByDataset', () => {
 
         const datasetRevisions: DatasetRevision[] = [];
 
-        const groupedModels = groupModelsByDataset(models, { datasetRevisions });
+        const groupedModels = groupModelsByDataset(models, t, { datasetRevisions });
         const group: DatasetGroup = groupedModels[0].group as DatasetGroup;
 
         expect(groupedModels).toHaveLength(1);

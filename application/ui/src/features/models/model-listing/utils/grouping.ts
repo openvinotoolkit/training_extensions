@@ -2,21 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetRevision, Model } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import { formatDateTime } from '../../../../shared/date-utils';
 import type { GroupedModels } from '../types';
 
-const formatDatasetStartTime = (dateString: string | null | undefined): string => {
+const formatDatasetStartTime = (dateString: string | null | undefined, t: TranslateFn): string => {
     const formatted = formatDateTime(dateString);
 
-    return formatted === '-' ? formatted : `Created ${formatted}`;
+    return formatted === '-' ? formatted : t('dataset.revisions.createdOn', { date: formatted });
 };
 
 type GroupModelsByDatasetOptions = {
     datasetRevisions: DatasetRevision[];
 };
 
-export const groupModelsByDataset = (models: Model[], options?: GroupModelsByDatasetOptions): GroupedModels[] => {
+export const groupModelsByDataset = (
+    models: Model[],
+    t: TranslateFn,
+    options?: GroupModelsByDatasetOptions
+): GroupedModels[] => {
     const { datasetRevisions = [] } = options || {};
     const groups: Record<string, GroupedModels> = {}; // datasetId -> models
 
@@ -35,9 +40,10 @@ export const groupModelsByDataset = (models: Model[], options?: GroupModelsByDat
             groups[datasetId] = {
                 group: {
                     id: datasetId,
-                    name: datasetRevision?.name ?? `Dataset #${datasetId.slice(0, 8)}`,
+                    name: datasetRevision?.name ?? t('dataset.revisions.unnamedName', { id: datasetId.slice(0, 8) }),
                     createdAt: formatDatasetStartTime(
-                        datasetRevision ? datasetRevision.created_at : model.training_info.start_time
+                        datasetRevision ? datasetRevision.created_at : model.training_info.start_time,
+                        t
                     ),
                     labelCount,
                     imageCount: datasetRevision?.item_counts?.total ?? 0,

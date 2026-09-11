@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetRevision, Model, ModelArchitectureWithPerformanceCategory } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Badge, Flex, Grid, Text } from '@geti-ui/ui';
 
 import { formatTrainingDateTime } from '../../../../../shared/date-utils';
@@ -30,10 +31,14 @@ type ModelRowProps = {
 };
 
 const FailedModel = () => {
-    return <Badge variant={'negative'}>Failed</Badge>;
+    const { t } = useTranslation();
+
+    return <Badge variant={'negative'}>{t('models.list.failedBadge')}</Badge>;
 };
 
 const DeletedWeightsModel = () => {
+    const { t } = useTranslation();
+
     return (
         <Badge
             variant={'yellow'}
@@ -41,7 +46,7 @@ const DeletedWeightsModel = () => {
                 '--spectrum-yellow-background-color-default': `var(--brand-daisy)`,
             }}
         >
-            Deleted weights
+            {t('models.list.deletedWeightsBadge')}
         </Badge>
     );
 };

@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 
 import type { DatasetRevision, Model } from '@/api/types';
+import { useTranslation } from '@/i18n';
 
 import type { GroupByMode, GroupedModels, SortDescriptor } from '../types';
 import {
@@ -31,6 +32,7 @@ type UseGroupedModelsOptions = {
 // - Sorting models within each group based on the selected sorting criteria
 export const useGroupedModels = (models: Model[] | undefined, options: UseGroupedModelsOptions): GroupedModels[] => {
     const { groupBy, sortBy, searchBy, datasetRevisions, showFailedModels } = options;
+    const { t } = useTranslation();
 
     return useMemo(() => {
         if (!models) return [];
@@ -40,7 +42,7 @@ export const useGroupedModels = (models: Model[] | undefined, options: UseGroupe
             ? filteredByTraining
             : filterOutFailedModels(filteredByTraining);
         const filteredBySearch = filterBySearch(filteredByFailedModels, searchBy);
-        const grouped = groupModels(filteredBySearch, groupBy, datasetRevisions);
+        const grouped = groupModels(filteredBySearch, groupBy, datasetRevisions, t);
         const sortedModelsInsideGroup = sortGroupedModels(grouped, sortBy, datasetRevisions);
         const sortedGroupsByDatasetRevisionDate = sortGroupedModelsByDatasetRevisionDate(
             sortedModelsInsideGroup,
@@ -48,5 +50,5 @@ export const useGroupedModels = (models: Model[] | undefined, options: UseGroupe
         );
 
         return removeEmpty(sortedGroupsByDatasetRevisionDate);
-    }, [models, groupBy, sortBy, searchBy, datasetRevisions, showFailedModels]);
+    }, [models, groupBy, sortBy, searchBy, datasetRevisions, showFailedModels, t]);
 };

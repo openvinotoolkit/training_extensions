@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ModelArchitectureWithPerformanceCategory } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Flex, Heading, Text } from '@geti-ui/ui';
 
 import { PerformanceCategoryBadge } from '../model-row/performance-category-badge.component';
@@ -11,9 +12,11 @@ type ArchitectureGroupHeaderProps = {
 };
 
 export const ArchitectureGroupHeader = ({ architecture }: ArchitectureGroupHeaderProps) => {
+    const { t } = useTranslation();
+
     // Should never happen, but just in case
     if (architecture === undefined) {
-        return <Text>Unknown</Text>;
+        return <Text>{t('models.list.unknownArchitecture')}</Text>;
     }
 
     return (

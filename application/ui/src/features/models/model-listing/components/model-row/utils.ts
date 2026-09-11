@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Evaluation, Metric, Model, TaskType } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import { isClassificationTask } from '../../../../project/task-type-guards';
 
@@ -50,6 +51,17 @@ export const getFirstAvailableTestingMetric = (
     return undefined;
 };
 
-export const getPerformanceColumnLabel = (models: Model[] | undefined, taskType: TaskType | null): string => {
+export const getPerformanceColumnAriaLabel = (models: Model[] | undefined, taskType: TaskType | null): string => {
     return getFirstAvailableTestingMetric(models)?.name ?? getDefaultPerformanceMetricName(taskType);
+};
+
+export const getPerformanceColumnLabel = (
+    models: Model[] | undefined,
+    taskType: TaskType | null,
+    t: TranslateFn
+): string => {
+    return (
+        getFirstAvailableTestingMetric(models)?.name ??
+        (isClassificationTask(taskType) ? t('models.performance.accuracy') : 'mAP')
+    );
 };

@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Text } from '@geti-ui/ui';
 
 import { distributeByLargestRemainder } from '../../../utils';
@@ -17,15 +18,28 @@ type ThreeSectionRangeProps = {
 const MAX_VALUE = 100;
 
 export const ThreeSectionRange = ({ id, trainingValue, validationValue, testingValue }: ThreeSectionRangeProps) => {
+    const { t } = useTranslation();
     const [trainingPercentage, validationPercentage, testingPercentage] = distributeByLargestRemainder(
         [trainingValue, validationValue, testingValue],
         MAX_VALUE
     );
 
     const labelledPercentages = [
-        { label: 'Training', percentage: trainingPercentage, color: 'var(--training-subset)' },
-        { label: 'Validation', percentage: validationPercentage, color: 'var(--validation-subset)' },
-        { label: 'Test', percentage: testingPercentage, color: 'var(--test-subset)' },
+        {
+            label: t('dataset.revisions.trainingSubsets.training'),
+            percentage: trainingPercentage,
+            color: 'var(--training-subset)',
+        },
+        {
+            label: t('dataset.revisions.trainingSubsets.validation'),
+            percentage: validationPercentage,
+            color: 'var(--validation-subset)',
+        },
+        {
+            label: t('dataset.revisions.trainingSubsets.test'),
+            percentage: testingPercentage,
+            color: 'var(--test-subset)',
+        },
     ];
 
     return (
