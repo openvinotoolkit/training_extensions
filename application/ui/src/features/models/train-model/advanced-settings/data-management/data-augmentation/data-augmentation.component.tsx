@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction } from 'react';
 
 import type { TrainingConfiguration } from '@/api/types';
+import { useTranslation } from '@/i18n';
 
 import { Accordion } from '../../components/accordion/accordion.component';
 import { DataAugmentationParametersList } from './data-augmentation-parameters-list.component';
@@ -18,13 +19,18 @@ export const DataAugmentation = ({
     dataAugmentationParameters,
     onTrainingConfigurationChange,
 }: DataAugmentationProps) => {
+    const { t } = useTranslation();
     const isEnabled = isDataAugmentationEnabled(dataAugmentationParameters);
 
     return (
         <Accordion>
             <Accordion.Title>
-                Data Augmentation
-                <Accordion.Tag ariaLabel={'Data augmentation tag'}>{isEnabled ? 'Yes' : 'No'}</Accordion.Tag>
+                {t('models.training.dataManagement.augmentation.title')}
+                <Accordion.Tag ariaLabel={'Data augmentation tag'}>
+                    {isEnabled
+                        ? t('models.training.dataManagement.augmentation.enabledYes')
+                        : t('models.training.dataManagement.augmentation.enabledNo')}
+                </Accordion.Tag>
             </Accordion.Title>
             <Accordion.Content>
                 <Accordion.Description>{dataAugmentationParameters.description}</Accordion.Description>

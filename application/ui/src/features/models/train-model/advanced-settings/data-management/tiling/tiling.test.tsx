@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import type { TrainingConfiguration } from '@/api/types';
+import { createI18nInstance } from '@/i18n';
 import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -14,11 +15,11 @@ import { render } from 'test-utils/render';
 
 import { Tiling } from './tiling.component';
 import {
+    getTilingAutomaticDescription,
     getTilingMode,
+    getTilingOffDescription,
     getTilingParameters,
-    TILING_AUTOMATIC_DESCRIPTION,
     TILING_MODES,
-    TILING_OFF_DESCRIPTION,
     TilingConfigurableParameterGroup,
     TilingMode,
 } from './utils';
@@ -95,6 +96,8 @@ const getTilingModeButton = (tilingMode: TilingMode) => {
 };
 
 describe('Tiling', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     const customParameters = [
         getMockedConfigurationParameter({
             key: 'tile_size',
@@ -175,14 +178,14 @@ describe('Tiling', () => {
         expect(getTilingModeButton(TILING_MODES.OFF)).toHaveAttribute('aria-pressed', 'true');
         expect(getTilingModeButton(TILING_MODES.AUTOMATIC)).toHaveAttribute('aria-pressed', 'false');
         expect(getTilingModeButton(TILING_MODES.CUSTOM)).toHaveAttribute('aria-pressed', 'false');
-        expect(screen.getByText(TILING_OFF_DESCRIPTION)).toBeInTheDocument();
+        expect(screen.getByText(getTilingOffDescription(t))).toBeInTheDocument();
 
         fireEvent.click(getTilingModeButton(TILING_MODES.AUTOMATIC));
 
         expect(getTilingModeButton(TILING_MODES.AUTOMATIC)).toHaveAttribute('aria-pressed', 'true');
         expect(getTilingModeButton(TILING_MODES.OFF)).toHaveAttribute('aria-pressed', 'false');
         expect(getTilingModeButton(TILING_MODES.CUSTOM)).toHaveAttribute('aria-pressed', 'false');
-        expect(screen.getByText(TILING_AUTOMATIC_DESCRIPTION)).toBeInTheDocument();
+        expect(screen.getByText(getTilingAutomaticDescription(t))).toBeInTheDocument();
     });
 
     it('tiling tag updates properly when tiling mode changes', () => {

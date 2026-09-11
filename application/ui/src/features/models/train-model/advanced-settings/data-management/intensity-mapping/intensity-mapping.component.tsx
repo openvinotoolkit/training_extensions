@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction, useMemo } from 'react';
 
 import type { ConfigurableParameter, ConfigurableParameterGroup, TrainingConfiguration } from '@/api/types';
+import { useTranslation } from '@/i18n';
 
 import { Accordion } from '../../components/accordion/accordion.component';
 import { Parameters } from '../../components/parameters.component';
@@ -31,6 +32,7 @@ export const IntensityMapping = ({
     intensityMappingParameters,
     onTrainingConfigurationChange,
 }: IntensityMappingProps) => {
+    const { t } = useTranslation();
     const handleParameterChange = (parameter: ConfigurableParameter) => {
         onTrainingConfigurationChange((config) => {
             if (config === undefined) return;
@@ -45,7 +47,7 @@ export const IntensityMapping = ({
 
     return (
         <Accordion>
-            <Accordion.Title>Intensity Mapping</Accordion.Title>
+            <Accordion.Title>{t('models.training.dataManagement.intensityMapping.title')}</Accordion.Title>
             <Accordion.Content>
                 <Accordion.Description>{intensityMappingParameters.description}</Accordion.Description>
                 <Accordion.Divider marginY={'size-250'} />

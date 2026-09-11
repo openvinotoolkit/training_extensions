@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Checkbox, Content, ContextualHelp, Flex, NumberField, Text } from '@geti-ui/ui';
 
 import { ResetButton } from '../../components/reset-button.component';
@@ -26,6 +27,7 @@ type FilterOptionProps = {
 };
 
 const FilterOption = ({ filterParameter, onFilterChange }: FilterOptionProps) => {
+    const { t } = useTranslation();
     const { description, name, parameters, key } = filterParameter;
     const [enableParameter, configurableParameter] = parameters;
     const isUnlimited = !enableParameter.value;
@@ -46,10 +48,10 @@ const FilterOption = ({ filterParameter, onFilterChange }: FilterOptionProps) =>
     };
 
     const toggleName = key.toLocaleLowerCase().includes('min')
-        ? `No minimum`
+        ? t('models.training.dataManagement.filters.noMinimum')
         : key.toLocaleLowerCase().includes('max')
-          ? `No maximum`
-          : `Unlimited`;
+          ? t('models.training.dataManagement.filters.noMaximum')
+          : t('models.training.dataManagement.filters.unlimited');
 
     return (
         <>

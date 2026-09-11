@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ConfigurableParameter, ConfigurableParameterGroup, TrainingConfiguration } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import { findGroupByKey, isParameter } from '../../../../model-listing/model-training-parameters/utils';
 import { isBoolParameter } from '../../utils';
@@ -25,14 +26,11 @@ export const getTilingParameters = (
     };
 };
 
-export const TILING_OFF_DESCRIPTION =
-    'Model processes the entire image as a single unit without dividing it into smaller tiles. This approach ' +
-    'is straightforward but may struggle with detecting small objects in high-resolution images, as the model ' +
-    'might miss finer details';
+export const getTilingOffDescription = (t: TranslateFn): string =>
+    t('models.training.dataManagement.tiling.offDescription');
 
-export const TILING_AUTOMATIC_DESCRIPTION =
-    'It means that the system will automatically set the parameters based on the image resolution and ' +
-    'annotations size.';
+export const getTilingAutomaticDescription = (t: TranslateFn): string =>
+    t('models.training.dataManagement.tiling.automaticDescription');
 
 const ADAPTIVE_TILING_PARAMETER = 'enable_adaptive_tiling';
 const ENABLE_TILING_PARAMETER = 'enable';
@@ -76,6 +74,17 @@ export const getTilingMode = (tilingParameters: ConfigurableParameter[]): Tiling
     }
 
     return TILING_MODES.CUSTOM;
+};
+
+export const getTilingModeLabel = (mode: TilingMode, t: TranslateFn): string => {
+    switch (mode) {
+        case TILING_MODES.OFF:
+            return t('models.training.dataManagement.tiling.modes.off');
+        case TILING_MODES.AUTOMATIC:
+            return t('models.training.dataManagement.tiling.modes.automatic');
+        case TILING_MODES.CUSTOM:
+            return t('models.training.dataManagement.tiling.modes.custom');
+    }
 };
 
 export const getCustomTilingParameters = (parameters: ConfigurableParameter[]) => {

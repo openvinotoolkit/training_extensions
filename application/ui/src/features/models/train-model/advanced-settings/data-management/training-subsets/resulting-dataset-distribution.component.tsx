@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Grid, repeat, Text, View } from '@geti-ui/ui';
 
 import { distributeByLargestRemainder } from '../../../../utils';
@@ -11,7 +12,7 @@ import classes from './training-subsets.module.scss';
 type SubsetDistributionRowProps = {
     existingSize: number;
     newSize: number;
-    label: string;
+    ariaLabel: string;
     percentage: number;
 };
 
@@ -24,7 +25,7 @@ const SubsetLabel = ({ label, color }: { color: string; label: string }) => {
     );
 };
 
-const SubsetDistributionRow = ({ existingSize, newSize, label, percentage }: SubsetDistributionRowProps) => {
+const SubsetDistributionRow = ({ existingSize, newSize, ariaLabel, percentage }: SubsetDistributionRowProps) => {
     const resultingSize = existingSize + newSize;
 
     return (
@@ -33,8 +34,8 @@ const SubsetDistributionRow = ({ existingSize, newSize, label, percentage }: Sub
             <Text>+</Text>
             <Text>{newSize}</Text>
             <Text>=</Text>
-            <span aria-label={`${label} result size`}>{resultingSize}</span>
-            <span aria-label={`${label} result percentage`}>({percentage}%)</span>
+            <span aria-label={`${ariaLabel} result size`}>{resultingSize}</span>
+            <span aria-label={`${ariaLabel} result percentage`}>({percentage}%)</span>
         </>
     );
 };
@@ -42,6 +43,7 @@ const SubsetDistributionRow = ({ existingSize, newSize, label, percentage }: Sub
 type ResultingDatasetDistributionSubsetProps = {
     color: string;
     label: string;
+    ariaLabel: string;
     newSize: number;
     existingSize: number;
     percentage: number;
@@ -50,6 +52,7 @@ type ResultingDatasetDistributionSubsetProps = {
 const ResultingDatasetDistributionSubset = ({
     color,
     label,
+    ariaLabel,
     existingSize,
     newSize,
     percentage,
@@ -59,7 +62,7 @@ const ResultingDatasetDistributionSubset = ({
             <SubsetLabel label={label} color={color} />
 
             <SubsetDistributionRow
-                label={label}
+                ariaLabel={ariaLabel}
                 newSize={newSize}
                 existingSize={existingSize}
                 percentage={percentage}
@@ -87,6 +90,7 @@ export const ResultingDatasetDistribution = ({
     newValidationSubsetSize,
     newTestingSubsetSize,
 }: ResultingDatasetDistributionProps) => {
+    const { t } = useTranslation();
     const [trainingPercentage, validationPercentage, testingPercentage] = distributeByLargestRemainder(
         [
             trainingSubsetSize + newTrainingSubsetSize,
@@ -98,7 +102,7 @@ export const ResultingDatasetDistribution = ({
 
     return (
         <Flex direction={'column'} gap={'size-50'}>
-            <Text>Resulting dataset distribution:</Text>
+            <Text>{t('models.training.dataManagement.trainingSubsets.resultingDistribution')}</Text>
             <View backgroundColor={'static-gray-800'} borderRadius={'small'} padding={'size-100'}>
                 <Grid
                     columns={[repeat(7, 'max-content')]}
@@ -108,7 +112,8 @@ export const ResultingDatasetDistribution = ({
                     UNSAFE_className={classes.resultingDistributionText}
                 >
                     <ResultingDatasetDistributionSubset
-                        label={'Training'}
+                        label={t('dataset.revisions.trainingSubsets.training')}
+                        ariaLabel={'Training'}
                         color={LABEL_COLOR_MAPPING.training}
                         newSize={newTrainingSubsetSize}
                         existingSize={trainingSubsetSize}
@@ -116,7 +121,8 @@ export const ResultingDatasetDistribution = ({
                     />
 
                     <ResultingDatasetDistributionSubset
-                        label={'Validation'}
+                        label={t('dataset.revisions.trainingSubsets.validation')}
+                        ariaLabel={'Validation'}
                         color={LABEL_COLOR_MAPPING.validation}
                         newSize={newValidationSubsetSize}
                         existingSize={validationSubsetSize}
@@ -124,7 +130,8 @@ export const ResultingDatasetDistribution = ({
                     />
 
                     <ResultingDatasetDistributionSubset
-                        label={'Test'}
+                        label={t('dataset.revisions.trainingSubsets.test')}
+                        ariaLabel={'Test'}
                         color={LABEL_COLOR_MAPPING.test}
                         newSize={newTestingSubsetSize}
                         existingSize={testingSubsetSize}

@@ -3,6 +3,7 @@
 
 import { RefObject, useRef } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Content, ContextualHelp, Flex, Text, View, VisuallyHidden } from '@geti-ui/ui';
 import { clsx } from 'clsx';
 import { mergeProps, useFocusRing, useNumberFormatter, useSlider, useSliderThumb } from 'react-aria';
@@ -47,14 +48,12 @@ const Thumb = ({ state, trackRef, index, ariaLabel }: ThumbProps) => {
 };
 
 const DistributionTooltip = () => {
+    const { t } = useTranslation();
+
     return (
         <ContextualHelp variant='info'>
             <Content>
-                <Text>
-                    Specify the distribution of annotated samples that have NOT already been assigned to a subset. Note
-                    that samples used in previous training rounds already have a subset and this will remain unchanged,
-                    to avoid data contamination and evaluation bias.
-                </Text>
+                <Text>{t('models.training.dataManagement.trainingSubsets.description')}</Text>
             </Content>
         </ContextualHelp>
     );
