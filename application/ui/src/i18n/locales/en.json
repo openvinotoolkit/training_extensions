@@ -1002,6 +1002,48 @@
                 "tagDefault": "Default",
                 "tagModified": "Modified",
                 "inputSize": "Input size"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "Training subsets",
+                    "description": "Specify the distribution of annotated samples that have NOT already been assigned to a subset. Note that samples used in previous training rounds already have a subset and this will remain unchanged, to avoid data contamination and evaluation bias.",
+                    "unavailableTitle": "Invalid training subsets configuration",
+                    "unavailableDescription": "Training subsets do not contain enough media items to support a configurable split between training, validation, and testing subsets.",
+                    "unavailableHint": "Please add more media items to ensure each subset contains at least one item.",
+                    "datasetSamples": "Dataset: {{count}} samples",
+                    "assignedSamples": "Assigned: {{count}}",
+                    "unassignedSamples": "Unassigned: {{count}}",
+                    "distributionLabel": "Distribution for new samples",
+                    "resultingDistribution": "Resulting dataset distribution:",
+                    "totalLabel": "Total:",
+                    "mediaItemsLabel": "media items"
+                },
+                "filters": {
+                    "title": "Filters",
+                    "noMinimum": "No minimum",
+                    "noMaximum": "No maximum",
+                    "unlimited": "Unlimited"
+                },
+                "augmentation": {
+                    "title": "Data Augmentation",
+                    "enabledYes": "Yes",
+                    "enabledNo": "No"
+                },
+                "intensityMapping": {
+                    "title": "Intensity Mapping"
+                },
+                "tiling": {
+                    "title": "Tiling",
+                    "description": "Tiling is a technique that divides high-resolution images into smaller tiles and might be useful to increase accuracy for small object detection tasks.",
+                    "modeLabel": "Tiling mode",
+                    "modes": {
+                        "off": "Off",
+                        "automatic": "Automatic",
+                        "custom": "Custom"
+                    },
+                    "offDescription": "Model processes the entire image as a single unit without dividing it into smaller tiles. This approach is straightforward but may struggle with detecting small objects in high-resolution images, as the model might miss finer details",
+                    "automaticDescription": "It means that the system will automatically set the parameters based on the image resolution and annotations size."
+                }
             }
         },
         "list": {

@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Grid, minmax, View } from '@geti-ui/ui';
 
 import { ResetButton } from '../../components/reset-button.component';
@@ -26,6 +27,8 @@ export const SubsetsDistribution = ({
     onSubsetsDistributionChangeEnd,
     onSubsetsDistributionReset,
 }: SubsetsDistributionProps) => {
+    const { t } = useTranslation();
+
     const handleSubsetDistributionChange = (values: number[] | number): void => {
         if (Array.isArray(values)) {
             onSubsetsDistributionChange(values);
@@ -54,7 +57,7 @@ export const SubsetsDistribution = ({
                     value={[subsetsDistribution[0], subsetsDistribution[1]]}
                     onChange={handleSubsetDistributionChange}
                     onChangeEnd={handleSubsetDistributionChangeEnd}
-                    label={'Distribution for new samples'}
+                    label={t('models.training.dataManagement.trainingSubsets.distributionLabel')}
                 />
                 <ResetButton
                     gridArea={'reset'}

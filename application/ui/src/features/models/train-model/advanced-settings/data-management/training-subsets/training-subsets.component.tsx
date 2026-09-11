@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 
 import type { ConfigurableParameter, TrainingConfiguration } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Content, Flex, Heading, InlineAlert, View } from '@geti-ui/ui';
 import { useGetDatasetItems } from 'hooks/use-get-dataset-items.hook';
 import { isEqual } from 'lodash-es';
@@ -29,14 +30,15 @@ type TrainingSubsetsProps = {
 };
 
 const TrainingSubsetsUnavailable = () => {
+    const { t } = useTranslation();
+
     return (
         <InlineAlert variant={'notice'} marginTop={'size-200'}>
-            <Heading>Invalid training subsets configuration</Heading>
+            <Heading>{t('models.training.dataManagement.trainingSubsets.unavailableTitle')}</Heading>
             <Content>
-                Training subsets do not contain enough media items to support a configurable split between training,
-                validation, and testing subsets.
+                {t('models.training.dataManagement.trainingSubsets.unavailableDescription')}
                 <br />
-                Please add more media items to ensure each subset contains at least one item.
+                {t('models.training.dataManagement.trainingSubsets.unavailableHint')}
             </Content>
         </InlineAlert>
     );
@@ -114,6 +116,7 @@ export const TrainingSubsets = ({
     subsetsParameters,
     onTrainingConfigurationChange,
 }: TrainingSubsetsProps) => {
+    const { t } = useTranslation();
     const { trainingSubset, validationSubset } = getSubsets(subsetsParameters);
     const {
         validationSubsetSize,
@@ -183,23 +186,33 @@ export const TrainingSubsets = ({
     return (
         <Accordion>
             <Accordion.Title>
-                Training subsets
+                {t('models.training.dataManagement.trainingSubsets.title')}{' '}
                 <Accordion.Tag ariaLabel={'Training subsets tag'}>
                     {trainingSubsetRatio}/{validationSubsetRatio}/{testSubsetRatio}%
                 </Accordion.Tag>
             </Accordion.Title>
             <Accordion.Content>
                 <Accordion.Description>
-                    Specify the distribution of annotated samples that have NOT already been assigned to a subset. Note
-                    that samples used in previous training rounds already have a subset and this will remain unchanged,
-                    to avoid data contamination and evaluation bias.
+                    {t('models.training.dataManagement.trainingSubsets.description')}
                 </Accordion.Description>
                 <Accordion.Divider marginY={'size-200'} />
                 <View>
-                    <span aria-label={'Total dataset samples'}>Dataset: {totalDatasetItemsSize} samples</span>
+                    <span aria-label={'Total dataset samples'}>
+                        {t('models.training.dataManagement.trainingSubsets.datasetSamples', {
+                            count: totalDatasetItemsSize,
+                        })}
+                    </span>
                     <Flex alignItems={'center'} gap={'size-100'}>
-                        <span aria-label={'Total assigned samples'}>Assigned: {assignedDatasetItemsSize}</span>
-                        <span aria-label={'Total unassigned samples'}>Unassigned: {unassignedSubsetSize}</span>
+                        <span aria-label={'Total assigned samples'}>
+                            {t('models.training.dataManagement.trainingSubsets.assignedSamples', {
+                                count: assignedDatasetItemsSize,
+                            })}
+                        </span>
+                        <span aria-label={'Total unassigned samples'}>
+                            {t('models.training.dataManagement.trainingSubsets.unassignedSamples', {
+                                count: unassignedSubsetSize,
+                            })}
+                        </span>
                     </Flex>
                     <Accordion.Divider marginY={'size-200'} />
                     <SubsetsDistribution

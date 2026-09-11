@@ -1,9 +1,10 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Content, ContextualHelp, Text, ToggleButtons } from '@geti-ui/ui';
 
-import { TILING_MODES, TilingMode } from './utils';
+import { getTilingModeLabel, TILING_MODES, TilingMode } from './utils';
 
 import classes from './tiling.module.scss';
 
@@ -28,15 +29,19 @@ type TilingModesProps = {
 };
 
 export const TilingModes = ({ description, selectedTilingMode, onTilingModeChange }: TilingModesProps) => {
+    const { t } = useTranslation();
+
     return (
         <>
             <Text UNSAFE_className={classes.title}>
-                Tiling mode <TilingModeContextualHelp description={description} />
+                {t('models.training.dataManagement.tiling.modeLabel')}{' '}
+                <TilingModeContextualHelp description={description} />
             </Text>
             <ToggleButtons
                 options={[TILING_MODES.OFF, TILING_MODES.AUTOMATIC, TILING_MODES.CUSTOM]}
                 selectedOption={selectedTilingMode}
                 onOptionChange={onTilingModeChange}
+                getLabel={(option) => getTilingModeLabel(option, t)}
             />
         </>
     );
