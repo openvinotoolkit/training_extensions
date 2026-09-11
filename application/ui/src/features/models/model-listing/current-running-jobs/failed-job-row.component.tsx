@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { QuantizeJob, TrainJob } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Badge, Button } from '@geti-ui/ui';
 
 import { JobRow, type JobRowColumnsProps } from './job-row.component';
@@ -12,13 +13,17 @@ type FailedJobRowProps = JobRowColumnsProps & {
 };
 
 const FailedStatusBadge = () => {
-    return <Badge variant={'negative'}>Failed</Badge>;
+    const { t } = useTranslation();
+
+    return <Badge variant={'negative'}>{t('models.jobs.failed')}</Badge>;
 };
 
 const DismissFailedJob = ({ onDismiss }: { onDismiss: () => void }) => {
+    const { t } = useTranslation();
+
     return (
         <Button variant={'negative'} onPress={onDismiss} aria-label={'Dismiss failed job'}>
-            Dismiss
+            {t('models.jobs.dismiss')}
         </Button>
     );
 };

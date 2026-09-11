@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Content,
@@ -33,6 +34,7 @@ const ActiveJobLogs = ({ jobId }: { jobId: string }) => {
 };
 
 const HistoricalModelLogs = ({ modelId }: { modelId: string }) => {
+    const { t } = useTranslation();
     const { data: logs, isPending, isError, error } = useModelLogs(modelId);
 
     if (isPending) {
@@ -47,7 +49,9 @@ const HistoricalModelLogs = ({ modelId }: { modelId: string }) => {
         return (
             <Flex alignItems={'center'} justifyContent={'center'} height={'100%'}>
                 <Text UNSAFE_className={classes.errorText}>
-                    Failed to load logs: {error?.message ?? 'Unknown error'}
+                    {t('models.training.logs.loadError', {
+                        message: error?.message ?? t('models.training.logs.unknownError'),
+                    })}
                 </Text>
             </Flex>
         );
@@ -57,12 +61,13 @@ const HistoricalModelLogs = ({ modelId }: { modelId: string }) => {
 };
 
 export const TrainingLogsDialog = ({ jobId, modelId }: TrainingLogsDialogProps) => {
+    const { t } = useTranslation();
     const dialogContainer = useDialogContainer();
     const { downloadModelLogs, isDownloading } = useDownloadModelLogs(String(modelId));
 
     return (
         <Dialog aria-label={'Training logs'} UNSAFE_className={classes.dialog}>
-            <Heading>Training Logs</Heading>
+            <Heading>{t('models.training.logs.dialogTitle')}</Heading>
             <Header>
                 <Flex alignItems={'center'} gap={'size-100'} marginStart={'auto'}>
                     {modelId && (
@@ -91,7 +96,7 @@ export const TrainingLogsDialog = ({ jobId, modelId }: TrainingLogsDialogProps) 
                 {!jobId && modelId && <HistoricalModelLogs modelId={modelId} />}
                 {!jobId && !modelId && (
                     <Flex alignItems={'center'} justifyContent={'center'} height={'100%'}>
-                        <Text UNSAFE_className={classes.errorText}>No job or model specified</Text>
+                        <Text UNSAFE_className={classes.errorText}>{t('models.training.logs.noJobOrModel')}</Text>
                     </Flex>
                 )}
             </Content>

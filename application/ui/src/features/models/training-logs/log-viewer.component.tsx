@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Content,
@@ -34,14 +35,8 @@ type LogViewerProps = {
     connectionStatus?: ConnectionStatus;
 };
 
-const CONNECTION_STATUS_LABEL: Record<ConnectionStatus, string> = {
-    connecting: 'Connecting...',
-    connected: 'Live',
-    disconnected: 'Disconnected',
-    error: 'Connection error',
-};
-
 export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogViewerProps) => {
+    const { t } = useTranslation();
     const [minLevel, setMinLevel] = useState<LogLevel>('INFO');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -49,11 +44,18 @@ export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogVi
 
     const { anchorRef, isAtBottom, scrollToBottom } = useScrollAnchor();
 
+    const connectionStatusLabel: Record<ConnectionStatus, string> = {
+        connecting: t('models.training.logs.connectionStatus.connecting'),
+        connected: t('models.training.logs.connectionStatus.connected'),
+        disconnected: t('models.training.logs.connectionStatus.disconnected'),
+        error: t('models.training.logs.connectionStatus.error'),
+    };
+
     return (
         <Flex direction={'column'} height={'100%'} UNSAFE_style={{ overflow: 'hidden' }}>
             <Flex alignItems={'center'} gap={'size-200'} UNSAFE_className={classes.toolbar} flexShrink={0}>
                 <Picker
-                    label={'Level'}
+                    label={t('models.training.logs.levelLabel')}
                     labelPosition={'side'}
                     selectedKey={minLevel}
                     onSelectionChange={(key) => setMinLevel(key as LogLevel)}
@@ -62,12 +64,9 @@ export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogVi
                     isQuiet
                     contextualHelp={
                         <ContextualHelp variant={'info'}>
-                            <Heading>Minimum log level</Heading>
+                            <Heading>{t('models.training.logs.levelHelpTitle')}</Heading>
                             <Content>
-                                <Text>
-                                    Shows log entries at the selected level and above. For example, selecting WARNING
-                                    shows WARNING, ERROR, and CRITICAL entries, hiding DEBUG and INFO.
-                                </Text>
+                                <Text>{t('models.training.logs.levelHelpDescription')}</Text>
                             </Content>
                         </ContextualHelp>
                     }
@@ -80,7 +79,7 @@ export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogVi
                 <SearchField
                     value={searchQuery}
                     onChange={setSearchQuery}
-                    placeholder={'Search logs...'}
+                    placeholder={t('models.training.logs.searchPlaceholder')}
                     aria-label={'Search logs'}
                     width={'size-3000'}
                     isQuiet
@@ -92,13 +91,14 @@ export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogVi
                             <View
                                 UNSAFE_className={`${classes.statusDot} ${classes[`statusDot--${connectionStatus}`]}`}
                             />
-                            <Text UNSAFE_className={classes.statusText}>
-                                {CONNECTION_STATUS_LABEL[connectionStatus]}
-                            </Text>
+                            <Text UNSAFE_className={classes.statusText}>{connectionStatusLabel[connectionStatus]}</Text>
                         </Flex>
                     ) : null}
                     <Text UNSAFE_className={classes.logCount}>
-                        {filteredLogs.length} / {logs.length} entries
+                        {t('models.training.logs.entriesCount', {
+                            filtered: filteredLogs.length,
+                            total: logs.length,
+                        })}
                     </Text>
                 </Flex>
             </Flex>
@@ -110,7 +110,9 @@ export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogVi
                     ) : (
                         <Flex alignItems={'center'} justifyContent={'center'} height={'100%'}>
                             <Text UNSAFE_className={classes.emptyState}>
-                                {logs.length === 0 ? 'No log entries' : 'No matching log entries'}
+                                {logs.length === 0
+                                    ? t('models.training.logs.noEntries')
+                                    : t('models.training.logs.noMatchingEntries')}
                             </Text>
                         </Flex>
                     )}
@@ -124,7 +126,7 @@ export const LogViewer = ({ logs, isStreaming = false, connectionStatus }: LogVi
                         aria-label={'Scroll to bottom'}
                     >
                         <ChevronDownLight />
-                        <Text>Scroll to bottom</Text>
+                        <Text>{t('models.training.logs.scrollToBottom')}</Text>
                     </ActionButton>
                 ) : null}
             </div>

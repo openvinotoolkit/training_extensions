@@ -831,12 +831,54 @@
     },
     "models": {
         "jobs": {
-            "error": "Job failed. Please check the logs for details and try again."
+            "error": "Job failed. Please check the logs for details and try again.",
+            "heading": "Jobs",
+            "columns": {
+                "modelName": "Model Name",
+                "dataset": "Dataset",
+                "architecture": "Architecture"
+            },
+            "pending": "Pending...",
+            "running": "Running...",
+            "cancel": "Cancel",
+            "stopDialog": {
+                "title": "Stop job",
+                "confirmation": "Are you sure you want to stop this job?",
+                "close": "Close"
+            },
+            "failed": "Failed",
+            "dismiss": "Dismiss",
+            "logs": "Logs",
+            "startedAt": "Started: {{time}}",
+            "waitingToStart": "Waiting to start...",
+            "device": "Device: {{device}}"
         },
         "training": {
             "logs": {
                 "copySuccess": "Copied Successfully",
-                "copyError": "Copy failed"
+                "copyError": "Copy failed",
+                "copyPathTooltip": "Click to copy path",
+                "showTraceback": "Show traceback",
+                "levelLabel": "Level",
+                "levelHelpTitle": "Minimum log level",
+                "levelHelpDescription": "Shows log entries at the selected level and above. For example, selecting WARNING shows WARNING, ERROR, and CRITICAL entries, hiding DEBUG and INFO.",
+                "searchPlaceholder": "Search logs...",
+                "connectionStatus": {
+                    "connecting": "Connecting...",
+                    "connected": "Live",
+                    "disconnected": "Disconnected",
+                    "error": "Connection error"
+                },
+                "entriesCount": "{{filtered}} / {{total}} entries",
+                "noEntries": "No log entries",
+                "noMatchingEntries": "No matching log entries",
+                "scrollToBottom": "Scroll to bottom",
+                "dialogTitle": "Training Logs",
+                "loadError": "Failed to load logs: {{message}}",
+                "unknownError": "Unknown error",
+                "noJobOrModel": "No job or model specified",
+                "fetchError": "Failed to fetch model logs: {{status}} {{statusText}}",
+                "downloadStarted": "Training logs download started"
             }
         },
         "list": {

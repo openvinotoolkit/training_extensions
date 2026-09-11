@@ -69,7 +69,7 @@ const MessageWithPaths = ({ message }: { message: string }) => {
                 <span
                     key={index}
                     className={classes.path}
-                    title={'Click to copy path'}
+                    title={t('models.training.logs.copyPathTooltip')}
                     onClick={() => copyPath(part)}
                     onKeyDown={(event) => {
                         if (event.repeat) {
@@ -94,6 +94,7 @@ const MessageWithPaths = ({ message }: { message: string }) => {
 };
 
 export const LogEntry = ({ entry }: LogEntryProps) => {
+    const { t } = useTranslation();
     const { record } = entry;
     const levelColor = LOG_LEVEL_COLORS[record.level.name] ?? LOG_LEVEL_COLORS.INFO;
     const timestamp = formatTimestamp(record.time.timestamp);
@@ -114,7 +115,7 @@ export const LogEntry = ({ entry }: LogEntryProps) => {
             </div>
             {traceback ? (
                 <details className={classes.traceback}>
-                    <summary className={classes.tracebackSummary}>Show traceback</summary>
+                    <summary className={classes.tracebackSummary}>{t('models.training.logs.showTraceback')}</summary>
                     <div className={classes.tracebackBody}>
                         <MessageWithPaths message={traceback} />
                     </div>
