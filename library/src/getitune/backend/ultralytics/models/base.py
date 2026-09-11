@@ -69,10 +69,6 @@ class UltralyticsModel:
             msg = "model_name must be provided."
             raise ValueError(msg)
 
-        if self.model_name.endswith(".pt") and not self.pretrained:
-            msg = f"pretrained=False requires a model config (.yaml), not a checkpoint name: {self.model_name}"
-            raise ValueError(msg)
-
         # Resolve image size: explicit arg > default from preprocessing params.
         if imgsz is not None:
             self.imgsz = imgsz
@@ -143,7 +139,16 @@ class UltralyticsModel:
         return self._yolo
 
     def _build_yolo(self) -> YOLO:
-        """Create the ``ultralytics.YOLO`` model and optionally load pretrained weights."""
+        """Create the ``Ultralytics`` model and optionally load pretrained weights."""
+        if self.model_name.endswith(".pt"):
+            # A checkpoint already carries its weights, so the ``pretrained``
+            # flag (which only governs the config + weight-download path
+            # below) has no effect here.
+            if not self.pretrained:
+                logger.warning(f"pretrained=False is ignored when model_name is a checkpoint: {self.model_name}")
+            logger.info(f"Building Ultralytics model from checkpoint: {self.model_name} (task={self.task})")
+            return YOLO(self.model_name, task=self.task or None)
+
         config = self.model_name if self.model_name.endswith(".yaml") else f"{self.model_name}.yaml"
         logger.info(f"Building Ultralytics model: {config} (task={self.task})")
         yolo = YOLO(config, task=self.task or None)

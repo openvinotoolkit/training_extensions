@@ -116,7 +116,7 @@ class SemanticSegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ul
         if not self._use_getitune_data:
             return super().get_validator()  # type: ignore[return-value]
 
-        self.loss_names = ["ce_loss", "dice_loss", "aux_loss"]
+        self.loss_names = ["ce_loss", "dice_loss", "aux_loss"]  # pyrefly: ignore[bad-assignment]
         validator = SemanticSegmentationValidator(
             self.test_loader,
             save_dir=self.save_dir,

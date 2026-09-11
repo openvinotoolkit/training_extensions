@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable
 from unittest.mock import MagicMock, patch
@@ -14,6 +16,7 @@ import torch
 
 from getitune.backend.ultralytics.trainers.detection import DetectionTrainer
 from getitune.backend.ultralytics.trainers.instance_segmentation import SegmentationTrainer
+from getitune.backend.ultralytics.trainers.yolo_detr import YoloDetrTrainer
 
 
 def test_detection_trainer_fallback_uses_upstream_preprocess() -> None:
@@ -78,6 +81,49 @@ def test_segmentation_trainer_datamodule_path_skips_divide_by_255() -> None:
     result = trainer.preprocess_batch(batch)
 
     assert torch.allclose(result["img"], imgs)
+
+
+def test_yolo_detr_trainer_datamodule_path_skips_native_epoch_callback() -> None:
+    trainer = object.__new__(YoloDetrTrainer)
+    trainer._use_getitune_data = True
+    trainer.args = SimpleNamespace(close_mosaic=10)
+
+    with patch("getitune.backend.ultralytics.trainers.yolo_detr._RTDETRTrainer.train", return_value="trained") as train:
+        result = trainer.train()
+
+    train.assert_called_once_with(trainer)
+    assert result == "trained"
+    assert trainer.args.close_mosaic == 0
+
+
+def test_yolo_detr_trainer_datamodule_path_skips_divide_by_255() -> None:
+    trainer = object.__new__(YoloDetrTrainer)
+    trainer._datamodule = MagicMock()
+    trainer._use_getitune_data = True
+    trainer.device = torch.device("cpu")
+
+    imgs = torch.rand(2, 3, 8, 8, dtype=torch.float32)
+    result = trainer.preprocess_batch({"img": imgs.clone()})
+
+    assert torch.allclose(result["img"], imgs)
+
+
+def test_yolo_detr_trainer_uses_dfine_loss_names() -> None:
+    trainer = object.__new__(YoloDetrTrainer)
+    trainer._use_getitune_data = True
+    trainer.model = SimpleNamespace(model=[type("DeimDecoder", (), {})()])
+    trainer.test_loader = MagicMock()
+    trainer.save_dir = Path("save")
+    trainer.args = SimpleNamespace()
+    trainer.callbacks = defaultdict(list)
+    trainer._datamodule = MagicMock()
+
+    with patch("getitune.backend.ultralytics.trainers.yolo_detr.YoloDetrValidator") as validator_cls:
+        validator = trainer.get_validator()
+
+    assert validator is validator_cls.return_value
+    assert trainer.loss_names == ("giou_loss", "cls_loss", "l1_loss", "fgl_loss", "ddf_loss")
+    assert validator.datamodule is trainer._datamodule
 
 
 def test_move_batch_to_device_uses_non_blocking_for_xpu() -> None:

@@ -94,7 +94,13 @@ class SegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ultralytic
         if not self._use_getitune_data:
             return super().get_validator()
 
-        self.loss_names = ["box_loss", "seg_loss", "cls_loss", "dfl_loss", "sem_loss"]
+        self.loss_names = [  # pyrefly: ignore[bad-assignment]
+            "box_loss",
+            "seg_loss",
+            "cls_loss",
+            "dfl_loss",
+            "sem_loss",
+        ]
         validator = SegmentationValidator(
             self.test_loader,
             save_dir=self.save_dir,

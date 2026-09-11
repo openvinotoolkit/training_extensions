@@ -84,7 +84,6 @@ class ClassificationTrainer(  # pyrefly: ignore[inconsistent-inheritance]
         if not self._use_getitune_data:
             return super().get_validator()  # type: ignore[return-value]
 
-        self.loss_names = ["loss"]
         validator = ClassificationValidator(
             self.test_loader,
             save_dir=self.save_dir,
@@ -143,11 +142,14 @@ class MultiLabelClassificationTrainer(  # pyrefly: ignore[inconsistent-inheritan
         return self._move_batch_to_device(batch)
 
     def get_validator(self) -> MultiLabelClassificationValidator:
-        """Return a custom validator that computes multi-label metrics."""
+        """Return a custom validator that computes multi-label metrics.
+
+        Loss names need not be assigned here: the criterion returns
+        ``{"loss": ...}`` and upstream derives the names from that dict.
+        """
         if not self._use_getitune_data:
             return super().get_validator()  # type: ignore[return-value]
 
-        self.loss_names = ["loss"]
         validator = MultiLabelClassificationValidator(
             self.test_loader,
             save_dir=self.save_dir,
