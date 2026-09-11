@@ -3,6 +3,7 @@
 
 import { ReactNode, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Flex, StatusLight, View } from '@geti-ui/ui';
 
 import { type AnnotatorMode } from '../../../../../shared/annotator/annotator-mode';
@@ -54,6 +55,7 @@ type AnnotatorModesProps = {
 };
 
 export const AnnotatorModes = ({ mode, onModeChange, hasAnnotations, hasPredictions }: AnnotatorModesProps) => {
+    const { t } = useTranslation();
     const [dismissedCues, setDismissedCues] = useState<Set<Extract<AnnotatorMode, 'prediction'>>>(new Set());
 
     const shouldDisplayPredictionCue =
@@ -95,7 +97,7 @@ export const AnnotatorModes = ({ mode, onModeChange, hasAnnotations, hasPredicti
                 data-testid={'annotator-modes-id'}
             >
                 <ToggleButton isActive={mode === 'annotation'} onClick={() => handleModeChange('annotation')}>
-                    Annotation
+                    {t('annotator.modes.annotation')}
                 </ToggleButton>
                 <ToggleButtonWithCue
                     isActive={mode === 'prediction'}
@@ -103,7 +105,7 @@ export const AnnotatorModes = ({ mode, onModeChange, hasAnnotations, hasPredicti
                     showCue={shouldDisplayPredictionCue}
                     cueLabel={'Prediction available'}
                 >
-                    Prediction
+                    {t('annotator.modes.prediction')}
                 </ToggleButtonWithCue>
             </Flex>
         </View>

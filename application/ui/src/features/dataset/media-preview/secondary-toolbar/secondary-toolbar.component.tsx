@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetSubset, Media } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Button,
@@ -58,11 +59,13 @@ const ImageAnnotationButtons = ({
     isDisabled,
     isSaving,
 }: ImageAnnotationButtonsProps) => {
+    const { t } = useTranslation();
+
     return (
         <>
             <DeleteMediaItem itemsIds={[mediaId]} onDeleted={onDeleteItem} />
             <Button variant='accent' onPress={onSubmit} isPending={isSaving} isDisabled={isDisabled}>
-                Submit
+                {t('annotator.actions.submit')}
             </Button>
         </>
     );
@@ -75,14 +78,18 @@ type VideoAnnotationButtonsProps = {
 };
 
 const VideoAnnotationButtons = ({ onSubmit, isDisabled, isSaving }: VideoAnnotationButtonsProps) => {
+    const { t } = useTranslation();
+
     return (
         <Button variant='accent' onPress={onSubmit} isPending={isSaving} isDisabled={isDisabled}>
-            Submit
+            {t('annotator.actions.submit')}
         </Button>
     );
 };
 
 const PredictionActions = ({ isDisabled }: { isDisabled: boolean }) => {
+    const { t } = useTranslation();
+
     return (
         <DialogTrigger type={'popover'} placement={'bottom'}>
             <TooltipTrigger>
@@ -91,10 +98,10 @@ const PredictionActions = ({ isDisabled }: { isDisabled: boolean }) => {
                         <Gear />
                     </ActionButton>
                 </Toolbar.Section>
-                <Tooltip>Prediction settings</Tooltip>
+                <Tooltip>{t('annotator.predictions.settingsTitle')}</Tooltip>
             </TooltipTrigger>
             <Dialog size='S'>
-                <Heading>Prediction settings</Heading>
+                <Heading>{t('annotator.predictions.settingsTitle')}</Heading>
                 <Divider />
                 <Content>
                     <Flex gap={'size-300'} direction={'column'}>
@@ -133,6 +140,7 @@ export const SecondaryToolbar = ({
     hasSubsetChanged = false,
     isLoadingPredictions = false,
 }: SecondaryToolbarProps) => {
+    const { t } = useTranslation();
     const { data: selectedProject } = useProject();
     const videoPlayerContext = useVideoPlayerContext();
     const { selectableModels } = usePredictionSetup();
@@ -244,7 +252,7 @@ export const SecondaryToolbar = ({
                             <Icon height={'size-150'} width={'size-150'}>
                                 <CloseSemiBold />
                             </Icon>
-                            <Text>Close</Text>
+                            <Text>{t('annotator.actions.close')}</Text>
                         </ActionButton>
                     </ButtonGroup>
                 </Toolbar.Section>
