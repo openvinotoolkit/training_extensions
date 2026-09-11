@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { MediaVideoFrame } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Image, View } from '@geti-ui/ui';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
@@ -21,6 +22,7 @@ export const ThumbnailPreview = ({ videoFrame, frameNumber, width, height, x }: 
     // TODO: Use it when video frame navigation is ready and API supports it.
     // const constructVideoFrame = useConstructVideoFrame(mediaItem);
     // const videoFrame = constructVideoFrame(frameNumber) as VideoFrame;
+    const { t } = useTranslation();
     const projectIdentifier = useProjectIdentifier();
 
     const fps = videoFrame.fps;
@@ -41,7 +43,7 @@ export const ThumbnailPreview = ({ videoFrame, frameNumber, width, height, x }: 
                 <FrameNumberIndicator frameNumber={frameNumber} />
                 <Image
                     src={src}
-                    alt={`Thumbnail for frame ${frameNumber}`}
+                    alt={t('annotator.video.frames.thumbnailAlt', { frameNumber })}
                     objectFit='cover'
                     height={height}
                     width={width}
