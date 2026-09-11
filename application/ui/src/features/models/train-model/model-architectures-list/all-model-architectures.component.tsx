@@ -4,11 +4,12 @@
 import { useState } from 'react';
 
 import type { ModelArchitecture as ModelArchitectureType } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex } from '@geti-ui/ui';
 import { partition } from 'lodash-es';
 
 import { SortModelArchitectures } from '../sort-model-architectures/sort-model-architectures.component';
-import { SORT_OPTIONS, SORTING_HANDLERS, SortingOptions } from '../sort-model-architectures/utils';
+import { getSortOptions, SORTING_HANDLERS, SortingOptions } from '../sort-model-architectures/utils';
 import { TIMM_MODEL_ARCHITECTURE_ID } from '../timm-model-configuration/utils';
 import { DetailedModelArchitecture } from './model-architecture.component';
 import { ModelArchitecturesListLayout } from './model-architectures-list-layout/model-architectures-list-layout.component';
@@ -24,6 +25,7 @@ export const AllModelArchitectures = ({
     onSelectedModelArchitectureIdChange,
     selectedModelArchitectureId,
 }: AllModelArchitecturesProps) => {
+    const { t } = useTranslation();
     const [sortBy, setSortBy] = useState<SortingOptions>(SortingOptions.NAME_ASC);
     const [[timmCard], sortableModelArchitectures] = partition(
         modelArchitectures,
@@ -36,7 +38,7 @@ export const AllModelArchitectures = ({
 
     return (
         <Flex direction={'column'} gap={'size-200'}>
-            <SortModelArchitectures sortBy={sortBy} onSort={setSortBy} items={SORT_OPTIONS} />
+            <SortModelArchitectures sortBy={sortBy} onSort={setSortBy} items={getSortOptions(t)} />
             <ModelArchitecturesListLayout
                 selectedModelArchitectureId={selectedModelArchitectureId}
                 onSelectedModelArchitectureIdChange={onSelectedModelArchitectureIdChange}

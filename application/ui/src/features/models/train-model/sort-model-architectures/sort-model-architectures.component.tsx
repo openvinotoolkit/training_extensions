@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Item, Picker, Section, Text } from '@geti-ui/ui';
 
 import { SortingOptions } from './utils';
@@ -31,6 +32,8 @@ const SortModelArchitectureItem = ({ item }: SortItemProps) => {
 };
 
 export const SortModelArchitectures = ({ sortBy, onSort, items, ariaLabel }: SortWidgetProps) => {
+    const { t } = useTranslation();
+
     return (
         <Picker
             isQuiet
@@ -41,7 +44,7 @@ export const SortModelArchitectures = ({ sortBy, onSort, items, ariaLabel }: Sor
             UNSAFE_className={styles.sortModelArchitectures}
             labelAlign={'start'}
             labelPosition={'side'}
-            label={'Sort Models by:'}
+            label={t('models.training.architectures.sort.label')}
             menuWidth={'size-3000'}
         >
             {(item) => {

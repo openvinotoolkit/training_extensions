@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ModelArchitectureWithPerformanceCategory } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 import { orderBy } from 'lodash-es';
 
 export const SortingOptions = {
@@ -42,35 +43,35 @@ export const SORTING_HANDLERS: Record<SortingOptions, SortingHandler> = {
         orderBy(modelArchitectures, (modelArchitecture) => modelArchitecture.stats?.gigaflops, 'desc'),
 };
 
-export const SORT_OPTIONS = [
+export const getSortOptions = (t: TranslateFn) => [
     [
         {
             key: SortingOptions.NAME_ASC,
-            name: 'Name (A to Z)',
+            name: t('models.training.architectures.sort.nameAsc'),
         },
         {
             key: SortingOptions.NAME_DESC,
-            name: 'Name (Z to A)',
+            name: t('models.training.architectures.sort.nameDesc'),
         },
     ],
     [
         {
             key: SortingOptions.SPEED_ASC,
-            name: 'Speed (fastest first)',
+            name: t('models.training.architectures.sort.speedAsc'),
         },
         {
             key: SortingOptions.SPEED_DESC,
-            name: 'Speed (slowest first)',
+            name: t('models.training.architectures.sort.speedDesc'),
         },
     ],
     [
         {
             key: SortingOptions.ACCURACY_ASC,
-            name: 'Accuracy (lowest first)',
+            name: t('models.training.architectures.sort.accuracyAsc'),
         },
         {
             key: SortingOptions.ACCURACY_DESC,
-            name: 'Accuracy (highest first)',
+            name: t('models.training.architectures.sort.accuracyDesc'),
         },
     ],
 ];

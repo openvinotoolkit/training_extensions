@@ -4,6 +4,7 @@
 import { createContext, ReactNode, useContext } from 'react';
 
 import type { ModelArchitecture as ModelArchitectureType, ModelArchitectureWithPerformanceCategory } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Content, ContextualHelp, Divider, Flex, Heading, Radio, Text } from '@geti-ui/ui';
 import { clsx } from 'clsx';
 
@@ -33,6 +34,7 @@ const ModelArchitectureDivider = () => {
 
 const License = () => {
     const { modelArchitecture } = useModelArchitecture();
+    const { t } = useTranslation();
 
     return (
         <li>
@@ -41,7 +43,7 @@ const License = () => {
             ) : isEdgeCrafterModel(modelArchitecture.id) ? (
                 <EdgeCrafterLicense />
             ) : (
-                `License: ${modelArchitecture.license}`
+                t('models.training.architectures.card.license', { license: modelArchitecture.license })
             )}
         </li>
     );
@@ -49,11 +51,16 @@ const License = () => {
 
 const ModelArchitectureParameters = () => {
     const { modelArchitecture } = useModelArchitecture();
+    const { t } = useTranslation();
 
     return (
         <ul className={classes.modelArchitectureParameters}>
             {modelArchitecture.stats !== null && (
-                <li>Number of parameters: {modelArchitecture.stats.trainable_parameters} million</li>
+                <li>
+                    {t('models.training.architectures.card.numberOfParameters', {
+                        count: modelArchitecture.stats.trainable_parameters,
+                    })}
+                </li>
             )}
             <License />
         </ul>
@@ -62,14 +69,23 @@ const ModelArchitectureParameters = () => {
 
 const ModelArchitectureDetailedParameters = () => {
     const { modelArchitecture } = useModelArchitecture();
-    const accuracyMetric = getAccuracyMetric(modelArchitecture);
+    const { t } = useTranslation();
+    const accuracyMetric = getAccuracyMetric(modelArchitecture, t);
 
     return (
         <ul className={classes.modelArchitectureParameters}>
             {modelArchitecture.stats !== null && (
                 <>
-                    <li>Number of parameters: {modelArchitecture.stats.trainable_parameters} million</li>
-                    <li>Gigaflops: {modelArchitecture.stats.gigaflops}</li>
+                    <li>
+                        {t('models.training.architectures.card.numberOfParameters', {
+                            count: modelArchitecture.stats.trainable_parameters,
+                        })}
+                    </li>
+                    <li>
+                        {t('models.training.architectures.card.gigaflops', {
+                            value: modelArchitecture.stats.gigaflops,
+                        })}
+                    </li>
                 </>
             )}
             {accuracyMetric !== undefined && (
