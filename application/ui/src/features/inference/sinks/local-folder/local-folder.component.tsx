@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { LocalFolderSinkConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, TextField } from '@geti-ui/ui';
 
 import { OutputFormats } from '../output-formats/output-formats.component';
@@ -12,12 +13,18 @@ type LocalFolderProps = {
 };
 
 export const LocalFolder = ({ defaultState }: LocalFolderProps) => {
+    const { t } = useTranslation();
+
     return (
         <Flex direction='column' gap='size-200'>
             <TextField isHidden label='id' name='id' defaultValue={defaultState.id} />
 
             <Flex gap='size-200'>
-                <TextField label='Name' name='name' defaultValue={defaultState.name || 'Local folder sink'} />
+                <TextField
+                    label={t('inference.sinks.fields.name')}
+                    name='name'
+                    defaultValue={defaultState.name || t('inference.sinks.defaultNames.localFolder')}
+                />
             </Flex>
 
             <Flex>
@@ -28,7 +35,7 @@ export const LocalFolder = ({ defaultState }: LocalFolderProps) => {
                 <TextField
                     isRequired
                     width={'100%'}
-                    label='Folder Path'
+                    label={t('inference.sinks.fields.folderPath')}
                     name='folder_path'
                     defaultValue={defaultState.folder_path}
                 />

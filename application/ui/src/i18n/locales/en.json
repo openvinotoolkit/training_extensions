@@ -390,6 +390,103 @@
                 "ipCamera": "IP camera source",
                 "videoFile": "Video file source"
             }
+        },
+        "sinks": {
+            "list": {
+                "addSink": "Add new sink"
+            },
+            "types": {
+                "folder": "folder",
+                "mqtt": "mqtt",
+                "webhook": "webhook",
+                "ros": "ros",
+                "disconnected": "disconnected"
+            },
+            "options": {
+                "folder": "Folder",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "Add new sink",
+                "submit": "Add & Use"
+            },
+            "edit": {
+                "title": "Edit sink",
+                "save": "Save",
+                "saveAndConnect": "Save & Connect"
+            },
+            "form": {
+                "createSuccess": "Sink configuration created successfully.",
+                "updateSuccess": "Sink configuration updated successfully.",
+                "saveError": "Failed to save sink configuration, {{details}}",
+                "saveErrorFallback": "please try again"
+            },
+            "menu": {
+                "connect": "Connect",
+                "disconnect": "Disconnect",
+                "testConnection": "Test connection",
+                "edit": "Edit",
+                "remove": "Remove",
+                "connectSuccess": "Successfully connected to \"{{name}}\"",
+                "disconnectSuccess": "Successfully disconnected from \"{{name}}\"",
+                "removeSuccess": "{{name}} has been removed successfully!"
+            },
+            "settings": {
+                "folderPath": "Folder path: {{path}}",
+                "rateLimit": "Rate limit: {{value}}",
+                "httpMethod": "HTTP method: {{value}}",
+                "timeout": "Timeout: {{value}}",
+                "webhookUrl": "Webhook URL: {{value}}",
+                "topic": "Topic: {{value}}",
+                "authRequired": "Auth required: {{value}}",
+                "brokerHost": "Broker host: {{value}}",
+                "brokerPort": "Broker port: {{value}}",
+                "outputFormats": "Output formats: ",
+                "yes": "Yes",
+                "no": "No",
+                "outputFormatTypes": {
+                    "imageOriginal": "image original",
+                    "imageWithPredictions": "image with predictions",
+                    "predictions": "predictions"
+                }
+            },
+            "rateLimit": {
+                "notSet": "Not set",
+                "samplesPerSecond_one": "{{count}} sample every 1 second",
+                "samplesPerSecond_other": "{{count}} samples every 1 second",
+                "oneSamplePerSeconds_one": "1 sample every {{count}} second",
+                "oneSamplePerSeconds_other": "1 sample every {{count}} seconds"
+            },
+            "fields": {
+                "samples": "Samples",
+                "seconds": "Seconds",
+                "every": "every",
+                "outputFormatsLabel": "Output Formats",
+                "outputFormatPredictions": "Predictions",
+                "outputFormatImageOriginal": "Image Original",
+                "outputFormatImageWithPredictions": "Image with Predictions",
+                "name": "Name",
+                "folderPath": "Folder Path",
+                "httpMethod": "HTTP Method",
+                "timeout": "Timeout",
+                "webhookUrl": "Webhook URL",
+                "headers": "Headers",
+                "topic": "Topic",
+                "brokerHost": "Broker Host",
+                "brokerPort": "Broker Port",
+                "authRequired": "Auth Required"
+            },
+            "webhook": {
+                "headersHelp": "Add as many key-value pairs as needed. Each pair will be included in the '{{title}}' object.",
+                "keyPlaceholder": "key",
+                "valuePlaceholder": "value"
+            },
+            "defaultNames": {
+                "localFolder": "Local folder sink",
+                "webhook": "Webhook sink",
+                "mqtt": "MQTT sink"
+            }
         }
     },
     "project": {

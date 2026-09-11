@@ -52,10 +52,7 @@ export const HeaderKeyValueBuilder = ({ title, keysName, valuesName, config = {}
 
                     <ContextualHelp variant='info'>
                         <Content>
-                            <Text>
-                                Add as many key-value pairs as needed. Each pair will be included in the &apos;{title}
-                                &apos; object.
-                            </Text>
+                            <Text>{t('inference.sinks.webhook.headersHelp', { title })}</Text>
                         </Content>
                     </ContextualHelp>
                 </Flex>
@@ -73,7 +70,7 @@ export const HeaderKeyValueBuilder = ({ title, keysName, valuesName, config = {}
                             name={keysName}
                             value={pair.key}
                             aria-label={keysName}
-                            placeholder='key'
+                            placeholder={t('inference.sinks.webhook.keyPlaceholder')}
                             errorMessage={t('inference.validation.keyEmpty')}
                             onChange={(val) => updatePair(index, Fields.KEY, val)}
                         />
@@ -83,7 +80,7 @@ export const HeaderKeyValueBuilder = ({ title, keysName, valuesName, config = {}
                             name={valuesName}
                             value={pair.value}
                             aria-label={valuesName}
-                            placeholder='value'
+                            placeholder={t('inference.sinks.webhook.valuePlaceholder')}
                             errorMessage={t('inference.validation.valueEmpty')}
                             isDisabled={isEmpty(pair.key)}
                             onChange={(val) => updatePair(index, Fields.VALUE, val)}
