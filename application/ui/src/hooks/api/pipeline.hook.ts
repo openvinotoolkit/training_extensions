@@ -34,6 +34,9 @@ export const useProjectPipeline = (projectId: string) => {
 };
 
 const POLLING_INTERVAL = 5000;
+// Aggregate over the polling interval so that consecutive samples do not overlap
+const METRICS_TIME_WINDOW_SECONDS = POLLING_INTERVAL / 1000;
+
 export const usePipelineMetrics = () => {
     const projectId = useProjectIdentifier();
 
@@ -41,7 +44,10 @@ export const usePipelineMetrics = () => {
         'get',
         '/api/projects/{project_id}/pipeline/metrics',
         {
-            params: { path: { project_id: projectId } },
+            params: {
+                path: { project_id: projectId },
+                query: { time_window: METRICS_TIME_WINDOW_SECONDS },
+            },
         },
         {
             refetchInterval: (query) => (query.state.status === 'success' ? POLLING_INTERVAL : false),
