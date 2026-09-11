@@ -18,6 +18,7 @@ VALID_FORMATS_PER_TASK = {
 
 class ExportDatasetJobParams(JobParams):
     dataset_id: UUID | None = None
+    dataset_view_id: UUID | None = None
     project_id: UUID
     task: Task
     export_format: DatasetFormat
@@ -37,6 +38,13 @@ class ExportDatasetJobParams(JobParams):
                 f"Export format '{self.export_format}' is not supported for {self.task.task_type} task. "
                 f"Allowed formats are: {allowed}"
             )
+        return self
+
+    @model_validator(mode="after")
+    def validate_dataset_id_and_view_mutually_exclusive(self) -> "ExportDatasetJobParams":
+        """Validate that dataset_id and dataset_view_id are not both set."""
+        if self.dataset_id is not None and self.dataset_view_id is not None:
+            raise ValueError("dataset_id and dataset_view_id are mutually exclusive")
         return self
 
 

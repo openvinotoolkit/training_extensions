@@ -9,8 +9,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
-from app.api.dependencies import get_project_service
-from app.services import ProjectService
+from app.api.dependencies import get_dataset_view_service, get_project_service
+from app.services import DatasetViewService, ProjectService
 
 
 @pytest.fixture
@@ -23,6 +23,13 @@ def fxt_project_service(fxt_app: FastAPI) -> Mock:
     project_service = Mock(spec=ProjectService)
     fxt_app.dependency_overrides[get_project_service] = lambda: project_service
     return project_service
+
+
+@pytest.fixture
+def fxt_dataset_view_service(fxt_app: FastAPI) -> Mock:
+    dataset_view_service = Mock(spec=DatasetViewService)
+    fxt_app.dependency_overrides[get_dataset_view_service] = lambda: dataset_view_service
+    return dataset_view_service
 
 
 @pytest_asyncio.fixture
