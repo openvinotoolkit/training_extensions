@@ -4,6 +4,7 @@
 import { Fragment } from 'react';
 
 import type { PipelineComponentsHealth } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Content,
@@ -22,17 +23,19 @@ import { getComponentStatusMeta, getOverallStatusMeta, shouldShowPipelineHealthD
 
 const COMPONENT_ORDER = ['source', 'sink', 'model'] as const;
 
-const COMPONENT_LABELS: Record<(typeof COMPONENT_ORDER)[number], string> = {
-    source: 'Source',
-    sink: 'Sink',
-    model: 'Model',
-};
-
 type PipelineComponentsDetailsInfoProps = {
     components: PipelineComponentsHealth;
 };
 
 const PipelineComponentsDetailsInfo = ({ components }: PipelineComponentsDetailsInfoProps) => {
+    const { t } = useTranslation();
+
+    const componentLabels: Record<(typeof COMPONENT_ORDER)[number], string> = {
+        source: t('inference.health.componentLabels.source'),
+        sink: t('inference.health.componentLabels.sink'),
+        model: t('inference.health.componentLabels.model'),
+    };
+
     return (
         <DialogTrigger type={'popover'} placement={'top'}>
             <ActionButton isQuiet aria-label={'Pipeline component health'}>
@@ -42,11 +45,11 @@ const PipelineComponentsDetailsInfo = ({ components }: PipelineComponentsDetails
                 <Content>
                     <Grid gap={'size-50'} columns={['max-content', 'max-content', 'auto']} alignContent={'start'}>
                         {COMPONENT_ORDER.map((key) => {
-                            const { label, variant, message } = getComponentStatusMeta(components[key]);
+                            const { label, variant, message } = getComponentStatusMeta(components[key], t);
 
                             return (
                                 <Fragment key={key}>
-                                    <Text>{COMPONENT_LABELS[key]}</Text>
+                                    <Text>{componentLabels[key]}</Text>
                                     <StatusLight
                                         variant={variant}
                                         UNSAFE_style={{ padding: 0, paddingRight: dimensionValue('size-50') }}
@@ -65,13 +68,14 @@ const PipelineComponentsDetailsInfo = ({ components }: PipelineComponentsDetails
 };
 
 export const PipelineHealth = () => {
+    const { t } = useTranslation();
     const { data, isPending, isError } = usePipelineHealth();
 
     if (isPending || isError) {
         return null;
     }
 
-    const { label, variant } = getOverallStatusMeta(data.status);
+    const { label, variant } = getOverallStatusMeta(data.status, t);
     const components = data.components;
     const showPipelineHealthDetails = components != null && shouldShowPipelineHealthDetails(components);
 

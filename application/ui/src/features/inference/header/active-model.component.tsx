@@ -3,6 +3,7 @@
 
 import { useMemo } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Item, Key, Picker } from '@geti-ui/ui';
 import { usePatchPipeline } from 'hooks/api/pipeline.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -13,6 +14,7 @@ import { useGetSuccessfulModels } from '../../models/hooks/api/use-get-models.ho
 import { getAllModelsWithOpenVINOVariants, getModelIdentifierPayload } from '../../models/utils';
 
 export const ActiveModel = () => {
+    const { t } = useTranslation();
     const { data: models } = useGetSuccessfulModels();
     const activeModel = useGetActiveModel();
     const projectId = useProjectIdentifier();
@@ -47,7 +49,7 @@ export const ActiveModel = () => {
         <>
             <Picker
                 aria-label={'active model'}
-                label={'Model'}
+                label={t('inference.pipeline.activeModel.label')}
                 labelPosition={'side'}
                 items={allModelsWithOpenVinoQuantizedModels}
                 onSelectionChange={handleChange}

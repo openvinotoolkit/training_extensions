@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PipelineStatus } from '@/api/types';
+import { createI18nInstance } from '@/i18n';
 
 import { getComponentStatusMeta, getOverallStatusMeta, shouldShowPipelineHealthDetails } from './utils';
+
+const { t } = createI18nInstance({ lng: 'en' });
 
 const getStatus = (custom?: Partial<PipelineStatus>): PipelineStatus => ({
     status: 'ok',
@@ -18,11 +21,11 @@ describe('getOverallStatusMeta', () => {
         ['idle', 'Idle', 'neutral'],
         ['error', 'Problems detected', 'negative'],
     ])('maps known status "%s" to label "%s" and variant "%s"', (status, label, variant) => {
-        expect(getOverallStatusMeta(status)).toEqual({ label, variant });
+        expect(getOverallStatusMeta(status, t)).toEqual({ label, variant });
     });
 
     it('falls back to a capitalized label and neutral variant for an unknown status', () => {
-        expect(getOverallStatusMeta('mystery_state')).toEqual({ label: 'Mystery_state', variant: 'neutral' });
+        expect(getOverallStatusMeta('mystery_state', t)).toEqual({ label: 'Mystery_state', variant: 'neutral' });
     });
 });
 
@@ -33,11 +36,15 @@ describe('getComponentStatusMeta', () => {
         ['unavailable', 'Unavailable', 'neutral'],
         ['error', 'Error', 'negative'],
     ])('maps known status "%s" (no message) to label "%s" and variant "%s"', (status, label, variant) => {
-        expect(getComponentStatusMeta(getStatus({ status, message: null }))).toEqual({ label, variant, message: null });
+        expect(getComponentStatusMeta(getStatus({ status, message: null }), t)).toEqual({
+            label,
+            variant,
+            message: null,
+        });
     });
 
     it('falls back to a capitalized label and neutral variant for an unknown status', () => {
-        expect(getComponentStatusMeta(getStatus({ status: 'mystery_state', message: null }))).toEqual({
+        expect(getComponentStatusMeta(getStatus({ status: 'mystery_state', message: null }), t)).toEqual({
             label: 'Mystery_state',
             variant: 'neutral',
             message: null,
@@ -47,7 +54,7 @@ describe('getComponentStatusMeta', () => {
     it('prefers the raw message over the friendly status label when a message is present', () => {
         const component = getStatus({ status: 'error', message: 'Connection refused' });
 
-        expect(getComponentStatusMeta(component)).toEqual({
+        expect(getComponentStatusMeta(component, t)).toEqual({
             label: 'Error',
             variant: 'negative',
             message: 'Connection refused',
@@ -57,7 +64,7 @@ describe('getComponentStatusMeta', () => {
     it('falls back to the friendly "Error" label when status is error but message is null', () => {
         const component = getStatus({ status: 'error', message: null });
 
-        expect(getComponentStatusMeta(component)).toEqual({ label: 'Error', variant: 'negative', message: null });
+        expect(getComponentStatusMeta(component, t)).toEqual({ label: 'Error', variant: 'negative', message: null });
     });
 });
 

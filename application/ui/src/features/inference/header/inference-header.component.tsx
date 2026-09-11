@@ -3,12 +3,15 @@
 
 import { Suspense } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Flex, View } from '@geti-ui/ui';
 
 import { ActiveModel } from './active-model.component';
 import { TogglePipelineButton } from './toggle-pipeline-button.component';
 
 export const Header = () => {
+    const { t } = useTranslation();
+
     return (
         <View
             backgroundColor='gray-100'
@@ -20,7 +23,7 @@ export const Header = () => {
             }}
         >
             <Flex height='100%' gap='size-200' alignItems={'center'}>
-                <Suspense fallback={'Model: ...'}>
+                <Suspense fallback={t('inference.pipeline.activeModel.loading')}>
                     <ActiveModel />
                 </Suspense>
 

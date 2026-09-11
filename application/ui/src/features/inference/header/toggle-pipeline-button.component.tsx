@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { EnablePipelineBlockedDialog } from '@/components/enable-pipeline-blocked-dialog/enable-pipeline-blocked-dialog.component';
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { Switch } from '@geti-ui/ui';
 import { useDisablePipeline, useEnablePipeline, usePipeline } from 'hooks/api/pipeline.hook';
 import { useIsPipelineConfigured } from 'hooks/use-is-pipeline-configured.hook';
@@ -13,6 +14,7 @@ import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { useWebRTCConnection } from '../stream/web-rtc-connection-provider';
 
 export const TogglePipelineButton = () => {
+    const { t } = useTranslation();
     const projectId = useProjectIdentifier();
     const [isEnableBlockedDialogOpen, setIsEnableBlockedDialogOpen] = useState(false);
 
@@ -32,7 +34,11 @@ export const TogglePipelineButton = () => {
             onSuccess: () => {
                 toast({
                     type: 'success',
-                    message: `Pipeline ${isPipelineEnabled ? 'disabled' : 'enabled'} successfully`,
+                    message: t(
+                        isPipelineEnabled
+                            ? 'inference.pipeline.toggle.disabledSuccess'
+                            : 'inference.pipeline.toggle.enabledSuccess'
+                    ),
                 });
 
                 if (isPipelineEnabled && streamStatus !== 'idle' && streamStatus !== 'failed') {
@@ -57,7 +63,11 @@ export const TogglePipelineButton = () => {
     return (
         <>
             <Switch isEmphasized isSelected={isPipelineEnabled} isDisabled={isPending} onChange={handleToggle}>
-                Pipeline {isPipelineEnabled ? 'enabled' : 'disabled'}
+                {t(
+                    isPipelineEnabled
+                        ? 'inference.pipeline.toggle.enabledLabel'
+                        : 'inference.pipeline.toggle.disabledLabel'
+                )}
             </Switch>
 
             <EnablePipelineBlockedDialog

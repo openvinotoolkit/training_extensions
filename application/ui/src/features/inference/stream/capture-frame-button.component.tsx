@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { Button } from '@geti-ui/ui';
 import { useCapturePipelineFrame, usePipeline, usePipelineHealth } from 'hooks/api/pipeline.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -9,6 +10,7 @@ import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { useWebRTCConnection } from './web-rtc-connection-provider';
 
 export const CaptureFrameButton = () => {
+    const { t } = useTranslation();
     const projectId = useProjectIdentifier();
     const { data: pipeline } = usePipeline();
     const { data: pipelineHealth } = usePipelineHealth();
@@ -30,7 +32,7 @@ export const CaptureFrameButton = () => {
             { params: { path: { project_id: projectId } } },
             {
                 onSuccess: () => {
-                    toast({ type: 'success', message: 'Frame captured and added to the dataset.' });
+                    toast({ type: 'success', message: t('inference.stream.captureSuccess') });
                 },
             }
         );
@@ -43,7 +45,7 @@ export const CaptureFrameButton = () => {
             isDisabled={isCaptureDisabled}
             isPending={captureFrameMutation.isPending}
         >
-            Capture frame
+            {t('inference.stream.captureFrame')}
         </Button>
     );
 };

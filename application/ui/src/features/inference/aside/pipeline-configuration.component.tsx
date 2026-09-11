@@ -3,6 +3,7 @@
 
 import { ReactNode, Suspense } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Flex, Item, Loading, TabList, TabPanels, Tabs, Text, View } from '@geti-ui/ui';
 
 import { FEATURE_FLAGS } from '../../../constants/feature-flags';
@@ -20,6 +21,8 @@ const ConfigurationItem = ({ children }: { children: ReactNode }) => {
 };
 
 export const PipelineConfiguration = () => {
+    const { t } = useTranslation();
+
     return (
         <Flex direction={'column'} gap={'size-150'} minHeight={0}>
             <Suspense fallback={<Loading />}>
@@ -38,10 +41,10 @@ export const PipelineConfiguration = () => {
             >
                 <TabList marginBottom={'size-200'}>
                     <Item key='sources' textValue='Sources'>
-                        <Text>Input</Text>
+                        <Text>{t('inference.pipeline.configuration.sourcesTab')}</Text>
                     </Item>
                     <Item key='sinks' textValue='Sinks'>
-                        <Text>Output</Text>
+                        <Text>{t('inference.pipeline.configuration.sinksTab')}</Text>
                     </Item>
                 </TabList>
                 <TabPanels flex={1} minHeight={0} UNSAFE_style={{ overflowY: 'auto' }}>
