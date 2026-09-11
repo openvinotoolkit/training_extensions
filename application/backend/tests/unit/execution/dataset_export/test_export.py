@@ -84,6 +84,7 @@ class TestDatasetExporter:
             task=fxt_export_params.task,
             annotation_status=None if include_unannotated else DatasetItemAnnotationStatus.WITH_ANNOTATIONS,
             sample_mode=SampleMode.IMPORT_EXPORT,
+            dataset_view_id=None,
         )
         if subsets:
             dataset.filter_by_subset.assert_called_once_with(subset=[Subset[subset.name] for subset in subsets])
@@ -91,6 +92,29 @@ class TestDatasetExporter:
             dataset.filter_by_labels.assert_called_once_with(
                 labels=labels, keep_empty_samples=fxt_export_params.include_unannotated
             )
+
+    def test_prepare_project_dataset_with_dataset_view(
+        self,
+        fxt_export: ExportDataset,
+        fxt_dataset_service: Mock,
+        fxt_export_params: ExportDatasetJobParams,
+    ):
+        """The dataset view id is forwarded to the dataset service when the export is view-scoped."""
+        dataset = MagicMock(spec=Dataset)
+        dataset.__len__.return_value = 10
+        fxt_dataset_service.get_dm_dataset.return_value = dataset
+        dataset_view_id = uuid4()
+        fxt_export_params.dataset_view_id = dataset_view_id
+
+        fxt_export.prepare_dataset(fxt_export_params)
+
+        fxt_dataset_service.get_dm_dataset.assert_called_once_with(
+            project_id=fxt_export_params.project_id,
+            task=fxt_export_params.task,
+            annotation_status=DatasetItemAnnotationStatus.WITH_ANNOTATIONS,
+            sample_mode=SampleMode.IMPORT_EXPORT,
+            dataset_view_id=dataset_view_id,
+        )
 
     @pytest.mark.parametrize(
         "subsets, labels",

@@ -21,6 +21,7 @@ from app.core.jobs.control_plane import CancellationResult
 from app.core.jobs.models import Job, JobStatus, JobType
 from app.models import Project, Task, TaskType, TrainingJob, TrainingJobParams
 from app.models.system import DeviceInfo, DeviceType
+from app.services.base import ResourceNotFoundError, ResourceType
 
 
 async def stream_test(client: AsyncClient, job_id: UUID, path: str = "logs") -> list[str]:
@@ -189,6 +190,89 @@ class TestJobEndpoints:
         assert submitted_job.params.max_calibration_subset_size == 100
         assert submitted_job.params.max_drop is None
         assert submitted_job.params.max_num_iterations == 10
+
+    def test_submit_export_dataset_job_with_dataset_view(
+        self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue, fxt_project_service, fxt_dataset_view_service
+    ):
+        fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"
+        fxt_app.dependency_overrides[get_data_dir] = lambda: tmp_path / "data"
+        project = Mock(spec=Project)
+        project.id = uuid4()
+        project.task = Mock(spec=Task)
+        project.task.task_type = TaskType.DETECTION
+        project.task.exclusive_labels = True
+        fxt_project_service.get_project_by_id.return_value = project
+        dataset_view_id = uuid4()
+        fxt_dataset_view_service.get_dataset_view_by_id.return_value = Mock()
+
+        response = fxt_client.post(
+            "/api/jobs",
+            json={
+                "project_id": str(project.id),
+                "job_type": "export_dataset",
+                "dataset_view_id": str(dataset_view_id),
+                "parameters": {"export_format": "coco", "filters": {}},
+            },
+        )
+
+        assert response.status_code == status.HTTP_202_ACCEPTED
+        fxt_dataset_view_service.get_dataset_view_by_id.assert_called_once_with(project.id, dataset_view_id)
+        submitted_job = fxt_jobs_queue.submit.call_args[0][0]
+        assert submitted_job.params.dataset_view_id == dataset_view_id
+        assert submitted_job.params.dataset_id is None
+
+    def test_submit_export_dataset_job_with_unknown_dataset_view(
+        self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue, fxt_project_service, fxt_dataset_view_service
+    ):
+        fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"
+        fxt_app.dependency_overrides[get_data_dir] = lambda: tmp_path / "data"
+        project = Mock(spec=Project)
+        project.id = uuid4()
+        project.task = Mock(spec=Task)
+        project.task.task_type = TaskType.DETECTION
+        project.task.exclusive_labels = True
+        fxt_project_service.get_project_by_id.return_value = project
+        dataset_view_id = uuid4()
+        fxt_dataset_view_service.get_dataset_view_by_id.side_effect = ResourceNotFoundError(
+            ResourceType.DATASET_VIEW, str(dataset_view_id)
+        )
+
+        response = fxt_client.post(
+            "/api/jobs",
+            json={
+                "project_id": str(project.id),
+                "job_type": "export_dataset",
+                "dataset_view_id": str(dataset_view_id),
+                "parameters": {"export_format": "coco", "filters": {}},
+            },
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        fxt_jobs_queue.submit.assert_not_called()
+
+    def test_submit_export_dataset_job_with_dataset_id_and_dataset_view_id(
+        self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue, fxt_project_service, fxt_dataset_view_service
+    ):
+        """dataset_id and dataset_view_id are mutually exclusive."""
+        fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"
+        fxt_app.dependency_overrides[get_data_dir] = lambda: tmp_path / "data"
+        project = Mock(spec=Project)
+        project.id = uuid4()
+        fxt_project_service.get_project_by_id.return_value = project
+
+        response = fxt_client.post(
+            "/api/jobs",
+            json={
+                "project_id": str(project.id),
+                "job_type": "export_dataset",
+                "dataset_id": str(uuid4()),
+                "dataset_view_id": str(uuid4()),
+                "parameters": {"export_format": "coco", "filters": {}},
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_jobs_queue.submit.assert_not_called()
 
     def test_list_jobs(self, fxt_client, fxt_jobs_queue, fxt_job):
         fxt_jobs_queue.list_all.return_value = [fxt_job(), fxt_job()]

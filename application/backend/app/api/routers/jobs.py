@@ -12,7 +12,14 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from loguru import logger
 from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 
-from app.api.dependencies import get_data_dir, get_job_dir, get_job_queue, get_project_service, get_system_service
+from app.api.dependencies import (
+    get_data_dir,
+    get_dataset_view_service,
+    get_job_dir,
+    get_job_queue,
+    get_project_service,
+    get_system_service,
+)
 from app.api.schemas.jobs import JobRequest, JobType, JobView
 from app.api.validators import JobID
 from app.core.jobs.control_plane import CancellationResult, JobQueue
@@ -34,7 +41,7 @@ from app.models.jobs import (
     PrepareDatasetForImportJob,
     PrepareDatasetForImportJobParams,
 )
-from app.services import ProjectService, SystemService
+from app.services import DatasetViewService, ProjectService, SystemService
 from app.services.model_manifest_service import ModelManifestService
 
 router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
@@ -47,7 +54,7 @@ router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
     responses={
         status.HTTP_202_ACCEPTED: {"description": "Job successfully created"},
         status.HTTP_400_BAD_REQUEST: {"description": "Unknown job type or invalid parameters"},
-        status.HTTP_404_NOT_FOUND: {"description": "Project not found or dataset doesn't exist"},
+        status.HTTP_404_NOT_FOUND: {"description": "Project, dataset or dataset view not found"},
         status.HTTP_409_CONFLICT: {"description": "Dataset is locked by another job"},
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "description": "Dataset already in datumaro format and ready for import"
@@ -61,6 +68,7 @@ async def submit_job(
     data_dir: Annotated[Path, Depends(get_data_dir)],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     system_service: Annotated[SystemService, Depends(get_system_service)],
+    dataset_view_service: Annotated[DatasetViewService, Depends(get_dataset_view_service)],
 ) -> JobView:
     """Create a new job and submit it to the scheduler."""
     try:
@@ -142,11 +150,15 @@ async def submit_job(
                 )
             case JobType.EXPORT_DATASET:
                 project = project_service.get_project_by_id(job_request.project_id)
+                if job_request.dataset_view_id is not None:
+                    # Raises ResourceNotFoundError (-> 404) if the view doesn't exist in the project
+                    dataset_view_service.get_dataset_view_by_id(project.id, job_request.dataset_view_id)
                 job = ExportDatasetJob(
                     id=job_id,
                     project_id=project.id,
                     params=ExportDatasetJobParams(
                         dataset_id=job_request.dataset_id,
+                        dataset_view_id=job_request.dataset_view_id,
                         project_id=project.id,
                         task=project.task,
                         export_format=DatasetFormat(job_request.parameters.export_format),

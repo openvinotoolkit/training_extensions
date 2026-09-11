@@ -28,7 +28,7 @@ from app.models import (
 from app.models.dataset import DatasetStatistics
 from app.models.dataset_item import DatasetItemSortBy
 from app.models.media import MediaAdapter, SortDirection, VideoFrame
-from app.repositories import DatasetItemRepository
+from app.repositories import DatasetItemRepository, DatasetViewRepository
 from app.services.media_service import MediaService
 
 from .base import BaseSessionManagedService, ResourceNotFoundError, ResourceType
@@ -356,10 +356,25 @@ class DatasetService(BaseSessionManagedService):
         task: Task,
         annotation_status: DatasetItemAnnotationStatus | None,
         sample_mode: SampleMode,
+        dataset_view_id: UUID | None = None,
     ) -> Dataset:
         from app.datumaro_converter import SampleMode, convert_dataset
 
+        view_repo = DatasetViewRepository(project_id=str(project_id), db=self.db_session)
+        if dataset_view_id is not None and view_repo.get_by_id(str(dataset_view_id)) is None:
+            raise ResourceNotFoundError(ResourceType.DATASET_VIEW, str(dataset_view_id))
+
         def get_dataset_items_and_media(offset: int, limit: int) -> list[tuple[DatasetItem, Media]]:
+            if dataset_view_id is not None:
+                return [
+                    (DatasetItem.model_validate(db_dataset_item), MediaAdapter.validate_python(db_media))
+                    for db_dataset_item, db_media in view_repo.list_items_with_media(
+                        dataset_view_id=str(dataset_view_id),
+                        limit=limit,
+                        offset=offset,
+                        annotation_status=annotation_status,
+                    )
+                ]
             return self.list_dataset_items_with_media(
                 project_id=project_id,
                 filters=DatasetItemFilters(limit=limit, offset=offset, annotation_status=annotation_status),
