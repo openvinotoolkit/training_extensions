@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { Content, Dialog, DialogContainer, DialogTrigger, Flex, PressableElement, Text, View } from '@geti-ui/ui';
 import { ChevronDownSmall } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
@@ -14,7 +15,6 @@ import { DatasetViewItemsList } from './dataset-view-items-list/dataset-view-ite
 import { DeleteDatasetViewDialog } from './delete-dataset-view.component';
 import { RenameDatasetView } from './rename-dataset-view.component';
 import { DatasetView } from './type';
-import { ENTIRE_DATASET_NAME } from './util';
 
 import classes from './dataset-view-selector.module.scss';
 
@@ -58,10 +58,12 @@ type DatasetViewSelectorProps = {
 };
 
 export const DatasetViewSelector = ({ datasetViews, resetSelectedMediaIds }: DatasetViewSelectorProps) => {
+    const { t } = useTranslation();
     const [isDatasetViewSelectorOpen, setIsDatasetViewSelectorOpen] = useState<boolean>(false);
 
     const [datasetViewId, setDatasetViewId] = useDatasetViewId();
-    const selectedDatasetViewName = datasetViews.find((view) => view.id === datasetViewId)?.name ?? ENTIRE_DATASET_NAME;
+    const selectedDatasetViewName =
+        datasetViews.find((view) => view.id === datasetViewId)?.name ?? t('dataset.views.entireDataset');
 
     const [datasetViewToBeDeleted, setDatasetViewToBeDeleted] = useState<DatasetView | null>(null);
     const [datasetViewToBeRenamed, setDatasetViewToBeRenamed] = useState<DatasetView | null>(null);
@@ -81,7 +83,7 @@ export const DatasetViewSelector = ({ datasetViews, resetSelectedMediaIds }: Dat
             setDatasetViewId(ENTIRE_DATASET_VIEW_ID);
         }
         toast({
-            message: `Dataset view "${datasetViewToBeDeleted?.name}" has been deleted successfully.`,
+            message: t('dataset.views.deleteSuccess', { viewName: datasetViewToBeDeleted?.name }),
             type: 'success',
         });
         setDatasetViewToBeDeleted(null);
@@ -115,7 +117,7 @@ export const DatasetViewSelector = ({ datasetViews, resetSelectedMediaIds }: Dat
 
     return (
         <Flex gap={'size-100'} alignItems={'center'}>
-            <Text UNSAFE_className={classes.viewsTitle}>Views</Text>
+            <Text UNSAFE_className={classes.viewsTitle}>{t('dataset.views.title')}</Text>
 
             <DialogTrigger
                 hideArrow

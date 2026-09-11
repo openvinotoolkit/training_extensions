@@ -53,7 +53,7 @@ const SaveDatasetViewDialog = ({ onClose, selectedMediaIds, datasetViews }: Save
 
     return (
         <Dialog>
-            <Heading>Save view</Heading>
+            <Heading>{t('dataset.views.saveView')}</Heading>
             <Divider size={'S'} />
             <Content>
                 <SelectedMediaCount count={selectedMediaIds.length} />
@@ -61,7 +61,7 @@ const SaveDatasetViewDialog = ({ onClose, selectedMediaIds, datasetViews }: Save
                     <TextField
                         // eslint-disable-next-line jsx-a11y/no-autofocus
                         autoFocus
-                        label={'View name'}
+                        label={t('dataset.views.viewNameLabel')}
                         value={viewName}
                         onChange={setViewName}
                         validationState={isDuplicatedName ? 'invalid' : undefined}
@@ -71,7 +71,7 @@ const SaveDatasetViewDialog = ({ onClose, selectedMediaIds, datasetViews }: Save
             </Content>
             <ButtonGroup>
                 <Button variant={'secondary'} onPress={() => onClose()}>
-                    Close
+                    {t('dataset.views.close')}
                 </Button>
                 <Button
                     variant={'accent'}
@@ -80,7 +80,7 @@ const SaveDatasetViewDialog = ({ onClose, selectedMediaIds, datasetViews }: Save
                     isDisabled={isSaveDisabled}
                     isPending={createDatasetViewMutation.isPending}
                 >
-                    Save
+                    {t('dataset.views.save')}
                 </Button>
             </ButtonGroup>
         </Dialog>
@@ -94,6 +94,7 @@ type SaveDatasetViewProps = {
 };
 
 export const SaveDatasetView = ({ selectedMediaIds, datasetViews, resetSelectedMediaIds }: SaveDatasetViewProps) => {
+    const { t } = useTranslation();
     const [datasetViewId, setDatasetViewId] = useDatasetViewId();
 
     const [isSaveViewDialogOpen, setIsSaveViewDialogOpen] = useState<boolean>(false);
@@ -113,7 +114,7 @@ export const SaveDatasetView = ({ selectedMediaIds, datasetViews, resetSelectedM
     return (
         <>
             <Button variant={'primary'} onPress={() => setIsSaveViewDialogOpen(true)}>
-                Save view
+                {t('dataset.views.saveView')}
             </Button>
             <DialogContainer onDismiss={closeDialog}>
                 {isSaveViewDialogOpen && (

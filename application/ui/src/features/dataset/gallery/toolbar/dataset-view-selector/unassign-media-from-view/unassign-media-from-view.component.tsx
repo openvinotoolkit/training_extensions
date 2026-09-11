@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
@@ -77,6 +78,7 @@ const UnassignMediaButton = ({
     datasetViewId,
     resetSelectedMediaIds,
 }: UnassignMediaButtonFromViewProps) => {
+    const { t } = useTranslation();
     const { unassignMediaFromView, isPending } = useUnassignMediaFromView();
 
     const unassignMedia = () => {
@@ -89,7 +91,7 @@ const UnassignMediaButton = ({
 
     return (
         <Button variant={'primary'} onPress={unassignMedia} isPending={isPending}>
-            Unassign from this view
+            {t('dataset.views.unassignFromView')}
         </Button>
     );
 };
