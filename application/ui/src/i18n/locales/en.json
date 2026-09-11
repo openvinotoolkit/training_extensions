@@ -313,7 +313,83 @@
             "label": "Inference device"
         },
         "sources": {
-            "uploadError": "Failed to upload video file."
+            "uploadError": "Failed to upload video file.",
+            "list": {
+                "addSource": "Add new source"
+            },
+            "types": {
+                "usbCamera": "usb camera",
+                "ipCamera": "ip camera",
+                "videoFile": "video file",
+                "imagesFolder": "images folder",
+                "disconnected": "disconnected"
+            },
+            "options": {
+                "usbCamera": "USB Camera",
+                "ipCamera": "IP Camera",
+                "videoFile": "Video file"
+            },
+            "add": {
+                "title": "Add new input source",
+                "submit": "Add & Use"
+            },
+            "edit": {
+                "title": "Edit input source",
+                "save": "Save",
+                "saveAndConnect": "Save & Connect"
+            },
+            "form": {
+                "createSuccess": "Source configuration created successfully.",
+                "updateSuccess": "Source configuration updated successfully.",
+                "saveError": "Failed to save source configuration, {{details}}",
+                "saveErrorFallback": "please try again"
+            },
+            "menu": {
+                "connect": "Connect",
+                "disconnect": "Disconnect",
+                "testConnection": "Test connection",
+                "edit": "Edit",
+                "remove": "Remove",
+                "connectSuccess": "Successfully connected to \"{{name}}\".",
+                "disconnectSuccess": "Successfully disconnected from \"{{name}}\".",
+                "disablePipelineAndDisconnectSuccess": "Successfully disabled pipeline and disconnected from \"{{name}}\".",
+                "removeSuccess": "{{name}} has been removed successfully!",
+                "disconnectDialog": {
+                    "title": "Disconnect {{name}}",
+                    "message": "Disconnecting this source will also disable the inference pipeline. Do you want to continue?",
+                    "cancel": "Cancel",
+                    "confirm": "Disconnect"
+                }
+            },
+            "settings": {
+                "loading": "Loading...",
+                "device": "Device: {{name}}",
+                "unknownDevice": "Unknown device (id: {{deviceId}})",
+                "folderPath": "Folder path: {{path}}",
+                "ignoreExistingImages": "Ignore existing images: {{value}}",
+                "streamUrl": "Stream url: {{url}}",
+                "authRequired": "Auth required: {{value}}",
+                "videoPath": "Video path: {{path}}",
+                "yes": "Yes",
+                "no": "No"
+            },
+            "fields": {
+                "name": "Name",
+                "imagesFolderPath": "Images folder path",
+                "ignoreExistingImages": "Ignore existing images",
+                "streamUrl": "Stream Url:",
+                "requireAuthentication": "Require Authentication",
+                "camera": "Camera",
+                "videoFilePath": "Video file path",
+                "upload": "Upload",
+                "selectedFile": "Selected: {{fileName}}",
+                "loopVideo": "Loop video"
+            },
+            "defaultNames": {
+                "usbCamera": "USB camera source",
+                "ipCamera": "IP camera source",
+                "videoFile": "Video file source"
+            }
         }
     },
     "project": {

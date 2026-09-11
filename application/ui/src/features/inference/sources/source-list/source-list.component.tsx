@@ -3,6 +3,7 @@
 
 import type { SourceConfig } from '@/api/types';
 import { ConnectionStatusBadge } from '@/components/connection-status-badge/connection-status-badge.component';
+import { useTranslation } from '@/i18n';
 import { Button, dimensionValue, Flex, Text } from '@geti-ui/ui';
 import { Add as AddIcon } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
@@ -10,13 +11,20 @@ import { usePipeline } from 'hooks/api/pipeline.hook';
 import { isEqual } from 'lodash-es';
 
 import { getErrorMessage } from '../../../../query-client/query-client';
-import { removeUnderscore } from '../../util';
 import { useTestSource } from '../api/use-test-source';
 import { SourceMenu } from '../source-menu/source-menu.component';
 import { SettingsList } from './settings-list/settings-list.component';
 import { SourceIcon } from './source-icon/source-icon.component';
 
 import classes from './source-list.module.scss';
+
+const SOURCE_TYPE_LABEL_KEYS = {
+    usb_camera: 'inference.sources.types.usbCamera',
+    ip_camera: 'inference.sources.types.ipCamera',
+    video_file: 'inference.sources.types.videoFile',
+    images_folder: 'inference.sources.types.imagesFolder',
+    disconnected: 'inference.sources.types.disconnected',
+} as const satisfies Record<SourceConfig['source_type'], string>;
 
 type SourcesListProps = {
     sources: SourceConfig[];
@@ -32,6 +40,7 @@ type SourceListItemProps = {
 };
 
 const SourceListItem = ({ source, isConnected, onEditSource, isPipelineRunning }: SourceListItemProps) => {
+    const { t } = useTranslation();
     const { data, error, isError, isFetched, isFetching, refetch } = useTestSource(String(source.id));
     const showConnectionStatusBadge = isConnected || isFetched || isFetching || isError;
 
@@ -61,7 +70,7 @@ const SourceListItem = ({ source, isConnected, onEditSource, isPipelineRunning }
                 <Flex direction={'column'} gap={'size-100'}>
                     <Text UNSAFE_className={classes.title}>{source.name}</Text>
                     <Flex gap={'size-100'} alignItems={'center'}>
-                        <Text UNSAFE_className={classes.type}>{removeUnderscore(source.source_type)}</Text>
+                        <Text UNSAFE_className={classes.type}>{t(SOURCE_TYPE_LABEL_KEYS[source.source_type])}</Text>
                     </Flex>
                 </Flex>
             </Flex>
@@ -83,6 +92,7 @@ const SourceListItem = ({ source, isConnected, onEditSource, isPipelineRunning }
 };
 
 export const SourcesList = ({ sources, onAddSource, onEditSource }: SourcesListProps) => {
+    const { t } = useTranslation();
     const pipeline = usePipeline();
     const currentSourceId = pipeline.data.source?.id;
     const isPipelineRunning = pipeline.data.status === 'running';
@@ -94,7 +104,7 @@ export const SourcesList = ({ sources, onAddSource, onEditSource }: SourcesListP
             UNSAFE_style={{ overflow: 'auto', padding: dimensionValue('size-10') }}
         >
             <Button variant='secondary' height={'size-800'} UNSAFE_className={classes.addSource} onPress={onAddSource}>
-                <AddIcon /> Add new source
+                <AddIcon /> {t('inference.sources.list.addSource')}
             </Button>
 
             {sources.map((source) => (

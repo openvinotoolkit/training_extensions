@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { USBCameraSourceConfig } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import { getUniqueName } from '../utils';
 
-export const getUsbCameraInitialConfig = (existingNames: string[] = []): USBCameraSourceConfig => ({
+export const getUsbCameraInitialConfig = (t: TranslateFn, existingNames: string[] = []): USBCameraSourceConfig => ({
     id: '',
-    name: getUniqueName('USB camera source', existingNames),
+    name: getUniqueName(t('inference.sources.defaultNames.usbCamera'), existingNames),
     source_type: 'usb_camera',
     device_id: 0,
 });

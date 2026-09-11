@@ -3,12 +3,13 @@
 
 import { uploadSourceVideo } from '@/api';
 import type { VideoFileSourceConfig } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import { getUniqueName } from '../utils';
 
-export const getVideoFileInitialConfig = (existingNames: string[] = []): VideoFileSourceConfig => ({
+export const getVideoFileInitialConfig = (t: TranslateFn, existingNames: string[] = []): VideoFileSourceConfig => ({
     id: '',
-    name: getUniqueName('Video file source', existingNames),
+    name: getUniqueName(t('inference.sources.defaultNames.videoFile'), existingNames),
     source_type: 'video_file',
     video_path: '',
     loop: false,

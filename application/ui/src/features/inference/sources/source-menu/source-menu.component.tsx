@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { $api } from '@/api';
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Button,
@@ -39,21 +40,21 @@ const DisconnectSourceWarningDialog = ({
     isPending,
     onDisconnect,
 }: DisconnectSourceWarningDialogProps) => {
+    const { t } = useTranslation();
+
     return (
         <Dialog>
-            <Heading>Disconnect {name}</Heading>
+            <Heading>{t('inference.sources.menu.disconnectDialog.title', { name })}</Heading>
             <Divider />
             <Content>
-                <Text>
-                    Disconnecting this source will also disable the inference pipeline. Do you want to continue?
-                </Text>
+                <Text>{t('inference.sources.menu.disconnectDialog.message')}</Text>
             </Content>
             <ButtonGroup>
                 <Button variant={'secondary'} onPress={onCancel}>
-                    Cancel
+                    {t('inference.sources.menu.disconnectDialog.cancel')}
                 </Button>
                 <Button variant={'accent'} onPress={onDisconnect} isDisabled={isPending}>
-                    Disconnect
+                    {t('inference.sources.menu.disconnectDialog.confirm')}
                 </Button>
             </ButtonGroup>
         </Dialog>
@@ -78,6 +79,7 @@ export type SourceMenuProps = {
 };
 
 export const SourceMenu = ({ id, name, isConnected, onEdit, isPipelineRunning, onTest }: SourceMenuProps) => {
+    const { t } = useTranslation();
     const project_id = useProjectIdentifier();
     const [isDisconnectConfirmationDialogVisible, setIsDisconnectConfirmationDialogVisible] = useState<boolean>(false);
     const disablePipelineMutation = useDisablePipeline();
@@ -132,7 +134,7 @@ export const SourceMenu = ({ id, name, isConnected, onEdit, isPipelineRunning, o
                 onSuccess: () => {
                     toast({
                         type: 'success',
-                        message: `Successfully connected to "${name}".`,
+                        message: t('inference.sources.menu.connectSuccess', { name }),
                     });
                 },
             }
@@ -149,7 +151,7 @@ export const SourceMenu = ({ id, name, isConnected, onEdit, isPipelineRunning, o
                 onSuccess: () => {
                     toast({
                         type: 'success',
-                        message: `Successfully disconnected from "${name}".`,
+                        message: t('inference.sources.menu.disconnectSuccess', { name }),
                     });
                 },
             }
@@ -176,7 +178,9 @@ export const SourceMenu = ({ id, name, isConnected, onEdit, isPipelineRunning, o
                             onSuccess: () => {
                                 toast({
                                     type: 'success',
-                                    message: `Successfully disabled pipeline and disconnected from "${name}".`,
+                                    message: t('inference.sources.menu.disablePipelineAndDisconnectSuccess', {
+                                        name,
+                                    }),
                                 });
 
                                 setIsDisconnectConfirmationDialogVisible(false);
@@ -198,7 +202,7 @@ export const SourceMenu = ({ id, name, isConnected, onEdit, isPipelineRunning, o
                 onSuccess: () => {
                     toast({
                         type: 'success',
-                        message: `${name} has been removed successfully!`,
+                        message: t('inference.sources.menu.removeSuccess', { name }),
                     });
                 },
             }
@@ -216,13 +220,13 @@ export const SourceMenu = ({ id, name, isConnected, onEdit, isPipelineRunning, o
                     disabledKeys={isConnected ? [SOURCE_MENU_OPTIONS.REMOVE, SOURCE_MENU_OPTIONS.TEST] : []}
                 >
                     {isConnected ? (
-                        <Item key={SOURCE_MENU_OPTIONS.DISCONNECT}>Disconnect</Item>
+                        <Item key={SOURCE_MENU_OPTIONS.DISCONNECT}>{t('inference.sources.menu.disconnect')}</Item>
                     ) : (
-                        <Item key={SOURCE_MENU_OPTIONS.CONNECT}>Connect</Item>
+                        <Item key={SOURCE_MENU_OPTIONS.CONNECT}>{t('inference.sources.menu.connect')}</Item>
                     )}
-                    <Item key={SOURCE_MENU_OPTIONS.TEST}>Test connection</Item>
-                    <Item key={SOURCE_MENU_OPTIONS.EDIT}>Edit</Item>
-                    <Item key={SOURCE_MENU_OPTIONS.REMOVE}>Remove</Item>
+                    <Item key={SOURCE_MENU_OPTIONS.TEST}>{t('inference.sources.menu.testConnection')}</Item>
+                    <Item key={SOURCE_MENU_OPTIONS.EDIT}>{t('inference.sources.menu.edit')}</Item>
+                    <Item key={SOURCE_MENU_OPTIONS.REMOVE}>{t('inference.sources.menu.remove')}</Item>
                 </Menu>
             </MenuTrigger>
             <DialogContainer onDismiss={() => setIsDisconnectConfirmationDialogVisible(false)}>

@@ -4,6 +4,7 @@
 import { ReactNode, useRef } from 'react';
 
 import type { SourceConfigPayload } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Button, ButtonGroup, Divider, Flex, Form, Text, View } from '@geti-ui/ui';
 import { Back } from '@geti-ui/ui/icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -33,6 +34,7 @@ export const EditSource = <T extends SourceConfigPayload>({
     componentFields,
     isConnected,
 }: EditSourceProps<T>) => {
+    const { t } = useTranslation();
     const connectToPipeline = useRef(false);
     const connectToPipelineMutation = useConnectSourceToPipeline();
     const queryClient = useQueryClient();
@@ -57,7 +59,7 @@ export const EditSource = <T extends SourceConfigPayload>({
                     <Back />
                 </ActionButton>
 
-                <Text>Edit input source</Text>
+                <Text>{t('inference.sources.edit.title')}</Text>
             </Flex>
 
             <View UNSAFE_className={classes.container}>
@@ -72,7 +74,7 @@ export const EditSource = <T extends SourceConfigPayload>({
                     UNSAFE_style={{ maxWidth: 'fit-content' }}
                     onPress={() => (connectToPipeline.current = false)}
                 >
-                    Save
+                    {t('inference.sources.edit.save')}
                 </Button>
 
                 {!isConnected && (
@@ -82,7 +84,7 @@ export const EditSource = <T extends SourceConfigPayload>({
                         UNSAFE_style={{ maxWidth: 'fit-content' }}
                         onPress={() => (connectToPipeline.current = true)}
                     >
-                        Save & Connect
+                        {t('inference.sources.edit.saveAndConnect')}
                     </Button>
                 )}
             </ButtonGroup>

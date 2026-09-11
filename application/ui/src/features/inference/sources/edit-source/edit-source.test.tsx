@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { IPCameraSourceConfig } from '@/api/types';
+import { createI18nInstance } from '@/i18n';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse } from 'msw';
@@ -19,6 +20,8 @@ vi.mock('../hooks/use-source-mutation.hook');
 vi.mock('../../../../hooks/api/pipeline.hook');
 
 describe('EditIpCamera', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     beforeEach(() => {
         vi.clearAllMocks();
         server.use(http.post('/api/sources/{source_id}:test', () => HttpResponse.json({ reachable: true })));
@@ -35,7 +38,7 @@ describe('EditIpCamera', () => {
     const renderApp = (mockOnSaved = vi.fn(), isConnected = false) => {
         render(
             <EditSource
-                config={getIpCameraInitialConfig()}
+                config={getIpCameraInitialConfig(t)}
                 onSaved={mockOnSaved}
                 onBackToList={vi.fn()}
                 componentFields={(state: IPCameraSourceConfig) => <IpCamera defaultState={state} />}
