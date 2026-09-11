@@ -5,7 +5,7 @@ import { toast } from '@/components/toast/toast.component';
 import { isEmpty } from 'lodash-es';
 
 export const useClipboard = () => {
-    const copy = (text: string, successMessage = 'Copied Successfully', errorMessage = 'Copy failed') =>
+    const copy = (text: string, successMessage: string, errorMessage: string) =>
         navigator.clipboard
             .writeText(text)
             .then(() => !isEmpty(successMessage) && toast({ message: successMessage, type: 'info' }))

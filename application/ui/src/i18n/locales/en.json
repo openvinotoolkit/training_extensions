@@ -318,5 +318,22 @@
                 "inputPlaceholder": "Create label"
             }
         }
+    },
+    "annotator": {
+        "labels": {
+            "noLabel": "No label",
+            "noObject": "No object"
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "Job failed. Please check the logs for details and try again."
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "Copied Successfully",
+                "copyError": "Copy failed"
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import { useRef } from 'react';
 import { $api } from '@/api';
 import type { Job, QuantizeJob, TrainJob } from '@/api/types';
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
@@ -15,9 +16,9 @@ import { useSSE } from '../../use-sse.hook';
 import { isJobFailed, isQuantizeJob, isTrainJob } from '../util';
 
 const TERMINAL_STATUSES: string[] = ['DONE', 'FAILED', 'CANCELLED'];
-const ERROR_MESSAGE = 'Job failed. Please check the logs for details and try again.';
 
 export const useStreamJobStatus = (jobId: string | undefined) => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const projectId = useProjectIdentifier();
     const modelIdRef = useRef<string | null>(null);
@@ -39,7 +40,7 @@ export const useStreamJobStatus = (jobId: string | undefined) => {
 
             if (updatedJob.status === 'FAILED') {
                 toast({
-                    message: ERROR_MESSAGE,
+                    message: t('models.jobs.error'),
                     type: 'error',
                 });
             }

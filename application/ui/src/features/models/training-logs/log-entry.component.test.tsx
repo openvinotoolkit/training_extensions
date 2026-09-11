@@ -86,7 +86,7 @@ describe('LogEntry', () => {
 
             fireEvent.click(screen.getByTitle('Click to copy path'));
 
-            expect(mockCopy).toHaveBeenCalledWith('/tmp/output/result.json');
+            expect(mockCopy).toHaveBeenCalledWith('/tmp/output/result.json', 'Copied Successfully', 'Copy failed');
         });
     });
 
