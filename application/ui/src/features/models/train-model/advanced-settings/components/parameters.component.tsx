@@ -10,6 +10,7 @@ import type {
     StringEnumConfigurableParameter,
     TrainingConfigurationParameter,
 } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import {
     Content,
     ContextualHelp,
@@ -101,6 +102,7 @@ type ParameterLayoutProps = {
     children: ReactNode;
     marginStart?: DimensionValue;
     isGroupHeader?: boolean;
+    ariaLabel?: string;
 };
 
 type ParameterNameProps = {
@@ -139,7 +141,10 @@ const ParameterLayout = ({
     onReset,
     marginStart,
     isGroupHeader,
+    ariaLabel,
 }: ParameterLayoutProps) => {
+    const resetAriaLabel = ariaLabel ?? header;
+
     return (
         <>
             <ParameterName
@@ -150,7 +155,7 @@ const ParameterLayout = ({
                 isGroupHeader={isGroupHeader}
             />
             <View gridColumn={'2/3'}>{children}</View>
-            {isFunction(onReset) && <ResetButton onPress={onReset} aria-label={`Reset ${header}`} />}
+            {isFunction(onReset) && <ResetButton onPress={onReset} aria-label={`Reset ${resetAriaLabel}`} />}
         </>
     );
 };
@@ -163,8 +168,14 @@ type ParameterReadOnlyProps = {
 type ParameterReadOnlyValueProps = Pick<ConfigurableParameter, 'value' | 'name'>;
 
 const ParameterReadOnlyValue = ({ value, name }: ParameterReadOnlyValueProps) => {
+    const { t } = useTranslation();
+
     if (isBoolean(value)) {
-        return <span aria-label={name}>{value ? 'On' : 'Off'}</span>;
+        return (
+            <span aria-label={name}>
+                {value ? t('models.training.parameters.on') : t('models.training.parameters.off')}
+            </span>
+        );
     }
 
     if (Array.isArray(value) && value.length === 2) {

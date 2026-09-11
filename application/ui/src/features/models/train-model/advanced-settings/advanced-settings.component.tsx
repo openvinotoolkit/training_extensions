@@ -3,6 +3,7 @@
 
 import { ReactNode, RefObject, useRef } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { DOMRefValue, Item, TabList, TabPanels, Tabs, Text, useUnwrapDOMRef, View } from '@geti-ui/ui';
 
 import { useTrainModelState } from '../train-model-provider.component';
@@ -21,22 +22,25 @@ const ContentWrapper = ({ children, ref }: ContentWrapperProps) => {
 
 type TabProps = {
     name: string;
+    label: string;
     children: ReactNode;
 };
 
 export const AdvancedSettings = () => {
+    const { t } = useTranslation();
     const { trainingConfiguration, onTrainingConfigurationChange, defaultTrainingConfiguration } = useTrainModelState();
     const containerRef = useRef<DOMRefValue<HTMLDivElement>>(null);
     const unwrappedContainerRef = useUnwrapDOMRef(containerRef);
 
     // Should never happen, but just in case, to prevent errors in the UI
     if (trainingConfiguration === undefined || defaultTrainingConfiguration === undefined) {
-        return <Text>Training configuration is not available.</Text>;
+        return <Text>{t('models.training.advanced.notAvailable')}</Text>;
     }
 
     const TABS: TabProps[] = [
         {
             name: 'Data management',
+            label: t('models.training.advanced.tabs.dataManagement'),
             children: (
                 <DataManagement
                     containerRef={unwrappedContainerRef}
@@ -48,6 +52,7 @@ export const AdvancedSettings = () => {
         },
         {
             name: 'Training',
+            label: t('models.training.advanced.tabs.training'),
             children: (
                 <Training
                     trainingConfiguration={trainingConfiguration}
@@ -63,7 +68,7 @@ export const AdvancedSettings = () => {
             <TabList UNSAFE_style={{ '--spectrum-tabs-selection-indicator-color': 'var(--energy-blue)' }}>
                 {(tab: TabProps) => (
                     <Item key={tab.name} textValue={tab.name}>
-                        <Text>{tab.name}</Text>
+                        <Text>{tab.label}</Text>
                     </Item>
                 )}
             </TabList>
