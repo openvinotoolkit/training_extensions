@@ -34,6 +34,10 @@ class MediaRepository:
         """Create base select statement filtered by project_id."""
         return select(MediaDB).where(MediaDB.project_id == self.project_id)
 
+    def _base_id_select(self) -> Select:
+        """Create base select statement of only id/type, filtered by project_id."""
+        return select(MediaDB.id, MediaDB.type).where(MediaDB.project_id == self.project_id)
+
     @staticmethod
     def _apply_date_filters(
         stmt: Select, start_date: datetime | None = None, end_date: datetime | None = None
@@ -102,6 +106,25 @@ class MediaRepository:
         order_by_column = sort_column.asc() if sort_direction == SortDirection.ASC else sort_column.desc()
         stmt = stmt.order_by(order_by_column).offset(offset).limit(limit)
         return list(self.db.scalars(stmt).all())
+
+    def list_item_ids(
+        self,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        annotation_status: str | None = None,
+        label_ids: list[str] | None = None,
+        subsets: list[str] | None = None,
+        exclude_types: list[MediaType] | None = None,
+    ) -> tuple[tuple[str, str], ...]:
+        """Get the (id, type) of every media item matching the given filters, without loading full rows."""
+        stmt = self._base_id_select().join(DatasetItemDB, DatasetItemDB.id == MediaDB.id, isouter=True)
+        if exclude_types:
+            stmt = stmt.where(MediaDB.type.not_in(exclude_types))
+        stmt = self._apply_date_filters(stmt, start_date, end_date)
+        stmt = _apply_annotation_status_filter_with_video_support(stmt, annotation_status)
+        stmt = _apply_subset_filter_with_video_support(stmt, subsets)
+        stmt = _apply_label_filter_with_video_support(stmt, label_ids)
+        return tuple((media_id, media_type) for media_id, media_type in self.db.execute(stmt).all())
 
     def get_earliest(self) -> MediaDB | None:
         """

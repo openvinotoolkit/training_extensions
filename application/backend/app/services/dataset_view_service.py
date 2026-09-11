@@ -191,6 +191,25 @@ class DatasetViewService(BaseSessionManagedService):
             for media_db in media_dbs
         ]
 
+    def list_dataset_view_media_ids(
+        self, project_id: UUID, dataset_view_id: UUID, filters: MediaFilters | None = None
+    ) -> tuple[tuple[UUID, MediaType], ...]:
+        """Get the id and type of every media item assigned to a dataset view, without loading full media rows."""
+        if filters is None:
+            filters = MediaFilters()
+        repo = self._get_repo(project_id)
+        self._get_db_dataset_view(repo, dataset_view_id)
+        label_ids_str = [str(label_id) for label_id in filters.label_ids] if filters.label_ids else None
+        media_id_rows = repo.list_media_ids(
+            dataset_view_id=str(dataset_view_id),
+            start_date=filters.start_date,
+            end_date=filters.end_date,
+            annotation_status=filters.annotation_status,
+            label_ids=label_ids_str,
+            subsets=filters.subsets,
+        )
+        return tuple((UUID(media_id), MediaType(media_type)) for media_id, media_type in media_id_rows)
+
     def count_dataset_view_items(
         self, project_id: UUID, dataset_view_id: UUID, filters: DatasetItemFilters | None = None
     ) -> int:

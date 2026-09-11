@@ -472,6 +472,98 @@ class TestMediaEndpoints:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         fxt_media_service.list_media.assert_not_called()
 
+    def test_list_media_ids(self, fxt_get_project, fxt_image_media, fxt_video_media, fxt_media_service, fxt_client):
+        """The whole filtered set is returned in one response, as ids only."""
+        fxt_media_service.list_media_ids.return_value = (
+            (fxt_image_media.id, fxt_image_media.type),
+            (fxt_video_media.id, fxt_video_media.type),
+        )
+
+        response = fxt_client.get(f"/api/projects/{str(uuid4())}/dataset/media/ids")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == {
+            "items": [
+                {"id": str(fxt_image_media.id), "type": fxt_image_media.type.value},
+                {"id": str(fxt_video_media.id), "type": fxt_video_media.type.value},
+            ]
+        }
+        fxt_media_service.list_media_ids.assert_called_once_with(
+            project_id=fxt_get_project.id,
+            filters=MediaFilters(
+                start_date=None,
+                end_date=None,
+                annotation_status=None,
+                label_ids=None,
+                subsets=None,
+            ),
+            exclude_types=[MediaType.VIDEO_FRAME],
+        )
+        # No pagination means there is nothing to count.
+        fxt_media_service.count_media.assert_not_called()
+
+    def test_list_media_ids_applies_the_same_filters_as_list_media(
+        self, fxt_get_project, fxt_image_media, fxt_media_service, fxt_client
+    ):
+        fxt_media_service.list_media_ids.return_value = ((fxt_image_media.id, fxt_image_media.type),)
+        label_id = uuid4()
+
+        response = fxt_client.get(
+            f"/api/projects/{str(uuid4())}/dataset/media/ids"
+            f"?start_date=2025-01-09T00:00:00Z&end_date=2025-12-31T23:59:59Z"
+            f"&annotation_status={DatasetItemAnnotationStatus.WITH_ANNOTATIONS.value}"
+            f"&labels={label_id}&subsets={DatasetItemSubset.TRAINING.value}"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        fxt_media_service.list_media_ids.assert_called_once_with(
+            project_id=fxt_get_project.id,
+            filters=MediaFilters(
+                start_date=datetime(2025, 1, 9, 0, 0, 0, tzinfo=ZoneInfo("UTC")),
+                end_date=datetime(2025, 12, 31, 23, 59, 59, tzinfo=ZoneInfo("UTC")),
+                annotation_status=DatasetItemAnnotationStatus.WITH_ANNOTATIONS,
+                label_ids=[label_id],
+                subsets=[DatasetItemSubset.TRAINING.value],
+            ),
+            exclude_types=[MediaType.VIDEO_FRAME],
+        )
+
+    def test_list_media_ids_with_dataset_view_id(
+        self, fxt_get_project, fxt_image_media, fxt_media_service, fxt_dataset_view_service, fxt_client
+    ):
+        dataset_view_id = uuid4()
+        fxt_dataset_view_service.list_dataset_view_media_ids.return_value = (
+            (fxt_image_media.id, fxt_image_media.type),
+        )
+
+        response = fxt_client.get(
+            f"/api/projects/{fxt_get_project.id}/dataset/media/ids?dataset_view_id={dataset_view_id}"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == {"items": [{"id": str(fxt_image_media.id), "type": fxt_image_media.type.value}]}
+        fxt_dataset_view_service.list_dataset_view_media_ids.assert_called_once_with(
+            project_id=fxt_get_project.id,
+            dataset_view_id=dataset_view_id,
+            filters=MediaFilters(
+                start_date=None,
+                end_date=None,
+                annotation_status=None,
+                label_ids=None,
+                subsets=None,
+            ),
+        )
+        fxt_media_service.list_media_ids.assert_not_called()
+
+    def test_list_media_ids_wrong_dates(self, fxt_get_project, fxt_media_service, fxt_client):
+        response = fxt_client.get(
+            f"/api/projects/{str(uuid4())}/dataset/media/ids"
+            f"?start_date=2025-12-31T23:59:59Z&end_date=2025-01-09T00:00:00Z"
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_media_service.list_media_ids.assert_not_called()
+
     @pytest.mark.parametrize(
         "annotation_status",
         [

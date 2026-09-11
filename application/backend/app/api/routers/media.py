@@ -28,6 +28,8 @@ from app.api.schemas.media import (
     AnnotatedVideoFrame,
     BulkDeleteMedia,
     MediaAnnotations,
+    MediaIdentifier,
+    MediaIdentifiers,
     MediaView,
     MediaViewAdapter,
     MediaWithPagination,
@@ -225,6 +227,19 @@ def add_media(
         )
 
 
+def _normalize_date_range(
+    start_date: datetime | None, end_date: datetime | None
+) -> tuple[datetime | None, datetime | None]:
+    start_date = normalize_datetime_to_utc(start_date)
+    end_date = normalize_datetime_to_utc(end_date)
+
+    if start_date is not None and end_date is not None and start_date > end_date:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Start date must be before end date."
+        )
+    return start_date, end_date
+
+
 @router.get(
     "",
     responses={
@@ -256,13 +271,7 @@ def list_media(  # noqa: PLR0913
     This is also the endpoint used to list the content of a dataset view: when `dataset_view_id` is provided,
     only the media assigned to that view are returned, with the same filtering, sorting and pagination options.
     """
-    start_date = normalize_datetime_to_utc(start_date)
-    end_date = normalize_datetime_to_utc(end_date)
-
-    if start_date is not None and end_date is not None and start_date > end_date:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Start date must be before end date."
-        )
+    start_date, end_date = _normalize_date_range(start_date, end_date)
     subset_values = [item.value for item in subsets] if subsets else None
     filters = MediaFilters(
         limit=limit,
@@ -305,6 +314,56 @@ def list_media(  # noqa: PLR0913
             total=total,
             count=len(media_list),
         ),
+    )
+
+
+# Must stay declared before `/{media_id}`, otherwise "ids" is matched as a media id.
+@router.get(
+    "/ids",
+    responses={
+        status.HTTP_200_OK: {"description": "Identifiers of all matching media", "model": MediaIdentifiers},
+        status.HTTP_404_NOT_FOUND: {"description": "Project not found"},
+    },
+)
+def list_media_ids(  # noqa: PLR0913
+    project: Annotated[Project, Depends(get_project)],
+    media_service: Annotated[MediaService, Depends(get_media_service)],
+    dataset_view_service: Annotated[DatasetViewService, Depends(get_dataset_view_service)],
+    start_date: Annotated[datetime | None, Query()] = None,
+    end_date: Annotated[datetime | None, Query()] = None,
+    annotation_status: Annotated[DatasetItemAnnotationStatus | None, Query()] = None,
+    labels: Annotated[list[UUID] | None, Query()] = None,
+    subsets: Annotated[list[DatasetItemSubset] | None, Query()] = None,
+    dataset_view_id: Annotated[
+        UUID | None,
+        Query(description="If provided, list media assigned to this dataset view instead of the entire dataset"),
+    ] = None,
+) -> MediaIdentifiers:
+    """
+    List the id and type of every media matching the given filters, without pagination.
+
+    Accepts the same filters as `list_media`.
+    """
+    start_date, end_date = _normalize_date_range(start_date, end_date)
+    filters = MediaFilters(
+        start_date=start_date,
+        end_date=end_date,
+        annotation_status=annotation_status,
+        label_ids=labels,
+        subsets=[item.value for item in subsets] if subsets else None,
+    )
+    if dataset_view_id is not None:
+        media_id_list = dataset_view_service.list_dataset_view_media_ids(
+            project_id=project.id, dataset_view_id=dataset_view_id, filters=filters
+        )
+    else:
+        media_id_list = media_service.list_media_ids(
+            project_id=project.id,
+            filters=filters,
+            exclude_types=[MediaType.VIDEO_FRAME],
+        )
+    return MediaIdentifiers(
+        items=[MediaIdentifier(id=media_id, type=media_type) for media_id, media_type in media_id_list]
     )
 
 

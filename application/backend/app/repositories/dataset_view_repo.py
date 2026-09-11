@@ -100,6 +100,18 @@ class DatasetViewRepository(BaseRepository[DatasetViewDB]):
             )
         )
 
+    def _base_media_id_select(self, dataset_view_id: str) -> Select:
+        """Id/type of media items directly assigned to the view, without loading full rows."""
+        return (
+            select(MediaDB.id, MediaDB.type)
+            .join(DatasetViewItemDB, DatasetViewItemDB.media_id == MediaDB.id)
+            .where(
+                DatasetViewItemDB.dataset_view_id == dataset_view_id,
+                MediaDB.project_id == self.project_id,
+                MediaDB.type != MediaType.VIDEO_FRAME,
+            )
+        )
+
     def count_media(
         self,
         dataset_view_id: str,
@@ -152,6 +164,25 @@ class DatasetViewRepository(BaseRepository[DatasetViewDB]):
         order_by_column = sort_column.asc() if sort_direction == SortDirection.ASC else sort_column.desc()
         stmt = stmt.order_by(order_by_column).offset(offset).limit(limit)
         return list(self.db.scalars(stmt).all())
+
+    def list_media_ids(
+        self,
+        dataset_view_id: str,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        annotation_status: str | None = None,
+        label_ids: list[str] | None = None,
+        subsets: list[str] | None = None,
+    ) -> tuple[tuple[str, str], ...]:
+        """Get the (id, type) of every media item assigned to a dataset view, without loading full rows."""
+        stmt = self._base_media_id_select(dataset_view_id).join(
+            DatasetItemDB, DatasetItemDB.id == MediaDB.id, isouter=True
+        )
+        stmt = _apply_date_range_filter(stmt, MediaDB.created_at, start_date, end_date)
+        stmt = _apply_annotation_status_filter_with_video_support(stmt, annotation_status)
+        stmt = _apply_subset_filter_with_video_support(stmt, subsets)
+        stmt = _apply_label_filter_with_video_support(stmt, label_ids)
+        return tuple((media_id, media_type) for media_id, media_type in self.db.execute(stmt).all())
 
     def _base_item_select(self, dataset_view_id: str) -> Select:
         """

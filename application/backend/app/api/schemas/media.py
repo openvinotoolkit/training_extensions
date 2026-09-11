@@ -119,6 +119,23 @@ class MediaWithPagination(BaseModel):
     pagination: Pagination
 
 
+class MediaIdentifier(BaseModel):
+    """
+    Minimal media descriptor: enough to act on a media item without fetching its metadata
+    """
+
+    id: UUID
+    type: MediaType
+
+
+class MediaIdentifiers(BaseModel):
+    """
+    Identifiers of every media matching a set of filters, without pagination
+    """
+
+    items: list[MediaIdentifier]
+
+
 class SetMediaAnnotations(BaseModel):
     """Schema for setting media annotations"""
 
