@@ -1,8 +1,9 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Flex, Grid, Heading, ToggleButton, Tooltip, TooltipTrigger, View } from '@geti-ui/ui';
 import { Gear, GraphChart } from '@geti-ui/ui/icons';
 
@@ -13,14 +14,16 @@ import { PipelineConfiguration } from './pipeline-configuration.component';
 
 import styles from './sidebar-tabs.module.scss';
 
-const TABS = [
-    { label: 'Pipeline configuration', icon: <PipelineIcon />, content: <PipelineConfiguration /> },
-    { label: 'Data collection policy', icon: <Gear />, content: <DataCollection /> },
-    { label: 'Pipeline metrics', icon: <GraphChart />, content: <Graphs /> },
-];
+type Tab = {
+    id: string;
+    label: string;
+    ariaLabel: string;
+    icon: ReactNode;
+    content: ReactNode;
+};
 
 type TabProps = {
-    tabs: (typeof TABS)[number][];
+    tabs: Tab[];
     selectedTab: string;
 };
 
@@ -30,10 +33,10 @@ const SidebarTabs = ({ tabs, selectedTab }: TabProps) => {
     const isExpanded = tab !== null;
     const gridTemplateColumns = isExpanded ? ['clamp(size-4600, 30vw, 40rem)', 'size-600'] : ['0px', 'size-600'];
 
-    const content = tabs.find(({ label }) => label === tab)?.content;
+    const content = tabs.find(({ id }) => id === tab)?.content;
 
-    const handleSetTab = (label: string) => {
-        setTab((prev) => (prev === label ? null : label));
+    const handleSetTab = (id: string) => {
+        setTab((prev) => (prev === id ? null : id));
     };
 
     return (
@@ -55,7 +58,7 @@ const SidebarTabs = ({ tabs, selectedTab }: TabProps) => {
                 {isExpanded && (
                     <>
                         <Flex alignItems='center' gap={'size-100'} marginBottom={'size-300'}>
-                            <Heading level={2}>{tab}</Heading>
+                            <Heading level={2}>{tabs.find((item) => item.id === tab)?.label}</Heading>
                         </Flex>
                         <Flex direction={'column'} flex={1} UNSAFE_style={{ overflow: 'hidden auto' }}>
                             {content}
@@ -65,14 +68,14 @@ const SidebarTabs = ({ tabs, selectedTab }: TabProps) => {
             </View>
             <View gridColumn={'2/3'} backgroundColor={'gray-200'} padding={'size-100'}>
                 <Flex direction={'column'} height={'100%'} alignItems={'center'} gap={'size-100'}>
-                    {tabs.map(({ label, icon }) => (
-                        <TooltipTrigger key={label} placement={'left'}>
+                    {tabs.map(({ id, label, ariaLabel, icon }) => (
+                        <TooltipTrigger key={id} placement={'left'}>
                             <ToggleButton
                                 isQuiet
-                                isSelected={label === tab}
-                                onChange={() => handleSetTab(label)}
+                                isSelected={id === tab}
+                                onChange={() => handleSetTab(id)}
                                 UNSAFE_className={styles.toggleButton}
-                                aria-label={`Toggle ${label} tab`}
+                                aria-label={`Toggle ${ariaLabel} tab`}
                             >
                                 {icon}
                             </ToggleButton>
@@ -86,5 +89,31 @@ const SidebarTabs = ({ tabs, selectedTab }: TabProps) => {
 };
 
 export const Sidebar = () => {
-    return <SidebarTabs tabs={TABS} selectedTab={TABS[0].label} />;
+    const { t } = useTranslation();
+
+    const TABS: Tab[] = [
+        {
+            id: 'configuration',
+            label: t('inference.pipeline.configuration.sidebarLabel'),
+            ariaLabel: 'Pipeline configuration',
+            icon: <PipelineIcon />,
+            content: <PipelineConfiguration />,
+        },
+        {
+            id: 'dataCollection',
+            label: t('inference.collection.sidebarLabel'),
+            ariaLabel: 'Data collection policy',
+            icon: <Gear />,
+            content: <DataCollection />,
+        },
+        {
+            id: 'metrics',
+            label: t('inference.metrics.sidebarLabel'),
+            ariaLabel: 'Pipeline metrics',
+            icon: <GraphChart />,
+            content: <Graphs />,
+        },
+    ];
+
+    return <SidebarTabs tabs={TABS} selectedTab={TABS[0].id} />;
 };

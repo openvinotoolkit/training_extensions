@@ -487,6 +487,85 @@
                 "webhook": "Webhook sink",
                 "mqtt": "MQTT sink"
             }
+        },
+        "pipeline": {
+            "activeModel": {
+                "label": "Model",
+                "loading": "Model: ..."
+            },
+            "toggle": {
+                "enabledLabel": "Pipeline enabled",
+                "disabledLabel": "Pipeline disabled",
+                "enabledSuccess": "Pipeline enabled successfully",
+                "disabledSuccess": "Pipeline disabled successfully"
+            },
+            "configuration": {
+                "sidebarLabel": "Pipeline configuration",
+                "sourcesTab": "Input",
+                "sinksTab": "Output"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "Data collection policy",
+            "maxDatasetSize": {
+                "title": "Max dataset size",
+                "description": "Maximum number of items to collect",
+                "sizeLabel": "Size"
+            },
+            "captureRate": {
+                "title": "Capture rate",
+                "description": "Capture frames while the stream is running",
+                "toggleLabel": "Toggle auto capturing",
+                "framesLabel": "Frames",
+                "secondsLabel": "Seconds",
+                "every": "every"
+            },
+            "confidenceThreshold": {
+                "title": "Confidence threshold",
+                "description": "Capture frames when confidence is below threshold",
+                "toggleLabel": "Confidence threshold",
+                "sliderLabel": "Threshold"
+            }
+        },
+        "metrics": {
+            "sidebarLabel": "Pipeline metrics",
+            "empty": {
+                "title": "No statistics available",
+                "description": "Pipeline metrics will show here once the pipeline starts running and processing data."
+            },
+            "throughput": {
+                "title": "Throughput",
+                "axisLabel": "requests/sec"
+            },
+            "latency": {
+                "title": "Latency",
+                "axisLabel": "ms"
+            }
+        },
+        "health": {
+            "overall": {
+                "running": "Running",
+                "idle": "Idle",
+                "problemsDetected": "Problems detected"
+            },
+            "component": {
+                "healthy": "Healthy",
+                "finished": "Finished",
+                "unavailable": "Unavailable",
+                "error": "Error"
+            },
+            "componentLabels": {
+                "source": "Source",
+                "sink": "Sink",
+                "model": "Model"
+            }
+        },
+        "stream": {
+            "start": "Start stream",
+            "enablePipelineToStart": "Enable pipeline to start stream",
+            "connectError": "Failed to connect to the stream",
+            "captureFrame": "Capture frame",
+            "captureSuccess": "Frame captured and added to the dataset."
         }
     },
     "project": {
