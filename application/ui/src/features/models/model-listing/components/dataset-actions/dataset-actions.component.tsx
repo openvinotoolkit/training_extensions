@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ExportDatasetConfig } from '@/components/export-dataset-config-dialog/export-dataset-config.component';
+import { useTranslation } from '@/i18n';
 import { ActionButton, AlertDialog, DialogContainer, Item, Key, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { useOverlayTriggerState } from '@react-stately/overlays';
@@ -18,6 +19,7 @@ type DatasetActionsProps = {
 };
 
 export const DatasetActions = ({ dataset }: DatasetActionsProps) => {
+    const { t } = useTranslation();
     const projectId = useProjectIdentifier();
     const renameDatasetRevisionMutation = useRenameDatasetRevision();
     const deleteDatasetRevisionMutation = useDeleteDatasetRevision();
@@ -69,9 +71,9 @@ export const DatasetActions = ({ dataset }: DatasetActionsProps) => {
                     <MoreMenu />
                 </ActionButton>
                 <Menu onAction={handleDatasetMenuAction} aria-label={'Dataset actions menu'}>
-                    <Item key={'rename'}>Rename</Item>
-                    <Item key={'delete'}>Delete</Item>
-                    <Item key={'export'}>Export</Item>
+                    <Item key={'rename'}>{t('dataset.revisions.actions.rename')}</Item>
+                    <Item key={'delete'}>{t('dataset.revisions.actions.delete')}</Item>
+                    <Item key={'export'}>{t('dataset.revisions.actions.export')}</Item>
                 </Menu>
             </MenuTrigger>
 
@@ -89,15 +91,13 @@ export const DatasetActions = ({ dataset }: DatasetActionsProps) => {
             <DialogContainer onDismiss={deleteDialog.close}>
                 {deleteDialog.isOpen && (
                     <AlertDialog
-                        title='Delete dataset revision'
+                        title={t('dataset.revisions.delete.title')}
                         variant='destructive'
-                        primaryActionLabel='Delete'
+                        primaryActionLabel={t('dataset.revisions.actions.delete')}
                         onPrimaryAction={handleDelete}
-                        cancelLabel='Cancel'
+                        cancelLabel={t('dataset.revisions.actions.cancel')}
                     >
-                        {`Are you sure you want to delete dataset revision "${dataset.name}"? ` +
-                            `You will still be able to see the model statistics but you won't ` +
-                            `be able to access the training dataset files.`}
+                        {t('dataset.revisions.delete.description', { name: dataset.name })}
                     </AlertDialog>
                 )}
             </DialogContainer>

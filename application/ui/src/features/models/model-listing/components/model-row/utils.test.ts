@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Metric } from '@/api/types';
+import { createI18nInstance } from '@/i18n';
 import { getMockedModel } from 'mocks/mock-model';
 import { describe, expect, it } from 'vitest';
 
@@ -257,6 +258,8 @@ describe('getFirstAvailableTestingMetric', () => {
 });
 
 describe('getPerformanceColumnLabel', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     it('returns metric name when models have testing metrics', () => {
         const modelWithMetric = getMockedModel({
             variants: [
@@ -274,31 +277,31 @@ describe('getPerformanceColumnLabel', () => {
             ],
         });
 
-        expect(getPerformanceColumnLabel([modelWithMetric], 'classification')).toBe('Accuracy');
+        expect(getPerformanceColumnLabel([modelWithMetric], 'classification', t)).toBe('Accuracy');
     });
 
     it('returns "Accuracy" for classification task when models have no testing metrics', () => {
         const modelWithoutMetric = getMockedModel({ variants: [] });
 
-        expect(getPerformanceColumnLabel([modelWithoutMetric], 'classification')).toBe('Accuracy');
+        expect(getPerformanceColumnLabel([modelWithoutMetric], 'classification', t)).toBe('Accuracy');
     });
 
     it('returns "mAP" for detection task when models have no testing metrics', () => {
         const modelWithoutMetric = getMockedModel({ variants: [] });
 
-        expect(getPerformanceColumnLabel([modelWithoutMetric], 'detection')).toBe('mAP');
+        expect(getPerformanceColumnLabel([modelWithoutMetric], 'detection', t)).toBe('mAP');
     });
 
     it('returns "mAP" for instance_segmentation task when models have no testing metrics', () => {
         const modelWithoutMetric = getMockedModel({ variants: [] });
 
-        expect(getPerformanceColumnLabel([modelWithoutMetric], 'instance_segmentation')).toBe('mAP');
+        expect(getPerformanceColumnLabel([modelWithoutMetric], 'instance_segmentation', t)).toBe('mAP');
     });
 
     it('returns "mAP" for null task type when models have no testing metrics', () => {
         const modelWithoutMetric = getMockedModel({ variants: [] });
 
-        expect(getPerformanceColumnLabel([modelWithoutMetric], null)).toBe('mAP');
+        expect(getPerformanceColumnLabel([modelWithoutMetric], null, t)).toBe('mAP');
     });
 
     it('returns undefined model metric name over default task type metric', () => {
@@ -320,10 +323,10 @@ describe('getPerformanceColumnLabel', () => {
 
         // Even though task is classification (which defaults to Accuracy),
         // if model has mAP metric, it should return mAP
-        expect(getPerformanceColumnLabel([modelWithMAPMetric], 'classification')).toBe('mAP');
+        expect(getPerformanceColumnLabel([modelWithMAPMetric], 'classification', t)).toBe('mAP');
     });
 
     it('handles undefined models array', () => {
-        expect(getPerformanceColumnLabel(undefined, 'classification')).toBe('Accuracy');
+        expect(getPerformanceColumnLabel(undefined, 'classification', t)).toBe('Accuracy');
     });
 });

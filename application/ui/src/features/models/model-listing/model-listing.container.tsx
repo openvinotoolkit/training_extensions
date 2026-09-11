@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Divider, Flex, Heading } from '@geti-ui/ui';
 import { useGetCurrentRunningJobs } from 'hooks/api/jobs/jobs.hook';
 import { isEmpty, isString } from 'lodash-es';
@@ -14,6 +15,7 @@ import { ModelListing } from './model-listing.component';
 import { ModelListingProvider, useModelListing } from './provider/model-listing-provider';
 
 const ModelListingContent = () => {
+    const { t } = useTranslation();
     const runningJobs = useGetCurrentRunningJobs();
     const { groupedModels, searchBy, datasetRevisions, groupBy, showFailedModels } = useModelListing();
 
@@ -41,9 +43,9 @@ const ModelListingContent = () => {
                 >
                     <NoTrainedModels />
                     <Heading level={2} UNSAFE_style={{ textAlign: 'center' }}>
-                        No models yet.
+                        {t('models.list.empty.title')}
                         <br />
-                        Train your first model to get started.
+                        {t('models.list.empty.description')}
                     </Heading>
                     <TrainModel />
                 </Flex>

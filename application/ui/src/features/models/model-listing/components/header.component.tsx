@@ -3,6 +3,7 @@
 
 import { Key } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Grid, Item, Menu, MenuTrigger, Picker } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
 
@@ -16,6 +17,8 @@ type MoreOptionsProps = {
     onToggleShowFailedModels: () => void;
 };
 const MoreOptions = ({ showFailedModels, onToggleShowFailedModels }: MoreOptionsProps) => {
+    const { t } = useTranslation();
+
     const handleOptionsAction = (key: Key) => {
         switch (key) {
             case 'show-failed':
@@ -32,27 +35,30 @@ const MoreOptions = ({ showFailedModels, onToggleShowFailedModels }: MoreOptions
                 <MoreMenu />
             </ActionButton>
             <Menu onAction={handleOptionsAction} aria-label={'Model listing options menu'}>
-                <Item key={'show-failed'}>{showFailedModels ? 'Hide failed models' : 'Show failed models'}</Item>
+                <Item key={'show-failed'}>
+                    {showFailedModels ? t('models.list.hideFailedModels') : t('models.list.showFailedModels')}
+                </Item>
             </Menu>
         </MenuTrigger>
     );
 };
 
 export const Header = () => {
+    const { t } = useTranslation();
     const { groupBy, onGroupByChange, searchBy, onSearchChange, showFailedModels, onToggleShowFailedModels } =
         useModelListing();
 
     return (
         <Grid columns={['auto auto 1fr']} gap={'size-100'} alignItems={'center'}>
             <Picker
-                placeholder={'Group by'}
+                placeholder={t('models.list.groupByPlaceholder')}
                 width={'size-2400'}
                 aria-label={'Group models'}
                 selectedKey={groupBy}
                 onSelectionChange={(key) => onGroupByChange(key as GroupByMode)}
             >
-                <Item key='dataset'>Group by: Dataset</Item>
-                <Item key='architecture'>Group by: Architecture</Item>
+                <Item key='dataset'>{t('models.list.groupByDataset')}</Item>
+                <Item key='architecture'>{t('models.list.groupByArchitecture')}</Item>
             </Picker>
 
             <MoreOptions showFailedModels={showFailedModels} onToggleShowFailedModels={onToggleShowFailedModels} />

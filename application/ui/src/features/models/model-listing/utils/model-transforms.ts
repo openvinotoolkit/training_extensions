@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetRevision, Model } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import type { GroupByMode, GroupedModels, SortDescriptor } from '../types';
 import { groupModelsByArchitecture, groupModelsByDataset } from './grouping';
@@ -22,9 +23,10 @@ export const filterOutTrainingModels = (models: Model[]): Model[] => {
 export const groupModels = (
     models: Model[],
     mode: GroupByMode,
-    datasetRevisions: DatasetRevision[]
+    datasetRevisions: DatasetRevision[],
+    t: TranslateFn
 ): GroupedModels[] =>
-    mode === 'dataset' ? groupModelsByDataset(models, { datasetRevisions }) : groupModelsByArchitecture(models);
+    mode === 'dataset' ? groupModelsByDataset(models, t, { datasetRevisions }) : groupModelsByArchitecture(models);
 
 export const sortGroupedModels = (
     groups: GroupedModels[],

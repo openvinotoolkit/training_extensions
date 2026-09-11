@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, Divider, Form, Heading, TextField } from '@geti-ui/ui';
 
 interface RenameModelDialogProps {
@@ -13,6 +14,7 @@ interface RenameModelDialogProps {
 }
 
 export const RenameModelDialog = ({ currentName, onRename, onClose, isPending }: RenameModelDialogProps) => {
+    const { t } = useTranslation();
     const [newName, setNewName] = useState(currentName);
 
     const hasSameName = newName.trim() === currentName;
@@ -25,19 +27,25 @@ export const RenameModelDialog = ({ currentName, onRename, onClose, isPending }:
 
     return (
         <Dialog>
-            <Heading>Rename model</Heading>
+            <Heading>{t('models.actions.renameDialog.title')}</Heading>
 
             <Divider />
 
             <Content>
                 <Form onSubmit={handleSubmit} validationBehavior={'native'}>
-                    <TextField label='Model name' value={newName} onChange={setNewName} width='100%' isRequired />
+                    <TextField
+                        label={t('models.actions.renameDialog.nameLabel')}
+                        value={newName}
+                        onChange={setNewName}
+                        width='100%'
+                        isRequired
+                    />
                     <ButtonGroup align={'end'} marginTop={'size-300'}>
                         <Button variant='secondary' onPress={onClose}>
-                            Cancel
+                            {t('models.actions.cancel')}
                         </Button>
                         <Button variant='accent' type='submit' isPending={isPending} isDisabled={hasSameName}>
-                            Rename
+                            {t('models.actions.rename')}
                         </Button>
                     </ButtonGroup>
                 </Form>
