@@ -70,7 +70,7 @@ class PytorchcvWeightsLoader:
         from pytorchcv.models.common.model_store import download_model
 
         weights_path = Path(weights) if weights is not None else None
-        if weights_path is not None and weights_path.suffix == ".zip":
+        if weights_path is not None and weights_path.suffix == ".zip" and weights_path.is_file():
             with zipfile.ZipFile(weights_path) as zf:
                 zf.extractall(weights_path.parent)
             weights_path = weights_path.with_suffix("")
