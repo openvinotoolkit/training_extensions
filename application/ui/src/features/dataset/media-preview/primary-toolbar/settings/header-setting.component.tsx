@@ -7,6 +7,7 @@ import { useNumberFormatter } from 'react-aria';
 
 export interface HeaderSettingProps {
     headerText: string;
+    ariaLabel: string;
     value: number;
     defaultValue: number;
     handleValueChange: (value: number) => void;
@@ -15,6 +16,7 @@ export interface HeaderSettingProps {
 
 export const HeaderSetting = ({
     headerText,
+    ariaLabel,
     value,
     handleValueChange,
     formatOptions,
@@ -30,7 +32,7 @@ export const HeaderSetting = ({
                     <ActionButton
                         isQuiet
                         onPress={() => handleValueChange(defaultValue)}
-                        aria-label={`Reset ${headerText.toLocaleLowerCase()}`}
+                        aria-label={`Reset ${ariaLabel.toLocaleLowerCase()}`}
                     >
                         <Revisit />
                     </ActionButton>

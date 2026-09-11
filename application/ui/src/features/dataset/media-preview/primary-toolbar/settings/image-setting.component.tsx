@@ -7,15 +7,17 @@ import { HeaderSetting, HeaderSettingProps } from './header-setting.component';
 
 export const ImageSetting = ({
     headerText,
+    ariaLabel,
     value,
     handleValueChange,
     defaultValue,
     formatOptions,
 }: HeaderSettingProps) => {
     return (
-        <div aria-label={headerText}>
+        <div aria-label={ariaLabel}>
             <HeaderSetting
                 headerText={headerText}
+                ariaLabel={ariaLabel}
                 value={value}
                 defaultValue={defaultValue}
                 formatOptions={formatOptions}
@@ -28,7 +30,7 @@ export const ImageSetting = ({
                 minValue={-100}
                 maxValue={100}
                 onChange={handleValueChange}
-                aria-label={`${headerText} setting`}
+                aria-label={`${ariaLabel} setting`}
                 fillOffset={0}
                 isFilled
             />

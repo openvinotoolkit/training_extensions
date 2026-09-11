@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { BoundingBox, Polygon, SegmentAnythingIcon, Selector } from '@geti-ui/ui/icons';
 
 import { ReactComponent as MagneticLasso } from '../../../../assets/icons/magnetic-lasso.svg';
@@ -15,93 +16,96 @@ import { useSelectedMediaItem } from '../../selected-media-item-provider.compone
 import { ToolConfig } from '../interface';
 import { canRasteriseAtFullSize } from '../utils';
 
-const SELECTION_TOOL_CONFIG: ToolConfig = {
-    type: 'selection',
-    icon: Selector,
-    hotkey: HOTKEYS.selectionTool,
-    label: 'Selection',
-};
-
-const BOUNDING_BOX_TOOL_CONFIG: ToolConfig = {
-    type: 'bounding-box',
-    icon: BoundingBox,
-    hotkey: HOTKEYS.boundingBoxTool,
-    label: 'Bounding box',
-    tooltip: {
-        img: BoundingBoxImg,
-        description: 'Draw a rectangle or square surrounding an object in an image.',
-    },
-};
-
-const AUTO_SEGMENTATION_DETECTION_CONFIG: ToolConfig = {
-    type: 'sam',
-    icon: SegmentAnythingIcon,
-    hotkey: HOTKEYS.autoSegmentation,
-    label: 'Auto segmentation',
-    tooltip: {
-        img: SAMDetectionImg,
-        description:
-            'Move your cursor over an object to preview a suggested rectangle, then click to create the annotation.',
-    },
-};
-
-const AUTO_SEGMENTATION_CONFIG: ToolConfig = {
-    type: 'sam',
-    icon: SegmentAnythingIcon,
-    hotkey: HOTKEYS.autoSegmentation,
-    label: 'Auto segmentation',
-    tooltip: {
-        img: SAMSegmentationImg,
-        description:
-            'Move your cursor over an object to preview a suggested polygon, then click to create the annotation.',
-    },
-};
-
-const POLYGON_TOOL_CONFIG: ToolConfig = {
-    type: 'polygon',
-    icon: Polygon,
-    hotkey: HOTKEYS.polygonTool,
-    label: 'Polygon',
-    tooltip: {
-        img: PolygonImg,
-        description:
-            'Click to place points one by one, or hold and drag to draw freehand. Ideal for irregular shapes ' +
-            'requiring pixel-precision.',
-    },
-};
-
-const MAGNETIC_LASSO_TOOL_CONFIG: ToolConfig = {
-    type: 'magnetic-lasso',
-    icon: MagneticLasso,
-    hotkey: HOTKEYS.magneticLassoTool,
-    label: 'Magnetic Lasso',
-    tooltip: {
-        img: MagneticLassoImg,
-        description: "Hover along an object's edge and click periodically to snap the outline to its borders.",
-    },
-};
-
-const TASK_TOOL_CONFIG: Record<string, ToolConfig[]> = {
-    classification: [],
-    detection: [SELECTION_TOOL_CONFIG, BOUNDING_BOX_TOOL_CONFIG, AUTO_SEGMENTATION_DETECTION_CONFIG],
-    instance_segmentation: [
-        SELECTION_TOOL_CONFIG,
-        POLYGON_TOOL_CONFIG,
-        MAGNETIC_LASSO_TOOL_CONFIG,
-        AUTO_SEGMENTATION_CONFIG,
-    ],
-};
-
 export const useAvailableTools = (): ToolConfig[] => {
+    const { t } = useTranslation();
     const taskType = useProjectTask();
     const { mediaItem } = useSelectedMediaItem();
 
+    const selectionToolConfig: ToolConfig = {
+        type: 'selection',
+        icon: Selector,
+        hotkey: HOTKEYS.selectionTool,
+        label: t('annotator.tools.selection.label'),
+        ariaLabel: 'Selection',
+    };
+
+    const boundingBoxToolConfig: ToolConfig = {
+        type: 'bounding-box',
+        icon: BoundingBox,
+        hotkey: HOTKEYS.boundingBoxTool,
+        label: t('annotator.tools.boundingBox.label'),
+        ariaLabel: 'Bounding box',
+        tooltip: {
+            img: BoundingBoxImg,
+            description: t('annotator.tools.boundingBox.description'),
+        },
+    };
+
+    const autoSegmentationDetectionConfig: ToolConfig = {
+        type: 'sam',
+        icon: SegmentAnythingIcon,
+        hotkey: HOTKEYS.autoSegmentation,
+        label: t('annotator.tools.autoSegmentation.label'),
+        ariaLabel: 'Auto segmentation',
+        tooltip: {
+            img: SAMDetectionImg,
+            description: t('annotator.tools.autoSegmentation.detectionDescription'),
+        },
+    };
+
+    const autoSegmentationConfig: ToolConfig = {
+        type: 'sam',
+        icon: SegmentAnythingIcon,
+        hotkey: HOTKEYS.autoSegmentation,
+        label: t('annotator.tools.autoSegmentation.label'),
+        ariaLabel: 'Auto segmentation',
+        tooltip: {
+            img: SAMSegmentationImg,
+            description: t('annotator.tools.autoSegmentation.segmentationDescription'),
+        },
+    };
+
+    const polygonToolConfig: ToolConfig = {
+        type: 'polygon',
+        icon: Polygon,
+        hotkey: HOTKEYS.polygonTool,
+        label: t('annotator.tools.polygon.label'),
+        ariaLabel: 'Polygon',
+        tooltip: {
+            img: PolygonImg,
+            description: t('annotator.tools.polygon.description'),
+        },
+    };
+
+    const magneticLassoToolConfig: ToolConfig = {
+        type: 'magnetic-lasso',
+        icon: MagneticLasso,
+        hotkey: HOTKEYS.magneticLassoTool,
+        label: t('annotator.tools.magneticLasso.label'),
+        ariaLabel: 'Magnetic Lasso',
+        tooltip: {
+            img: MagneticLassoImg,
+            description: t('annotator.tools.magneticLasso.description'),
+        },
+    };
+
+    const taskToolConfig: Record<string, ToolConfig[]> = {
+        classification: [],
+        detection: [selectionToolConfig, boundingBoxToolConfig, autoSegmentationDetectionConfig],
+        instance_segmentation: [
+            selectionToolConfig,
+            polygonToolConfig,
+            magneticLassoToolConfig,
+            autoSegmentationConfig,
+        ],
+    };
+
     // Disable smart tools (SAM, magnetic lasso, SSIM) for oversized media.
     if (!canRasteriseAtFullSize(mediaItem.width, mediaItem.height)) {
-        return TASK_TOOL_CONFIG[taskType].filter(
+        return taskToolConfig[taskType].filter(
             (tool) => tool.type !== 'sam' && tool.type !== 'magnetic-lasso' && tool.type !== 'ssim'
         );
     }
 
-    return TASK_TOOL_CONFIG[taskType];
+    return taskToolConfig[taskType];
 };

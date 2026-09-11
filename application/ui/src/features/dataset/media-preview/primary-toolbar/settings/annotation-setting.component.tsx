@@ -11,6 +11,7 @@ interface AnnotationSettingsProps extends HeaderSettingProps {
 
 export const AnnotationSetting = ({
     headerText,
+    ariaLabel,
     value,
     handleValueChange,
     formatOptions,
@@ -18,9 +19,10 @@ export const AnnotationSetting = ({
     isDisabled,
 }: AnnotationSettingsProps) => {
     return (
-        <div aria-label={headerText}>
+        <div aria-label={ariaLabel}>
             <HeaderSetting
                 headerText={headerText}
+                ariaLabel={ariaLabel}
                 value={value}
                 defaultValue={defaultValue}
                 formatOptions={formatOptions}
@@ -33,7 +35,7 @@ export const AnnotationSetting = ({
                 step={0.01}
                 value={value}
                 onChange={handleValueChange}
-                aria-label={`${headerText} setting`}
+                aria-label={`${ariaLabel} setting`}
                 isDisabled={isDisabled}
                 isFilled
             />

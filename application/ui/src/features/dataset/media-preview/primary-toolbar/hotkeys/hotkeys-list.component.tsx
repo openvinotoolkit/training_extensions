@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Divider, Grid, Keyboard, Text } from '@geti-ui/ui';
 
 import { formatHotkeyForDisplay, HOTKEYS } from '../../../../../shared/hotkeys-definition';
@@ -21,6 +22,7 @@ const HotkeyItem = ({ hotkeyName, hotkey }: HotkeyItemProps) => {
 };
 
 export const HotkeysList = () => {
+    const { t } = useTranslation();
     const availableTools = useAvailableTools();
     const submitHotkey = formatHotkeyForDisplay(HOTKEYS.submit);
     const submitAlternativeHotkey = formatHotkeyForDisplay(HOTKEYS.submitAlternative);
@@ -28,41 +30,53 @@ export const HotkeysList = () => {
     return (
         <Grid columns={['2fr', '1fr']} rowGap={'size-100'}>
             <HotkeyItem
-                hotkeyName={'Submit annotations/predictions'}
+                hotkeyName={t('annotator.hotkeys.submitAnnotationsPredictions')}
                 hotkey={`${submitHotkey} or ${submitAlternativeHotkey}`}
             />
             <Divider size='S' gridColumn={'1/-1'} />
-            <HotkeyItem hotkeyName={'Previous media'} hotkey={formatHotkeyForDisplay(HOTKEYS.previousMedia)} />
-            <HotkeyItem hotkeyName={'Next media'} hotkey={formatHotkeyForDisplay(HOTKEYS.nextMedia)} />
+            <HotkeyItem
+                hotkeyName={t('annotator.hotkeys.previousMedia')}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.previousMedia)}
+            />
+            <HotkeyItem
+                hotkeyName={t('annotator.hotkeys.nextMedia')}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.nextMedia)}
+            />
             <Divider size='S' gridColumn={'1/-1'} />
             {availableTools.map((tool) => (
-                <HotkeyItem key={tool.label} hotkeyName={tool.label} hotkey={formatHotkeyForDisplay(tool.hotkey)} />
+                <HotkeyItem key={tool.type} hotkeyName={tool.label} hotkey={formatHotkeyForDisplay(tool.hotkey)} />
             ))}
             <Divider size='S' gridColumn={'1/-1'} />
-            <HotkeyItem hotkeyName={'Undo'} hotkey={formatHotkeyForDisplay(HOTKEYS.undo)} />
+            <HotkeyItem hotkeyName={t('annotator.hotkeys.undo')} hotkey={formatHotkeyForDisplay(HOTKEYS.undo)} />
             <HotkeyItem
-                hotkeyName={'Redo'}
+                hotkeyName={t('annotator.hotkeys.redo')}
                 hotkey={`${formatHotkeyForDisplay(HOTKEYS.redo)} or ${formatHotkeyForDisplay(HOTKEYS.redoAlt)}`}
             />
-            <HotkeyItem hotkeyName={'Delete selected annotation'} hotkey={formatHotkeyForDisplay(HOTKEYS.delete)} />
             <HotkeyItem
-                hotkeyName={'Show or hide all annotations'}
+                hotkeyName={t('annotator.hotkeys.deleteSelectedAnnotation')}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.delete)}
+            />
+            <HotkeyItem
+                hotkeyName={t('annotator.hotkeys.toggleAnnotationsVisibility')}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.toggleAnnotationsVisibility)}
             />
             <HotkeyItem
-                hotkeyName={'Select all annotations'}
+                hotkeyName={t('annotator.hotkeys.selectAllAnnotations')}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.selectAllAnnotations)}
             />
             <HotkeyItem
-                hotkeyName={'Deselect all annotations'}
+                hotkeyName={t('annotator.hotkeys.deselectAllAnnotations')}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.deselectAllAnnotations)}
             />
             <HotkeyItem
-                hotkeyName={'Select next annotation'}
+                hotkeyName={t('annotator.hotkeys.selectNextAnnotation')}
                 hotkey={formatHotkeyForDisplay(HOTKEYS.selectNextAnnotation)}
             />
             <Divider size='S' gridColumn={'1/-1'} />
-            <HotkeyItem hotkeyName={'Reset zoom'} hotkey={formatHotkeyForDisplay(HOTKEYS.fitToScreen)} />
+            <HotkeyItem
+                hotkeyName={t('annotator.hotkeys.resetZoom')}
+                hotkey={formatHotkeyForDisplay(HOTKEYS.fitToScreen)}
+            />
         </Grid>
     );
 };
