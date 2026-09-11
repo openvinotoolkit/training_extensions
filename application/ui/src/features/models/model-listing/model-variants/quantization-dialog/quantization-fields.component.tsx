@@ -3,6 +3,7 @@
 
 import { ReactNode, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Checkbox,
@@ -54,6 +55,7 @@ export const MaxAccuracyDropField = ({
     onDisabledChange,
     onReset,
 }: MaxAccuracyDropFieldProps) => {
+    const { t } = useTranslation();
     const [draftValue, setDraftValue] = useState<number | null>(null);
     const parameterValue = draftValue ?? value;
 
@@ -64,17 +66,16 @@ export const MaxAccuracyDropField = ({
 
     return (
         <QuantizationFieldLayout onReset={onReset}>
-            <Text>Max accuracy drop (%)</Text>
+            <Text>{t('models.optimize.fields.maxAccuracyDrop.label')}</Text>
             <ContextualHelp>
                 <Content>
-                    Maximum allowed drop in validation accuracy.
+                    {t('models.optimize.fields.maxAccuracyDrop.help.paragraph1')}
                     <br />
                     <br />
-                    Beware that accuracy-aware quantization may take a long time when the max allowed drop is small.
+                    {t('models.optimize.fields.maxAccuracyDrop.help.paragraph2')}
                     <br />
                     <br />
-                    Also note that the final testing accuracy may be lower than the specified validation accuracy
-                    threshold, especially for relatively small datasets.
+                    {t('models.optimize.fields.maxAccuracyDrop.help.paragraph3')}
                 </Content>
             </ContextualHelp>
             <Flex gap={'size-100'}>
@@ -103,7 +104,7 @@ export const MaxAccuracyDropField = ({
                 />
             </Flex>
             <Checkbox aria-label='No maximum' isSelected={isDisabled} onChange={onDisabledChange}>
-                No maximum
+                {t('models.optimize.fields.maxAccuracyDrop.noMaximum')}
             </Checkbox>
         </QuantizationFieldLayout>
     );
@@ -117,20 +118,20 @@ type MaxNumIterationsFieldProps = {
 };
 
 export const MaxNumIterationsField = ({ value, onChange, isDisabled, onReset }: MaxNumIterationsFieldProps) => {
+    const { t } = useTranslation();
+
     return (
         <QuantizationFieldLayout onReset={onReset}>
-            <Text>Max number of iterations</Text>
+            <Text>{t('models.optimize.fields.maxIterations.label')}</Text>
             <ContextualHelp>
                 <Content>
-                    Maximum number of iterations of accuracy-aware quantization.
+                    {t('models.optimize.fields.maxIterations.help.paragraph1')}
                     <br />
                     <br />
-                    Accuracy-aware quantization iteratively removes model layers from the quantization scope until the
-                    max accuracy drop criteria is met. Limiting the number of iterations can significantly reduce the
-                    time it takes to quantize models with many layers.
+                    {t('models.optimize.fields.maxIterations.help.paragraph2')}
                     <br />
                     <br />
-                    This parameter is only used when a max accuracy drop is set.
+                    {t('models.optimize.fields.maxIterations.help.paragraph3')}
                 </Content>
             </ContextualHelp>
             <Flex gap={'size-100'}>
@@ -168,6 +169,7 @@ export const CalibrationDatasetSizeField = ({
     onDisabledChange,
     onReset,
 }: CalibrationDatasetSizeFieldProps) => {
+    const { t } = useTranslation();
     const [draftValue, setDraftValue] = useState<number | null>(null);
     const parameterValue = draftValue ?? value;
 
@@ -178,10 +180,10 @@ export const CalibrationDatasetSizeField = ({
 
     return (
         <QuantizationFieldLayout onReset={onReset}>
-            <Text>Max calibration size</Text>
+            <Text>{t('models.optimize.fields.calibrationSize.label')}</Text>
 
             <ContextualHelp>
-                <Content>Calibration samples will be randomly selected within the dataset</Content>
+                <Content>{t('models.optimize.fields.calibrationSize.help')}</Content>
             </ContextualHelp>
 
             <Flex gap={'size-100'}>
@@ -209,7 +211,7 @@ export const CalibrationDatasetSizeField = ({
                 />
             </Flex>
             <Checkbox aria-label='Use full dataset' isSelected={isDisabled} onChange={onDisabledChange}>
-                Use full dataset
+                {t('models.optimize.fields.calibrationSize.useFullDataset')}
             </Checkbox>
         </QuantizationFieldLayout>
     );

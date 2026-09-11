@@ -4,6 +4,7 @@
 import { Fragment } from 'react';
 
 import type { TrainingConfigurationParameter } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Grid, Text } from '@geti-ui/ui';
 
 import { useGetModelTrainingConfiguration } from '../../hooks/api/use-get-model-training-configuration.hook';
@@ -22,10 +23,11 @@ type TrainingConfigurationParametersListProps = {
 };
 
 const TrainingConfigurationParametersList = ({ parameters }: TrainingConfigurationParametersListProps) => {
-    const parameterRows = flattenParameters(parameters);
+    const { t } = useTranslation();
+    const parameterRows = flattenParameters(parameters, t);
 
     if (parameterRows.length === 0) {
-        return <Text>No parameters.</Text>;
+        return <Text>{t('models.training.parameters.noParameters')}</Text>;
     }
 
     return (
@@ -48,6 +50,7 @@ const TrainingConfigurationParametersList = ({ parameters }: TrainingConfigurati
 };
 
 export const ModelTrainingParameters = ({ modelId }: ModelTrainingParametersProps) => {
+    const { t } = useTranslation();
     const { data } = useGetModelTrainingConfiguration(modelId);
 
     const trainingGroup = findGroupByKey(data?.parameters, 'training');
@@ -64,25 +67,25 @@ export const ModelTrainingParameters = ({ modelId }: ModelTrainingParametersProp
             <Box
                 testId={'Box-LEARNING PARAMETERS'}
                 contentClassName={classes.scrollableContent}
-                title={'LEARNING PARAMETERS'}
+                title={t('models.training.parameters.learningParameters')}
                 content={<TrainingConfigurationParametersList parameters={learningParameters} />}
             />
             <Box
                 testId={'Box-FILTERS'}
                 contentClassName={classes.scrollableContent}
-                title={'FILTERS'}
+                title={t('models.training.parameters.filters')}
                 content={<TrainingConfigurationParametersList parameters={filteringGroup?.parameters || []} />}
             />
             <Box
                 testId={'Box-AUGMENTATIONS'}
                 contentClassName={classes.scrollableContent}
-                title={'AUGMENTATIONS'}
+                title={t('models.training.parameters.augmentations')}
                 content={<TrainingConfigurationParametersList parameters={augmentationGroup?.parameters || []} />}
             />
             <Box
                 testId={'Box-INTENSITY MAPPING'}
                 contentClassName={classes.scrollableContent}
-                title={'INTENSITY MAPPING'}
+                title={t('models.training.parameters.intensityMapping')}
                 content={<TrainingConfigurationParametersList parameters={intensityMappingParameters} />}
             />
         </Grid>

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Evaluation } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, Loading, Text } from '@geti-ui/ui';
 
 import { useGetModelTrainingMetrics } from '../../hooks/api/use-get-model-training-metrics.hook';
@@ -15,12 +16,13 @@ type ModelMetricsProps = {
 };
 
 export const ModelMetrics = ({ modelId, evaluations, filesDeleted = false }: ModelMetricsProps) => {
+    const { t } = useTranslation();
     const { data: trainingMetrics, isPending, isError } = useGetModelTrainingMetrics(filesDeleted ? null : modelId);
 
     if (filesDeleted) {
         return (
             <Flex alignItems={'center'} justifyContent={'center'} height={'size-3000'}>
-                <Text>No available metrics</Text>
+                <Text>{t('models.metrics.noMetrics')}</Text>
             </Flex>
         );
     }
@@ -33,7 +35,7 @@ export const ModelMetrics = ({ modelId, evaluations, filesDeleted = false }: Mod
                 </Flex>
             ) : isError ? (
                 <Flex alignItems={'center'} justifyContent={'center'} height={'size-3000'}>
-                    <Text>Failed to load training metrics</Text>
+                    <Text>{t('models.metrics.loadError')}</Text>
                 </Flex>
             ) : (
                 <>

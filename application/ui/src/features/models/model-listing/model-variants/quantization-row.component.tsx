@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Model } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Button, Content, ContextualHelp, DialogTrigger, Flex, Text } from '@geti-ui/ui';
 
 import { QuantizationDialog } from './quantization-dialog/quantization-dialog.component';
@@ -11,20 +12,19 @@ type QuantizationRowProps = {
     isDisabled?: boolean;
 };
 export const QuantizationRow = ({ model, isDisabled = false }: QuantizationRowProps) => {
+    const { t } = useTranslation();
+
     return (
         <Flex marginTop={'size-150'} alignItems={'center'} justifyContent={'space-between'}>
             <Flex>
-                <Text>Optimize the FP16 model using OpenVINO NNCF (via INT8 quantization)</Text>
+                <Text>{t('models.optimize.description')}</Text>
                 <ContextualHelp>
-                    <Content>
-                        OpenVINO NNCF (Neural Network Compression Framework) via INT8 quantization reduces model size
-                        and speeds up inference with minimal impact on accuracy
-                    </Content>
+                    <Content>{t('models.optimize.contextualHelp')}</Content>
                 </ContextualHelp>
             </Flex>
             <DialogTrigger>
                 <Button variant={'secondary'} isDisabled={isDisabled}>
-                    Start quantization
+                    {t('models.optimize.start')}
                 </Button>
                 {(close) => <QuantizationDialog model={model} onClose={close} />}
             </DialogTrigger>

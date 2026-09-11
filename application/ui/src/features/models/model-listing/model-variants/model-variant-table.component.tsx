@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Model, ModelFormat, ModelVariant } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Cell,
@@ -43,6 +44,7 @@ type ModelVariantPrecisionRendererProps = {
 };
 
 const ModelVariantPrecisionRenderer = ({ variant }: ModelVariantPrecisionRendererProps) => {
+    const { t } = useTranslation();
     const numberFormatter = useNumberFormatter({
         style: 'percent',
         maximumFractionDigits: 1,
@@ -68,14 +70,22 @@ const ModelVariantPrecisionRenderer = ({ variant }: ModelVariantPrecisionRendere
             <Text>{variant.precision.toUpperCase()}</Text>
             {(calibrationDatasetSize || maxAccuracyDrop) && (
                 <ContextualHelp variant={'info'} placement={'top'}>
-                    <Heading>Quantized with NNCF PTQ</Heading>
+                    <Heading>{t('models.variants.quantizedInfo.title')}</Heading>
                     <Content>
                         <Flex direction={'column'}>
                             {maxAccuracyDrop !== null && (
-                                <Text>Max accuracy drop: {numberFormatter.format(maxAccuracyDrop)}</Text>
+                                <Text>
+                                    {t('models.variants.quantizedInfo.maxAccuracyDrop', {
+                                        value: numberFormatter.format(maxAccuracyDrop),
+                                    })}
+                                </Text>
                             )}
                             {calibrationDatasetSize != null && (
-                                <Text>Calibration dataset size: {calibrationDatasetSize}</Text>
+                                <Text>
+                                    {t('models.variants.quantizedInfo.calibrationDatasetSize', {
+                                        size: calibrationDatasetSize,
+                                    })}
+                                </Text>
                             )}
                         </Flex>
                     </Content>
@@ -86,6 +96,7 @@ const ModelVariantPrecisionRenderer = ({ variant }: ModelVariantPrecisionRendere
 };
 
 export const ModelVariantTable = ({ model, format }: ModelVariantTableProps) => {
+    const { t } = useTranslation();
     const projectId = useProjectIdentifier();
 
     const allVariants = model.variants ?? [];
@@ -94,7 +105,7 @@ export const ModelVariantTable = ({ model, format }: ModelVariantTableProps) => 
     const fp32PytorchVariant = getFp32PytorchVariant(allVariants);
 
     const fp32PytorchMetric = getPrimaryTestingMetricValue(fp32PytorchVariant);
-    const performanceColumnName = getPerformanceColumnName(variants, fp32PytorchMetric);
+    const performanceColumnName = getPerformanceColumnName(variants, fp32PytorchMetric, t);
     const baselinePerformanceValue = baselineVariant
         ? getVariantPerformanceValue(baselineVariant, fp32PytorchMetric)
         : undefined;
@@ -103,15 +114,15 @@ export const ModelVariantTable = ({ model, format }: ModelVariantTableProps) => 
         downloadFile(
             getModelVariantBinaryUrl(projectId, model.id, variant.id),
             getModelVariantBinaryFilename(model.id, variant),
-            'Model download started'
+            t('models.export.downloadStarted')
         );
     };
 
     return (
         <TableView aria-label={`Model variants for ${model.id}`} overflowMode={'wrap'} density={'compact'}>
             <TableHeader>
-                <Column isRowHeader>PRECISION</Column>
-                <Column isRowHeader>SIZE</Column>
+                <Column isRowHeader>{t('models.variants.columns.precision')}</Column>
+                <Column isRowHeader>{t('models.variants.columns.size')}</Column>
                 <Column isRowHeader>{performanceColumnName}</Column>
                 <Column align='end'>
                     <></>
