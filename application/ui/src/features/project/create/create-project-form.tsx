@@ -31,7 +31,12 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
     const { t } = useTranslation();
     const [selectedTask, setSelectedTask] = useState<TaskType | null>(null);
     const [labels, setLabels] = useState<Label[]>([]);
-    const [name, setName] = useState<string>(() => generateUniqueProjectName(projects.map((project) => project.name)));
+    const [name, setName] = useState<string>(() =>
+        generateUniqueProjectName(
+            projects.map((project) => project.name),
+            t
+        )
+    );
     const taskVerb = selectedTask === null ? undefined : t(MAP_TASK_TYPE_TO_VERB_KEY[selectedTask]);
 
     const [classificationTaskType, setClassificationTaskType] = useState<ClassificationTaskType>('single-label');
