@@ -906,6 +906,89 @@
                 "intensityMapping": "INTENSITY MAPPING",
                 "on": "On",
                 "off": "Off"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "Top-1 Acc on ImageNet",
+                    "mapOnCoco": "mAP on COCO",
+                    "map50OnCoco": "mAP50 on COCO"
+                },
+                "card": {
+                    "numberOfParameters": "Number of parameters: {{count}} million",
+                    "gigaflops": "Gigaflops: {{value}}",
+                    "license": "License: {{license}}"
+                },
+                "list": {
+                    "showMore": "Show more",
+                    "showLess": "Show less"
+                },
+                "sort": {
+                    "label": "Sort Models by:",
+                    "nameAsc": "Name (A to Z)",
+                    "nameDesc": "Name (Z to A)",
+                    "speedAsc": "Speed (fastest first)",
+                    "speedDesc": "Speed (slowest first)",
+                    "accuracyAsc": "Accuracy (lowest first)",
+                    "accuracyDesc": "Accuracy (highest first)"
+                },
+                "timm": {
+                    "heading": "TIMM model configuration",
+                    "architectureFamilyLabel": "Architecture family",
+                    "selectArchitecturePlaceholder": "Select architecture",
+                    "modelVariantLabel": "Model variant",
+                    "selectVariantPlaceholder": "Select variant",
+                    "pretrainedWeightsLabel": "Pretrained Weights",
+                    "selectWeightsPlaceholder": "Select weights",
+                    "parameters": "Parameters: {{count}} million",
+                    "gigaflops": "GigaFlops: {{value}}",
+                    "licenseLabel": "License: "
+                }
+            },
+            "devices": {
+                "selectLabel": "Select training device"
+            },
+            "setup": {
+                "trigger": "Train model",
+                "dialog": {
+                    "title": "Select a model to train",
+                    "disabledReasonTitle": "Why can I not start training?",
+                    "cancel": "Cancel",
+                    "back": "Back",
+                    "advancedSettings": "Advanced settings",
+                    "start": "Start"
+                },
+                "toast": {
+                    "trainingStarted": "Model training started successfully.",
+                    "trainingStartedWithLink": "Model training started successfully. <link>Open models screen to see progress.</link>"
+                },
+                "selectDataset": {
+                    "label": "Select dataset",
+                    "useCurrentDataset": "Use current dataset",
+                    "helpTitle": "Selecting a dataset",
+                    "helpDescription": "Choose the version of the dataset to use for training. If you want to train the new model\n                            on the exact same data (media and annotations) as another model, please select the\n                            corresponding dataset revision. Conversely, if you want to train on the most recent version\n                            of the data (what you see in the \"Dataset\" page), please select \"Use\n                            current dataset\"."
+                },
+                "selectModel": {
+                    "label": "Select input weights",
+                    "defaultPretrainedWeights": "Default pre-trained weights",
+                    "helpTitle": "Selecting input weights",
+                    "helpDescription": "Choose an existing model to continue fine-tuning, or select \"Default pre-trained weights\" to fine-tune a new model starting from publicly available weights pre-trained on large public datasets."
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "In order to train a model, you need to annotate at least 3 items in your dataset, although we recommend annotating several more for better results.",
+                "emptySubsetsReason": "In order to train a model, each subset (training, validation, testing) needs at least one item. This condition is currently not satisfiable, because the {{subsetClause}} empty and {{assignmentDetail}}.",
+                "emptySubsetClause_one": "{{list}} subset is",
+                "emptySubsetClause_other": "{{list}} subsets are",
+                "reviewedOnly_one": "there is {{count}} reviewed item left to assign",
+                "reviewedOnly_other": "there are {{count}} reviewed items left to assign",
+                "unannotatedOnly_one": "there is {{count}} item that still needs annotation before it can be assigned",
+                "unannotatedOnly_other": "there are {{count}} items that still need annotation before they can be assigned",
+                "mixedReviewedClause_one": "there is {{count}} reviewed item ready to assign",
+                "mixedReviewedClause_other": "there are {{count}} reviewed items ready to assign",
+                "mixedUnannotatedClause_one": "{{count}} item that still needs annotation before it can be assigned",
+                "mixedUnannotatedClause_other": "{{count}} items that still need annotation before they can be assigned",
+                "mixedAssignmentDetail": "{{reviewedClause}} and {{unannotatedClause}}",
+                "noUnassignedItems": "there are no unassigned items available to redistribute"
             }
         },
         "list": {
@@ -1016,6 +1099,13 @@
         "links": {
             "intelSimplified": "Intel Simplified Software License",
             "dinov2": "DINOv3 License"
+        },
+        "edgecrafter": {
+            "prefix": "License: ",
+            "linkText": "EdgeCrafter"
+        },
+        "ultralytics": {
+            "linkText": "Follow Ultralytics guidance on license usage"
         }
     },
     "application": {

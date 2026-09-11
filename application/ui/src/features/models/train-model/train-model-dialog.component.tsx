@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { toast } from '@/components/toast/toast.component';
+import { Trans, useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, Divider, Flex, Footer, Heading, InlineAlert, Text } from '@geti-ui/ui';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { Link, useMatch } from 'react-router-dom';
@@ -19,6 +20,7 @@ type TrainModelDialogProps = {
 };
 
 export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
+    const { t } = useTranslation();
     const {
         selectedTrainingDevice,
         resolvedModelArchitectureId,
@@ -45,14 +47,16 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
 
                 toast({
                     message: isModelsPage ? (
-                        <Text>Model training started successfully.</Text>
+                        <Text>{t('models.training.setup.toast.trainingStarted')}</Text>
                     ) : (
                         <Flex alignItems={'center'} gap={'size-50'} wrap={'wrap'}>
                             <Text>
-                                Model training started successfully.{' '}
-                                <Link to={paths.project.models({ projectId })} viewTransition>
-                                    Open models screen to see progress.
-                                </Link>
+                                <Trans
+                                    i18nKey='models.training.setup.toast.trainingStartedWithLink'
+                                    components={{
+                                        link: <Link to={paths.project.models({ projectId })} viewTransition />,
+                                    }}
+                                />
                             </Text>
                         </Flex>
                     ),
@@ -64,7 +68,7 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
 
     return (
         <Dialog width={'clamp(800px, 50vw, 1150px)'} height={isAdvancedSettingsMode ? '80vh' : undefined}>
-            <Heading>Select a model to train</Heading>
+            <Heading>{t('models.training.setup.dialog.title')}</Heading>
 
             <Divider size={'S'} />
 
@@ -80,7 +84,7 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
                 <Flex alignItems={'center'} marginBottom={'size-200'}>
                     {isTrainingDisabled ? (
                         <InlineAlert variant={'notice'}>
-                            <Heading>Why can I not start training?</Heading>
+                            <Heading>{t('models.training.setup.dialog.disabledReasonTitle')}</Heading>
                             <Content>{trainingDisabledReason}</Content>
                         </InlineAlert>
                     ) : null}
@@ -88,14 +92,14 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
 
                 <ButtonGroup marginStart={'auto'}>
                     <Button variant={'secondary'} onPress={onClose}>
-                        Cancel
+                        {t('models.training.setup.dialog.cancel')}
                     </Button>
                     {isAdvancedSettingsMode ? (
                         <Button
                             variant={'primary'}
                             onPress={() => onToggleAdvancedSettingsMode(!isAdvancedSettingsMode)}
                         >
-                            Back
+                            {t('models.training.setup.dialog.back')}
                         </Button>
                     ) : (
                         <Button
@@ -103,7 +107,7 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
                             isDisabled={isAdvancedSettingsModeDisabled}
                             onPress={() => onToggleAdvancedSettingsMode(!isAdvancedSettingsMode)}
                         >
-                            Advanced settings
+                            {t('models.training.setup.dialog.advancedSettings')}
                         </Button>
                     )}
 
@@ -113,7 +117,7 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
                         isDisabled={isStartButtonDisabled}
                         isPending={isPending}
                     >
-                        Start
+                        {t('models.training.setup.dialog.start')}
                     </Button>
                 </ButtonGroup>
             </Footer>

@@ -3,6 +3,7 @@
 
 import { Suspense } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Button, DialogTrigger, Loading, View } from '@geti-ui/ui';
 
 import { usePrefetchTrainModelData } from './api/use-prefetch-train-model-data';
@@ -10,11 +11,13 @@ import { TrainModelDialog } from './train-model-dialog.component';
 import { TrainModelProvider } from './train-model-provider.component';
 
 export const TrainModel = () => {
+    const { t } = useTranslation();
+
     usePrefetchTrainModelData();
 
     return (
         <DialogTrigger>
-            <Button margin={0}>Train model</Button>
+            <Button margin={0}>{t('models.training.setup.trigger')}</Button>
             {(close) => (
                 <Suspense
                     fallback={

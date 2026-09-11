@@ -102,12 +102,12 @@ describe('useTrainModelDisabledReason', () => {
             expect(result.current.reason).toBe(
                 'In order to train a model, each subset (training, validation, testing) needs at least one item. ' +
                     'This condition is currently not satisfiable, because the training, validation, and testing subsets are empty and ' +
-                    'there are 1 reviewed item ready to assign and ' +
+                    'there is 1 reviewed item ready to assign and ' +
                     '2 items that still need annotation before they can be assigned.'
             );
         });
 
-        it('mentions only reviewed items when all unassigned items are reviewed', () => {
+        it('mentions both reviewed and unannotated items with singular counts on each side', () => {
             mockDatasetItems({
                 total: 4,
                 training: 0,
@@ -122,7 +122,7 @@ describe('useTrainModelDisabledReason', () => {
             expect(result.current.reason).toBe(
                 'In order to train a model, each subset (training, validation, testing) needs at least one item. ' +
                     'This condition is currently not satisfiable, because the training and validation subsets are empty and ' +
-                    'there are 1 reviewed item ready to assign and 1 item that still need annotation before they can be assigned.'
+                    'there is 1 reviewed item ready to assign and 1 item that still needs annotation before it can be assigned.'
             );
         });
 
@@ -160,7 +160,7 @@ describe('useTrainModelDisabledReason', () => {
             expect(result.current.reason).toBe(
                 'In order to train a model, each subset (training, validation, testing) needs at least one item. ' +
                     'This condition is currently not satisfiable, because the training and validation subsets are empty and ' +
-                    'there is 1 item that still need annotation before they can be assigned.'
+                    'there is 1 item that still needs annotation before it can be assigned.'
             );
         });
 

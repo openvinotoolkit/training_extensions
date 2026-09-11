@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, Flex } from '@geti-ui/ui';
 
 import { useTrainModelState } from '../train-model-provider.component';
@@ -11,6 +12,7 @@ import { getRecommendedArchitectures } from './utils';
 const SHOW_MORE_THRESHOLD = 4;
 
 export const ModelArchitecturesList = () => {
+    const { t } = useTranslation();
     const {
         modelArchitectures,
         selectedModelArchitectureId,
@@ -45,7 +47,9 @@ export const ModelArchitecturesList = () => {
                     variant={'primary'}
                     onPress={() => onToggleShowMoreModelArchitectures(!showMoreModelArchitectures)}
                 >
-                    {showMoreModelArchitectures ? 'Show less' : 'Show more'}
+                    {showMoreModelArchitectures
+                        ? t('models.training.architectures.list.showLess')
+                        : t('models.training.architectures.list.showMore')}
                 </Button>
             )}
         </Flex>

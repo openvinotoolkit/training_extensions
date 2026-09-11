@@ -2,24 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { BenchmarkMetrics, ModelArchitectureWithPerformanceCategory } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 import { isNil } from 'lodash-es';
 
 type AccuracyMetric = { label: string; value: number };
 
 type BenchmarkMetricKey = keyof BenchmarkMetrics;
 
-const ACCURACY_METRIC_LABELS: Partial<Record<BenchmarkMetricKey, string>> = {
-    imagenet_top1_accuracy: 'Top-1 Acc on ImageNet',
-    coco_map_50_95: 'mAP on COCO',
-    coco_map_50: 'mAP50 on COCO',
-};
+const getAccuracyMetricLabels = (t: TranslateFn): Partial<Record<BenchmarkMetricKey, string>> => ({
+    imagenet_top1_accuracy: t('models.training.architectures.metrics.top1AccOnImageNet'),
+    coco_map_50_95: t('models.training.architectures.metrics.mapOnCoco'),
+    coco_map_50: t('models.training.architectures.metrics.map50OnCoco'),
+});
 
 export const getAccuracyMetric = (
-    modelArchitecture: ModelArchitectureWithPerformanceCategory
+    modelArchitecture: ModelArchitectureWithPerformanceCategory,
+    t: TranslateFn
 ): AccuracyMetric | undefined => {
     const benchmarkMetrics = modelArchitecture.stats?.benchmark_metrics;
 
-    for (const [key, label] of Object.entries(ACCURACY_METRIC_LABELS)) {
+    for (const [key, label] of Object.entries(getAccuracyMetricLabels(t))) {
         const value = benchmarkMetrics?.[key as BenchmarkMetricKey];
 
         if (!isNil(value)) {

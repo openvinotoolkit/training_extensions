@@ -1,17 +1,15 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { useGetDatasetItems } from 'hooks/use-get-dataset-items.hook';
-
-import { pluralizeItems } from '../../../../shared/util';
 
 const MIN_NUMBER_OF_ANNOTATED_ITEMS = 3;
 const listFormatter = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
-const pluralRules = new Intl.PluralRules('en');
-
-const conjugateToBe = (count: number) => (pluralRules.select(count) === 'one' ? 'is' : 'are');
 
 export const useTrainModelDisabledReason = () => {
+    const { t } = useTranslation();
+
     const { totalCount, isPending: isTotalPending } = useGetDatasetItems({ annotationStatus: 'with_annotations' });
     const { totalCount: trainingSubsetSize, isPending: isTrainingPending } = useGetDatasetItems({
         annotationStatus: 'with_annotations',
@@ -46,9 +44,7 @@ export const useTrainModelDisabledReason = () => {
 
     if (totalCount < MIN_NUMBER_OF_ANNOTATED_ITEMS) {
         return {
-            reason:
-                'In order to train a model, you need to annotate at least 3 items in your dataset, although we ' +
-                'recommend annotating several more for better results.',
+            reason: t('models.training.validation.notEnoughAnnotations'),
         };
     }
 
@@ -65,38 +61,33 @@ export const useTrainModelDisabledReason = () => {
     }
 
     const emptySubsetNames = emptySubsets.map(({ name }) => name);
-    const emptySubsetText =
-        emptySubsetNames.length === 1
-            ? `${emptySubsetNames[0]} subset is`
-            : `${listFormatter.format(emptySubsetNames)} subsets are`;
+    const subsetClause = t('models.training.validation.emptySubsetClause', {
+        count: emptySubsetNames.length,
+        list: listFormatter.format(emptySubsetNames),
+    });
 
     const unannotatedUnassignedSize = unassignedSubsetSize - reviewedUnassignedSubsetSize;
 
     let assignmentDetail: string;
 
     if (reviewedUnassignedSubsetSize > 0 && unannotatedUnassignedSize > 0) {
-        assignmentDetail =
-            `there are ${reviewedUnassignedSubsetSize} reviewed ${pluralizeItems(reviewedUnassignedSubsetSize)} ready` +
-            ' to assign and ' +
-            `${unannotatedUnassignedSize} ${pluralizeItems(unannotatedUnassignedSize)} that still need annotation ` +
-            'before they can be assigned';
+        assignmentDetail = t('models.training.validation.mixedAssignmentDetail', {
+            reviewedClause: t('models.training.validation.mixedReviewedClause', {
+                count: reviewedUnassignedSubsetSize,
+            }),
+            unannotatedClause: t('models.training.validation.mixedUnannotatedClause', {
+                count: unannotatedUnassignedSize,
+            }),
+        });
     } else if (reviewedUnassignedSubsetSize > 0) {
-        assignmentDetail =
-            `there are ${reviewedUnassignedSubsetSize} reviewed ` +
-            `${pluralizeItems(reviewedUnassignedSubsetSize)} left to assign`;
+        assignmentDetail = t('models.training.validation.reviewedOnly', { count: reviewedUnassignedSubsetSize });
     } else if (unannotatedUnassignedSize > 0) {
-        assignmentDetail =
-            `there ${conjugateToBe(unannotatedUnassignedSize)} ${unannotatedUnassignedSize} ` +
-            `${pluralizeItems(unannotatedUnassignedSize)} that still need annotation before they ` +
-            'can be assigned';
+        assignmentDetail = t('models.training.validation.unannotatedOnly', { count: unannotatedUnassignedSize });
     } else {
-        assignmentDetail = 'there are no unassigned items available to redistribute';
+        assignmentDetail = t('models.training.validation.noUnassignedItems');
     }
 
     return {
-        reason:
-            'In order to train a model, each subset (training, validation, testing) needs at least one item. ' +
-            `This condition is currently not satisfiable, because the ${emptySubsetText} empty and ` +
-            `${assignmentDetail}.`,
+        reason: t('models.training.validation.emptySubsetsReason', { subsetClause, assignmentDetail }),
     };
 };

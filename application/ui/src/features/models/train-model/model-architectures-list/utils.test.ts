@@ -1,10 +1,14 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { createI18nInstance } from '@/i18n';
+
 import { getMockedModelArchitecture } from '../../../../../mocks/mock-model';
 import { getAccuracyMetric, getRecommendedArchitectures } from './utils';
 
 describe('getRecommendedArchitectures', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     it('returns recommended architectures when performanceCategory is defined', () => {
         const modelArchitectures = [
             getMockedModelArchitecture({ id: 'arch-1', performanceCategory: 'balance' }),
@@ -71,7 +75,7 @@ describe('getAccuracyMetric', () => {
             },
         });
 
-        const result = getAccuracyMetric(modelArchitecture);
+        const result = getAccuracyMetric(modelArchitecture, t);
 
         expect(result).toEqual({ label: 'Top-1 Acc on ImageNet', value: 76.2 });
     });
@@ -91,7 +95,7 @@ describe('getAccuracyMetric', () => {
             },
         });
 
-        const result = getAccuracyMetric(modelArchitecture);
+        const result = getAccuracyMetric(modelArchitecture, t);
 
         expect(result).toEqual({ label: 'mAP on COCO', value: 55.3 });
     });
@@ -111,7 +115,7 @@ describe('getAccuracyMetric', () => {
             },
         });
 
-        const result = getAccuracyMetric(modelArchitecture);
+        const result = getAccuracyMetric(modelArchitecture, t);
 
         expect(result).toEqual({ label: 'mAP50 on COCO', value: 72.1 });
     });
@@ -131,7 +135,7 @@ describe('getAccuracyMetric', () => {
             },
         });
 
-        const result = getAccuracyMetric(modelArchitecture);
+        const result = getAccuracyMetric(modelArchitecture, t);
 
         expect(result).toBeUndefined();
     });
