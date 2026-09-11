@@ -37,9 +37,9 @@ If you encounter problems during the installation, check the [Troubleshooting](#
 Installing Geti™ as a Windows app is the simplest way to run it on Windows.
 
 1. Download the Windows Installer suitable for your hardware (prebuilt packages for Intel® XPU, NVIDIA® CUDA, and CPU-only environments):
-   - [CPU-only](https://storage.geti.intel.com/geti/packages/3.1.0/geti-cpu-3.1.0.msix)
-   - [Intel® XPU](https://storage.geti.intel.com/geti/packages/3.1.0/geti-xpu-3.1.0.msix)
-   - [NVIDIA® CUDA](https://storage.geti.intel.com/geti/packages/3.1.0/geti-cuda-3.1.0.msix)
+   - [CPU-only](https://storage.geti.intel.com/geti/packages/3.2.0/geti-cpu-3.2.0.msix)
+   - [Intel® XPU](https://storage.geti.intel.com/geti/packages/3.2.0/geti-xpu-3.2.0.msix)
+   - [NVIDIA® CUDA](https://storage.geti.intel.com/geti/packages/3.2.0/geti-cuda-3.2.0.msix)
 2. Double-click the `.msix` package and click **Install** in the Windows installer dialog.
 3. Launch Geti™ from the **Start** menu.
 
@@ -95,10 +95,10 @@ below use `just` to simplify the build process, but you can also build the image
 
 > [!TIP]
 > The `develop` branch contains the latest, potentially unstable, changes. To build a specific, stable release
-> instead, check out the corresponding tag (e.g. `app/v3.1.0`) before building:
+> instead, check out the corresponding tag (e.g. `app/v3.2.0`) before building:
 >
 > ```bash
-> git checkout app/v3.1.0
+> git checkout app/v3.2.0
 > ```
 
 From the `application` directory:
@@ -279,10 +279,10 @@ For development purposes, you can run the Geti™ server and UI as standalone co
 
 > [!TIP]
 > The `develop` branch contains the latest, potentially unstable, changes. To run a specific, stable release
-> instead, check out the corresponding tag (e.g. `app/v3.1.0`) before proceeding:
+> instead, check out the corresponding tag (e.g. `app/v3.2.0`) before proceeding:
 >
 > ```bash
-> git checkout app/v3.1.0
+> git checkout app/v3.2.0
 > ```
 
 ### Run the server
