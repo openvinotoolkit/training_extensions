@@ -1,6 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { createI18nInstance } from '@/i18n';
+
 import { formatDateRangeEnd, formatDateRangeStart, formatDateTime, formatTrainingDateTime } from './date-utils';
 
 // Dates are formatted in the local timezone, so the inputs are built from local time components
@@ -8,23 +10,25 @@ const localISOString = (year: number, month: number, day: number, hours = 0, min
     new Date(year, month - 1, day, hours, minutes).toISOString();
 
 describe('date-utils', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     describe('formatDateRangeStart', () => {
         it('formats the start of a range', () => {
-            expect(formatDateRangeStart(localISOString(2026, 1, 1))).toBe('From 01/01/2026 00:00');
+            expect(formatDateRangeStart(localISOString(2026, 1, 1), t)).toBe('From 01/01/2026 00:00');
         });
 
         it('formats the time in a 24 hour cycle', () => {
-            expect(formatDateRangeStart(localISOString(2026, 12, 31, 23, 59))).toBe('From 31/12/2026 23:59');
+            expect(formatDateRangeStart(localISOString(2026, 12, 31, 23, 59), t)).toBe('From 31/12/2026 23:59');
         });
     });
 
     describe('formatDateRangeEnd', () => {
         it('formats the end of a range', () => {
-            expect(formatDateRangeEnd(localISOString(2026, 1, 31))).toBe('To 31/01/2026 00:00');
+            expect(formatDateRangeEnd(localISOString(2026, 1, 31), t)).toBe('To 31/01/2026 00:00');
         });
 
         it('formats the time in a 24 hour cycle', () => {
-            expect(formatDateRangeEnd(localISOString(2026, 1, 31, 23, 59))).toBe('To 31/01/2026 23:59');
+            expect(formatDateRangeEnd(localISOString(2026, 1, 31, 23, 59), t)).toBe('To 31/01/2026 23:59');
         });
     });
 

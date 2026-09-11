@@ -92,7 +92,7 @@ export const DatasetStatisticsContent = () => {
                     </Flex>
 
                     <Flex gap={'size-125'} alignItems={'center'}>
-                        <Text UNSAFE_className={classes.subTitle}>Frames:</Text>
+                        <Text UNSAFE_className={classes.subTitle}>{t('dataset.statistics.frames')}:</Text>
                         <Text UNSAFE_className={classes.secondaryValue}>
                             {statistics.annotations_counts.annotated_video_frames}
                         </Text>

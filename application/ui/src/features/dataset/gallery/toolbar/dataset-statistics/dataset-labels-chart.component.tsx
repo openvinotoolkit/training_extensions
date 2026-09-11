@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { dimensionValue } from '@geti-ui/ui';
 import {
     Bar,
@@ -67,6 +68,7 @@ const ItemLabel = (props: LabelProps & { labelColor?: string }) => {
 };
 
 export const DatasetLabelsChart = ({ totalItems, instancesPerLabel }: DatasetLabelsChartProps) => {
+    const { t } = useTranslation();
     const projectLabels = useProjectLabelsWithEmptyLabel();
 
     const emptyLabelInstance = instancesPerLabel.find(({ label_id }) => label_id === null);
@@ -123,7 +125,7 @@ export const DatasetLabelsChart = ({ totalItems, instancesPerLabel }: DatasetLab
 
                 <Tooltip
                     shared={false}
-                    formatter={(value) => [value, 'Annotations']}
+                    formatter={(value) => [value, t('dataset.statistics.annotationsChartTooltip')]}
                     itemStyle={{ color: 'var(--spectrum-global-color-gray-800)' }}
                     contentStyle={{ background: 'var(--spectrum-global-color-gray-50)' }}
                 />

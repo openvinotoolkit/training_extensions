@@ -5,7 +5,6 @@ import type { DatasetSubset } from '@/api/types';
 import { useTranslation } from '@/i18n';
 import { Checkbox, CheckboxGroup, Flex, Text } from '@geti-ui/ui';
 import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
-import capitalize from 'lodash-es/capitalize';
 
 import classes from './filter-by-subset.module.scss';
 
@@ -32,7 +31,7 @@ export const FilterBySubset = () => {
                     <>
                         {SUBSET_OPTIONS.map((item) => (
                             <Checkbox key={item.name} value={item.name}>
-                                {capitalize(item.name)}
+                                {t(`dataset.filters.subsetOptions.${item.name}`)}
                             </Checkbox>
                         ))}
                     </>

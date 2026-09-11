@@ -77,7 +77,7 @@ export const DateFilter = () => {
     return (
         <Flex direction='column' gap='size-100'>
             <Flex direction='row' alignItems='center' justifyContent='space-between'>
-                <Text UNSAFE_className={classes.label}>Filter by upload date</Text>
+                <Text UNSAFE_className={classes.label}>{t('dataset.filters.dateRange.heading')}</Text>
 
                 <ActionButton
                     isQuiet
@@ -85,7 +85,7 @@ export const DateFilter = () => {
                     isDisabled={startValue === null && endValue === null}
                     onPress={handleClear}
                 >
-                    <Text>Clear</Text>
+                    <Text>{t('dataset.filters.dateRange.clear')}</Text>
                 </ActionButton>
             </Flex>
 
@@ -94,7 +94,7 @@ export const DateFilter = () => {
                 hourCycle={24}
                 hideTimeZone
                 width='100%'
-                label='Start date'
+                label={t('dataset.filters.dateRange.startDateLabel')}
                 labelPosition='top'
                 minValue={MIN_DATE}
                 maxValue={appliedEnd ?? maxDate}
@@ -108,7 +108,7 @@ export const DateFilter = () => {
                 hourCycle={24}
                 hideTimeZone
                 width='100%'
-                label='End date'
+                label={t('dataset.filters.dateRange.endDateLabel')}
                 labelPosition='top'
                 minValue={appliedStart ?? MIN_DATE}
                 maxValue={maxDate}

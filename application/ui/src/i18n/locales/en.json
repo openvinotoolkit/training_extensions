@@ -61,7 +61,21 @@
             "toggleAll": "Toggle all",
             "more": "More filters",
             "moreTitle": "More filters",
-            "title": "Filters"
+            "title": "Filters",
+            "subsetOptions": {
+                "training": "Training",
+                "validation": "Validation",
+                "testing": "Testing",
+                "unassigned": "Unassigned"
+            },
+            "dateRange": {
+                "heading": "Filter by upload date",
+                "clear": "Clear",
+                "startDateLabel": "Start date",
+                "endDateLabel": "End date",
+                "from": "From {{date}}",
+                "to": "To {{date}}"
+            }
         },
         "upload": {
             "queued": "Queued",
@@ -114,7 +128,9 @@
             "numberOfObjectsPerLabel": "Number of objects per label",
             "close": "Close",
             "unannotated": "Unannotated",
-            "annotated": "Annotated"
+            "annotated": "Annotated",
+            "frames": "Frames",
+            "annotationsChartTooltip": "Annotations"
         },
         "delete": {
             "title": "Delete Items",
