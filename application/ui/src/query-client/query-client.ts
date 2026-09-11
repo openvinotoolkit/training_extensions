@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { toast } from '@/components/toast/toast.component';
+import { i18n } from '@/i18n';
 import { matchQuery, MutationCache, QueryClient } from '@tanstack/react-query';
 
 import { paths } from '../api/openapi-spec';
@@ -18,7 +19,7 @@ const TOAST_DURATION = 5000;
 
 export const getErrorMessage = (error: unknown): string => {
     if (!error || typeof error !== 'object') {
-        return 'An unexpected error occurred. Please try again.';
+        return i18n.t('application.notifications.unexpectedError');
     }
 
     if ('detail' in error && typeof error.detail === 'string') {
@@ -29,13 +30,13 @@ export const getErrorMessage = (error: unknown): string => {
         const message = error.message;
 
         if (error instanceof TypeError && message.includes('Failed to fetch')) {
-            return 'Network error. Please check your connection and try again.';
+            return i18n.t('application.notifications.networkError');
         }
 
         return message;
     }
 
-    return 'An unexpected error occurred. Please try again.';
+    return i18n.t('application.notifications.unexpectedError');
 };
 
 export const createQueryClient = () => {

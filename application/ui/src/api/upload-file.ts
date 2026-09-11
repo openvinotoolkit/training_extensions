@@ -1,6 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { i18n } from '@/i18n';
+
 import { fetchClient } from './client';
 import type { MediaDTO, SourceMediaUpload, StagedDataset } from './shared-types';
 
@@ -19,10 +21,12 @@ const fileBody = <TBody>(file: File): NonNullable<TBody> => {
 };
 
 // openapi-fetch resolves with `{ data, error }` rather than rejecting, and its result union does
-// not narrow `data` from the `error` check, so both have to be tested before returning.
-const unwrap = <T>(result: { data?: T; error?: unknown }, endpoint: string): T => {
+// not narrow `data` from the `error` check, so both have to be tested before returning. Each
+// caller supplies its own translated, operation-specific fallback message for the rare case where
+// both `data` and `error` are missing.
+const unwrap = <T>(result: { data?: T; error?: unknown }, fallbackMessage: string): T => {
     if (result.error !== undefined || result.data === undefined) {
-        throw result.error ?? new Error(`Upload to ${endpoint} failed`);
+        throw result.error ?? new Error(fallbackMessage);
     }
 
     return result.data;
@@ -36,7 +40,7 @@ export const uploadDatasetMedia = async (projectId: string, file: File): Promise
         body: fileBody(file),
     });
 
-    return unwrap(result, endpoint);
+    return unwrap(result, i18n.t('dataset.upload.genericError'));
 };
 
 /** Uploads a dataset archive (.zip) to the import staging area. */
@@ -44,7 +48,7 @@ export const uploadDatasetArchive = async (file: File): Promise<StagedDataset> =
     const endpoint = '/api/staged_datasets';
     const result = await fetchClient.POST(endpoint, { body: fileBody(file) });
 
-    return unwrap(result, endpoint);
+    return unwrap(result, i18n.t('dataset.import.prepareError'));
 };
 
 /** Uploads a video file to be used as an inference pipeline source. */
@@ -52,5 +56,5 @@ export const uploadSourceVideo = async (file: File): Promise<SourceMediaUpload> 
     const endpoint = '/api/sources/media';
     const result = await fetchClient.POST(endpoint, { body: fileBody(file) });
 
-    return unwrap(result, endpoint);
+    return unwrap(result, i18n.t('inference.sources.uploadError'));
 };
