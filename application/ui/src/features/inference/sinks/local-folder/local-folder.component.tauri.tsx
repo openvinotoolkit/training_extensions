@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import type { LocalFolderSinkConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, TextField } from '@geti-ui/ui';
 import { open } from '@tauri-apps/plugin-dialog';
 
@@ -16,6 +17,7 @@ type LocalFolderProps = {
 };
 
 export const LocalFolder = ({ defaultState }: LocalFolderProps) => {
+    const { t } = useTranslation();
     const [folderPath, setFolderPath] = useState(defaultState.folder_path);
 
     useEffect(() => {
@@ -43,7 +45,11 @@ export const LocalFolder = ({ defaultState }: LocalFolderProps) => {
             <TextField isHidden label='id' name='id' defaultValue={defaultState.id} />
 
             <Flex gap='size-200'>
-                <TextField label='Name' name='name' defaultValue={defaultState.name || 'Local folder sink'} />
+                <TextField
+                    label={t('inference.sinks.fields.name')}
+                    name='name'
+                    defaultValue={defaultState.name || t('inference.sinks.defaultNames.localFolder')}
+                />
             </Flex>
 
             <Flex>
@@ -62,7 +68,7 @@ export const LocalFolder = ({ defaultState }: LocalFolderProps) => {
                         isRequired
                         isReadOnly
                         width={'100%'}
-                        label='Folder Path'
+                        label={t('inference.sinks.fields.folderPath')}
                         name='folder_path'
                         value={folderPath}
                     />

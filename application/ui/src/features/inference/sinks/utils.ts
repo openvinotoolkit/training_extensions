@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import type { TranslateFn } from '@/i18n';
 import { isEmpty } from 'lodash-es';
 
 export enum OutputFormat {
@@ -48,23 +49,21 @@ export const rateLimitFromFormData = (formData: FormData): number | null => {
     return samples / seconds;
 };
 
-export const formatRateLimit = (rateLimit?: number | null): string => {
+export const formatRateLimit = (rateLimit: number | null | undefined, t: TranslateFn): string => {
     const normalizedRateLimit = positiveNumberOrUndefined(rateLimit);
 
     if (normalizedRateLimit === undefined) {
-        return 'Not set';
+        return t('inference.sinks.rateLimit.notSet');
     }
 
     if (normalizedRateLimit < 1) {
         const seconds = 1 / normalizedRateLimit;
         const normalizedSeconds = Math.round(seconds);
-        const secondsLabel = normalizedSeconds === 1 ? 'second' : 'seconds';
 
-        return `1 sample every ${normalizedSeconds} ${secondsLabel}`;
+        return t('inference.sinks.rateLimit.oneSamplePerSeconds', { count: normalizedSeconds });
     }
 
     const normalizedSamples = Math.round(normalizedRateLimit);
-    const sampleLabel = normalizedSamples === 1 ? 'sample' : 'samples';
 
-    return `${normalizedSamples} ${sampleLabel} every 1 second`;
+    return t('inference.sinks.rateLimit.samplesPerSecond', { count: normalizedSamples });
 };

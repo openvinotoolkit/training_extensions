@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import type { SinkConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Loading, Text } from '@geti-ui/ui';
 import { Back } from '@geti-ui/ui/icons';
 import { usePipeline } from 'hooks/api/pipeline.hook';
@@ -15,6 +16,7 @@ import { SinkList } from './sink-list/sink-list.component';
 import { SinkOptions } from './sink-options';
 
 export const SinkActions = () => {
+    const { t } = useTranslation();
     const [view, setView] = useState<'list' | 'options' | 'edit'>('list');
     const [currentSink, setCurrentSink] = useState<SinkConfig | null>(null);
     const { data: sinks = [], isPending } = useSinksQuery();
@@ -64,7 +66,7 @@ export const SinkActions = () => {
                     <Back />
                 </ActionButton>
 
-                <Text>Add new sink</Text>
+                <Text>{t('inference.sinks.add.title')}</Text>
             </Flex>
         </SinkOptions>
     );

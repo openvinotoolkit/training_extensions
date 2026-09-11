@@ -4,6 +4,7 @@
 import { ReactNode, useRef } from 'react';
 
 import type { SinkConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Button, ButtonGroup, Divider, Flex, Form, Text, View } from '@geti-ui/ui';
 import { Back } from '@geti-ui/ui/icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -31,6 +32,7 @@ export const EditSink = <T extends SinkConfig>({
     componentFields,
     isConnected,
 }: EditSinkProps<T>) => {
+    const { t } = useTranslation();
     const connectToPipeline = useRef(false);
     const connectToPipelineMutation = useConnectSinkToPipeline();
     const queryClient = useQueryClient();
@@ -54,7 +56,7 @@ export const EditSink = <T extends SinkConfig>({
                     <Back />
                 </ActionButton>
 
-                <Text>Edit sink</Text>
+                <Text>{t('inference.sinks.edit.title')}</Text>
             </Flex>
 
             <View UNSAFE_className={classes.container}>
@@ -69,7 +71,7 @@ export const EditSink = <T extends SinkConfig>({
                     UNSAFE_style={{ maxWidth: 'fit-content' }}
                     onPress={() => (connectToPipeline.current = false)}
                 >
-                    Save
+                    {t('inference.sinks.edit.save')}
                 </Button>
 
                 {!isConnected && (
@@ -79,7 +81,7 @@ export const EditSink = <T extends SinkConfig>({
                         UNSAFE_style={{ maxWidth: 'fit-content' }}
                         onPress={() => (connectToPipeline.current = true)}
                     >
-                        Save & Connect
+                        {t('inference.sinks.edit.saveAndConnect')}
                     </Button>
                 )}
             </ButtonGroup>

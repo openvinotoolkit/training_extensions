@@ -4,6 +4,7 @@
 import { ReactNode } from 'react';
 
 import type { LocalFolderSinkConfig, MqttSinkConfig, WebhookSinkConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 
 import { ReactComponent as FolderIcon } from '../../../assets/icons/folder.svg';
 import { ReactComponent as MqttIcon } from '../../../assets/icons/mqtt.svg';
@@ -24,6 +25,8 @@ interface SinkOptionsProps {
 }
 
 export const SinkOptions = ({ hasHeader, onSaved, children }: SinkOptionsProps) => {
+    const { t } = useTranslation();
+
     return (
         <>
             {hasHeader && children}
@@ -31,7 +34,7 @@ export const SinkOptions = ({ hasHeader, onSaved, children }: SinkOptionsProps) 
                 defaultActiveInput={null}
                 items={[
                     {
-                        label: 'Folder',
+                        label: t('inference.sinks.options.folder'),
                         value: 'folder',
                         icon: <FolderIcon width={'24px'} />,
                         content: (
@@ -44,7 +47,7 @@ export const SinkOptions = ({ hasHeader, onSaved, children }: SinkOptionsProps) 
                         ),
                     },
                     {
-                        label: 'Webhook',
+                        label: t('inference.sinks.options.webhook'),
                         value: 'webhook',
                         icon: <WebhookIcon width={'24px'} />,
                         content: (
@@ -57,7 +60,7 @@ export const SinkOptions = ({ hasHeader, onSaved, children }: SinkOptionsProps) 
                         ),
                     },
                     {
-                        label: 'MQTT',
+                        label: t('inference.sinks.options.mqtt'),
                         value: 'mqtt',
                         icon: <MqttIcon width={'24px'} />,
                         content: (
