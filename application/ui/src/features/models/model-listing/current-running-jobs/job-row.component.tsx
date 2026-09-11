@@ -4,6 +4,7 @@
 import { useState, type ReactNode } from 'react';
 
 import type { DatasetRevision, ModelArchitectureWithPerformanceCategory, QuantizeJob, TrainJob } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Button, DialogContainer, Flex, Grid, Text } from '@geti-ui/ui';
 import { isJobPending, isTrainJob } from 'hooks/api/util';
 
@@ -32,12 +33,13 @@ type JobRowProps = JobRowColumnsProps & {
 };
 
 const ViewLogsButton = ({ jobId }: { jobId: string }) => {
+    const { t } = useTranslation();
     const [isLogsDialogOpen, setIsLogsDialogOpen] = useState(false);
 
     return (
         <>
             <Button variant={'secondary'} onPress={() => setIsLogsDialogOpen(true)} aria-label={'View logs'}>
-                Logs
+                {t('models.jobs.logs')}
             </Button>
             <DialogContainer type={'fullscreen'} onDismiss={() => setIsLogsDialogOpen(false)}>
                 {isLogsDialogOpen && <TrainingLogsDialog jobId={jobId} />}
@@ -55,6 +57,7 @@ export const JobRow = ({
     datasetRevisions,
     modelArchitectures,
 }: JobRowProps) => {
+    const { t } = useTranslation();
     const modelId = job.metadata.model.id;
     const { data: trainingModel } = useGetModel(modelId, !isJobPending(job));
 
@@ -72,7 +75,7 @@ export const JobRow = ({
             ? labelSchemaRevision.labels.length
             : undefined;
 
-    const formattedStartedAt = job.started_at ? formatDateTime(job.started_at) : 'Waiting to start...';
+    const formattedStartedAt = job.started_at ? formatDateTime(job.started_at) : t('models.jobs.waitingToStart');
 
     return (
         <BottomProgressBar progress={progress}>
@@ -92,8 +95,10 @@ export const JobRow = ({
                         {statusBadges}
                     </Flex>
 
-                    <Text UNSAFE_className={classes.metaText}>{`Started: ${formattedStartedAt}`}</Text>
-                    {device && <Text UNSAFE_className={classes.metaText}>{`Device: ${device}`}</Text>}
+                    <Text UNSAFE_className={classes.metaText}>
+                        {t('models.jobs.startedAt', { time: formattedStartedAt })}
+                    </Text>
+                    {device && <Text UNSAFE_className={classes.metaText}>{t('models.jobs.device', { device })}</Text>}
                 </Flex>
 
                 <Flex alignItems={'start'} direction={'column'} gap={'size-100'}>

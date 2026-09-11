@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import type { Job, QuantizeJob, TrainJob } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { AlertDialog, Badge, Button, DialogContainer, Flex, Loading, Text } from '@geti-ui/ui';
 import { useStreamJobStatus } from 'hooks/api/jobs/jobs.hook';
 import { capitalize } from 'lodash-es';
@@ -44,6 +45,7 @@ type CancelRunningJobProps = {
 };
 
 const CancelRunningJob = ({ job, onCancel }: CancelRunningJobProps) => {
+    const { t } = useTranslation();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
 
     return (
@@ -54,18 +56,18 @@ const CancelRunningJob = ({ job, onCancel }: CancelRunningJobProps) => {
                 onPress={() => setIsDeleteDialogOpen(true)}
                 aria-label={'Cancel job'}
             >
-                Cancel
+                {t('models.jobs.cancel')}
             </Button>
             <DialogContainer onDismiss={() => setIsDeleteDialogOpen(false)}>
                 {isDeleteDialogOpen && (
                     <AlertDialog
-                        title='Stop job'
+                        title={t('models.jobs.stopDialog.title')}
                         variant='destructive'
-                        primaryActionLabel='Cancel'
+                        primaryActionLabel={t('models.jobs.cancel')}
                         onPrimaryAction={onCancel}
-                        cancelLabel='Close'
+                        cancelLabel={t('models.jobs.stopDialog.close')}
                     >
-                        Are you sure you want to stop this job?
+                        {t('models.jobs.stopDialog.confirmation')}
                     </AlertDialog>
                 )}
             </DialogContainer>
@@ -74,9 +76,11 @@ const CancelRunningJob = ({ job, onCancel }: CancelRunningJobProps) => {
 };
 
 export const RunningJobRow = ({ job, onCancel, datasetRevisions, groupBy, modelArchitectures }: RunningJobRowProps) => {
+    const { t } = useTranslation();
     useStreamJobStatus(job.job_id);
 
-    const statusMessage = job.message || (job.status === 'PENDING' ? 'Pending...' : 'Running...');
+    const statusMessage =
+        job.message || (job.status === 'PENDING' ? t('models.jobs.pending') : t('models.jobs.running'));
     const showStatusTagMessage =
         job.status.toLocaleLowerCase() !== statusMessage.replace('...', '').toLocaleLowerCase();
 

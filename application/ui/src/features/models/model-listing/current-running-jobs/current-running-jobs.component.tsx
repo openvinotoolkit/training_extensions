@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetRevision } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Flex, Heading, View } from '@geti-ui/ui';
 import { useCancelJob, useGetCurrentRunningJobs } from 'hooks/api/jobs/jobs.hook';
 import { isJobFailed } from 'hooks/api/util';
@@ -20,6 +21,7 @@ type CurrentRunningJobsProps = {
 };
 
 export const CurrentRunningJobs = ({ groupBy, datasetRevisions }: CurrentRunningJobsProps) => {
+    const { t } = useTranslation();
     const cancelJobMutation = useCancelJob();
     const activeRunningJobs = useGetCurrentRunningJobs();
     const { modelArchitectures } = useGetTaskModelArchitectures();
@@ -43,7 +45,7 @@ export const CurrentRunningJobs = ({ groupBy, datasetRevisions }: CurrentRunning
             UNSAFE_style={{ padding: 'var(--spectrum-global-dimension-size-300)' }}
         >
             <Heading level={2} UNSAFE_style={{ fontSize: dimensionValue('size-300') }}>
-                Jobs
+                {t('models.jobs.heading')}
             </Heading>
 
             <View backgroundColor={'gray-75'}>

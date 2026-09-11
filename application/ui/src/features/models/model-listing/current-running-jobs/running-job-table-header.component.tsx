@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Grid, Text } from '@geti-ui/ui';
 
 import { GroupByMode } from '../types';
@@ -12,6 +13,8 @@ type RunningJobTableHeaderProps = {
 };
 
 export const RunningJobTableHeader = ({ groupBy }: RunningJobTableHeaderProps) => {
+    const { t } = useTranslation();
+
     return (
         <Grid
             columns={RUNNING_JOB_GRID_COLUMNS}
@@ -24,8 +27,10 @@ export const RunningJobTableHeader = ({ groupBy }: RunningJobTableHeaderProps) =
                     ${dimensionValue('size-150')} ${dimensionValue('size-1000')}`,
             }}
         >
-            <Text>{'Model Name'}</Text>
-            <Text>{groupBy === 'architecture' ? 'Dataset' : 'Architecture'}</Text>
+            <Text>{t('models.jobs.columns.modelName')}</Text>
+            <Text>
+                {groupBy === 'architecture' ? t('models.jobs.columns.dataset') : t('models.jobs.columns.architecture')}
+            </Text>
             <div />
         </Grid>
     );
