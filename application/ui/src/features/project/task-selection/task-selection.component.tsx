@@ -25,6 +25,7 @@ const getTaskOptions = (t: TranslateFn): TaskOption[] => [
         id: 'detection_task',
         imageSrc: detectionImageUrl,
         title: t('project.create.tasks.detection.title'),
+        ariaLabel: 'Object Detection',
         description: t('project.create.tasks.detection.description'),
         advice: t('project.create.tasks.detection.advice'),
         verb: t('project.create.tasks.detection.verb'),
@@ -34,6 +35,7 @@ const getTaskOptions = (t: TranslateFn): TaskOption[] => [
         id: 'segmentation_task',
         imageSrc: segmentationImageUrl,
         title: t('project.create.tasks.instanceSegmentation.title'),
+        ariaLabel: 'Instance Segmentation',
         description: t('project.create.tasks.instanceSegmentation.description'),
         advice: t('project.create.tasks.instanceSegmentation.advice'),
         verb: t('project.create.tasks.instanceSegmentation.verb'),
@@ -43,6 +45,7 @@ const getTaskOptions = (t: TranslateFn): TaskOption[] => [
         id: 'classification_task',
         imageSrc: classificationImageUrl,
         title: t('project.create.tasks.classification.title'),
+        ariaLabel: 'Image Classification',
         description: t('project.create.tasks.classification.description'),
         advice: t('project.create.tasks.classification.advice'),
         verb: t('project.create.tasks.classification.verb'),
@@ -57,7 +60,7 @@ type TaskOptionProps = {
 
 const Option = ({ taskOption, onPress }: TaskOptionProps) => {
     return (
-        <div onClick={onPress} className={classes.option} aria-label={`Task option: ${taskOption.title}`}>
+        <div onClick={onPress} className={classes.option} aria-label={`Task option: ${taskOption.ariaLabel}`}>
             <View>
                 <Image height={'size-2400'} width={'100%'} src={taskOption.imageSrc} alt={taskOption.title} />
             </View>

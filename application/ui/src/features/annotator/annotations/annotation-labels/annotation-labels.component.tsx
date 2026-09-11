@@ -1,8 +1,9 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { PointerEvent, useCallback } from 'react';
+import { PointerEvent, useCallback, useMemo } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { v4 as uuid } from 'uuid';
 
 import { useLabelResolver } from '../../../../shared/annotator/labels';
@@ -10,8 +11,6 @@ import type { AnnotationLabel, AnnotationLabelRef } from '../../../../shared/typ
 import { isPrediction } from '../utils';
 
 import classes from './annotation-labels.module.scss';
-
-const placeholderLabel = { id: uuid(), name: 'No label', color: 'var(--annotation-fill)', isPrediction: false };
 
 // Screen-space dimensions for the foreignObject hit area
 const LABEL_HEIGHT_PX = 24;
@@ -39,6 +38,18 @@ export const AnnotationLabels = ({
     isRemovable = true,
 }: AnnotationLabelsProps) => {
     const { resolveAnnotationLabel } = useLabelResolver();
+    const { t } = useTranslation();
+
+    const placeholderLabelId = useMemo(() => uuid(), []);
+    const placeholderLabel = useMemo(
+        () => ({
+            id: placeholderLabelId,
+            name: t('labels.empty.noLabel'),
+            color: 'var(--annotation-fill)',
+            isPrediction: false,
+        }),
+        [placeholderLabelId, t]
+    );
 
     const onDeleteLabel = useCallback(
         (labelId: string) => (event: PointerEvent) => {

@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, PressableElement, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Pause, Play, SoundOff, SoundOn, StepBackward, StepForward } from '@geti-ui/ui/icons';
 
@@ -14,6 +15,7 @@ type VideoControlsProps = {
 };
 
 export const VideoControls = ({ mode }: VideoControlsProps) => {
+    const { t } = useTranslation();
     const { isMuted, toggleMute, videoControls, videoFrame, videoError } = useVideoPlayer();
     const { isPlaying, play, pause, previousFrame, nextFrame, canSelectPreviousFrame, canSelectNextFrame } =
         videoControls;
@@ -44,7 +46,7 @@ export const VideoControls = ({ mode }: VideoControlsProps) => {
                                 <Play />
                             </ActionButton>
                         </PressableElement>
-                        <Tooltip>{getVideoErrorMessage(videoError)}</Tooltip>
+                        <Tooltip>{getVideoErrorMessage(videoError, t)}</Tooltip>
                     </TooltipTrigger>
                 )}
                 <ActionButton

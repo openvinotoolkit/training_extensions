@@ -863,6 +863,26 @@
                 "description": "Hover along an object's edge and click periodically to snap the outline to its borders.",
                 "error": "Failed to select the shape boundaries, could you please try again?"
             }
+        },
+        "video": {
+            "playback": {
+                "slower": "Slower",
+                "slow": "Slow",
+                "normal": "Normal",
+                "speed": "Playback speed",
+                "showAllFrames": "Show all frames",
+                "showOneFramePerSecond": "Show 1 frame per second"
+            },
+            "frames": {
+                "label": "Frames",
+                "currentTotal": "Current frame: {{currentFrame}} / Total frames: {{totalFrames}}",
+                "thumbnailAlt": "Thumbnail for frame {{frameNumber}}"
+            },
+            "errors": {
+                "network": "Cannot play video due to a network error, please refresh and try again.",
+                "unableToPlay": "Unable to play video, please try again.",
+                "unsupportedFormat": "Unable to play video, please try a different video format (mp4/webm)."
+            }
         }
     },
     "models": {

@@ -7,8 +7,6 @@ import { getMockedModelArchitecture } from '../../../../../mocks/mock-model';
 import { getAccuracyMetric, getRecommendedArchitectures } from './utils';
 
 describe('getRecommendedArchitectures', () => {
-    const { t } = createI18nInstance({ lng: 'en' });
-
     it('returns recommended architectures when performanceCategory is defined', () => {
         const modelArchitectures = [
             getMockedModelArchitecture({ id: 'arch-1', performanceCategory: 'balance' }),
@@ -60,6 +58,8 @@ describe('getRecommendedArchitectures', () => {
 });
 
 describe('getAccuracyMetric', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     it('returns Top-1 Acc for classification tasks', () => {
         const modelArchitecture = getMockedModelArchitecture({
             task: 'classification',

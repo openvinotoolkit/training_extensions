@@ -7,6 +7,7 @@ export type TaskOption = {
     id: string;
     imageSrc: string;
     title: string;
+    ariaLabel: string;
     description: string;
     advice: string;
     verb: string;
