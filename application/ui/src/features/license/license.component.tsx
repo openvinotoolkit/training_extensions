@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button, Content, Divider, Flex, Heading, Text, View } from '@geti-ui/ui';
 
 import { Link } from '../../platform/components/link.component';
@@ -10,18 +11,17 @@ import styles from './license.module.scss';
 
 const LICENSE_LINKS = {
     intelSimplified: {
-        label: 'Intel Simplified Software License',
         // eslint-disable-next-line max-len
         href: 'https://www.intel.com/content/www/us/en/content-details/749362/intel-simplified-software-license-version-october-2022.html',
     },
 
     dinov2: {
-        label: 'DINOv3 License',
         href: 'https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md',
     },
 };
 
 export const License = () => {
+    const { t } = useTranslation();
     const { mutate: acceptLicense, isPending: isAccepting } = useAcceptLicense();
 
     return (
@@ -34,14 +34,14 @@ export const License = () => {
                     maxWidth={'size-6000'}
                     width={'100%'}
                 >
-                    <Heading level={2}>License Agreement</Heading>
+                    <Heading level={2}>{t('license.agreement.title')}</Heading>
                     <Divider marginY={'size-200'} size={'S'} />
                     <Content>
-                        <Text>By installing, using, or distributing this application, you acknowledge that:</Text>
+                        <Text>{t('license.agreement.intro')}</Text>
                         <ul className={styles.list}>
-                            <li>You have read and understood the license terms at the links below;</li>
-                            <li>Confirmed the linked terms govern the contents you seek to access and use; and</li>
-                            <li>Accepted and agreed to the linked license terms.</li>
+                            <li>{t('license.agreement.termsRead')}</li>
+                            <li>{t('license.agreement.termsGovern')}</li>
+                            <li>{t('license.agreement.termsAccepted')}</li>
                         </ul>
                         <Flex direction={'column'} marginTop={'size-200'}>
                             <Link
@@ -49,10 +49,10 @@ export const License = () => {
                                 target={'_blank'}
                                 rel={'noopener noreferrer'}
                             >
-                                {LICENSE_LINKS.intelSimplified.label}
+                                {t('license.links.intelSimplified')}
                             </Link>
                             <Link href={LICENSE_LINKS.dinov2.href} target={'_blank'} rel={'noopener noreferrer'}>
-                                {LICENSE_LINKS.dinov2.label}
+                                {t('license.links.dinov2')}
                             </Link>
                         </Flex>
                     </Content>
@@ -63,7 +63,7 @@ export const License = () => {
                             isPending={isAccepting}
                             isDisabled={isAccepting}
                         >
-                            Accept and continue
+                            {t('license.agreement.accept')}
                         </Button>
                     </Flex>
                 </View>
