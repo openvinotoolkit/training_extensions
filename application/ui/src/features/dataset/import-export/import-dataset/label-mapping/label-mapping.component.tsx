@@ -4,6 +4,7 @@
 import { Fragment, useActionState } from 'react';
 
 import { DatasetStatistics } from '@/components/dataset-statistics/dataset-statistics.component';
+import { useTranslation } from '@/i18n';
 import { Checkbox, dimensionValue, Flex, Form, Grid, Heading, Item, Picker, Text, View } from '@geti-ui/ui';
 import { useSubmitJob } from 'hooks/api/jobs/jobs.hook';
 import { useStagedDataset } from 'hooks/api/staged-dataset.hook';
@@ -12,7 +13,7 @@ import { useProject } from '../../../../../hooks/api/project.hook';
 import { useImportDatasetToProject } from '../../../../../hooks/storage/use-import-dataset-to-project.hook';
 import { useImportDatasetDialogState } from '../../../providers/export-import-dataset-dialog-provider.component';
 import { FormatWarning } from './format-warning/format-warning.component';
-import { IMPORT_DATASET_FORM_ID, mapProjectLabels, PLACEHOLDER_LABEL, UNMAPPED_LABEL_VALUE } from './util';
+import { IMPORT_DATASET_FORM_ID, mapProjectLabels, UNMAPPED_LABEL_VALUE } from './util';
 
 import classes from './label-mapping.module.scss';
 
@@ -63,6 +64,7 @@ const useFormConfig = ({ datasetLabels, stagedDatasetId, selectedProjectId }: us
 };
 
 export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
+    const { t } = useTranslation();
     const { data: selectedProject } = useProject();
     const projectLabels = selectedProject?.task?.labels ?? [];
     const finalLabels = [{ id: '', name: UNMAPPED_LABEL_VALUE, color: '' }, ...projectLabels];
@@ -76,6 +78,8 @@ export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
     const totalFrames = stagedDataset?.metadata?.num_frames ?? 0;
     const totalAnnotatedFrames = stagedDataset?.metadata?.num_annotated_frames ?? 0;
 
+    const placeholderLabel = t('dataset.import.labelMapping.selectLabelPlaceholder');
+
     const [formState, submitAction] = useFormConfig({
         datasetLabels,
         stagedDatasetId,
@@ -84,19 +88,19 @@ export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
 
     return (
         <Flex direction={'column'} gap={'size-200'} UNSAFE_style={{ padding: dimensionValue('size-275') }}>
-            <Heading>Imported dataset statistics</Heading>
+            <Heading>{t('dataset.import.labelMapping.statisticsHeading')}</Heading>
 
             <View padding={'size-200'} borderRadius={'regular'} backgroundColor={'gray-75'}>
                 <Flex justifyContent={'center'} gap={'size-200'}>
                     <DatasetStatistics
-                        label='images'
+                        label={t('dataset.import.labelMapping.imagesLabel')}
                         totalMediaItems={totalImages}
                         totalAnnotatedItems={totalAnnotatedImages}
                     />
 
                     {totalFrames > 0 && (
                         <DatasetStatistics
-                            label='frames'
+                            label={t('dataset.import.labelMapping.framesLabel')}
                             totalMediaItems={totalFrames}
                             totalAnnotatedItems={totalAnnotatedFrames}
                         />
@@ -107,9 +111,9 @@ export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
             </View>
 
             <Flex direction={'column'}>
-                <Heading marginTop={'size-200'}>Label mapping - optional</Heading>
+                <Heading marginTop={'size-200'}>{t('dataset.import.labelMapping.heading')}</Heading>
                 <Text UNSAFE_className={classes.emptyLabelsWarning}>
-                    Any unmapped items will be imported as unlabeled
+                    {t('dataset.import.labelMapping.unmappedNote')}
                 </Text>
             </Flex>
 
@@ -121,9 +125,9 @@ export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
                         alignItems={'center'}
                         columns={[`1fr ${dimensionValue('size-400')} 1fr`]}
                     >
-                        <View>Dataset labels</View>
+                        <View>{t('dataset.import.labelMapping.datasetLabelsColumn')}</View>
                         <View />
-                        <View>Project labels</View>
+                        <View>{t('dataset.import.labelMapping.projectLabelsColumn')}</View>
 
                         {datasetLabels.map((label, index) => (
                             <Fragment key={`${label}-${index}`}>
@@ -132,14 +136,14 @@ export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
                                 <View>
                                     <Picker
                                         items={finalLabels}
-                                        placeholder={PLACEHOLDER_LABEL}
+                                        placeholder={placeholderLabel}
                                         name={`targetLabel-${index}`}
                                         aria-label={`Target label for ${label}`}
                                         defaultSelectedKey={finalLabels.find(({ name }) => name === label)?.name}
                                     >
                                         {(item) => (
                                             <Item key={item.name}>
-                                                {item.name === UNMAPPED_LABEL_VALUE ? PLACEHOLDER_LABEL : item.name}
+                                                {item.name === UNMAPPED_LABEL_VALUE ? placeholderLabel : item.name}
                                             </Item>
                                         )}
                                     </Picker>
@@ -153,7 +157,7 @@ export const LabelMapping = ({ stagedDatasetId }: LabelMappingProps) => {
                         name='include_unannotated'
                         aria-label='include unannotated'
                     >
-                        Include media without annotations
+                        {t('dataset.import.labelMapping.includeUnannotated')}
                     </Checkbox>
                 </Form>
             </View>

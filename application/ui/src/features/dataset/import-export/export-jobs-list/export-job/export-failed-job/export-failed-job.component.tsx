@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ExportDatasetJob } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Button, Divider, Flex, Text, View } from '@geti-ui/ui';
 
 import { useExportDataset } from '../../../../../../hooks/storage/use-export-dataset.hook';
@@ -13,6 +14,7 @@ type ExportFailedJobProps = {
 };
 
 export const ExportFailedJob = ({ job, datasetName }: ExportFailedJobProps) => {
+    const { t } = useTranslation();
     const { removeLsExportId } = useExportDataset();
 
     const handleClose = () => {
@@ -31,14 +33,14 @@ export const ExportFailedJob = ({ job, datasetName }: ExportFailedJobProps) => {
                         aria-label='close export dataset status'
                         onPress={handleClose}
                     >
-                        Close
+                        {t('dataset.export.close')}
                     </Button>
                 </Flex>
             </Flex>
 
             <Text>{job.message}</Text>
             <Divider size='S' marginY='size-150' />
-            <Text>Error: {job.error}</Text>
+            <Text>{t('dataset.export.error', { error: job.error })}</Text>
         </View>
     );
 };

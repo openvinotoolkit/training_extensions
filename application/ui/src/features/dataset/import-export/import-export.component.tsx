@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ExportDatasetConfig } from '@/components/export-dataset-config-dialog/export-dataset-config.component';
+import { useTranslation } from '@/i18n';
 import { Button, Item, Key, Menu, MenuTrigger } from '@geti-ui/ui';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 
@@ -10,6 +11,7 @@ import { MainDatasetStatistics } from './export-dataset/dataset-statistics.compo
 import { ImportDatasetToProject } from './import-dataset/Import-dataset-to-project.component';
 
 export const ImportExport = () => {
+    const { t } = useTranslation();
     const exportDialogState = useOverlayTriggerState({});
     const { datasetImportDialogState, setCurrentStep } = useImportDatasetDialogState();
 
@@ -30,11 +32,11 @@ export const ImportExport = () => {
         <>
             <MenuTrigger>
                 <Button variant='secondary' aria-label='import export dataset'>
-                    Export/Import
+                    {t('dataset.importExport.trigger')}
                 </Button>
                 <Menu onAction={handleMenuAction}>
-                    <Item key='export'>Export dataset</Item>
-                    <Item key='import'>Import dataset</Item>
+                    <Item key='export'>{t('dataset.importExport.exportItem')}</Item>
+                    <Item key='import'>{t('dataset.importExport.importItem')}</Item>
                 </Menu>
             </MenuTrigger>
 

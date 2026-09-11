@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ExportDatasetJob } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Divider, Flex, Loading, Text, View } from '@geti-ui/ui';
 import { getJobProgress, isJobRunning } from 'hooks/api/util';
 import { useExportDataset } from 'hooks/storage/use-export-dataset.hook';
@@ -16,6 +17,7 @@ type ExportActiveJobProps = {
 };
 
 export const ExportActiveJob = ({ job, datasetName }: ExportActiveJobProps) => {
+    const { t } = useTranslation();
     const isRunning = isJobRunning(job);
     const { removeLsExportId } = useExportDataset();
 
@@ -33,7 +35,7 @@ export const ExportActiveJob = ({ job, datasetName }: ExportActiveJobProps) => {
                     <CancelJobConfirmation jobId={job.job_id} onRemove={handleRemove} />
                 </Flex>
 
-                <Text>Processing dataset for export</Text>
+                <Text>{t('dataset.export.processing')}</Text>
 
                 <Divider size='S' marginY='size-150' />
 

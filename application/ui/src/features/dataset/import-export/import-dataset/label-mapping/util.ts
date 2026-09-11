@@ -6,7 +6,6 @@ import { isNonEmptyString } from '../../../../../shared/util';
 type LabelsMapping = Record<string, string | null>;
 
 export const IMPORT_DATASET_FORM_ID = 'import-dataset-form';
-export const PLACEHOLDER_LABEL = 'Select label';
 export const UNMAPPED_LABEL_VALUE = '__UNMAPPED__';
 
 const isValidLabel = (label: unknown): label is string => {
