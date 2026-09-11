@@ -158,7 +158,7 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     run.add_argument(
-        "--benchmark",
+        "--benchmark-ov-models",
         dest="enable_openvino_benchmark",
         action="store_true",
         help="Run OpenVINO benchmark_app in throughput and latency modes.",
