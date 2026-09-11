@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction } from 'react';
 
 import type { TrainingConfiguration } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { isEqual } from 'lodash-es';
 
 import { Accordion } from '../../components/accordion/accordion.component';
@@ -21,12 +22,15 @@ export const LearningParameters = ({
     defaultLearningParameters,
     onTrainingConfigurationChange,
 }: LearningParametersProps) => {
-    const tag = isEqual(learningParameters, defaultLearningParameters) ? 'Default' : 'Modified';
+    const { t } = useTranslation();
+    const tag = isEqual(learningParameters, defaultLearningParameters)
+        ? t('models.training.learning.tagDefault')
+        : t('models.training.learning.tagModified');
 
     return (
         <Accordion>
             <Accordion.Title>
-                Learning parameters
+                {t('models.training.learning.title')}
                 <Accordion.Tag ariaLabel={'Learning parameters tag'}>{tag}</Accordion.Tag>
             </Accordion.Title>
             <Accordion.Content>

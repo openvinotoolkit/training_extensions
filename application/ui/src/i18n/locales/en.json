@@ -989,6 +989,19 @@
                 "mixedUnannotatedClause_other": "{{count}} items that still need annotation before they can be assigned",
                 "mixedAssignmentDetail": "{{reviewedClause}} and {{unannotatedClause}}",
                 "noUnassignedItems": "there are no unassigned items available to redistribute"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "Data management",
+                    "training": "Training"
+                },
+                "notAvailable": "Training configuration is not available."
+            },
+            "learning": {
+                "title": "Learning parameters",
+                "tagDefault": "Default",
+                "tagModified": "Modified",
+                "inputSize": "Input size"
             }
         },
         "list": {
