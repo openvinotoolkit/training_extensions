@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { $api } from '@/api';
 import type { Model } from '@/api/types';
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, dimensionValue, Divider, Flex, Heading, Text, View } from '@geti-ui/ui';
 import { InfoOutline } from '@geti-ui/ui/icons';
 import { useSubmitJob } from 'hooks/api/jobs/jobs.hook';
@@ -40,6 +41,7 @@ type QuantizationDialogProps = {
 };
 
 export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) => {
+    const { t } = useTranslation();
     const [accuracyDrop, setAccuracyDrop] = useState(DEFAULT_QUANTIZATION_PARAMETERS.accuracyDrop);
     const [hasNoMaxAccuracyDrop, setHasNoMaxAccuracyDrop] = useState(
         DEFAULT_QUANTIZATION_PARAMETERS.hasNoMaxAccuracyDrop
@@ -79,7 +81,7 @@ export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) 
                     onClose();
                     toast({
                         type: 'success',
-                        message: 'Quantization job started.',
+                        message: t('models.optimize.jobStarted'),
                     });
                 },
             }
@@ -88,7 +90,7 @@ export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) 
 
     return (
         <Dialog width={'100%'}>
-            <Heading>Quantization</Heading>
+            <Heading>{t('models.optimize.dialogTitle')}</Heading>
 
             <Divider size={'S'} />
 
@@ -96,7 +98,7 @@ export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) 
                 <View padding={'size-300'} backgroundColor={'gray-50'} height={'100%'}>
                     <View padding={'size-300'} backgroundColor={'gray-75'} height={'100%'}>
                         <Heading UNSAFE_style={{ color: 'var(--spectrum-global-color-gray-700)' }} level={4}>
-                            Quantize model to INT8
+                            {t('models.optimize.subheading')}
                         </Heading>
 
                         <Divider size={'S'} marginY={'size-200'} />
@@ -135,7 +137,7 @@ export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) 
                                     color: 'var(--spectrum-global-color-gray-700)',
                                 }}
                             >
-                                Recommended calibration dataset size: between 200-500 media items
+                                {t('models.optimize.recommendedCalibrationSize')}
                             </Text>
                         </Flex>
                     </View>
@@ -148,7 +150,7 @@ export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) 
                     onPress={onClose}
                     UNSAFE_style={{ paddingTop: dimensionValue('size-75') }}
                 >
-                    Cancel
+                    {t('models.optimize.cancel')}
                 </Button>
                 <Button
                     variant={'primary'}
@@ -156,7 +158,7 @@ export const QuantizationDialog = ({ model, onClose }: QuantizationDialogProps) 
                     isPending={submitJob.isPending}
                     isDisabled={isLoadingCount || hasNoDatasetItems || submitJob.isPending}
                 >
-                    Start quantization
+                    {t('models.optimize.start')}
                 </Button>
             </ButtonGroup>
         </Dialog>

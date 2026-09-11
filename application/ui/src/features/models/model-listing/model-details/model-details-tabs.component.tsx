@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Flex, Item, Loading, TabList, TabPanels, Tabs, Text } from '@geti-ui/ui';
 import { Info } from '@geti-ui/ui/icons';
 
@@ -19,6 +20,7 @@ interface ModelDetailsTabsProps {
 }
 
 export const ModelDetailsTabs = ({ modelId }: ModelDetailsTabsProps) => {
+    const { t } = useTranslation();
     const { isPending, isError, data: model } = useGetModel(modelId);
     const { data: datasetRevisions = [] } = useGetDatasetRevisions();
 
@@ -33,7 +35,7 @@ export const ModelDetailsTabs = ({ modelId }: ModelDetailsTabsProps) => {
     if (isError || !model) {
         return (
             <Flex alignItems={'center'} justifyContent={'center'} height={'size-3000'}>
-                <Text>Failed to load model details</Text>
+                <Text>{t('models.detail.loadError')}</Text>
             </Flex>
         );
     }
@@ -68,16 +70,16 @@ export const ModelDetailsTabs = ({ modelId }: ModelDetailsTabsProps) => {
             >
                 <TabList marginBottom={'size-300'}>
                     <Item key='variants'>
-                        <Text>Model variants</Text>
+                        <Text>{t('models.detail.tabs.variants')}</Text>
                     </Item>
                     <Item key='metrics'>
-                        <Text>Model metrics</Text>
+                        <Text>{t('models.detail.tabs.metrics')}</Text>
                     </Item>
                     <Item key='parameters'>
-                        <Text>Training parameters</Text>
+                        <Text>{t('models.detail.tabs.parameters')}</Text>
                     </Item>
                     <Item key='datasets'>
-                        <Text>Training datasets</Text>
+                        <Text>{t('models.detail.tabs.datasets')}</Text>
                     </Item>
                 </TabList>
                 <TabPanels>

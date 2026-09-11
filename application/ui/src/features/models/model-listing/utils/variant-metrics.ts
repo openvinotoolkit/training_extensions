@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ModelVariant } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 import { getTestingMetrics } from '../components/model-row/utils';
 
@@ -39,12 +40,13 @@ export const getBaselineVariant = (variants: ModelVariant[]): ModelVariant | und
 
 export const getPerformanceColumnName = (
     variants: ModelVariant[],
-    fp32PytorchMetric: PrimaryTestingMetricValue | undefined
+    fp32PytorchMetric: PrimaryTestingMetricValue | undefined,
+    t: TranslateFn
 ): string => {
     return (
         variants.map((variant) => getPrimaryTestingMetricValue(variant)).find((metric) => metric !== undefined)?.name ??
         fp32PytorchMetric?.name ??
-        'Accuracy'
+        t('models.performance.accuracy')
     );
 };
 

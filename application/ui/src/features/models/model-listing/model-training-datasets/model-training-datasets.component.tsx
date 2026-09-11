@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 
 import type { DatasetRevision, DatasetSubset, Model } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, MediaViewModes, Text, ViewModes } from '@geti-ui/ui';
 import { useNumberFormatter } from 'react-aria';
 
@@ -55,6 +56,7 @@ const SubsetBox = ({ title, subset, datasetRevisionId, totalItems, selectedModel
 };
 
 const ModelTrainingContent = ({ datasetRevision, model }: { datasetRevision: DatasetRevision; model: Model }) => {
+    const { t } = useTranslation();
     const totalItems = datasetRevision.item_counts?.total ?? 0;
     const datasetRevisionId = String(datasetRevision.id);
 
@@ -64,21 +66,21 @@ const ModelTrainingContent = ({ datasetRevision, model }: { datasetRevision: Dat
     return (
         <Flex gap={'size-300'} width={'100%'}>
             <SubsetBox
-                title={'Training'}
+                title={t('dataset.filters.subsetOptions.training')}
                 subset={'training'}
                 datasetRevisionId={datasetRevisionId}
                 totalItems={totalItems}
                 selectedModel={selectedModel}
             />
             <SubsetBox
-                title={'Validation'}
+                title={t('dataset.filters.subsetOptions.validation')}
                 subset={'validation'}
                 datasetRevisionId={datasetRevisionId}
                 totalItems={totalItems}
                 selectedModel={selectedModel}
             />
             <SubsetBox
-                title={'Testing'}
+                title={t('dataset.filters.subsetOptions.testing')}
                 subset={'testing'}
                 datasetRevisionId={datasetRevisionId}
                 totalItems={totalItems}
@@ -95,10 +97,12 @@ export const ModelTrainingDatasets = ({
     datasetRevision?: DatasetRevision;
     model: Model;
 }) => {
+    const { t } = useTranslation();
+
     if (!datasetRevision || !datasetRevision.id) {
         return (
             <Flex justifyContent={'center'} alignItems={'center'} height={'size-3000'}>
-                <Text>No dataset revision found for this model</Text>
+                <Text>{t('dataset.revisions.notFoundForModel')}</Text>
             </Flex>
         );
     }
@@ -106,7 +110,7 @@ export const ModelTrainingDatasets = ({
     if (datasetRevision.files_deleted) {
         return (
             <Flex justifyContent={'center'} alignItems={'center'} height={'size-3000'}>
-                <Text>The files for this dataset revision have been deleted.</Text>
+                <Text>{t('dataset.revisions.filesDeleted')}</Text>
             </Flex>
         );
     }

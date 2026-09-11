@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Model } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
 
@@ -27,10 +28,12 @@ const isQuantizationDisabled = (model: Model) => {
 };
 
 export const ModelVariantsTabs = ({ model }: ModelVariantsTabsProps) => {
+    const { t } = useTranslation();
+
     if (isEmpty(model.variants)) {
         return (
             <Flex justifyContent={'center'} alignItems={'center'} height={'size-3000'}>
-                <Text>No available model variants.</Text>
+                <Text>{t('models.variants.empty')}</Text>
             </Flex>
         );
     }

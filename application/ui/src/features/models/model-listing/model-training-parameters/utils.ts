@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ConfigurableParameter, ConfigurableParameterGroup, TrainingConfigurationParameter } from '@/api/types';
+import type { TranslateFn } from '@/i18n';
 
 export const isParameterGroup = (
     parameter: TrainingConfigurationParameter
@@ -24,13 +25,13 @@ export const findGroupByKey = (
     });
 };
 
-const formatParameterValue = (value: ConfigurableParameter['value']): string => {
+const formatParameterValue = (value: ConfigurableParameter['value'], t: TranslateFn): string => {
     if (Array.isArray(value)) {
         return value.join(' - ');
     }
 
     if (typeof value === 'boolean') {
-        return value ? 'On' : 'Off';
+        return value ? t('models.training.parameters.on') : t('models.training.parameters.off');
     }
 
     if (value === null) {
@@ -91,6 +92,7 @@ type FlattenedParameterRow = {
 
 export const flattenParameters = (
     parameters: TrainingConfigurationParameter[] | undefined,
+    t: TranslateFn,
     depth = 0
 ): FlattenedParameterRow[] => {
     if (!parameters) {
@@ -106,13 +108,13 @@ export const flattenParameters = (
                 isGroup: true,
             };
 
-            return [groupRow, ...flattenParameters(parameter.parameters, depth + 1)];
+            return [groupRow, ...flattenParameters(parameter.parameters, t, depth + 1)];
         }
 
         return [
             {
                 name: parameter.name,
-                value: formatParameterValue(parameter.value),
+                value: formatParameterValue(parameter.value, t),
                 depth,
                 isGroup: false,
             },

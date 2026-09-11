@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { createI18nInstance } from '@/i18n';
 import { getMockedVariant } from 'mocks/mock-model-variant';
 
 import {
@@ -11,6 +12,8 @@ import {
 } from './variant-metrics';
 
 describe('variant-metrics utilities', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     it('returns primary testing metric value rounded to percent', () => {
         const variant = getMockedVariant({
             evaluations: [
@@ -62,9 +65,9 @@ describe('variant-metrics utilities', () => {
             }),
         ];
 
-        expect(getPerformanceColumnName(withMetric, undefined)).toBe('mAP');
-        expect(getPerformanceColumnName([], { name: 'Accuracy', value: 87 })).toBe('Accuracy');
-        expect(getPerformanceColumnName([], undefined)).toBe('Accuracy');
+        expect(getPerformanceColumnName(withMetric, undefined, t)).toBe('mAP');
+        expect(getPerformanceColumnName([], { name: 'Accuracy', value: 87 }, t)).toBe('Accuracy');
+        expect(getPerformanceColumnName([], undefined, t)).toBe('Accuracy');
     });
 
     it('returns variant performance and applies fallback only for empty evaluations', () => {

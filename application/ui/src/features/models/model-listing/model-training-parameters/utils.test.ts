@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { TrainingConfigurationParameter } from '@/api/types';
+import { createI18nInstance } from '@/i18n';
 import { getMockedTrainingConfiguration } from 'mocks/mock-training-configuration';
 
 import { findGroupByKey, flattenParameters, isParameterGroup } from './utils';
 
 describe('Training parameters utils', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     it('finds a nested top-level group by key', () => {
         const parameters = getMockedTrainingConfiguration();
 
@@ -34,7 +37,7 @@ describe('Training parameters utils', () => {
         const datasetPreparationGroup = findGroupByKey(parameters, 'dataset_preparation');
         const augmentationGroup = findGroupByKey(datasetPreparationGroup?.parameters, 'augmentation');
 
-        const rows = flattenParameters(augmentationGroup?.parameters);
+        const rows = flattenParameters(augmentationGroup?.parameters, t);
 
         expect(rows).toEqual([
             { name: 'Mosaic:', value: '', depth: 0, isGroup: true },
@@ -46,6 +49,6 @@ describe('Training parameters utils', () => {
     });
 
     it('returns an empty list when parameters are missing', () => {
-        expect(flattenParameters(undefined)).toEqual([]);
+        expect(flattenParameters(undefined, t)).toEqual([]);
     });
 });

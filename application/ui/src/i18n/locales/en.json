@@ -298,6 +298,9 @@
             "createdOn": "Created {{date}}",
             "unnamedName": "Dataset #{{id}}",
             "unknown": "Unknown",
+            "notFoundForModel": "No dataset revision found for this model",
+            "filesDeleted": "The files for this dataset revision have been deleted.",
+            "noItemsInSubset": "No items in this subset",
             "trainingSubsets": {
                 "training": "Training",
                 "validation": "Validation",
@@ -853,6 +856,21 @@
             "waitingToStart": "Waiting to start...",
             "device": "Device: {{device}}"
         },
+        "detail": {
+            "loadError": "Failed to load model details",
+            "tabs": {
+                "variants": "Model variants",
+                "metrics": "Model metrics",
+                "parameters": "Training parameters",
+                "datasets": "Training datasets"
+            }
+        },
+        "metrics": {
+            "noMetrics": "No available metrics",
+            "loadError": "Failed to load training metrics",
+            "evaluationsTitle": "Evaluations",
+            "noEvaluations": "Testing evaluation metrics are not available"
+        },
         "training": {
             "logs": {
                 "copySuccess": "Copied Successfully",
@@ -879,6 +897,15 @@
                 "noJobOrModel": "No job or model specified",
                 "fetchError": "Failed to fetch model logs: {{status}} {{statusText}}",
                 "downloadStarted": "Training logs download started"
+            },
+            "parameters": {
+                "noParameters": "No parameters.",
+                "learningParameters": "LEARNING PARAMETERS",
+                "filters": "FILTERS",
+                "augmentations": "AUGMENTATIONS",
+                "intensityMapping": "INTENSITY MAPPING",
+                "on": "On",
+                "off": "Off"
             }
         },
         "list": {
@@ -912,6 +939,55 @@
                 "balance": "Balance",
                 "speed": "Speed",
                 "accuracy": "Accuracy"
+            }
+        },
+        "variants": {
+            "empty": "No available model variants.",
+            "columns": {
+                "precision": "PRECISION",
+                "size": "SIZE"
+            },
+            "quantizedInfo": {
+                "title": "Quantized with NNCF PTQ",
+                "maxAccuracyDrop": "Max accuracy drop: {{value}}",
+                "calibrationDatasetSize": "Calibration dataset size: {{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "Model download started"
+        },
+        "optimize": {
+            "description": "Optimize the FP16 model using OpenVINO NNCF (via INT8 quantization)",
+            "contextualHelp": "OpenVINO NNCF (Neural Network Compression Framework) via INT8 quantization reduces model size and speeds up inference with minimal impact on accuracy",
+            "start": "Start quantization",
+            "cancel": "Cancel",
+            "dialogTitle": "Quantization",
+            "subheading": "Quantize model to INT8",
+            "jobStarted": "Quantization job started.",
+            "recommendedCalibrationSize": "Recommended calibration dataset size: between 200-500 media items",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "Max accuracy drop (%)",
+                    "help": {
+                        "paragraph1": "Maximum allowed drop in validation accuracy.",
+                        "paragraph2": "Beware that accuracy-aware quantization may take a long time when the max allowed drop is small.",
+                        "paragraph3": "Also note that the final testing accuracy may be lower than the specified validation accuracy threshold, especially for relatively small datasets."
+                    },
+                    "noMaximum": "No maximum"
+                },
+                "maxIterations": {
+                    "label": "Max number of iterations",
+                    "help": {
+                        "paragraph1": "Maximum number of iterations of accuracy-aware quantization.",
+                        "paragraph2": "Accuracy-aware quantization iteratively removes model layers from the quantization scope until the max accuracy drop criteria is met. Limiting the number of iterations can significantly reduce the time it takes to quantize models with many layers.",
+                        "paragraph3": "This parameter is only used when a max accuracy drop is set."
+                    }
+                },
+                "calibrationSize": {
+                    "label": "Max calibration size",
+                    "help": "Calibration samples will be randomly selected within the dataset",
+                    "useFullDataset": "Use full dataset"
+                }
             }
         },
         "actions": {
