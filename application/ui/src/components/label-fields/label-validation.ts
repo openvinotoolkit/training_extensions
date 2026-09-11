@@ -17,7 +17,7 @@ export const validateLabelName = (
     const isDuplicate = existingLabels.some((label) => label.name === trimmedName && label.id !== excludeId);
 
     if (isDuplicate) {
-        return t('project.validation.labelNameExists');
+        return t('labels.fields.nameExists');
     }
 
     return undefined;
@@ -30,7 +30,7 @@ export const validateLabelHotkey = (hotkey: string, allHotkeys: string[], t: Tra
         .map((key) => convertHotkeyToOSFormat(key.trim()).toLowerCase());
 
     if (osFormatHotkeys.includes(hotkey.toLowerCase())) {
-        return t('project.validation.hotkeyExists');
+        return t('labels.fields.hotkeyExists');
     }
 
     return undefined;

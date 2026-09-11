@@ -7,6 +7,7 @@ import type { Label } from '@/api/types';
 import { HotkeyField } from '@/components/label-fields/hotkey-field.component';
 import { LabelColorPicker } from '@/components/label-fields/label-color-picker.component';
 import { SilentCheckbox } from '@/components/label-fields/silent-checkbox.component';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Grid, TextField, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Delete, Pin, Unpin } from '@geti-ui/ui/icons';
 
@@ -44,6 +45,7 @@ export const LabelRow = ({
     validateName,
     validateHotkey,
 }: LabelRowProps) => {
+    const { t } = useTranslation();
     const [name, setName] = useState(label.name);
     const [color, setColor] = useState(label.color);
     const [hotkey, setHotkey] = useState(label.hotkey ?? '');
@@ -100,7 +102,7 @@ export const LabelRow = ({
                     width={'100%'}
                     value={name}
                     aria-label={'Label name'}
-                    placeholder={'Label name'}
+                    placeholder={t('labels.editor.namePlaceholder')}
                     onChange={setName}
                     onBlur={handleUpdateName}
                     onKeyDown={onEnter(handleUpdateName)}
@@ -127,7 +129,7 @@ export const LabelRow = ({
                 >
                     {isPinned ? <Pin /> : <Unpin />}
                 </ActionButton>
-                <Tooltip>{isPinned ? 'Unpin label' : 'Pin label'}</Tooltip>
+                <Tooltip>{isPinned ? t('labels.editor.unpin') : t('labels.editor.pin')}</Tooltip>
             </TooltipTrigger>
 
             <ActionButton

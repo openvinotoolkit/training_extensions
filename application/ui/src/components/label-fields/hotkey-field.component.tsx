@@ -69,7 +69,7 @@ export const HotkeyField = ({ hotkey, errorMessage, onEnter, onHotkeyChange, onB
     return (
         <TextField
             aria-label={'Hotkey input'}
-            placeholder={t('project.labels.hotkeyPlaceholder')}
+            placeholder={t('labels.fields.hotkeyPlaceholder')}
             value={formattedHotkey}
             onKeyDown={handleKeyDown}
             onBlur={onBlur}

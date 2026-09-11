@@ -5,6 +5,7 @@ import { FocusEvent, KeyboardEvent, useRef, useState } from 'react';
 
 import { HotkeyField } from '@/components/label-fields/hotkey-field.component';
 import { LabelColorPicker } from '@/components/label-fields/label-color-picker.component';
+import { useTranslation } from '@/i18n';
 import { ActionButton, DOMRefValue, Flex, Grid, TextField, useUnwrapDOMRef, View } from '@geti-ui/ui';
 import { Add, Close } from '@geti-ui/ui/icons';
 
@@ -20,6 +21,7 @@ type NewLabelRowProps = {
 };
 
 export const NewLabelRow = ({ onSave, onCancel, validateName, validateHotkey }: NewLabelRowProps) => {
+    const { t } = useTranslation();
     const rowRef = useRef<DOMRefValue<HTMLDivElement>>(null);
     const rowRefUnwrapped = useUnwrapDOMRef(rowRef);
     const [name, setName] = useState('');
@@ -97,7 +99,7 @@ export const NewLabelRow = ({ onSave, onCancel, validateName, validateHotkey }: 
                     // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
                     aria-label={'New label name'}
-                    placeholder={'Label name'}
+                    placeholder={t('labels.editor.namePlaceholder')}
                     value={name}
                     onChange={setName}
                     onKeyDown={handleNameKeyDown}

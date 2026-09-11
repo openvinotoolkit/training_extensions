@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 
 import { toast } from '@/components/toast/toast.component';
 import { useZoom } from '@/components/zoom/zoom.provider';
+import { useTranslation } from '@/i18n';
 import { isPointOverPoint, isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { useMutation } from '@tanstack/react-query';
 import { isEmpty, isEqual, throttle } from 'lodash-es';
@@ -31,6 +32,7 @@ import { useAddAndSelectAnnotations } from '../use-add-and-select-annotations.ho
 import classes from './magnetic-lasso.module.scss';
 
 export const MagneticLasso = () => {
+    const { t } = useTranslation();
     const { scale: zoom } = useZoom();
     const [mode, setMode] = useState<PolygonMode>(PolygonMode.MagneticLasso);
     const { addAndSelectAnnotations } = useAddAndSelectAnnotations();
@@ -138,7 +140,7 @@ export const MagneticLasso = () => {
         mutationFn: async (point: Point) => worker?.calcPoints(point),
 
         onError: (): void => {
-            toast({ message: 'Failed to select the shape boundaries, could you please try again?', type: 'error' });
+            toast({ message: t('annotator.tools.magneticLasso.error'), type: 'error' });
         },
 
         onSuccess: (newPoints?: Point[]) => {

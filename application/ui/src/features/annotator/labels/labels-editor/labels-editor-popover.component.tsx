@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import type { Label } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, AlertDialog, DialogContainer, DialogTrigger, Text, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Add, Edit } from '@geti-ui/ui/icons';
 import { useOverlayTriggerState } from '@react-stately/overlays';
@@ -24,6 +25,7 @@ export const LabelsEditorPopover = ({
     isMultiLabel = false,
     hasLabels,
 }: LabelsEditorPopoverProps) => {
+    const { t } = useTranslation();
     const { deleteLabel } = useLabels({ isClassification, isMultiLabel });
 
     const popoverState = useOverlayTriggerState({});
@@ -50,7 +52,8 @@ export const LabelsEditorPopover = ({
         popoverState.open();
     };
 
-    const triggerLabel = hasLabels ? 'Edit labels' : 'Create label';
+    const triggerAriaLabel = hasLabels ? 'Edit labels' : 'Create label';
+    const triggerLabel = hasLabels ? t('labels.editor.editTrigger') : t('labels.editor.createTrigger');
 
     return (
         <>
@@ -64,13 +67,13 @@ export const LabelsEditorPopover = ({
                 crossOffset={POPOVER_OFFSET_ALIGNMENT}
             >
                 <TooltipTrigger>
-                    <ActionButton isQuiet aria-label={triggerLabel}>
+                    <ActionButton isQuiet aria-label={triggerAriaLabel}>
                         {hasLabels ? (
                             <Edit />
                         ) : (
                             <>
                                 <Add />
-                                <Text>Create label</Text>
+                                <Text>{triggerLabel}</Text>
                             </>
                         )}
                     </ActionButton>
@@ -88,16 +91,14 @@ export const LabelsEditorPopover = ({
             <DialogContainer onDismiss={handleCancelDeleteLabel}>
                 {deleteDialogState.isOpen && labelToDelete && (
                     <AlertDialog
-                        title={'Delete label'}
+                        title={t('labels.editor.delete.title')}
                         variant={'destructive'}
-                        primaryActionLabel={'Delete'}
-                        cancelLabel={'Cancel'}
+                        primaryActionLabel={t('labels.editor.delete.confirm')}
+                        cancelLabel={t('labels.editor.delete.cancel')}
                         onPrimaryAction={handleConfirmDeleteLabel}
                         onCancel={handleCancelDeleteLabel}
                     >
-                        If you remove the {labelToDelete.name} label, all annotations in your dataset that have this
-                        label will be deleted. However, this won&apos;t impact any models you&apos;ve trained in the
-                        past.
+                        {t('labels.editor.delete.message', { labelName: labelToDelete.name })}
                     </AlertDialog>
                 )}
             </DialogContainer>
