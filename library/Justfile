@@ -18,14 +18,14 @@ _ensure_uv:
 [arg("device", short="d", long="device")]
 venv device="cpu": _ensure_uv
     uv lock --check
-    uv sync --frozen --extra {{ device }} --extra ultralytics
+    uv sync --frozen --extra {{ device }}
 
 # Create a virtual environment including benchmark-dataset dependencies (e.g. kagglehub).
 # Use this when running or testing the benchmark dataset preparation scripts.
 [arg("device", short="d", long="device")]
 venv-benchmark device="cpu": _ensure_uv
     uv lock --check
-    uv sync --frozen --extra {{ device }} --extra ultralytics --extra benchmark
+    uv sync --frozen --extra {{ device }} --extra benchmark
 
 # Generate or update the uv lock file
 venv-lock: _ensure_uv
@@ -73,10 +73,6 @@ test-unit-lightning *ARGS: _ensure_uv
 # Run model-related unit tests with pytest
 test-unit-models *ARGS: _ensure_uv
     uv run pytest ./tests/unit/backend/*/models -v {{ ARGS }}
-
-# Run ultralytics backend
-test-unit-ultralytics *ARGS: _ensure_uv
-    uv run pytest ./tests/unit/backend/ultralytics -v {{ ARGS }}
 
 # Run openvino backend
 test-unit-openvino *ARGS: _ensure_uv

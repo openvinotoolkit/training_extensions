@@ -104,9 +104,6 @@ xpu = [
     "triton-xpu==3.7.1",
     "torchvision==0.27.1+xpu"
 ]
-ultralytics = [
-    "ultralytics==8.4.86",
-]
 
 docs = [
     "furo",
