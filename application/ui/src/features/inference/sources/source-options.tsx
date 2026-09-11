@@ -4,6 +4,7 @@
 import { ReactNode } from 'react';
 
 import type { IPCameraSourceConfig, USBCameraSourceConfig, VideoFileSourceConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 
 import { ReactComponent as IpCameraIcon } from '../../../assets/icons/ip-camera.svg';
 import { ReactComponent as Video } from '../../../assets/icons/video-file.svg';
@@ -25,6 +26,8 @@ interface SourceOptionsProps {
 }
 
 export const SourceOptions = ({ onSaved, hasHeader, children, existingNames = [] }: SourceOptionsProps) => {
+    const { t } = useTranslation();
+
     return (
         <>
             {hasHeader && children}
@@ -33,26 +36,26 @@ export const SourceOptions = ({ onSaved, hasHeader, children, existingNames = []
                 defaultActiveInput={null}
                 items={[
                     {
-                        label: 'USB Camera',
+                        label: t('inference.sources.options.usbCamera'),
                         value: 'usb_camera',
                         icon: <WebcamIcon width={'24px'} />,
                         content: (
                             <AddSource
                                 onSaved={onSaved}
-                                config={getUsbCameraInitialConfig(existingNames)}
+                                config={getUsbCameraInitialConfig(t, existingNames)}
                                 componentFields={(state: USBCameraSourceConfig) => <UsbCamera defaultState={state} />}
                                 bodyFormatter={usbCameraBodyFormatter}
                             />
                         ),
                     },
                     {
-                        label: 'IP Camera',
+                        label: t('inference.sources.options.ipCamera'),
                         value: 'ip_camera',
                         icon: <IpCameraIcon width={'24px'} />,
                         content: (
                             <AddSource
                                 onSaved={onSaved}
-                                config={getIpCameraInitialConfig(existingNames)}
+                                config={getIpCameraInitialConfig(t, existingNames)}
                                 componentFields={(state: IPCameraSourceConfig) => <IpCamera defaultState={state} />}
                                 bodyFormatter={ipCameraBodyFormatter}
                             />
@@ -76,14 +79,14 @@ export const SourceOptions = ({ onSaved, hasHeader, children, existingNames = []
                     //     ),
                     // },
                     {
-                        label: 'Video file',
+                        label: t('inference.sources.options.videoFile'),
                         value: 'video_file',
                         icon: <Video width={'24px'} />,
 
                         content: (
                             <AddSource
                                 onSaved={onSaved}
-                                config={getVideoFileInitialConfig(existingNames)}
+                                config={getVideoFileInitialConfig(t, existingNames)}
                                 componentFields={(state: VideoFileSourceConfig) => <VideoFile defaultState={state} />}
                                 bodyFormatter={videoFileBodyFormatter}
                                 prepareFormData={prepareVideoFileFormData}

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { IPCameraSourceConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, Switch, TextField } from '@geti-ui/ui';
 
 type IpCameraProps = {
@@ -9,14 +10,21 @@ type IpCameraProps = {
 };
 
 export const IpCamera = ({ defaultState }: IpCameraProps) => {
+    const { t } = useTranslation();
+
     return (
         <Flex direction='column' gap='size-200'>
             <TextField isHidden label='id' name='id' defaultValue={defaultState?.id} />
-            <TextField width={'100%'} label='Name' name='name' defaultValue={defaultState?.name} />
+            <TextField
+                width={'100%'}
+                label={t('inference.sources.fields.name')}
+                name='name'
+                defaultValue={defaultState?.name}
+            />
             <TextField
                 isRequired
                 width={'100%'}
-                label='Stream Url:'
+                label={t('inference.sources.fields.streamUrl')}
                 name='stream_url'
                 defaultValue={defaultState?.stream_url}
             />
@@ -26,7 +34,7 @@ export const IpCamera = ({ defaultState }: IpCameraProps) => {
                 defaultSelected={defaultState?.auth_required}
                 key={defaultState?.auth_required ? 'true' : 'false'}
             >
-                Require Authentication
+                {t('inference.sources.fields.requireAuthentication')}
             </Switch>
         </Flex>
     );

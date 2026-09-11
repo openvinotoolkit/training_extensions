@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { createI18nInstance } from '@/i18n';
 import { HttpResponse } from 'msw';
 
 import { http } from '../../../../api/utils';
@@ -18,8 +19,10 @@ const buildFormData = (fields: Record<string, string | Blob>): FormData => {
 };
 
 describe('getVideoFileInitialConfig', () => {
+    const { t } = createI18nInstance({ lng: 'en' });
+
     it('returns a config with an empty video_path and a unique name', () => {
-        expect(getVideoFileInitialConfig(['Video file source'])).toEqual({
+        expect(getVideoFileInitialConfig(t, ['Video file source'])).toEqual({
             id: '',
             name: 'Video file source (1)',
             source_type: 'video_file',

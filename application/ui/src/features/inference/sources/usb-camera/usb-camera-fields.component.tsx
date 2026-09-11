@@ -5,6 +5,7 @@ import { Key, useRef, useState } from 'react';
 
 import { $api } from '@/api';
 import type { USBCameraSourceConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Item, Loading, Picker, TextField } from '@geti-ui/ui';
 import { Refresh } from '@geti-ui/ui/icons';
 import { isEmpty } from 'lodash-es';
@@ -14,6 +15,7 @@ type UsbCameraProps = {
 };
 
 export const UsbCamera = ({ defaultState }: UsbCameraProps) => {
+    const { t } = useTranslation();
     const [name, setName] = useState(defaultState?.name);
     const isSystemName = useRef(isEmpty(defaultState?.name));
 
@@ -46,13 +48,19 @@ export const UsbCamera = ({ defaultState }: UsbCameraProps) => {
         <Flex direction='column' gap='size-200'>
             <TextField isHidden label='id' name='id' defaultValue={defaultState?.id} />
             <TextField isHidden label='name' name='name' value={name} />
-            <TextField width='100%' label='Name' name='name_display' value={name} onChange={handleNameChange} />
+            <TextField
+                width='100%'
+                label={t('inference.sources.fields.name')}
+                name='name_display'
+                value={name}
+                onChange={handleNameChange}
+            />
 
             <Flex alignItems='end' gap='size-200'>
                 <Picker
                     flex='1'
                     isRequired
-                    label='Camera'
+                    label={t('inference.sources.fields.camera')}
                     name='device_id'
                     items={devices}
                     isLoading={isLoading}

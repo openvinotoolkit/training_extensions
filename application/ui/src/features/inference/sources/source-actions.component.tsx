@@ -4,6 +4,7 @@
 import { useMemo, useState } from 'react';
 
 import type { SourceConfig } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Loading, Text } from '@geti-ui/ui';
 import { Back } from '@geti-ui/ui/icons';
 import { usePipeline } from 'hooks/api/pipeline.hook';
@@ -15,6 +16,7 @@ import { SourcesList } from './source-list/source-list.component';
 import { SourceOptions } from './source-options';
 
 export const SourceActions = () => {
+    const { t } = useTranslation();
     const [view, setView] = useState<'list' | 'options' | 'edit'>('list');
     const [currentSource, setCurrentSource] = useState<SourceConfig | null>(null);
     const { data: sources = [], isPending } = useSourcesQuery();
@@ -71,7 +73,7 @@ export const SourceActions = () => {
                     <Back />
                 </ActionButton>
 
-                <Text>Add new input source</Text>
+                <Text>{t('inference.sources.add.title')}</Text>
             </Flex>
         </SourceOptions>
     );
