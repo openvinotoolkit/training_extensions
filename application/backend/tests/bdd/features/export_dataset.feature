@@ -23,12 +23,12 @@ Feature: Export Dataset
 
     Examples:
       | export format | archive name     | filters                                                    | image count | frame count |
-      | YOLO          | dataset-yolo.zip | { }                                                        | 34          | 0           |
-      | YOLO          | dataset-yolo.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
-      | GETI          | dataset-geti.zip | { }                                                        | 30          | 4           |
-      | GETI          | dataset-geti.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 10          | 4           |
-      | COCO          | dataset-coco.zip | { }                                                        | 34          | 0           |
-      | COCO          | dataset-coco.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
+      | YOLO          | test_project-yolo-dataset.zip | { }                                                        | 34          | 0           |
+      | YOLO          | test_project-yolo-dataset.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
+      | GETI          | test_project-geti-dataset.zip | { }                                                        | 30          | 4           |
+      | GETI          | test_project-geti-dataset.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 10          | 4           |
+      | COCO          | test_project-coco-dataset.zip | { }                                                        | 34          | 0           |
+      | COCO          | test_project-coco-dataset.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
 
   @export @classification
   Scenario Outline: Export classification project dataset
@@ -48,10 +48,10 @@ Feature: Export Dataset
 
     Examples:
       | export format | archive name     | filters                                             | image count | frame count |
-      | GETI          | dataset-geti.zip | { }                                                 | 30          | 10          |
-      | GETI          | dataset-geti.zip | { "labels": ["cat"], "include_unannotated": false } | 15          | 5           |
-      | VOC           | dataset-voc.zip  | { }                                                 | 40          | 0           |
-      | VOC           | dataset-voc.zip  | { "labels": ["cat"], "include_unannotated": false } | 20          | 0           |
+      | GETI          | test_project-geti-dataset.zip | { }                                                 | 30          | 10          |
+      | GETI          | test_project-geti-dataset.zip | { "labels": ["cat"], "include_unannotated": false } | 15          | 5           |
+      | VOC           | test_project-voc-dataset.zip  | { }                                                 | 40          | 0           |
+      | VOC           | test_project-voc-dataset.zip  | { "labels": ["cat"], "include_unannotated": false } | 20          | 0           |
 
   @export @segmentation
   Scenario Outline: Export segmentation project dataset
@@ -71,7 +71,7 @@ Feature: Export Dataset
 
     Examples:
       | export format | archive name     | filters                       | image count | frame count |
-      | GETI          | dataset-geti.zip | { }                           | 30           | 6          |
-      | GETI          | dataset-geti.zip | { "labels": ["person"] }      | 30           | 6          |
-      | COCO          | dataset-coco.zip | { }                           | 36           | 0          |
-      | COCO          | dataset-coco.zip | { "labels": ["person"] }      | 36           | 0          |
+      | GETI          | test_project-geti-dataset.zip | { }                           | 30           | 6          |
+      | GETI          | test_project-geti-dataset.zip | { "labels": ["person"] }      | 30           | 6          |
+      | COCO          | test_project-coco-dataset.zip | { }                           | 36           | 0          |
+      | COCO          | test_project-coco-dataset.zip | { "labels": ["person"] }      | 36           | 0          |

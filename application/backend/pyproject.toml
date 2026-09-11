@@ -37,6 +37,7 @@ dependencies = [
     "optree~=0.19.0",
     "av~=16.1.0",
     "starlette~=1.3.1",
+    "pathvalidate~=3.3",
     "hypercorn~=0.18.0",
     "safetensors~=0.8.0",
 ]

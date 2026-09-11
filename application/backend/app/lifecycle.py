@@ -171,6 +171,7 @@ def setup_job_controller(
             staged_datasets_dir=staged_datasets_dir,
             dataset_service=dataset_service,
             dataset_revision_service=dataset_revision_service,
+            project_service=project_service,
             db_session_factory=get_db_session,
         ),
     )

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import quote
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.params import Depends
@@ -111,7 +112,7 @@ def download_archive(
         file_iterator(file_path),
         media_type="application/zip",
         headers={
-            "Content-Disposition": f"attachment; filename={file_path.name}",
+            "Content-Disposition": f"attachment; filename*=utf-8''{quote(file_path.name)}",
         },
     )
 
