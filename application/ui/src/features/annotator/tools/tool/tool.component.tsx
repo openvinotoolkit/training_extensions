@@ -53,6 +53,7 @@ export const Tool = ({ tool, activeTool, setActiveTool, isDisabled }: ToolProps)
     useHotkeys(tool.hotkey, () => setActiveTool(tool.type), [setActiveTool, isDisabled], { enabled: !isDisabled });
 
     const label = `${tool.label} (${tool.hotkey})`;
+    const ariaLabel = `${tool.ariaLabel} (${tool.hotkey})`;
 
     return (
         <TooltipTrigger placement={'right'}>
@@ -60,7 +61,7 @@ export const Tool = ({ tool, activeTool, setActiveTool, isDisabled }: ToolProps)
                 isQuiet
                 width={'size-400'}
                 onPress={() => setActiveTool(tool.type)}
-                aria-label={label}
+                aria-label={ariaLabel}
                 isDisabled={isDisabled}
                 aria-pressed={activeTool === tool.type}
             >

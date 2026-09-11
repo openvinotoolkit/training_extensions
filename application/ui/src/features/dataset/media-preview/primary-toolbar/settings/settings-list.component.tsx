@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Divider, Flex, Switch, Text, View } from '@geti-ui/ui';
 
 import { AnnotationSetting } from './annotation-setting.component';
@@ -13,6 +14,8 @@ interface SettingsListProps {
 }
 
 export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: SettingsListProps) => {
+    const { t } = useTranslation();
+
     const updateCanvasSettings = <T extends keyof CanvasSettingsState>(
         key: T,
         value: CanvasSettingsState[T]['value']
@@ -25,7 +28,7 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
     return (
         <View paddingEnd={'size-50'}>
             <Flex alignItems={'center'} justifyContent={'space-between'}>
-                <Text>Hide labels</Text>
+                <Text>{t('annotator.canvas.hideLabels')}</Text>
                 <Flex alignItems={'center'} gap={'size-100'}>
                     <Switch
                         aria-label={'Hide labels'}
@@ -41,7 +44,8 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
             <Divider size={'S'} marginY={'size-250'} />
 
             <AnnotationSetting
-                headerText={'Annotation fill opacity'}
+                headerText={t('annotator.canvas.annotationFillOpacity')}
+                ariaLabel={'Annotation fill opacity'}
                 formatOptions={{ style: 'percent' }}
                 defaultValue={canvasSettings.annotationFillOpacity.defaultValue}
                 value={canvasSettings.annotationFillOpacity.value}
@@ -50,7 +54,8 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
                 }}
             />
             <AnnotationSetting
-                headerText={'Annotation border opacity'}
+                headerText={t('annotator.canvas.annotationBorderOpacity')}
+                ariaLabel={'Annotation border opacity'}
                 formatOptions={{ style: 'percent' }}
                 defaultValue={canvasSettings.annotationBorderOpacity.defaultValue}
                 value={canvasSettings.annotationBorderOpacity.value}
@@ -60,7 +65,8 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
             />
             <Divider size={'S'} marginY={'size-250'} />
             <ImageSetting
-                headerText={'Image brightness'}
+                headerText={t('annotator.canvas.imageBrightness')}
+                ariaLabel={'Image brightness'}
                 formatOptions={{ signDisplay: 'exceptZero' }}
                 defaultValue={canvasSettings.imageBrightness.defaultValue}
                 value={canvasSettings.imageBrightness.value}
@@ -69,7 +75,8 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
                 }}
             />
             <ImageSetting
-                headerText={'Image contrast'}
+                headerText={t('annotator.canvas.imageContrast')}
+                ariaLabel={'Image contrast'}
                 formatOptions={{ signDisplay: 'exceptZero' }}
                 defaultValue={canvasSettings.imageContrast.defaultValue}
                 value={canvasSettings.imageContrast.value}
@@ -78,7 +85,8 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
                 }}
             />
             <ImageSetting
-                headerText={'Image saturation'}
+                headerText={t('annotator.canvas.imageSaturation')}
+                ariaLabel={'Image saturation'}
                 formatOptions={{ signDisplay: 'exceptZero' }}
                 defaultValue={canvasSettings.imageSaturation.defaultValue}
                 value={canvasSettings.imageSaturation.value}
@@ -89,7 +97,7 @@ export const SettingsList = ({ canvasSettings, onCanvasSettingsChange }: Setting
             <Divider size={'S'} marginY={'size-250'} />
 
             <Flex alignItems={'center'} justifyContent={'space-between'}>
-                <Text>Pixel view</Text>
+                <Text>{t('annotator.canvas.pixelView')}</Text>
                 <Flex alignItems={'center'} gap={'size-100'}>
                     <Switch
                         aria-label={'Pixel view'}

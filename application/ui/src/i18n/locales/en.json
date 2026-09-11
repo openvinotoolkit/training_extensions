@@ -477,6 +477,60 @@
         "labels": {
             "noLabel": "No label",
             "noObject": "No object"
+        },
+        "canvas": {
+            "settingsTitle": "Settings",
+            "hideLabels": "Hide labels",
+            "pixelView": "Pixel view",
+            "annotationFillOpacity": "Annotation fill opacity",
+            "annotationBorderOpacity": "Annotation border opacity",
+            "imageBrightness": "Image brightness",
+            "imageContrast": "Image contrast",
+            "imageSaturation": "Image saturation"
+        },
+        "actions": {
+            "zoomIn": "Zoom In",
+            "zoomOut": "Zoom Out",
+            "fitToScreen": "Fit to screen ({{hotkey}})",
+            "undo": "Undo ({{hotkey}})",
+            "redo": "Redo ({{hotkeys}})",
+            "toggleFocus": "Toggle focus",
+            "showAnnotations": "Show annotations ({{hotkey}})",
+            "hideAnnotations": "Hide annotations ({{hotkey}})"
+        },
+        "hotkeys": {
+            "title": "Hotkeys",
+            "submitAnnotationsPredictions": "Submit annotations/predictions",
+            "previousMedia": "Previous media",
+            "nextMedia": "Next media",
+            "undo": "Undo",
+            "redo": "Redo",
+            "deleteSelectedAnnotation": "Delete selected annotation",
+            "toggleAnnotationsVisibility": "Show or hide all annotations",
+            "selectAllAnnotations": "Select all annotations",
+            "deselectAllAnnotations": "Deselect all annotations",
+            "selectNextAnnotation": "Select next annotation",
+            "resetZoom": "Reset zoom"
+        },
+        "tools": {
+            "selection": { "label": "Selection" },
+            "boundingBox": {
+                "label": "Bounding box",
+                "description": "Draw a rectangle or square surrounding an object in an image."
+            },
+            "autoSegmentation": {
+                "label": "Auto segmentation",
+                "detectionDescription": "Move your cursor over an object to preview a suggested rectangle, then click to create the annotation.",
+                "segmentationDescription": "Move your cursor over an object to preview a suggested polygon, then click to create the annotation."
+            },
+            "polygon": {
+                "label": "Polygon",
+                "description": "Click to place points one by one, or hold and drag to draw freehand. Ideal for irregular shapes requiring pixel-precision."
+            },
+            "magneticLasso": {
+                "label": "Magnetic Lasso",
+                "description": "Hover along an object's edge and click periodically to snap the outline to its borders."
+            }
         }
     },
     "models": {

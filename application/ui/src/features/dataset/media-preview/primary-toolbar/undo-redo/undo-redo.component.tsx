@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { Redo, Undo } from '@geti-ui/ui/icons';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -9,6 +10,7 @@ import { formatHotkeyForDisplay, HOTKEYS } from '../../../../../shared/hotkeys-d
 import { useUndoRedo } from './undo-redo-provider.component';
 
 export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
+    const { t } = useTranslation();
     const { undo, canUndo, redo, canRedo } = useUndoRedo();
 
     useHotkeys(HOTKEYS.undo, undo, { enabled: canUndo, preventDefault: true }, [undo, canUndo]);
@@ -18,8 +20,13 @@ export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
         canRedo,
     ]);
 
-    const undoLabel = `Undo (${formatHotkeyForDisplay(HOTKEYS.undo)})`;
-    const redoLabel = `Redo (${formatHotkeyForDisplay(HOTKEYS.redo)} or ${formatHotkeyForDisplay(HOTKEYS.redoAlt)})`;
+    const undoHotkey = formatHotkeyForDisplay(HOTKEYS.undo);
+    const redoHotkeys = `${formatHotkeyForDisplay(HOTKEYS.redo)} or ${formatHotkeyForDisplay(HOTKEYS.redoAlt)}`;
+
+    const undoAriaLabel = `Undo (${undoHotkey})`;
+    const redoAriaLabel = `Redo (${redoHotkeys})`;
+    const undoLabel = t('annotator.actions.undo', { hotkey: undoHotkey });
+    const redoLabel = t('annotator.actions.redo', { hotkeys: redoHotkeys });
 
     return (
         <Flex alignItems='center' direction={'column'} justifyContent={'center'} data-testid='undo-redo-tools'>
@@ -29,7 +36,7 @@ export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
                     id='undo-button'
                     data-testid='undo-button'
                     onPress={undo}
-                    aria-label={undoLabel}
+                    aria-label={undoAriaLabel}
                     isDisabled={!canUndo || isDisabled}
                 >
                     <Undo />
@@ -42,7 +49,7 @@ export const UndoRedo = ({ isDisabled }: { isDisabled?: boolean }) => {
                     isQuiet
                     id='redo-button'
                     data-testid='redo-button'
-                    aria-label={redoLabel}
+                    aria-label={redoAriaLabel}
                     onPress={redo}
                     isDisabled={!canRedo || isDisabled}
                 >

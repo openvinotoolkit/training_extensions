@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IconWrapper } from '@/components/icon-wrapper/icon-wrapper.component';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Tooltip, TooltipTrigger } from '@geti-ui/ui';
 import { LabelGroup } from '@geti-ui/ui/icons';
 
 import { useAnnotationVisibility } from '../../../../shared/annotator/annotation-visibility-provider.component';
 
 export const ToggleFocus = () => {
+    const { t } = useTranslation();
     const { toggleFocus, isFocussed } = useAnnotationVisibility();
 
     return (
@@ -17,7 +19,7 @@ export const ToggleFocus = () => {
                     <LabelGroup />
                 </IconWrapper>
             </ActionButton>
-            <Tooltip>Toggle focus</Tooltip>
+            <Tooltip>{t('annotator.actions.toggleFocus')}</Tooltip>
         </TooltipTrigger>
     );
 };
