@@ -64,6 +64,27 @@ class HFModelExporter(ModelExporter):
         if input_names is not None:
             self.onnx_export_configuration.setdefault("input_names", input_names)
 
+    @property
+    def metadata(self) -> dict[tuple[str, str], str]:
+        """Model metadata to embed: base export params plus ModelAPI runtime preprocessing.
+
+        Geti's data pipeline feeds float ``[0, 1]`` images during evaluation, while the
+        application runtime and the exported demo feed ``uint8`` ``[0, 255]`` arrays to
+        ModelAPI. The intensity metadata tells ModelAPI to scale those inputs to
+        ``[0, 1]`` before applying ``mean_values``/``scale_values`` (which stay in the
+        same ``[0, 1]`` domain as ``data_input_params``).
+        """
+        metadata = super().metadata
+        if metadata.get(("model_info", "intensity_mode"), "") == "":
+            metadata.update(
+                {
+                    ("model_info", "input_dtype"): "u8",
+                    ("model_info", "intensity_mode"): "scale_to_unit",
+                    ("model_info", "intensity_max_value"): "255.0",
+                }
+            )
+        return metadata
+
     def to_openvino(  # pyrefly: ignore[bad-override]
         self,
         model: HFModel,

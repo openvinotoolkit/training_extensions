@@ -141,6 +141,19 @@ def test_exporter_builds_a_configured_hf_model_exporter() -> None:
     assert exporter.task_level_export_parameters.model_type == "Classification"
 
 
+def test_export_metadata_scales_uint8_runtime_inputs() -> None:
+    """Geti feeds feet value [0,1] arrays while the runtime feeds uint8; the metadata must bridge them."""
+    model = HFMulticlassClsModel(_tiny_vit_config(), _label_info())
+    metadata = model._exporter._extend_model_metadata(model._exporter.metadata)
+
+    assert metadata[("model_info", "input_dtype")] == "u8"
+    assert metadata[("model_info", "intensity_mode")] == "scale_to_unit"
+    assert metadata[("model_info", "intensity_max_value")] == "255.0"
+    # mean/std stay in the [0, 1] domain so scaled uint8 inputs match training statistics.
+    assert metadata[("model_info", "mean_values")] == "0.485 0.456 0.406"
+    assert metadata[("model_info", "scale_values")] == "0.229 0.224 0.225"
+
+
 def test_resize_mode_is_passed_to_exporter() -> None:
     model = HFMulticlassClsModel(_tiny_vit_config(), _label_info(), resize_mode="fit_to_window")
     assert model._exporter.resize_mode == "fit_to_window"
