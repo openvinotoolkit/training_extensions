@@ -24,6 +24,7 @@ import { useProjectLabelsWithEmptyLabel } from '../../../../shared/annotator/lab
 import { isImage } from '../../../../shared/media-item-utils';
 import { isMultiLabelClassificationTask } from '../../../project/task-type-guards';
 import { useMediaUpload } from '../../api/use-media-upload';
+import { useIsUploading } from '../../providers/media-upload-provider.component';
 import { useBulkAssignLabel } from './api/use-bulk-assign-label';
 import { LabelsList } from './labels-list/labels-list.component';
 
@@ -107,7 +108,8 @@ export const BulkLabelsAssignmentDialog = ({ files, onClose }: BulkLabelsAssignm
     const isVisible = !isEmpty(files);
     const { data: project } = useProject();
     const isMultiLabelClassification = isMultiLabelClassificationTask(project.task);
-    const { uploadMedia, uploadProgress } = useMediaUpload();
+    const { uploadMedia } = useMediaUpload();
+    const isUploading = useIsUploading();
 
     const bulkAssignLabel = useBulkAssignLabel();
 
@@ -135,8 +137,8 @@ export const BulkLabelsAssignmentDialog = ({ files, onClose }: BulkLabelsAssignm
                     onClose={onClose}
                     onSkip={handleSkip}
                     onContinue={handleAccept}
-                    isContinuePending={uploadProgress.isUploading || bulkAssignLabel.isPending}
-                    isSkipPending={uploadProgress.isUploading}
+                    isContinuePending={isUploading || bulkAssignLabel.isPending}
+                    isSkipPending={isUploading}
                     isMultiLabelClassification={isMultiLabelClassification}
                 />
             )}

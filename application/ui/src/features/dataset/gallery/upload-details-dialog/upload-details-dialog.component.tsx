@@ -29,7 +29,7 @@ import {
 import { AcceptCircle, CrossCircle, Pending } from '@geti-ui/ui/icons';
 
 import { formatBytes } from '../../../../shared/util';
-import { useMediaUploadContext } from '../../providers/media-upload-provider.component';
+import { useMediaUploadDispatch, useMediaUploadState } from '../../providers/media-upload-provider.component';
 import { computeSummary, type UploadFileItem, type UploadItemStatus } from '../../providers/media-upload-reducer';
 
 import classes from './upload-details-dialog.module.scss';
@@ -118,17 +118,17 @@ const buildSubheader = (
 
 const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
     const { t } = useTranslation();
-    const { state } = useMediaUploadContext();
     const labels: Record<UploadItemStatus, string> = {
         queued: t('dataset.upload.queued'),
         uploading: t('dataset.upload.uploading'),
         uploaded: t('dataset.upload.uploaded'),
         failed: t('dataset.upload.failed'),
     };
-    const summary = computeSummary(state.items, state.isUploading);
+    const state = useMediaUploadState();
+    const summary = computeSummary(state.items);
     const items = state.items;
 
-    const subheader = buildSubheader(t, summary.total, summary.succeeded, summary.failed, summary.isUploading);
+    const subheader = buildSubheader(t, summary.total, summary.succeeded, summary.failed, state.isUploading);
 
     return (
         <Dialog size={'L'}>
@@ -180,7 +180,8 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
 };
 
 export const UploadDetailsDialog = () => {
-    const { state, dispatch } = useMediaUploadContext();
+    const state = useMediaUploadState();
+    const dispatch = useMediaUploadDispatch();
     const close = () => dispatch({ type: 'CLOSE_DIALOG' });
 
     return (

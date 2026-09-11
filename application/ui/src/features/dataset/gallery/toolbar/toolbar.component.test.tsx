@@ -14,6 +14,7 @@ import { render } from 'test-utils/render';
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { isImage } from '../../../../shared/media-item-utils';
+import { MediaUploadProvider } from '../../providers/media-upload-provider.component';
 import { useSelectedData } from '../../providers/selected-data-provider.component';
 import { Toolbar } from './toolbar.component';
 
@@ -23,13 +24,6 @@ const onSelectedMediaItemChangeMock = vi.fn();
 vi.mock('../../api/use-media-upload', () => ({
     useMediaUpload: () => ({
         uploadMedia: uploadMediaMock,
-        uploadProgress: {
-            total: 0,
-            completed: 0,
-            succeeded: 0,
-            failed: 0,
-            isUploading: false,
-        },
     }),
 }));
 
@@ -100,10 +94,15 @@ describe('Toolbar', () => {
             })
         );
 
-        const result = render(<Toolbar items={items} viewMode={ViewModes.LARGE} setViewMode={vi.fn()} />, {
-            route,
-            path: '/projects/:projectId',
-        });
+        const result = render(
+            <MediaUploadProvider>
+                <Toolbar items={items} viewMode={ViewModes.LARGE} setViewMode={vi.fn()} />
+            </MediaUploadProvider>,
+            {
+                route,
+                path: '/projects/:projectId',
+            }
+        );
 
         await screen.findByRole('button', { name: 'Select dataset view' });
 

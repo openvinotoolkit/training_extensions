@@ -13,10 +13,8 @@ export type UploadFileItem = {
 
 export type UploadProgressSummary = {
     total: number;
-    completed: number;
     succeeded: number;
     failed: number;
-    isUploading: boolean;
 };
 
 export type MediaUploadState = {
@@ -83,15 +81,13 @@ export const reducer = (state: MediaUploadState, action: Action): MediaUploadSta
     }
 };
 
-export const computeSummary = (items: UploadFileItem[], isUploading: boolean): UploadProgressSummary => {
+export const computeSummary = (items: UploadFileItem[]): UploadProgressSummary => {
     const succeeded = items.filter((item) => item.status === 'uploaded').length;
     const failed = items.filter((item) => item.status === 'failed').length;
 
     return {
         total: items.length,
-        completed: succeeded + failed,
         succeeded,
         failed,
-        isUploading,
     };
 };

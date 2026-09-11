@@ -5,13 +5,13 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderHook } from 'test-utils/render';
 
-import { useUploadProgress } from '../../hooks/use-display-upload-progress';
-import { MediaUploadProvider, useMediaUploadContext } from '../../providers/media-upload-provider.component';
+import { useUploadActions } from '../../hooks/use-upload-actions';
+import { MediaUploadProvider, useMediaUploadDispatch } from '../../providers/media-upload-provider.component';
 
 const makeFile = (name: string, size = 1024): File => new File(['x'.repeat(size)], name, { type: 'image/jpeg' });
 
 const renderUpload = () =>
-    renderHook(() => ({ upload: useUploadProgress(), ctx: useMediaUploadContext() }), {
+    renderHook(() => ({ upload: useUploadActions(), dispatch: useMediaUploadDispatch() }), {
         wrapper: MediaUploadProvider,
     });
 
@@ -31,7 +31,7 @@ describe('UploadDetailsDialog', () => {
 
         act(() => {
             result.current.upload.startUploadProgress([makeFile('one.jpg', 1024), makeFile('two.png', 2048)]);
-            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
         });
 
         const dialog = screen.getByRole('dialog');
@@ -46,7 +46,7 @@ describe('UploadDetailsDialog', () => {
         let ids: string[] = [];
         act(() => {
             ids = result.current.upload.startUploadProgress([makeFile('one.jpg'), makeFile('two.jpg')]);
-            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
         });
 
         expect(screen.getAllByText('Queued')).toHaveLength(2);
@@ -70,7 +70,7 @@ describe('UploadDetailsDialog', () => {
         let ids: string[] = [];
         act(() => {
             ids = result.current.upload.startUploadProgress([makeFile('one.jpg')]);
-            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
         });
 
         act(() => {
@@ -86,7 +86,7 @@ describe('UploadDetailsDialog', () => {
 
         act(() => {
             result.current.upload.startUploadProgress([makeFile('one.jpg')]);
-            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
         });
 
         await userEvent.click(screen.getByRole('button', { name: 'Close' }));

@@ -7,11 +7,13 @@ import { useProject } from 'hooks/api/project.hook';
 
 import { isClassificationTask } from '../../project/task-type-guards';
 import { useMediaUpload } from '../api/use-media-upload';
+import { useIsUploading } from '../providers/media-upload-provider.component';
 import { isVideoFile } from './utils';
 
 export const useUploadFiles = () => {
     const { data: project } = useProject();
-    const { uploadMedia, uploadProgress } = useMediaUpload();
+    const { uploadMedia } = useMediaUpload();
+    const isUploading = useIsUploading();
 
     const [filesForLabelAssignment, setFilesForLabelAssignment] = useState<File[]>([]);
     const isClassification = isClassificationTask(project.task.task_type);
@@ -34,7 +36,7 @@ export const useUploadFiles = () => {
 
     return {
         uploadMedia,
-        uploadMediaLoading: uploadProgress.isUploading,
+        uploadMediaLoading: isUploading,
         uploadFiles: handleFileUpload,
         isClassification,
         filesForLabelAssignment,

@@ -4,16 +4,25 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import { renderHook } from 'test-utils/render';
 
-import { MediaUploadProvider } from '../providers/media-upload-provider.component';
-import { useUploadProgress } from './use-display-upload-progress';
+import { MediaUploadProvider, useMediaUploadState } from '../providers/media-upload-provider.component';
+import { computeSummary } from '../providers/media-upload-reducer';
+import { useUploadActions } from './use-upload-actions';
 
 const makeFile = (name: string, size = 100): File => {
     return new File(['x'.repeat(size)], name, { type: 'image/jpeg' });
 };
 
-const renderUploadHook = () => renderHook(() => useUploadProgress(), { wrapper: MediaUploadProvider });
+const renderUploadHook = () =>
+    renderHook(
+        () => {
+            const { items, isUploading } = useMediaUploadState();
 
-describe('useUploadProgress', () => {
+            return { ...useUploadActions(), isUploading, uploadProgress: computeSummary(items) };
+        },
+        { wrapper: MediaUploadProvider }
+    );
+
+describe('useUploadActions', () => {
     it('seeds queued items and initial summary on start', () => {
         const { result } = renderUploadHook();
 
@@ -23,11 +32,10 @@ describe('useUploadProgress', () => {
 
         expect(result.current.uploadProgress).toEqual({
             total: 3,
-            completed: 0,
             succeeded: 0,
             failed: 0,
-            isUploading: true,
         });
+        expect(result.current.isUploading).toBe(true);
     });
 
     it('shows a spinner toast immediately when upload starts', async () => {
@@ -111,11 +119,10 @@ describe('useUploadProgress', () => {
 
         expect(result.current.uploadProgress).toEqual({
             total: 2,
-            completed: 2,
             succeeded: 2,
             failed: 0,
-            isUploading: false,
         });
+        expect(result.current.isUploading).toBe(false);
         await waitFor(() => expect(screen.getByText('Uploaded 2 items')).toBeVisible());
     });
 
