@@ -320,7 +320,10 @@ class VisionTransformerBackbone(BaseModule):
                 return pos_embed_resized.reshape(1, -1, new_shape[0] * new_shape[1]).permute(0, 2, 1)
 
             # convert dinov2 pretrained weights
-            state_dict = torch.load(checkpoint_path)
+            from getitune.utils.safe_globals import PRETRAINED_SAFE_GLOBALS
+
+            with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
+                state_dict = torch.load(checkpoint_path)
             if prefix:
                 state_dict = {
                     key.removeprefix(f"{prefix}."): value

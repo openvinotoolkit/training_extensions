@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Label } from '@/api/types';
+import { useZoom } from '@/components/zoom/zoom.provider';
 
-import { useZoom } from '../../../../components/zoom/zoom.provider';
 import type { Rect } from '../../../../shared/types';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';

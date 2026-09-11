@@ -3,9 +3,9 @@
 
 import { Suspense } from 'react';
 
+import { InferenceDevices } from '@/components/inference-devices/inference-devices.component';
 import { Loading } from '@geti-ui/ui';
 
-import { InferenceDevices } from '../../../../../components/inference-devices/inference-devices.component';
 import { usePredictionSetup } from '../../../../annotator/predictions-setup-provider.component';
 
 type PredictionInferenceDevicesProps = {

@@ -1,13 +1,15 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-export const validateProjectName = (name: string, projectNames: string[]): string | undefined => {
+import type { TranslateFn } from '@/i18n';
+
+export const validateProjectName = (name: string, projectNames: string[], t: TranslateFn): string | undefined => {
     if (name.trim().length === 0) {
-        return 'Project name cannot be empty';
+        return t('project.validation.nameEmpty');
     }
 
     if (projectNames.includes(name)) {
-        return 'That project name already exists';
+        return t('project.validation.nameExists');
     }
 
     return undefined;

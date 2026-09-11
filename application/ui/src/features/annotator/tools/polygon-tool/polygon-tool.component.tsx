@@ -3,10 +3,10 @@
 
 import { PointerEvent, useRef, useState, useTransition } from 'react';
 
+import { useZoom } from '@/components/zoom/zoom.provider';
 import { isPointOverPoint, isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { isEmpty } from 'lodash-es';
 
-import { useZoom } from '../../../../components/zoom/zoom.provider';
 import { Point } from '../../../../shared/types';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';

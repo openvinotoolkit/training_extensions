@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { AlertDialog, Content, Text } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -46,6 +47,7 @@ const useDeleteDatasetView = () => {
 };
 
 export const DeleteDatasetViewDialog = ({ datasetView, onSuccess, onCancel }: DeleteDatasetViewDialogProps) => {
+    const { t } = useTranslation();
     const { deleteDatasetView, isPending } = useDeleteDatasetView();
 
     const deleteView = () => {
@@ -54,7 +56,7 @@ export const DeleteDatasetViewDialog = ({ datasetView, onSuccess, onCancel }: De
 
     return (
         <AlertDialog
-            title={`Delete confirmation`}
+            title={t('dataset.views.deleteTitle')}
             primaryActionLabel={'Delete'}
             variant={'destructive'}
             onPrimaryAction={deleteView}
@@ -63,7 +65,7 @@ export const DeleteDatasetViewDialog = ({ datasetView, onSuccess, onCancel }: De
             isPrimaryActionDisabled={isPending}
         >
             <Content>
-                <Text>Are you sure you want to delete the {`"${datasetView.name}"`} dataset view?</Text>
+                <Text>{t('dataset.views.deleteConfirmation', { viewName: datasetView.name })}</Text>
             </Content>
         </AlertDialog>
     );

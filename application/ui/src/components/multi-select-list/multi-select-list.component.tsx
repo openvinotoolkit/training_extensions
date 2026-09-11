@@ -3,6 +3,7 @@
 
 import { ComponentProps, useState } from 'react';
 
+import { useTranslation } from '@/i18n';
 import { Checkbox, Flex, Item, ListView, Selection, Text } from '@geti-ui/ui';
 
 import { isNonEmptyString } from '../../shared/util';
@@ -17,6 +18,7 @@ interface MultiSelectListProps<T extends string = string> extends Omit<
 > {
     name: string;
     label?: string;
+    ariaLabel?: string;
     selectAllLabel?: string;
     defaultSelectedKeys: Set<T>;
     onSelectionChange?: (selectedIds: T[]) => void;
@@ -26,13 +28,17 @@ interface MultiSelectListProps<T extends string = string> extends Omit<
 export const MultiSelectList = <T extends string = string>({
     name,
     label,
-    selectAllLabel = 'Select all',
+    ariaLabel,
+    selectAllLabel,
     items,
     onSelectionChange,
     defaultSelectedKeys,
     ...listProps
 }: MultiSelectListProps<T>) => {
+    const { t } = useTranslation();
     const [selectedLabels, setSelectedLabels] = useState<Set<T>>(defaultSelectedKeys);
+
+    const resolvedSelectAllLabel = selectAllLabel ?? t('dataset.multiSelect.selectAll');
 
     const allItemSelected = selectedLabels.size === items.length && items.length > 0;
 
@@ -53,13 +59,13 @@ export const MultiSelectList = <T extends string = string>({
             {isNonEmptyString(label) && <Text UNSAFE_className={classes.label}>{label}</Text>}
 
             <Checkbox aria-label='Select all items' onChange={handleSelectAllItems} isSelected={allItemSelected}>
-                {selectAllLabel}
+                {resolvedSelectAllLabel}
             </Checkbox>
 
             <ListView
                 {...listProps}
                 items={items}
-                aria-label={label ?? 'Multi-select list'}
+                aria-label={ariaLabel ?? 'Multi-select list'}
                 selectionMode='multiple'
                 onSelectionChange={handleSelectChange}
                 selectedKeys={selectedLabels}

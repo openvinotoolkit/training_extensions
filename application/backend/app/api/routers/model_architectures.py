@@ -110,7 +110,7 @@ def _build_timm_card_entry() -> ModelArchitectureView:
     return ModelArchitectureView(
         id=TIMM_CARD_ID,
         task=TaskType.CLASSIFICATION,
-        name="PyTorch Image Models (timm)",
+        name="Other models (TIMM)",
         timm_metadata=None,
         description=description,
         capabilities=Capabilities(xai=False, tiling=False),

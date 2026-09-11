@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Flex, Loading, Text } from '@geti-ui/ui';
 import { useImportJobStatus } from 'hooks/api/jobs/use-import-job-status.hook';
 import { getJobProgress, isJobPending } from 'hooks/api/util';
@@ -20,6 +21,7 @@ type ImportJobProcessProps = {
 };
 
 export const ImportJobProcess = ({ jobId, fileName, message, onError, onSuccess }: ImportJobProcessProps) => {
+    const { t } = useTranslation();
     const { data: job, isFetching, isPending } = useImportJobStatus({ jobId, onError, onSuccess });
 
     const progress = getJobProgress(job?.progress);
@@ -55,7 +57,7 @@ export const ImportJobProcess = ({ jobId, fileName, message, onError, onSuccess 
 
             <Flex direction='column' alignItems='center' justifyContent='center'>
                 <Text UNSAFE_className={classes.title}>
-                    Preparing
+                    {t('dataset.import.preparingJob')}
                     <ThreeDotsFlashing />
                 </Text>
                 <Text UNSAFE_className={classes.description}>{message}</Text>

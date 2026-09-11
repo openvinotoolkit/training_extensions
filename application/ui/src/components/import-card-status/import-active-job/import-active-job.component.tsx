@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Job } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Loading } from '@geti-ui/ui';
 import { useDeleteStagedDataset } from 'hooks/api/staged-dataset.hook';
 import { getJobProgress, isJobRunning } from 'hooks/api/util';
@@ -21,6 +22,7 @@ type ImportActiveJobProps = {
 };
 
 export const ImportActiveJob = ({ job, size, fileName, stagedDatasetId, deleteEntry }: ImportActiveJobProps) => {
+    const { t } = useTranslation();
     const deleteFileMutation = useDeleteStagedDataset({ stagedDatasetId, deleteEntry });
 
     const isRunning = isJobRunning(job);
@@ -33,9 +35,9 @@ export const ImportActiveJob = ({ job, size, fileName, stagedDatasetId, deleteEn
     return (
         <BottomProgressBar progress={progress}>
             <JobStatusCard
-                title={`Import dataset - ${fileName} - ${formatBytes(size)}`}
+                title={t('dataset.import.jobTitle', { fileName, size: formatBytes(size) })}
                 actionButtons={<CancelJobConfirmation jobId={job.job_id} onRemove={handleRemove} />}
-                message={`${fileName} file is being processed for import`}
+                message={t('dataset.import.processingMessage', { fileName })}
                 bottomIcon={<Loading mode='inline' size='S' />}
                 bottomIconMessage={job?.message ?? capitalize(job.status.toLocaleLowerCase())}
                 bottomRightMessage={isRunning ? `${progress}%` : undefined}

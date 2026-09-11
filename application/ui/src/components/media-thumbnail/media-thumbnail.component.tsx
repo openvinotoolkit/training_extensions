@@ -43,7 +43,7 @@ const VideoIndicator = ({ duration }: VideoIndicatorProps) => {
 export const MediaThumbnail = ({ onDoubleClick, onClick, url, alt, item }: MediaThumbnailProps) => {
     const imgRef = useRef<HTMLImageElement>(null);
     const isScrolling = useIsScrolling();
-    const [isLoading, setIsLoading] = useState(true);
+    const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
 
     // Tiles that fly past during a fast scroll would otherwise start a request and immediately
     // cancel it; enough of those wedge the connection and leave the gallery blank.
@@ -52,6 +52,13 @@ export const MediaThumbnail = ({ onDoubleClick, onClick, url, alt, item }: Media
             return;
         }
 
+        // Re-assigning the same value restarts the fetch, so every scroll stop would abort and
+        // re-request the thumbnails that are already loading.
+        if (imgRef.current.getAttribute('src') === url) {
+            return;
+        }
+
+        setStatus('loading');
         imgRef.current.src = url;
     }, [url, isScrolling]);
 
@@ -71,18 +78,18 @@ export const MediaThumbnail = ({ onDoubleClick, onClick, url, alt, item }: Media
                 ref={imgRef}
                 alt={alt}
                 className={clsx(classes.img, {
-                    [classes.imgHidden]: isLoading,
+                    [classes.imgHidden]: status !== 'loaded',
                 })}
                 draggable={false}
                 decoding={'async'}
-                onLoad={() => setIsLoading(false)}
+                onLoad={() => setStatus('loaded')}
                 onError={() => {
                     if (imgRef.current?.complete === true) {
-                        setIsLoading(false);
+                        setStatus('error');
                     }
                 }}
             />
-            {isLoading && <Skeleton width={'100%'} height={'100%'} className={classes.skeleton} />}
+            {status === 'loading' && <Skeleton width={'100%'} height={'100%'} className={classes.skeleton} />}
             {isVideo(item) && <VideoIndicator duration={item.duration} />}
         </div>
     );

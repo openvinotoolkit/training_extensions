@@ -28,16 +28,6 @@ _MODEL_FILENAME_BY_FORMAT: dict[ModelFormat, str] = {
 
 _DEFAULT_IMAGE_FILENAME = "image.jpg"
 
-# Git revision of 'openvino-model-api' the generated demo depends on.
-# The demos require fixes that are only available on the master branch of the Model API
-# repository; pin an exact commit so the generated demo environment stays reproducible.
-# TODO (#7346) revert to the official PyPI package after MAPI 0.4.7 or higher is released.
-_MODEL_API_GIT_REV = "70a6f83da872c50a56883b80becaf2de3ba11843"
-_MODEL_API_DEPENDENCY = (
-    "openvino-model-api[onnx] @ "
-    f"git+https://github.com/open-edge-platform/model_api@{_MODEL_API_GIT_REV}#subdirectory=model_api"
-)
-
 
 @dataclass(frozen=True)
 class DemoFile:
@@ -102,12 +92,7 @@ class DemoFilesService:
                 ).encode("utf-8"),
             )
         )
-        files.append(
-            DemoFile(
-                name="pyproject.toml",
-                data=_PY_PROJECT.format(model_api_dependency=_MODEL_API_DEPENDENCY).encode("utf-8"),
-            )
-        )
+        files.append(DemoFile(name="pyproject.toml", data=_PY_PROJECT.encode("utf-8")))
 
         readme = _README.format(model_filename=model_filename, image_filename=image_filename)
         if license == "AGPL-3.0":
@@ -378,9 +363,7 @@ requires-python = ">=3.13,<3.14"
 
 dependencies = [
     "openvino~=2026.3.0",
-    # Installed straight from the Model API repository: the demos rely on fixes that are
-    # not part of a published release yet. Replace with a released version once available.
-    "{model_api_dependency}",
+    "openvino-model-api[onnx]==0.4.7",
     "opencv-python-headless~=4.13.0",
     "numpy>=2.0",
     "pillow~=12.0",
@@ -457,9 +440,6 @@ overlaid on top.
 
 ## Notes
 
-* Installing the dependencies requires `git` to be available on your system: the
-  `openvino-model-api` package is installed directly from its source repository
-  until the required fixes land in a published release.
 * The demos default to running on CPU. To run on a different device (e.g. an
   Intel GPU), edit the scripts and pass device="GPU" to
   Model.create_model.

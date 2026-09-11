@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Button } from '@geti-ui/ui';
 import { InfoOutline } from '@geti-ui/ui/icons';
 import { useStagedDataset } from 'hooks/api/staged-dataset.hook';
@@ -28,6 +29,7 @@ export const StagedImportDataset = ({
     onOpen,
     deleteEntry,
 }: StagedImportDatasetProps) => {
+    const { t } = useTranslation();
     const { error, isError, isFetching, data: stagedDataset } = useStagedDataset(stagedDatasetId);
 
     if (isError) {
@@ -36,7 +38,7 @@ export const StagedImportDataset = ({
                 size={0}
                 fileName={fileName}
                 error={getErrorMessage(error)}
-                message={'An error occurred during staged file reading'}
+                message={t('dataset.import.stagedFileReadError')}
                 stagedDatasetId={stagedDatasetId}
                 deleteEntry={deleteEntry}
             />
@@ -45,7 +47,7 @@ export const StagedImportDataset = ({
 
     return (
         <JobStatusCard
-            title={`Import dataset - ${fileName} - ${formatBytes(stagedDataset?.size ?? 0)}`}
+            title={t('dataset.import.jobTitle', { fileName, size: formatBytes(stagedDataset?.size ?? 0) })}
             actionButtons={
                 <>
                     <DeleteStagedFileConfirmation stagedDatasetId={stagedDatasetId} deleteEntry={deleteEntry} />

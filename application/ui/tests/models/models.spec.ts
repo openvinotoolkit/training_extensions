@@ -164,17 +164,28 @@ test.describe('Models', () => {
         await expect(page.getByRole('heading', { name: 'Object_Detection_SSD', exact: true })).toBeVisible();
     });
 
-    test('can change sort order', async ({ modelsPage }) => {
+    test('can sort a group by clicking a column header', async ({ modelsPage }) => {
         await modelsPage.goto();
 
-        await modelsPage.selectSortBy('name');
+        await modelsPage.sortByColumn('dataset-1', 'Model Name');
 
-        // Sorted alphabetically: v1 comes before v2
-        const modelNames = await modelsPage.getModelNamesInOrder();
-        const v1Index = modelNames.indexOf('YOLOX Model v1');
-        const v2Index = modelNames.indexOf('YOLOX Model v2');
+        expect(await modelsPage.getModelNamesInOrder('dataset-1')).toEqual(['YOLOX Model v1', 'YOLOX Model v2']);
 
-        expect(v1Index).toBeLessThan(v2Index);
+        // Clicking the same header again reverses the direction.
+        await modelsPage.sortByColumn('dataset-1', 'Model Name');
+
+        expect(await modelsPage.getModelNamesInOrder('dataset-1')).toEqual(['YOLOX Model v2', 'YOLOX Model v1']);
+    });
+
+    test('sorts each group independently', async ({ modelsPage }) => {
+        await modelsPage.goto();
+
+        await modelsPage.sortByColumn('dataset-1', 'Model Name');
+
+        await expect(modelsPage.getColumnHeader('dataset-1', 'Model Name')).toHaveAccessibleName(
+            'Model Name, sorted ascending'
+        );
+        await expect(modelsPage.getColumnHeader('dataset-2', 'Model Name')).toHaveAccessibleName('Sort by Model Name');
     });
 
     test('can toggle to show and hide failed models', async ({ modelsPage, network }) => {

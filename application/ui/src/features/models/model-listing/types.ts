@@ -7,6 +7,13 @@ export type GroupByMode = 'dataset' | 'architecture';
 
 export type SortBy = 'name' | 'trained' | 'architecture' | 'dataset' | 'device' | 'size' | 'score';
 
+export type SortDirection = 'asc' | 'desc';
+
+export type SortDescriptor = {
+    key: SortBy;
+    direction: SortDirection;
+};
+
 export type DatasetGroup = {
     id: string;
     name: string;

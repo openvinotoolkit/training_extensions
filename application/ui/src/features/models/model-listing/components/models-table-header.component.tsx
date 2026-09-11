@@ -8,15 +8,18 @@ import { useProjectTask } from 'hooks/use-project-task.hook';
 
 import { GRID_COLUMNS } from '../constants';
 import { useModelListing } from '../provider/model-listing-provider';
+import type { SortBy } from '../types';
+import { DEFAULT_SORT } from '../utils/sorting';
 import { ColumnHeader } from './column-header.component';
 import { getPerformanceColumnLabel } from './model-row/utils';
 
-// NOTE: We cannot have DisclosureGroup inside TableView when using Spectrum so
-// We are just rendering the result of the sort, not doing the sort itself on the table.
-// The actual sorting comes from the models screen Header.
-export const ModelsTableHeader = () => {
-    const { groupBy, sortBy, groupedModels } = useModelListing();
+// NOTE: We cannot have DisclosureGroup inside TableView when using Spectrum, so this grid mimics a table.
+export const ModelsTableHeader = ({ groupId }: { groupId: string }) => {
+    const { groupBy, sortBy, onSortChange, groupedModels } = useModelListing();
     const taskType = useProjectTask();
+
+    const groupSortBy = sortBy[groupId] ?? DEFAULT_SORT;
+    const handleSortChange = (key: SortBy) => onSortChange(groupId, key);
 
     const performanceColumnName = useMemo(() => {
         const models = groupedModels.flatMap((group) => group.models);
@@ -36,15 +39,22 @@ export const ModelsTableHeader = () => {
                     ${dimensionValue('size-150')} ${dimensionValue('size-1000')}`,
             }}
         >
-            <ColumnHeader label='Model Name' isSorted={sortBy === 'name'} />
-            <ColumnHeader label='Trained' isSorted={sortBy === 'trained'} />
+            <ColumnHeader label={'Model Name'} sortKey={'name'} sortBy={groupSortBy} onSortChange={handleSortChange} />
+            <ColumnHeader label={'Trained'} sortKey={'trained'} sortBy={groupSortBy} onSortChange={handleSortChange} />
             <ColumnHeader
                 label={groupBy === 'architecture' ? 'Dataset' : 'Architecture'}
-                isSorted={sortBy === 'architecture' || sortBy === 'dataset'}
+                sortKey={groupBy === 'architecture' ? 'dataset' : 'architecture'}
+                sortBy={groupSortBy}
+                onSortChange={handleSortChange}
             />
-            <ColumnHeader label='Device' isSorted={sortBy === 'device'} />
-            <ColumnHeader label='Total size' isSorted={sortBy === 'size'} />
-            <ColumnHeader label={performanceColumnName} isSorted={sortBy === 'score'} />
+            <ColumnHeader label={'Device'} sortKey={'device'} sortBy={groupSortBy} onSortChange={handleSortChange} />
+            <ColumnHeader label={'Total size'} sortKey={'size'} sortBy={groupSortBy} onSortChange={handleSortChange} />
+            <ColumnHeader
+                label={performanceColumnName}
+                sortKey={'score'}
+                sortBy={groupSortBy}
+                onSortChange={handleSortChange}
+            />
             <div />
         </Grid>
     );

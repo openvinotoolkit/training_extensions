@@ -2,13 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from collections.abc import Callable
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from uuid import UUID, uuid4
 
 import pytest
 
-from app.models import Task, TaskType, TrainingJob, TrainingJobParams
+from app.models import Task, TaskType, TrainingJob, TrainingJobParams, TrainingStatus
 from app.models.system import DeviceInfo, DeviceType
+from app.services import ResourceNotFoundError, ResourceType
 
 
 @pytest.fixture
@@ -45,6 +46,12 @@ def fxt_training_job(tmp_path, fxt_training_params):
 
 
 class TestTrainingJob:
+    @pytest.fixture(autouse=True)
+    def fxt_skip_status_reconciliation(self):
+        """These tests only cover log/workspace cleanup; the reconciliation step has its own test class."""
+        with patch.object(TrainingJob, "_reconcile_stuck_training_status"):
+            yield
+
     def test_on_complete_copies_log_file(self, fxt_training_job):
         """Test that log file is copied to the correct destination."""
         # Create the log file
@@ -106,3 +113,50 @@ class TestTrainingJob:
 
         # Should not raise
         fxt_training_job.on_complete()
+
+
+class TestTrainingJobReconcileTrainingStatus:
+    @patch("app.services.ModelService")
+    @patch("app.db.engine.get_db_session")
+    def test_forces_failed_when_status_stuck_in_progress(
+        self, mock_get_db_session, mock_model_service_cls, fxt_training_job
+    ):
+        """A model left at IN_PROGRESS after job completion (e.g. a trainer crash) must be forced to FAILED."""
+        mock_get_db_session.return_value.__enter__.return_value = Mock()
+        mock_model_service = mock_model_service_cls.return_value
+        mock_model_service.get_model.return_value = Mock(training_info=Mock(status=TrainingStatus.IN_PROGRESS))
+
+        fxt_training_job._reconcile_stuck_training_status()
+
+        mock_model_service.update_revision_status.assert_called_once()
+        call_kwargs = mock_model_service.update_revision_status.call_args.kwargs
+        assert call_kwargs["project_id"] == fxt_training_job.project_id
+        assert call_kwargs["model_id"] == fxt_training_job.params.model_id
+        assert call_kwargs["training_status"] == TrainingStatus.FAILED
+
+    @pytest.mark.parametrize("terminal_status", [TrainingStatus.SUCCESSFUL, TrainingStatus.FAILED])
+    @patch("app.services.ModelService")
+    @patch("app.db.engine.get_db_session")
+    def test_no_op_when_status_already_terminal(
+        self, mock_get_db_session, mock_model_service_cls, terminal_status, fxt_training_job
+    ):
+        """A model that already reached a terminal status must not be touched."""
+        mock_get_db_session.return_value.__enter__.return_value = Mock()
+        mock_model_service = mock_model_service_cls.return_value
+        mock_model_service.get_model.return_value = Mock(training_info=Mock(status=terminal_status))
+
+        fxt_training_job._reconcile_stuck_training_status()
+
+        mock_model_service.update_revision_status.assert_not_called()
+
+    @patch("app.services.ModelService")
+    @patch("app.db.engine.get_db_session")
+    def test_no_op_when_model_revision_missing(self, mock_get_db_session, mock_model_service_cls, fxt_training_job):
+        """A job that failed before the model revision was ever created has nothing to reconcile."""
+        mock_get_db_session.return_value.__enter__.return_value = Mock()
+        mock_model_service = mock_model_service_cls.return_value
+        mock_model_service.get_model.side_effect = ResourceNotFoundError(ResourceType.MODEL, "missing")
+
+        fxt_training_job._reconcile_stuck_training_status()
+
+        mock_model_service.update_revision_status.assert_not_called()

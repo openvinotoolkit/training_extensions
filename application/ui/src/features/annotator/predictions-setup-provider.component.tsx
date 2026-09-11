@@ -44,7 +44,15 @@ const useSelectedModelId = (models: Model[]) => {
         selectableModels.find((model) => model.modelVariantId === activeModel?.model_variant_id)?.modelVariantId ??
         getLatestModel(models);
 
-    return useLocalStorage<string | null>(`${projectId}-model-variant-id`, defaultSelectedId);
+    const [storedModelId, setStoredModelId] = useLocalStorage<string | null>(
+        `${projectId}-model-variant-id`,
+        defaultSelectedId
+    );
+
+    // With a single model there is nothing to choose from, so it is always the selected one
+    const selectedModelId = selectableModels.length === 1 ? selectableModels[0].modelVariantId : storedModelId;
+
+    return [selectedModelId, setStoredModelId] as const;
 };
 
 export const PredictionsSetupProvider = ({ children }: { children: ReactNode }) => {

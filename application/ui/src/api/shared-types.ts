@@ -39,6 +39,8 @@ export type PrepareImportDatasetJob = Job & {
 };
 
 export type DatasetStatisticsView = components['schemas']['DatasetStatisticsView'];
+export type StagedDataset = components['schemas']['StagedDatasetView'];
+export type SourceMediaUpload = components['schemas']['SourceMediaUploadView'];
 
 export type MediaImage = components['schemas']['ImageView'];
 export type MediaVideo = components['schemas']['VideoView'];

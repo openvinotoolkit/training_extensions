@@ -215,7 +215,7 @@ class GetiTuneHFTrainer(Trainer):
         outputs = model(**targets)
         return (outputs.loss, outputs) if return_outputs else outputs.loss
 
-    def training_step(
+    def training_step(  # pyrefly: ignore[bad-override]
         self,
         model: torch.nn.Module,
         inputs: SampleBatch,
@@ -223,7 +223,7 @@ class GetiTuneHFTrainer(Trainer):
     ) -> torch.Tensor:
         """Run one microbatch and accumulate its processing time."""
         start = perf_counter()
-        loss = super().training_step(model, inputs, num_items_in_batch)
+        loss = super().training_step(model, inputs, num_items_in_batch)  # pyrefly: ignore[bad-argument-type]
         self._train_iter_time += perf_counter() - start
         return loss
 

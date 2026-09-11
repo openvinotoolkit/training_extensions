@@ -57,7 +57,7 @@ class TestSummarizeLogHistory:
             {"loss": 2.0, "epoch": 1.0, "step": 4},
             {"loss": 1.5, "epoch": 2.0, "step": 8},
         ]
-        assert summarize_log_history(log_history) == {"train/loss": 1.5}
+        assert summarize_log_history(log_history) == {"train/total_loss": 1.5}
 
     def test_epoch_and_step_are_excluded(self) -> None:
         metrics = summarize_log_history([{"loss": 1.0, "epoch": 1.0, "step": 4}])
@@ -66,7 +66,7 @@ class TestSummarizeLogHistory:
 
     def test_non_numeric_values_are_skipped(self) -> None:
         metrics = summarize_log_history([{"loss": 1.0, "some_string": "ignored"}])
-        assert metrics == {"train/loss": 1.0}
+        assert metrics == {"train/total_loss": 1.0}
 
     def test_empty_history_yields_empty_metrics(self) -> None:
         assert summarize_log_history([]) == {}

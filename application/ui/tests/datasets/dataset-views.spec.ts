@@ -216,6 +216,7 @@ test.describe('Dataset views', () => {
             await datasetPage.goto('id-1', '?datasetViewId=collection-one');
 
             await datasetPage.views.deleteView('Collection One');
+            await expect(datasetPage.views.getDeletedSuccessToast('Collection One')).toBeVisible();
 
             await expect(datasetPage.views.getViewSelectorTrigger()).toHaveText('Entire dataset');
             await expect(page).not.toHaveURL(/datasetViewId/);

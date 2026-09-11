@@ -134,13 +134,21 @@ class TestEngine:
         assert mock_process_saliency_maps.called == explain
 
     def test_exporting(self, fxt_engine, mocker) -> None:
-        with pytest.raises(RuntimeError, match="To make export, checkpoint must be specified."):
-            fxt_engine.export()
-
         mock_export = mocker.patch("getitune.backend.lightning.engine.LightningModel.export")
 
         mock_load_from_checkpoint = mocker.patch.object(fxt_engine, "_load_model_checkpoint", return_value={})
         mocker.patch.object(fxt_engine.model, "load_state_dict", return_value=fxt_engine.model)
+
+        # Export without a checkpoint uses the current model weights
+        fxt_engine.export()
+        mock_load_from_checkpoint.assert_not_called()
+        mock_export.assert_called_once_with(
+            output_dir=Path(fxt_engine.work_dir),
+            base_name="exported_model",
+            export_format=ExportFormat.OPENVINO,
+            precision=Precision.FP32,
+        )
+        mock_export.reset_mock()
 
         # Fetch Checkpoint
         checkpoint = "path/to/checkpoint.ckpt"
@@ -177,6 +185,55 @@ class TestEngine:
             export_format=ExportFormat.ONNX,
             precision=Precision.FP32,
         )
+
+    @pytest.mark.parametrize("export_nms", [False, True])
+    def test_export_forwards_nms_option(self, fxt_engine, export_nms, mocker) -> None:
+        fxt_engine.checkpoint = "path/to/checkpoint.ckpt"
+        mocker.patch.object(fxt_engine, "_load_model_checkpoint", return_value={})
+        mocker.patch.object(fxt_engine.model, "load_state_dict")
+        observed_export_nms = []
+
+        def export_model(**_kwargs) -> Path:
+            observed_export_nms.append(fxt_engine.model.export_nms)
+            return Path(fxt_engine.work_dir) / "exported_model.xml"
+
+        mocker.patch.object(fxt_engine.model, "export", side_effect=export_model)
+        fxt_engine.model.export_nms = False
+
+        fxt_engine.export(export_nms=export_nms)
+
+        assert observed_export_nms == [export_nms]
+        assert not fxt_engine.model.export_nms
+
+    def test_export_defaults_to_nms_disabled(self, fxt_engine, mocker) -> None:
+        fxt_engine.checkpoint = "path/to/checkpoint.ckpt"
+        mocker.patch.object(fxt_engine, "_load_model_checkpoint", return_value={})
+        mocker.patch.object(fxt_engine.model, "load_state_dict")
+        observed_export_nms = []
+        fxt_engine.model.export_nms = True
+
+        def export_model(**_kwargs) -> Path:
+            observed_export_nms.append(fxt_engine.model.export_nms)
+            return Path(fxt_engine.work_dir) / "exported_model.xml"
+
+        mocker.patch.object(fxt_engine.model, "export", side_effect=export_model)
+
+        fxt_engine.export()
+
+        assert observed_export_nms == [False]
+        assert fxt_engine.model.export_nms
+
+    def test_export_restores_nms_option_when_export_fails(self, fxt_engine, mocker) -> None:
+        fxt_engine.checkpoint = "path/to/checkpoint.ckpt"
+        mocker.patch.object(fxt_engine, "_load_model_checkpoint", return_value={})
+        mocker.patch.object(fxt_engine.model, "load_state_dict")
+        mocker.patch.object(fxt_engine.model, "export", side_effect=ValueError("export failed"))
+        fxt_engine.model.export_nms = True
+
+        with pytest.raises(ValueError, match="export failed"):
+            fxt_engine.export(export_nms=False)
+
+        assert fxt_engine.model.export_nms
 
     @pytest.mark.parametrize(
         "checkpoint",

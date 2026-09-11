@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Project } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import {
     ActionButton,
     Badge,
@@ -72,6 +73,7 @@ const SelectedProjectButton = ({ name, id, isActive }: SelectedProjectProps) => 
 };
 
 const ManageProjects = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const navigateToProjectsList = () => {
@@ -88,12 +90,13 @@ const ManageProjects = () => {
             onPress={navigateToProjectsList}
         >
             <Edit />
-            <Text>Manage projects</Text>
+            <Text>{t('project.panel.manageProjects')}</Text>
         </ActionButton>
     );
 };
 
 export const ProjectsListPanel = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const projectId = useProjectIdentifier();
     const { data } = useProjects();
@@ -105,7 +108,7 @@ export const ProjectsListPanel = () => {
 
     const otherProjectNames = otherProjects.map(({ name }) => name);
 
-    const taskType = getProjectTypeTitle(selectedProject?.task);
+    const taskType = getProjectTypeTitle(selectedProject?.task, t);
 
     const {
         projectActionMetadata,

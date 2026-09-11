@@ -4,9 +4,9 @@
 import { useActionState } from 'react';
 
 import type { SinkConfig } from '@/api/types';
+import { toast } from '@/components/toast/toast.component';
 import { isFunction } from 'lodash-es';
 
-import { toast } from '../../../../components/toast/toast.component';
 import { useSinkMutation } from './use-sink-mutation.hook';
 
 interface useSinkActionProps<T> {

@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { toast } from '../components/toast/toast.component';
+import { toast } from '@/components/toast/toast.component';
 
 export const downloadFile = (url: string, name?: string, startedMessage?: string): void => {
     const link = document.createElement('a');

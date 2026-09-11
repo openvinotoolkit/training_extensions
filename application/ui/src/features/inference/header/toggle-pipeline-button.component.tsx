@@ -3,13 +3,13 @@
 
 import { useState } from 'react';
 
+import { EnablePipelineBlockedDialog } from '@/components/enable-pipeline-blocked-dialog/enable-pipeline-blocked-dialog.component';
+import { toast } from '@/components/toast/toast.component';
 import { Switch } from '@geti-ui/ui';
 import { useDisablePipeline, useEnablePipeline, usePipeline } from 'hooks/api/pipeline.hook';
 import { useIsPipelineConfigured } from 'hooks/use-is-pipeline-configured.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
-import { EnablePipelineBlockedDialog } from '../../../components/enable-pipeline-blocked-dialog/enable-pipeline-blocked-dialog.component';
-import { toast } from '../../../components/toast/toast.component';
 import { useWebRTCConnection } from '../stream/web-rtc-connection-provider';
 
 export const TogglePipelineButton = () => {

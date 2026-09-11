@@ -74,9 +74,8 @@ class UltralyticsInstSegModel(UltralyticsModel):
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Instance segmentation export parameters.
 
-        Since Ultralytics models are exported without built-in NMS
-        (``end2end=False``), we set ``nms_execute=True`` so that ModelAPI
-        performs NMS during post-processing.
+        ``nms_execute`` is set when the model is exported without built-in NMS
+        so that ModelAPI performs NMS during post-processing.
         """
         conf = self._export_args.get("confidence_threshold")
         if conf is None:
@@ -92,5 +91,5 @@ class UltralyticsInstSegModel(UltralyticsModel):
             optimization_config={},
             confidence_threshold=float(conf),
             iou_threshold=float(iou),
-            nms_execute=True,
+            nms_execute=not self.export_nms,
         )

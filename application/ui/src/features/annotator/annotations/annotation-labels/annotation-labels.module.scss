@@ -1,28 +1,39 @@
 .labelsContainerRect,
 .labelsContainerPolygon {
     display: flex;
-    align-items: start;
     flex-direction: row;
     height: 100%;
     width: max-content;
     pointer-events: auto;
 }
 
-/* Rectangle shape labels: positioned at bottom of foreignObject, scale from bottom-left */
+/* Counter-scaling lives on the foreignObject so the chip keeps a constant screen size
+   without React having to recompute its geometry on every zoom step. */
+.labelsScaleRect,
+.labelsScalePolygon {
+    transform-box: fill-box;
+    transform: scale(calc(1 / var(--zoom-scale, 1)));
+}
+
+/* Rectangle labels: the chip's bottom-left sits on the annotation's top-left corner */
+.labelsScaleRect {
+    transform-origin: left bottom;
+}
+
+/* Polygon labels: the box origin is the centroid, so the chip pivots there */
+.labelsScalePolygon {
+    transform-origin: left top;
+}
+
 /* translate offset accounts for stroke width (half of the 3px) and small adjustment to prevent antialiasing issues */
 .labelsContainerRect {
     align-items: flex-end;
-    transform: scale(calc(1 / var(--zoom-scale, 1))) translate(-1.5px, -1.3px);
-    transform-origin: bottom left;
+    transform: translate(-1.5px, -1.3px);
 }
 
-/* Polygon labels: center on the centroid, scale from center */
-/* The foreignObject is inflated by 1/zoom, so the chip must be centered in it for the
-   center-origin scale to pivot on the chip rather than on the (much taller) box. */
 .labelsContainerPolygon {
     align-items: center;
-    transform: translate(-50%, -50%) scale(calc(1 / var(--zoom-scale, 1)));
-    transform-origin: center center;
+    transform: translate(-50%, -50%);
 }
 
 .label {

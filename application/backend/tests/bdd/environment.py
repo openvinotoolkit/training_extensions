@@ -1,12 +1,16 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+import json
 import os
 from collections.abc import Generator
+from pathlib import Path
 
 from behave import fixture, use_fixture
 from behave.runner import Context
 
 from tests.bdd.server_runner import DockerRunner, ProcessRunner
+
+_FAILURES_REPORT_PATH = Path(__file__).parent / "timm_training_failures.json"
 
 
 @fixture
@@ -32,4 +36,12 @@ def fastapi_server(context: Context) -> Generator[None]:
 
 def before_all(context: Context) -> None:
     """Set up the server before each scenario."""
+    context.failures = []
     use_fixture(fastapi_server, context)
+
+
+def after_all(context: Context) -> None:
+    """Dump collected model-architecture failures (stacktraces) to a JSON report."""
+    failures = getattr(context, "failures", [])
+    if failures:
+        _FAILURES_REPORT_PATH.write_text(json.dumps(failures, indent=2, sort_keys=True), encoding="utf-8")

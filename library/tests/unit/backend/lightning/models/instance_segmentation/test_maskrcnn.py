@@ -69,11 +69,8 @@ class TestMaskRCNN:
         output = fxt_model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 3
 
-        # TODO(Eugene): Explain should return proper output.
-        # After enabling explain for maskrcnn, below codes shuold be passed
-        # fxt_model.explain_mode = True  # noqa: ERA001
-        # output = fxt_model.forward_for_tracing(torch.randn(1, 3, 32, 32))  # noqa: ERA001
-        # assert len(output) == 5  # noqa: ERA001
+    def test_export_parameters_always_disable_runtime_nms(self, fxt_model):
+        assert fxt_model._export_parameters.nms_execute is False
 
     def test_maskrcnn_tv_optimization_config_excludes_mask_roi_pool(self) -> None:
         """``MaskRCNNTV`` PTQ config must exclude the ``mask_roi_pool`` scatter subgraph.

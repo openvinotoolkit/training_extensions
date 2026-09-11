@@ -27,7 +27,6 @@ DOC:
           - "**/docs/**/*"
           - "**/*.md"
           - "LICENSE"
-          - "third-party-programs.txt"
           - "NOTICE"
 
 BUILD:

@@ -17,6 +17,14 @@ _JOB_WAIT_TIMEOUT_SECONDS = 600
 _JOB_RECONNECT_SLEEP_SECONDS = 1
 
 
+class JobFailedError(Exception):
+    """Raised when a job reaches a terminal FAILED state; carries the failed JobView."""
+
+    def __init__(self, job: JobView) -> None:
+        self.job = job
+        super().__init__(f"Job {job.job_id} failed: {job.error}")
+
+
 def expect_job_accepted(response: requests.Response) -> JobView:
     assert response.status_code == 202, (
         f"Expected job to be ACCEPTED, but got {response.status_code}, response: {response.text}"
@@ -75,6 +83,8 @@ def wait_for_job_completion(session: requests.Session, base_url: str, job_id: UU
         time.sleep(_JOB_RECONNECT_SLEEP_SECONDS)
 
     assert job is not None, f"Did not receive any status update for job {job_id}"
+    if job.status == JobStatus.FAILED.name:
+        raise JobFailedError(job)
     assert job.status == JobStatus.DONE.name, f"Expected job to be DONE, but got {job.status}, error: {job.error}"
     return job
 
@@ -149,6 +159,21 @@ def import_dataset_as_new_project(
                 "labels": labels,
                 "include_unannotated": include_unannotated,
             },
+        },
+    }
+    response = session.post(f"{base_url}/api/jobs", json=job_body)
+    job = expect_job_accepted(response)
+    return wait_for_job_completion(session, base_url, job.job_id)
+
+
+def train(session: requests.Session, base_url: str, project_id: UUID, model_id: str, device: str) -> JobView:
+    """Launch a training job for *model_id* on *device* and wait for completion."""
+    job_body = {
+        "job_type": JobType.TRAIN,
+        "project_id": str(project_id),
+        "parameters": {
+            "device": device,
+            "model_architecture_id": model_id,
         },
     }
     response = session.post(f"{base_url}/api/jobs", json=job_body)

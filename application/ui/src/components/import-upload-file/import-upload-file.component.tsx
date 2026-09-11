@@ -1,9 +1,11 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { $api } from '@/api';
+import { uploadDatasetArchive } from '@/api';
+import { useTranslation } from '@/i18n';
 import { Button, Content, DropZone, FileTrigger, Flex, Heading, IllustratedMessage, Text } from '@geti-ui/ui';
 import { LinkOut } from '@geti-ui/ui/icons';
+import { useMutation } from '@tanstack/react-query';
 import { useSubmitJob } from 'hooks/api/jobs/jobs.hook';
 
 import { ReactComponent as EmptyDataset } from '../../assets/drop-files.svg';
@@ -23,7 +25,8 @@ type ImportUploadFileProps = {
 };
 
 export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUploadFileProps) => {
-    const stagedDatasetMutation = $api.useMutation('post', '/api/staged_datasets');
+    const { t } = useTranslation();
+    const stagedDatasetMutation = useMutation({ mutationFn: uploadDatasetArchive });
     const prepareImportJobMutation = useSubmitJob();
 
     const handleLoadingFile = (files: File[]) => {
@@ -31,7 +34,7 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
 
         if (hasMultipleFiles) {
             toast({
-                message: 'Adding folders or multiple files is not allowed. Please load a single file.',
+                message: t('dataset.import.multipleFilesError'),
                 type: 'error',
             });
             return;
@@ -39,7 +42,7 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
 
         if (!isSupportedDatasetZip(files[0])) {
             toast({
-                message: 'Unsupported file format. Please upload a valid .zip file.',
+                message: t('dataset.import.unsupportedFormatError'),
                 type: 'error',
             });
             return;
@@ -49,11 +52,7 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
     };
 
     const handleImportPrepare = async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        // @ts-expect-error There is an incorrect type in OpenAPI
-        const stagedDataset = await stagedDatasetMutation.mutateAsync({ body: formData });
+        const stagedDataset = await stagedDatasetMutation.mutateAsync(file);
 
         const prepareImportJob = await prepareImportJobMutation.mutateAsync({
             body: {
@@ -84,30 +83,30 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
                     {isPending && (
                         <Flex alignItems={'center'} direction={'column'} gap={'size-100'}>
                             <Heading level={1} UNSAFE_className={classes.statusTitle}>
-                                Uploading
+                                {t('dataset.import.uploading')}
                                 <ThreeDotsFlashing />
                             </Heading>
-                            <Text>Dataset is being uploaded</Text>
+                            <Text>{t('dataset.import.datasetBeingUploaded')}</Text>
                         </Flex>
                     )}
 
                     {!isPending && (
                         <Flex alignItems={'center'} direction={'column'} gap={'size-100'}>
-                            <Text>Drop the dataset .zip file here</Text>
+                            <Text>{t('dataset.import.dropZipHere')}</Text>
 
                             <FileTrigger
                                 data-testid='upload-zip-file'
                                 onSelect={(data) => handleLoadingFile(formatToFileArray(data))}
                             >
                                 <Button marginY={'size-200'} maxWidth={'size-1000'} variant={'accent'}>
-                                    Upload
+                                    {t('dataset.import.upload')}
                                 </Button>
                             </FileTrigger>
 
                             <Text UNSAFE_className={classes.formatOptions}>({formatOptions}).zip</Text>
 
                             <Link href='/' target='_blank' rel='noopener noreferrer' UNSAFE_className={classes.link}>
-                                Learn more about the different formats
+                                {t('dataset.import.learnMoreFormats')}
                                 <LinkOut size='XS' />
                             </Link>
                         </Flex>

@@ -18,7 +18,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(undefined, {
                     groupBy: 'dataset',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: '',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -32,7 +32,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels([], {
                     groupBy: 'dataset',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: '',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -75,7 +75,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'dataset',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: '',
                     datasetRevisions: [
                         getMockedDatasetRevision({ id: 'dataset-1' }),
@@ -102,7 +102,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: '',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -130,7 +130,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: '',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -151,7 +151,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: 'resnet',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -172,7 +172,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: 'nonexistent',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -192,7 +192,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: 'YOLOX',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -214,7 +214,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: { ResNet: { key: 'name', direction: 'asc' } },
                     searchBy: 'ResNet',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -238,7 +238,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: 'Custom',
                     datasetRevisions: [],
                     showFailedModels: true,
@@ -262,7 +262,7 @@ describe('useGroupedModels', () => {
             const { result } = renderHook(() =>
                 useGroupedModels(models, {
                     groupBy: 'architecture',
-                    sortBy: 'name',
+                    sortBy: {},
                     searchBy: '',
                     datasetRevisions: [],
                     showFailedModels: false,
@@ -276,6 +276,36 @@ describe('useGroupedModels', () => {
             expect(notFailedModels.map((m) => m.name)).toEqual(
                 expect.arrayContaining(['My-Custom-Model-v1', 'Another-Model'])
             );
+        });
+    });
+
+    describe('sorting', () => {
+        it('sorts each group independently', () => {
+            const models = [
+                getMockedModel({ id: 'model-1', name: 'Alpha', architecture: 'ResNet' }),
+                getMockedModel({ id: 'model-2', name: 'Beta', architecture: 'ResNet' }),
+                getMockedModel({ id: 'model-3', name: 'Gamma', architecture: 'YOLOX' }),
+                getMockedModel({ id: 'model-4', name: 'Delta', architecture: 'YOLOX' }),
+            ];
+
+            const { result } = renderHook(() =>
+                useGroupedModels(models, {
+                    groupBy: 'architecture',
+                    sortBy: {
+                        ResNet: { key: 'name', direction: 'asc' },
+                        YOLOX: { key: 'name', direction: 'desc' },
+                    },
+                    searchBy: '',
+                    datasetRevisions: [],
+                    showFailedModels: true,
+                })
+            );
+
+            const groupNames = (id: string) =>
+                result.current.find(({ group }) => group.id === id)?.models.map(({ name }) => name);
+
+            expect(groupNames('ResNet')).toEqual(['Alpha', 'Beta']);
+            expect(groupNames('YOLOX')).toEqual(['Gamma', 'Delta']);
         });
     });
 });
