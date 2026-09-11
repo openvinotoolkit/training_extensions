@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { Item, Picker } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
 
@@ -11,6 +12,7 @@ type PredictionModelSelectorProps = {
 };
 
 export const PredictionModelSelector = ({ isDisabled }: PredictionModelSelectorProps) => {
+    const { t } = useTranslation();
     const { selectableModels, selectedModelId, changeSelectedModelId } = usePredictionSetup();
 
     if (isEmpty(selectableModels)) {
@@ -20,7 +22,7 @@ export const PredictionModelSelector = ({ isDisabled }: PredictionModelSelectorP
     return (
         <Picker
             aria-label={'Select prediction model'}
-            label={'Model'}
+            label={t('annotator.predictions.modelLabel')}
             width={'100%'}
             items={selectableModels}
             selectedKey={selectedModelId}

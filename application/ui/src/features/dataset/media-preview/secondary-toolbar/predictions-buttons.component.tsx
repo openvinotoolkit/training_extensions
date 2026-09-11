@@ -1,6 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { ActionButton, Icon, Text } from '@geti-ui/ui';
 import { Checkmark, Edit } from '@geti-ui/ui/icons';
 
@@ -14,12 +15,14 @@ type EditPredictionButtonProps = {
 };
 
 const EditPredictionButton = ({ isDisabled, onEditPrediction }: EditPredictionButtonProps) => {
+    const { t } = useTranslation();
+
     return (
         <ActionButton isQuiet onPress={onEditPrediction} isDisabled={isDisabled} aria-label={'Edit prediction'}>
             <Icon>
                 <Edit />
             </Icon>
-            <Text>Edit</Text>
+            <Text>{t('annotator.predictions.edit')}</Text>
         </ActionButton>
     );
 };
@@ -31,6 +34,7 @@ type PredictionButtonsProps = {
 };
 
 export const PredictionButtons = ({ onSubmit, onModeChange, isDisabled }: PredictionButtonsProps) => {
+    const { t } = useTranslation();
     const { replaceAnnotations, annotations } = useAnnotationActions();
 
     const handleEditPrediction = () => {
@@ -42,7 +46,7 @@ export const PredictionButtons = ({ onSubmit, onModeChange, isDisabled }: Predic
         <>
             <ActionButton isQuiet onPress={onSubmit} isDisabled={isDisabled}>
                 <Checkmark />
-                <Text>Confirm prediction</Text>
+                <Text>{t('annotator.predictions.confirm')}</Text>
             </ActionButton>
 
             <EditPredictionButton onEditPrediction={handleEditPrediction} isDisabled={isDisabled} />

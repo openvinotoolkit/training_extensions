@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetSubset, Media } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { ActionButton, Flex, Icon, Text, View } from '@geti-ui/ui';
 import { ChevronLeft, ChevronRight, CloseSemiBold } from '@geti-ui/ui/icons';
 import { isEmpty } from 'lodash-es';
@@ -112,6 +113,7 @@ export const ReadOnlyAnnotator = ({
     onSelectNextMediaItem,
     onClose,
 }: ReadOnlyAnnotatorProps) => {
+    const { t } = useTranslation();
     const hasMediaNavigation = onSelectPreviousMediaItem !== undefined || onSelectNextMediaItem !== undefined;
 
     return (
@@ -137,7 +139,7 @@ export const ReadOnlyAnnotator = ({
                                     <Icon height={'size-150'} width={'size-150'}>
                                         <CloseSemiBold />
                                     </Icon>
-                                    <Text>Close</Text>
+                                    <Text>{t('annotator.actions.close')}</Text>
                                 </ActionButton>
                             </Flex>
                         </Toolbar.Section>

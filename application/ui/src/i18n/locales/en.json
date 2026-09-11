@@ -117,6 +117,11 @@
             "uploadToStart": "Upload your first media item to get started.",
             "importDataset": "Import dataset"
         },
+        "review": {
+            "reviewed": "Reviewed",
+            "forReview": "For Review",
+            "selectSubsetPlaceholder": "Select subset"
+        },
         "statistics": {
             "label": "Dataset statistics",
             "title": "Dataset Statistics",
@@ -303,6 +308,9 @@
         },
         "confidenceThreshold": {
             "label": "Confidence threshold"
+        },
+        "devices": {
+            "label": "Inference device"
         },
         "sources": {
             "uploadError": "Failed to upload video file."
@@ -496,7 +504,19 @@
             "redo": "Redo ({{hotkeys}})",
             "toggleFocus": "Toggle focus",
             "showAnnotations": "Show annotations ({{hotkey}})",
-            "hideAnnotations": "Hide annotations ({{hotkey}})"
+            "hideAnnotations": "Hide annotations ({{hotkey}})",
+            "submit": "Submit",
+            "close": "Close"
+        },
+        "modes": {
+            "annotation": "Annotation",
+            "prediction": "Prediction"
+        },
+        "predictions": {
+            "settingsTitle": "Prediction settings",
+            "modelLabel": "Model",
+            "confirm": "Confirm prediction",
+            "edit": "Edit"
         },
         "hotkeys": {
             "title": "Hotkeys",

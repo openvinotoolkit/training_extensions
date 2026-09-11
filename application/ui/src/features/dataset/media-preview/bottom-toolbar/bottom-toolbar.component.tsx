@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetSubset, Media } from '@/api/types';
+import { useTranslation } from '@/i18n';
 import { Flex, Grid, Item, Key, Picker, Tag, Text } from '@geti-ui/ui';
 import { Accept, Search } from '@geti-ui/ui/icons';
 import { clsx } from 'clsx';
-import { capitalize } from 'lodash-es';
 
 import { Hotkeys } from '../primary-toolbar/hotkeys/hotkeys.component';
 import { Settings } from '../primary-toolbar/settings/settings.component';
@@ -35,6 +35,7 @@ export const BottomToolbar = ({
     isReadOnlySubset,
     hasAnnotationStatus = true,
 }: BottomToolbarProps) => {
+    const { t } = useTranslation();
     const fileName = `${mediaItem.name}.${mediaItem.format} (${mediaItem.width} x ${mediaItem.height} px)`;
 
     return (
@@ -57,23 +58,27 @@ export const BottomToolbar = ({
                                         [classes.forReview]: !isUserReviewed,
                                     })}
                                     prefix={isUserReviewed ? <Accept /> : <Search />}
-                                    text={isUserReviewed ? 'Reviewed' : 'For Review'}
+                                    text={isUserReviewed ? t('dataset.review.reviewed') : t('dataset.review.forReview')}
                                 />
                             )}
 
                             {isReadOnlySubset ? (
-                                <Tag withDot={false} text={capitalize(subset)} id={'selected-subset-badge'} />
+                                <Tag
+                                    withDot={false}
+                                    text={t(`dataset.filters.subsetOptions.${subset}`)}
+                                    id={'selected-subset-badge'}
+                                />
                             ) : (
                                 <Picker
                                     selectedKey={subset}
-                                    placeholder={'Select subset'}
+                                    placeholder={t('dataset.review.selectSubsetPlaceholder')}
                                     aria-label={'Select subset'}
                                     onSelectionChange={onSubsetChange}
                                 >
-                                    <Item key={'unassigned'}>Unassigned</Item>
-                                    <Item key={'validation'}>Validation</Item>
-                                    <Item key={'testing'}>Testing</Item>
-                                    <Item key={'training'}>Training</Item>
+                                    <Item key={'unassigned'}>{t('dataset.filters.subsetOptions.unassigned')}</Item>
+                                    <Item key={'validation'}>{t('dataset.filters.subsetOptions.validation')}</Item>
+                                    <Item key={'testing'}>{t('dataset.filters.subsetOptions.testing')}</Item>
+                                    <Item key={'training'}>{t('dataset.filters.subsetOptions.training')}</Item>
                                 </Picker>
                             )}
                         </Flex>
