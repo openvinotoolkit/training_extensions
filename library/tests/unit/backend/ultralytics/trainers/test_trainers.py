@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import csv
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable
 from unittest.mock import MagicMock, patch
@@ -78,6 +80,40 @@ def test_segmentation_trainer_datamodule_path_skips_divide_by_255() -> None:
     result = trainer.preprocess_batch(batch)
 
     assert torch.allclose(result["img"], imgs)
+
+
+def test_iteration_timer_appends_epoch_means_to_results_csv(tmp_path: Path) -> None:
+    """Training iteration means are persisted in the existing results CSV."""
+    results_csv = tmp_path / "results.csv"
+    results_csv.write_text("epoch,step,time\n1,1,10\n2,2,20\n", encoding="utf-8")
+    trainer = object.__new__(DetectionTrainer)
+    trainer._use_getitune_data = True
+    callbacks: dict[str, list[Callable[..., Any]]] = {}
+    trainer.add_callback = lambda event, callback: callbacks.setdefault(event, []).append(callback)  # type: ignore[attr-defined]
+
+    timer_values = iter([1.0, 2.0, 5.0, 6.0, 8.0, 10.0])
+    with patch("getitune.backend.ultralytics.trainers.base.time.perf_counter", side_effect=timer_values):
+        trainer._register_iteration_timer()
+        start = callbacks["on_train_batch_start"][0]
+        end = callbacks["on_train_batch_end"][0]
+        epoch_start = callbacks["on_train_epoch_start"][0]
+        finish = callbacks["on_train_end"][0]
+        state = SimpleNamespace(epoch=0, save_dir=tmp_path)
+        epoch_start(state)
+        start(state)
+        end(state)
+        start(state)
+        end(state)
+        state.epoch = 1
+        epoch_start(state)
+        start(state)
+        end(state)
+        finish(state)
+
+    with results_csv.open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    assert rows[0]["train/iter_time"] == "2.5"
+    assert rows[1]["train/iter_time"] == "2.0"
 
 
 def test_move_batch_to_device_uses_non_blocking_for_xpu() -> None:

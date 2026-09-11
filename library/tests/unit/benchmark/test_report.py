@@ -591,6 +591,30 @@ class TestGenerateMarkdown:
         md = generate_markdown(report)
         assert "Peak RAM" not in md
 
+    def test_reports_training_iteration_time_not_end_to_end_time(self) -> None:
+        report = BenchmarkReport(
+            comparisons=[
+                ExperimentComparison(
+                    task="detection",
+                    model="yolox_s",
+                    dataset="pothole",
+                    scenario="default",
+                    current_metrics={
+                        "time/train/iter": 0.125,
+                        "time/training/e2e": 3600.0,
+                    },
+                    baseline_metrics=None,
+                ),
+            ],
+            failures=[],
+        )
+
+        md = generate_markdown(report)
+
+        assert "Train Iteration Time" in md
+        assert "125.0 ms" in md
+        assert "Train Time" not in md
+
 
 # ---------------------------------------------------------------------------
 # generate_csv

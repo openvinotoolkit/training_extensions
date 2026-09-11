@@ -130,7 +130,7 @@ cd geti/library
 
 # Recommended: use uv to honor the lockfile
 uv sync                      # CPU-only
-uv sync --extra xpu          # Intel GPU (XPU) — setup: https://github.com/intel/compute-runtime/releases
+uv sync --extra xpu --reinstall-package triton-xpu  # Intel GPU (XPU) — setup: https://github.com/intel/compute-runtime/releases
 uv sync --extra cuda         # NVIDIA GPU (CUDA 13.0) — setup: https://developer.nvidia.com/cuda-13-0-0-download-archive
 
 # Or with pip in a virtual environment
@@ -152,7 +152,7 @@ pip install -e ".[cuda]" \
 > For **Ultralytics YOLO models**, add `--extra ultralytics` for `uv sync` or `[ultralytics]` for `pip install`:
 >
 > ```bash
-> uv sync --extra xpu --extra ultralytics  # Intel GPU + YOLO
+> uv sync --extra xpu --extra ultralytics --reinstall-package triton-xpu  # Intel GPU + YOLO
 >
 > # or with pip
 > pip install -e ".[xpu,ultralytics]" --extra-index-url https://download.pytorch.org/whl/xpu  #Intel GPU + YOLO

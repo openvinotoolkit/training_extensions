@@ -237,6 +237,9 @@ def rewrite_metric_key(key: str) -> str:
         return f"time/{key.split(':', 1)[0]}/test_e2e"
     if key.endswith(":test/latency"):
         return f"time/{key.split(':', 1)[0]}/test_latency"
+    if key.startswith(("export:throughput:", "export:latency:", "optimize:throughput:", "optimize:latency:")):
+        phase, mode, metric = key.split(":", 2)
+        return f"time/benchmark_{phase}/{mode}/{metric}"
     if key.endswith(":test/iter_time"):
         return f"time/{key.split(':', 1)[0]}/iter"
     if key == "training:train/iter_time":

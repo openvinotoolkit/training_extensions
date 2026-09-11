@@ -5,8 +5,11 @@
 
 from __future__ import annotations
 
+import csv
 import logging
 import multiprocessing
+import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
@@ -180,6 +183,9 @@ class GetiTuneBaseTrainer:
             self.args.workers = 4  # type: ignore[attr-defined]
         super()._setup_train()  # type: ignore[misc]
 
+        if self._use_getitune_data:
+            self._register_iteration_timer()
+
         if not self._use_getitune_data:
             return
 
@@ -225,6 +231,64 @@ class GetiTuneBaseTrainer:
                 counter["ni"] += 1
 
             self.add_callback("on_train_batch_start", _warmup_callback)  # type: ignore[attr-defined]
+
+    def _register_iteration_timer(self) -> None:
+        """Record per-batch train time and persist epoch means for benchmarking."""
+        times_by_epoch: dict[int, list[float]] = {}
+        state: dict[str, float] = {}
+
+        def on_epoch_start(_trainer: Any) -> None:  # noqa: ANN401
+            state.clear()
+
+        def on_batch_start(_trainer: Any) -> None:  # noqa: ANN401
+            state.setdefault("end", time.perf_counter())
+
+        def on_batch_end(trainer: Any) -> None:  # noqa: ANN401
+            previous_end = state.get("end")
+            if previous_end is None:
+                return
+            current_end = time.perf_counter()
+            epoch = int(getattr(trainer, "epoch", 0))
+            times_by_epoch.setdefault(epoch, []).append(current_end - previous_end)
+            state["end"] = current_end
+
+        def on_train_end(trainer: Any) -> None:  # noqa: ANN401
+            results_csv = Path(getattr(trainer, "save_dir", ".")) / "results.csv"
+            if not results_csv.exists():
+                return
+            try:
+                with results_csv.open(newline="", encoding="utf-8") as stream:
+                    rows = list(csv.reader(stream))
+            except OSError:
+                return
+            if not rows:
+                return
+
+            header = rows[0]
+            if "train/iter_time" in header:
+                return
+            header.append("train/iter_time")
+            epoch_times = {epoch: sum(times) / len(times) for epoch, times in times_by_epoch.items() if times}
+            # Ultralytics persists one-based epoch values in results.csv
+            # (``self.epoch + 1``). Map by the row's epoch value, not its
+            # position, so resumed runs with pre-existing rows stay aligned.
+            epoch_col = header.index("epoch") if "epoch" in header else None
+            for row in rows[1:]:
+                epoch_key = None
+                if epoch_col is not None and epoch_col < len(row):
+                    try:
+                        epoch_key = int(float(row[epoch_col])) - 1
+                    except ValueError:
+                        epoch_key = None
+                row.append(str(epoch_times.get(epoch_key, "")) if epoch_key is not None else "")
+
+            with results_csv.open("w", newline="", encoding="utf-8") as stream:
+                csv.writer(stream).writerows(rows)
+
+        self.add_callback("on_train_epoch_start", on_epoch_start)  # type: ignore[attr-defined]
+        self.add_callback("on_train_batch_start", on_batch_start)  # type: ignore[attr-defined]
+        self.add_callback("on_train_batch_end", on_batch_end)  # type: ignore[attr-defined]
+        self.add_callback("on_train_end", on_train_end)  # type: ignore[attr-defined]
 
     def _register_progress_callback(self) -> None:
         """Register a progress-reporting callback for the training loop.

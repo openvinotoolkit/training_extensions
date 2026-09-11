@@ -18,14 +18,28 @@ _ensure_uv:
 [arg("device", short="d", long="device")]
 venv device="cpu": _ensure_uv
     uv lock --check
-    uv sync --frozen --extra {{ device }} --extra ultralytics
+    # CUDA Triton and XPU Triton share the same Python package paths. When an
+    # existing environment changes accelerator, reinstall XPU Triton last so
+    # uninstalling CUDA Triton cannot remove files owned by triton-xpu.
+    if [ "{{ device }}" = "xpu" ]; then \
+        uv sync --frozen --extra xpu --extra ultralytics --reinstall-package triton-xpu; \
+    else \
+        uv sync --frozen --extra {{ device }} --extra ultralytics; \
+    fi
 
 # Create a virtual environment including benchmark-dataset dependencies (e.g. kagglehub).
 # Use this when running or testing the benchmark dataset preparation scripts.
 [arg("device", short="d", long="device")]
 venv-benchmark device="cpu": _ensure_uv
     uv lock --check
-    uv sync --frozen --extra {{ device }} --extra ultralytics --extra benchmark
+    # CUDA Triton and XPU Triton share the same Python package paths. When an
+    # existing environment changes accelerator, reinstall XPU Triton last so
+    # uninstalling CUDA Triton cannot remove files owned by triton-xpu.
+    if [ "{{ device }}" = "xpu" ]; then \
+        uv sync --frozen --extra xpu --extra ultralytics --extra benchmark --reinstall-package triton-xpu; \
+    else \
+        uv sync --frozen --extra {{ device }} --extra ultralytics --extra benchmark; \
+    fi
 
 # Generate or update the uv lock file
 venv-lock: _ensure_uv

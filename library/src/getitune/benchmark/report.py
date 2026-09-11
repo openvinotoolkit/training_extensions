@@ -445,7 +445,7 @@ def generate_markdown(report: BenchmarkReport) -> str:
         lines.append("")
 
         # Build table header — find which metric columns are available
-        # Use a standard set: primary accuracy metric, train time, GPU mem, test latency
+        # Use a standard set: primary accuracy metric, train iteration time, GPU mem, test latency
         metric_cols = _detect_metric_columns(comps)
 
         header = "| Model | Dataset | Status "
@@ -607,9 +607,12 @@ def _detect_metric_columns(
             label_short = key.split("test/", 1)[1] if "test/" in key else key
             columns.append((f"Optimize {label_short} {_arrow_for(key)}", key, _fmt_metric))
 
-    # Timing metrics — keys are stored in their rewritten form.
-    if rewrite_metric_key("training:e2e_time") in all_keys:
-        columns.append(("Train Time ↓", rewrite_metric_key("training:e2e_time"), _fmt_time))
+    # Training performance is reported as post-warmup per-iteration time, not
+    # end-to-end training duration. The latter includes validation,
+    # checkpointing, and other work unrelated to a training iteration.
+    train_iter_key = rewrite_metric_key("training:train/iter_time")
+    if train_iter_key in all_keys:
+        columns.append(("Train Iteration Time ↓", train_iter_key, _fmt_latency))
 
     if "training:gpu_mem" in all_keys:
         columns.append(("GPU Mem ↓", "training:gpu_mem", _fmt_memory))
@@ -619,6 +622,14 @@ def _detect_metric_columns(
 
     if rewrite_metric_key("torch:test/latency") in all_keys:
         columns.append(("Test Latency ↓", rewrite_metric_key("torch:test/latency"), _fmt_latency))
+
+    for phase, label in (("export", "FP16"), ("optimize", "INT8")):
+        fps_key = rewrite_metric_key(f"{phase}:throughput:fps")
+        latency_key = rewrite_metric_key(f"{phase}:latency:latency_ms")
+        if fps_key in all_keys:
+            columns.append((f"{label} FPS ↑", fps_key, _fmt_metric))
+        if latency_key in all_keys:
+            columns.append((f"{label} Latency ↓", latency_key, lambda v: _fmt_metric(v, 2)))
 
     return columns
 

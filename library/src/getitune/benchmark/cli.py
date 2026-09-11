@@ -135,7 +135,48 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--scenario", type=str, nargs="*", default=None, help="Scenario name filter.")
     run.add_argument("--scenario-tag", type=str, nargs="*", default=None, help="Scenario tag filter.")
     run.add_argument("--accelerator", type=str, default="gpu", help="Device: gpu, xpu, or cpu.")
+    run.add_argument(
+        "--openvino-device",
+        type=str,
+        default=None,
+        help="OpenVINO target device, e.g. CPU, GPU, GPU.1, AUTO (default follows accelerator).",
+    )
+    run.add_argument(
+        "--training-device-name",
+        type=str,
+        default=None,
+        help="Physical training device name override when the driver does not expose its marketed name.",
+    )
+    run.add_argument(
+        "--openvino-full-device-name",
+        dest="openvino_device_name",
+        type=str,
+        default=None,
+        help=(
+            "Human-readable OpenVINO device name for the report; overrides the benchmark_app property name. "
+            "Distinct from --openvino-device, which selects the inference target."
+        ),
+    )
+    run.add_argument(
+        "--benchmark-ov-models",
+        dest="enable_openvino_benchmark",
+        action="store_true",
+        help="Run OpenVINO benchmark_app in throughput and latency modes.",
+    )
+    run.add_argument(
+        "--skip-test",
+        dest="enable_validation",
+        action="store_false",
+        default=True,
+        help=(
+            "Skip the accuracy test phases; the pipeline still runs training, export, INT8 optimization, "
+            "and benchmark_app measurements."
+        ),
+    )
     run.add_argument("--num-seeds", type=int, default=None, help="Override number of seeds.")
+    run.add_argument(
+        "--max-attempts", type=int, default=3, help="Maximum attempts per experiment (use 1 to disable retries)."
+    )
     run.add_argument("--max-epochs", type=int, default=None, help="Override max training epochs.")
     run.add_argument("--eval-upto", type=str, choices=["train", "export", "optimize"], default=None)
     run.add_argument("--deterministic", action="store_const", const=True, default=None)
@@ -296,6 +337,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
         deterministic=deterministic,
         max_epochs=args.max_epochs,
         num_seeds=args.num_seeds,
+        max_attempts=args.max_attempts,
         eval_upto=args.eval_upto,
         filters=filters,
         mlflow_tracking_uri=args.mlflow_uri,
@@ -307,6 +349,11 @@ def _cmd_run(args: argparse.Namespace) -> int:
         keep_checkpoints=args.keep_checkpoints,
         ad_hoc_overrides=ad_hoc_overrides,
         ad_hoc_train_kwargs=ad_hoc_train_kwargs,
+        openvino_device=args.openvino_device,
+        training_device_name=args.training_device_name,
+        openvino_device_name=args.openvino_device_name,
+        enable_openvino_benchmark=args.enable_openvino_benchmark,
+        enable_validation=args.enable_validation,
         rotation_group=args.rotation_group,
         no_rotation=args.no_rotation,
     )
