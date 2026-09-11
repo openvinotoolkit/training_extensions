@@ -3,6 +3,7 @@
 
 import { $api } from '@/api';
 import { toast } from '@/components/toast/toast.component';
+import { useTranslation } from '@/i18n';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isEmpty, partition } from 'lodash-es';
@@ -11,6 +12,7 @@ import { getQueryKey } from '../../../../../query-client/query-client';
 import { filterOutEmptyLabels } from '../../../../../shared/annotator/labels';
 
 export const useBulkAssignLabel = () => {
+    const { t } = useTranslation();
     const projectId = useProjectIdentifier();
     const queryClient = useQueryClient();
     const mutation = $api.useMutation('post', '/api/projects/{project_id}/dataset/media/{media_id}/annotations');
@@ -62,19 +64,21 @@ export const useBulkAssignLabel = () => {
         if (failedMediaItems.length === 0) {
             toast({
                 type: 'success',
-                message: `Successfully assigned label(s) to all ${successfulMediaItems.length} image(s)`,
+                message: t('dataset.bulkLabels.assignAllSuccess', { count: successfulMediaItems.length }),
             });
         } else if (successfulMediaItems.length === 0) {
             toast({
                 type: 'error',
-                message: `Failed to assign label(s) to all ${failedMediaItems.length} image(s)`,
+                message: t('dataset.bulkLabels.assignAllFailure', { count: failedMediaItems.length }),
             });
         } else {
             toast({
                 type: 'info',
-                message:
-                    `Assigned label(s) to ${successfulMediaItems.length} of ${mediaIds.length} image(s) ` +
-                    `(${failedMediaItems.length} failed)`,
+                message: t('dataset.bulkLabels.assignPartialSuccess', {
+                    succeeded: successfulMediaItems.length,
+                    total: mediaIds.length,
+                    failed: failedMediaItems.length,
+                }),
             });
         }
 

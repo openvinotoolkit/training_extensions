@@ -95,4 +95,69 @@ describe('UploadDetailsDialog', () => {
             expect(screen.queryByRole('dialog')).toBeNull();
         });
     });
+
+    it('shows the singular in-progress subheader for a single queued item', () => {
+        const { result } = renderUpload();
+
+        act(() => {
+            result.current.upload.startUploadProgress([makeFile('one.jpg')]);
+            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        expect(screen.getByText('Uploading 1 item - 0 uploaded')).toBeVisible();
+    });
+
+    it('shows the plural in-progress subheader for multiple queued items', () => {
+        const { result } = renderUpload();
+
+        act(() => {
+            result.current.upload.startUploadProgress([
+                makeFile('one.jpg'),
+                makeFile('two.jpg'),
+                makeFile('three.jpg'),
+            ]);
+            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        expect(screen.getByText('Uploading 3 items - 0 uploaded')).toBeVisible();
+    });
+
+    it('shows the in-progress subheader with failures while still uploading', () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([
+                makeFile('one.jpg'),
+                makeFile('two.jpg'),
+                makeFile('three.jpg'),
+            ]);
+            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        act(() => {
+            result.current.upload.setItemUploaded(ids[0]);
+            result.current.upload.setItemFailed(ids[1], 'bad');
+        });
+
+        expect(screen.getByText('Uploading 3 items - 1 uploaded, 1 failed')).toBeVisible();
+    });
+
+    it('shows the mixed final subheader with correct singular/plural once uploading finishes', () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([makeFile('one.jpg'), makeFile('two.jpg')]);
+            result.current.ctx.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        act(() => {
+            result.current.upload.setItemUploaded(ids[0]);
+            result.current.upload.setItemFailed(ids[1], 'bad');
+            result.current.upload.finishUploadProgress();
+        });
+
+        expect(screen.getByText('Uploaded 1 item, 1 failed')).toBeVisible();
+    });
 });
