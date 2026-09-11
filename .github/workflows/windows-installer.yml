@@ -293,7 +293,7 @@ jobs:
         if: steps.pyav_cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         env:
-          LIBVPL_COMMIT: "778a66d6c6537f08eabb91955dbbf1bce3812894"
+          LIBVPL_COMMIT: "d77f9195cf495b937631607333288fd917ae8939"
         run: |
           set -euo pipefail
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
@@ -459,7 +459,11 @@ jobs:
 
           # Build PyAV from source against our custom FFmpeg
           $pyavVersion = "${{ steps.pyav_cache_key.outputs.pyav-version }}"
-          uvx pip wheel "av~=$pyavVersion" --no-binary av --no-deps --wheel-dir $wheelDir
+          # Pin Cython explicitly (matching the Linux Docker build) rather than
+          # letting av's own build-system constraint (cython>=3.1.0,<4) resolve
+          # to whatever the latest satisfying release is at build time.
+          uvx --with "Cython==3.1.*" --with setuptools --with wheel `
+            pip wheel "av~=$pyavVersion" --no-binary av --no-build-isolation --no-deps --wheel-dir $wheelDir
 
           Write-Host "Built PyAV wheel:"
           Get-ChildItem $wheelDir -Filter "av-*.whl" | ForEach-Object { Write-Host "  $($_.Name)" }
