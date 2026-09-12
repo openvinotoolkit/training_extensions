@@ -130,8 +130,13 @@ class TestDataModule:
         ``batch_size`` for the val/test subsets), so the DataModule no longer overrides
         the loader settings based on the dataset type — the values come straight from
         the subset config.
+
+        ``pin_memory`` is the exception: it pins into *accelerator* memory, so it is only
+        enabled when the datamodule is bound to an accelerator. CPU-only consumers (most
+        importantly the OpenVINO evaluation pipeline) must not depend on the GPU runtime.
         """
         from getitune.data.dataset.tile import TileDataset
+        from getitune.types.device import DeviceType
 
         class _FakeTiled(TileDataset):
             def __init__(self):  # bypass heavy TileDataset construction
@@ -142,6 +147,7 @@ class TestDataModule:
                 return lambda batch: batch
 
         dm = DataModule.__new__(DataModule)
+        dm.device = DeviceType.gpu
         config = MagicMock(spec=SubsetConfig)
         config.batch_size = 8
         config.num_workers = 4
@@ -158,6 +164,10 @@ class TestDataModule:
         assert tiled_kwargs["batch_size"] == 8
         assert tiled_kwargs["num_workers"] == 4
         assert tiled_kwargs["pin_memory"] is True
+
+        # A CPU-bound datamodule must not pin batches into accelerator memory.
+        dm.device = DeviceType.cpu
+        assert dm._eval_loader_kwargs(plain_dataset, config)["pin_memory"] is False
 
     def test_init_input_size(
         self,

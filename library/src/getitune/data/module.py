@@ -451,7 +451,7 @@ class DataModule(LightningDataModule):
             "dataset": dataset,
             "batch_size": config.batch_size,
             "num_workers": num_workers,
-            "pin_memory": True,
+            "pin_memory": self._pin_memory,
             "collate_fn": dataset.collate_fn,
             "persistent_workers": num_workers > 0,
             "sampler": sampler,
@@ -513,11 +513,20 @@ class DataModule(LightningDataModule):
             "batch_size": config.batch_size,
             "shuffle": False,
             "num_workers": num_workers,
-            "pin_memory": True,
+            "pin_memory": self._pin_memory,
             "collate_fn": dataset.collate_fn,
             "persistent_workers": num_workers > 0,
             "multiprocessing_context": _MP_CONTEXT if num_workers > 0 else None,
         }
+
+    @property
+    def _pin_memory(self) -> bool:
+        """Whether batches should be staged in page-locked ("pinned") host memory.
+
+        For CPU-only consumers it never is (eg OV evaluation), the copy is redundant and the
+        locked pages just reduce the memory available to the rest of the process.
+        """
+        return self.device != DeviceType.cpu
 
     def setup(self, stage: str) -> None:
         """Setup for each stage."""

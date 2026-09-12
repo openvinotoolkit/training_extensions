@@ -19,6 +19,7 @@ from getitune.config.data import SamplerConfig, SubsetConfig, TileConfig
 from getitune.data.factory import TransformLibFactory
 from getitune.data.module import DataModule
 from getitune.types import PathLike
+from getitune.types.device import DeviceType
 from getitune.types.label import LabelInfoTypes
 from getitune.types.task import TaskType
 from getitune.utils import get_getitune_root_path, list_models
@@ -356,6 +357,10 @@ class AutoConfigurator:
         # Capture the tiling intent before overwriting the subset augmentations below.
         tiling_enabled = datamodule.tile_config.enable_tiler
 
+        # The OV recipe owns the loading configuration, including `num_workers`. Ensure that it is copied over.
+        if "num_workers" in ov_subset:
+            subset_config.num_workers = ov_subset["num_workers"]
+
         if keep_aspect_ratio:
             subset_config.batch_size = ov_subset["batch_size"]
             subset_config.augmentations_cpu = ov_subset["augmentations_cpu"]
@@ -459,7 +464,7 @@ class AutoConfigurator:
                 val_subset=datamodule.val_subset,
                 test_subset=datamodule.test_subset,
                 auto_num_workers=datamodule.auto_num_workers,
-                device=datamodule.device,
+                device=DeviceType.cpu,  # The rebuilt datamodule must not inherit the training device (cuda/xpu)
             )
 
         return DataModule(
@@ -473,7 +478,7 @@ class AutoConfigurator:
             ignore_index=datamodule.ignore_index,
             unannotated_items_ratio=datamodule.unannotated_items_ratio,
             auto_num_workers=datamodule.auto_num_workers,
-            device=datamodule.device,
+            device=DeviceType.cpu,  # The rebuilt datamodule must not inherit the training device (cuda/xpu)
         )
 
     @staticmethod
