@@ -67,5 +67,4 @@ just gen-api-spec --output-path="openapi.json"
 
 ## License
 
-The Geti source code is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). The Windows MSIX App is licensed under the [Intel Simplified Software License](https://software.intel.com/sites/landingpage/pintool/intel-simplified-software-license.txt).
-For more information, refer to the [LICENSE](../LICENSE) page.
+Please refer to this [section](../README.md#license) for all details about Geti™ license.

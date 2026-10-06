@@ -47,11 +47,6 @@ If Windows shows a security prompt, verify that the package is from the official
 
 ![Launch Geti™ from Start menu](media/geti-task-bar.jpg)
 
-> [!IMPORTANT]
-> Windows apps do not include Ultralytics models due to AGPL licensing constraints. If you need them,
-> please use the [install script](#install-script) or [build a Docker image from source](#option-2-build-the-image)
-> as described below.
-
 ## Run with Docker
 
 The easiest and most portable way to run Geti™ is through Docker. Pre-built images are published for Intel® XPU
@@ -83,15 +78,11 @@ Retag the pulled image as `geti-{cpu,xpu,cuda}:latest` for use with `just run-im
 docker tag ghcr.io/open-edge-platform/geti-xpu:latest geti-xpu:latest
 ```
 
-> [!IMPORTANT]
-> Pre-built container images do not include Ultralytics models due to AGPL licensing constraints. If you need them,
-> [build the image from source](#option-2-build-the-image) as described below.
-
 ### (Option 2) Build the image
 
 Geti™ Docker images can be built from source using the [`Dockerfile`](../docker/Dockerfile) in the `application`
-directory. This is useful if you want to customize the application or include Ultralytics models. The instructions
-below use `just` to simplify the build process, but you can also build the image manually with `docker build` if you prefer.
+directory. This is useful if you want to customize the application and/or experiment with an unreleased version.
+The instructions below use `just` to simplify the build process, but you can also build the image manually with `docker build` if you prefer.
 
 > [!TIP]
 > The `develop` branch contains the latest, potentially unstable, changes. To build a specific, stable release
@@ -111,6 +102,8 @@ just build-image --accelerator xpu
 The above command builds an image optimized for modern Intel® hardware. If you have an Intel® GPU (discrete or integrated),
 this is the recommended configuration for best performance. Alternatively, you can build with support for NVIDIA GPUs
 (`--accelerator cuda`) or with CPU-only support (`--accelerator cpu`).
+
+If you wish to exclude AGPL-licensed models (and their related components/dependencies) from the image, pass `--exclude-agpl-models`.
 
 Run `just --usage build-image` to see all build options.
 
@@ -330,10 +323,6 @@ registers a `geti` command you can use to launch the application.
 The installer sets up its own copy of `uv`, Node.js and npm under `.build/`, then builds the backend and UI and starts
 the app. The first build downloads several GB of packages (PyTorch, OpenVINO, …) and can take a while — progress is shown
 for each step. Re-running the installer reuses the cached tools and dependencies, so only the first build is slow.
-
-Installing from source also enables native Ultralytics YOLO26 models — the latest NMS-free, edge-optimized models
-(Nano / Small / Medium) for object detection and instance segmentation. The integration covers the full model lifecycle:
-training, inference, quantization, and OpenVINO™ model export.
 
 ### Prerequisites
 
@@ -656,10 +645,3 @@ Fixes, in order of preference:
 <br>
 
 Still can't find a solution for your issue? Feel free to [open a Github issue](https://github.com/open-edge-platform/geti/issues) and the Geti™ team will help you.
-
-## Notes
-
-> [!NOTE]
-> Ultralytics YOLO models are distributed under the AGPL-3.0 license, an OSI approved license ideal for open-source
-> research, academic, and personal projects. For commercial use, enhanced support, and tailored licensing terms, please
-> explore flexible Ultralytics licensing options at https://www.ultralytics.com/license.
