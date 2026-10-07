@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 import { render } from 'test-utils/render';
 
 import { UndoRedoProvider, useRegisterToolHistory, useUndoRedo } from './undo-redo-provider.component';
@@ -108,5 +108,14 @@ describe('UndoRedoProvider', () => {
         click('Increase base');
         click('Undo');
         expect(baseValue()).toHaveTextContent('0');
+    });
+
+    it('throws when a tool history is registered outside the provider', () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        const history = { canUndo: false, canRedo: false, undo: vi.fn(), redo: vi.fn() };
+
+        expect(() => renderHook(() => useRegisterToolHistory(history))).toThrow(
+            'useRegisterToolHistory must be used within an UndoRedoProvider'
+        );
     });
 });

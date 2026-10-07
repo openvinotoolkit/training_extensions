@@ -21,6 +21,7 @@ type AnnotationsContextValue = {
 };
 
 type AnnotationCommands = {
+    // Adding any annotation replaces an existing full-image annotation.
     addAnnotations: (shapes: Shape[], labels: AnnotationLabelRef[]) => string[];
     addAnnotationWithEmptyLabel: (label: Label) => void;
     deleteAnnotations: (annotationIds: string[]) => void;
@@ -33,6 +34,11 @@ type AnnotationCommands = {
 const AnnotationsContext = createContext<AnnotationsContextValue | null>(null);
 const AnnotationCommandsContext = createContext<AnnotationCommands | null>(null);
 const IsReadOnlyContext = createContext<boolean | null>(null);
+
+const createAnnotations = (shapes: Shape[], labels: AnnotationLabelRef[]): Annotation[] =>
+    shapes.map((shape) => ({ shape, id: crypto.randomUUID(), labels }));
+
+const isFullImageAnnotation = (annotation: Annotation) => annotation.shape.type === 'full_image';
 
 export type AnnotationDocumentProviderProps = {
     children: ReactNode;
@@ -71,20 +77,17 @@ export const AnnotationDocumentProvider = ({
 
     // Updater-form setState keeps the commands stable while annotations change.
     const commands = useMemo<AnnotationCommands>(() => {
-        const addAnnotations = (shapes: Shape[], labels: AnnotationLabelRef[]): string[] => {
-            const newAnnotations = shapes.map((shape) => ({
-                shape,
-                id: crypto.randomUUID(),
-                labels,
-            }));
-
-            setAnnotations((prevAnnotations) => [...prevAnnotations, ...newAnnotations]);
-
-            return newAnnotations.map((annotation) => annotation.id);
-        };
-
         return {
-            addAnnotations,
+            addAnnotations: (shapes, labels) => {
+                const newAnnotations = createAnnotations(shapes, labels);
+
+                setAnnotations((prevAnnotations) => [
+                    ...prevAnnotations.filter((annotation) => !isFullImageAnnotation(annotation)),
+                    ...newAnnotations,
+                ]);
+
+                return newAnnotations.map((annotation) => annotation.id);
+            },
             updateAnnotations: (updatedAnnotations, labels) => {
                 if (labels !== undefined) {
                     const idsToUpdate = new Set(updatedAnnotations.map((a) => a.id));
@@ -103,13 +106,14 @@ export const AnnotationDocumentProvider = ({
                 }
             },
             deleteAnnotations: (annotationIds) => {
+                const idsToDelete = new Set(annotationIds);
+
                 setAnnotations((prevAnnotations) =>
-                    prevAnnotations.filter((annotation) => !annotationIds.includes(annotation.id))
+                    prevAnnotations.filter((annotation) => !idsToDelete.has(annotation.id))
                 );
             },
             addAnnotationWithEmptyLabel: (emptyLabel) => {
-                setAnnotations([]);
-                addAnnotations([{ type: 'full_image' }], [{ id: emptyLabel.id }]);
+                setAnnotations(createAnnotations([{ type: 'full_image' }], [{ id: emptyLabel.id }]));
             },
             replaceAnnotations: (newAnnotations) => {
                 setAnnotations(() => newAnnotations);
