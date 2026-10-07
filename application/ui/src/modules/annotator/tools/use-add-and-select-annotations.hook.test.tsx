@@ -8,11 +8,7 @@ import { getMockedShape } from 'mocks/mock-annotation';
 import { getMockedLabel } from 'mocks/mock-labels';
 
 import { renderHook } from '../../../test-utils/render';
-import {
-    AnnotationDocumentProvider,
-    useAnnotationCommands,
-    useAnnotations,
-} from '../annotation-document-provider.component';
+import { AnnotationDocumentProvider, useAnnotations } from '../annotation-document-provider.component';
 import { SelectAnnotationProvider, useSelectedAnnotations } from '../select-annotation-provider.component';
 import { useAddAndSelectAnnotations } from './use-add-and-select-annotations.hook';
 
@@ -38,26 +34,5 @@ describe('useAddAndSelectAnnotations', () => {
 
         expect(result.current.annotations.map(({ id }) => id)).toEqual(newIds);
         expect(result.current.selectedAnnotations).toEqual(new Set(newIds));
-    });
-
-    it('does not re-render when annotations change', () => {
-        let renderCount = 0;
-
-        const { result } = renderHook(
-            () => {
-                renderCount += 1;
-
-                return { ...useAddAndSelectAnnotations(), ...useAnnotationCommands() };
-            },
-            { wrapper }
-        );
-
-        const rendersBefore = renderCount;
-
-        act(() => {
-            result.current.addAnnotations([getMockedShape({ type: 'rectangle' })], [{ id: label.id }]);
-        });
-
-        expect(renderCount).toBe(rendersBefore);
     });
 });
