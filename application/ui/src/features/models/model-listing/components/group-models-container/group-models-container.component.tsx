@@ -5,7 +5,7 @@ import type { Model } from '@/api/types';
 import { Disclosure, DisclosurePanel, DisclosureTitle, Flex } from '@geti-ui/ui';
 
 import { isFailedModel } from '../../../../../shared/model-status';
-import { useGetTaskModelArchitectures } from '../../../hooks/api/use-get-model-architectures.hook';
+import { useResolvedModelArchitectures } from '../../../hooks/api/use-resolved-model-architectures.hook';
 import { ModelDetailsTabs } from '../../model-details/model-details-tabs.component';
 import { useModelListing } from '../../provider/model-listing-provider';
 import { ArchitectureGroup, DatasetGroup } from '../../types';
@@ -22,7 +22,7 @@ interface GroupModelsContainerProps {
 
 export const GroupModelsContainer = ({ group, models }: GroupModelsContainerProps) => {
     const { expandedModelIds, onExpandModel } = useModelListing();
-    const { modelArchitectures } = useGetTaskModelArchitectures();
+    const modelArchitectures = useResolvedModelArchitectures(models);
 
     return (
         <Flex
