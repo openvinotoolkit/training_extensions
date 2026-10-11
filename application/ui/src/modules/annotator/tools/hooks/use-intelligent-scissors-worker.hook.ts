@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Intel Corporation
+// Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 import { useQuery } from '@tanstack/react-query';
@@ -40,6 +40,9 @@ export const useIntelligentScissorsWorker = (enabled = true) => {
             }
         },
         staleTime: Infinity,
+        // Tanstack doesn't abort on gc, so evicting the entry would leak the worker; it is
+        // terminated by `useTerminateAnnotatorWorkersOnUnmount` instead.
+        gcTime: Infinity,
         enabled,
     });
 

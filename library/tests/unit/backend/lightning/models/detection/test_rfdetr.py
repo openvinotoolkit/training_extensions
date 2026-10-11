@@ -9,6 +9,7 @@ import logging
 
 import pytest
 import torch
+from torchvision import tv_tensors
 
 from getitune.backend.lightning.models.detection.rfdetr import RFDETR
 from getitune.backend.lightning.models.detection.utils.rfdetr_batch_utils import (
@@ -20,6 +21,7 @@ from getitune.backend.lightning.models.detection.utils.rfdetr_batch_utils import
     limit_batch_objects,
 )
 from getitune.data.entity import PredictionBatch
+from getitune.data.entity.sample import SampleBatch
 
 
 class TestRFDETRBatchLimitingUtils:
@@ -582,3 +584,32 @@ class TestRFDETR:
         assert model.multi_scale is True
         assert isinstance(model.model.scales, list)
         assert len(model.model.scales) > 0
+
+    def test_customize_inputs_handles_degenerate_empty_bboxes(self) -> None:
+        """A (1, 0)-shaped empty bboxes tensor must not reach box_convert and crash."""
+        model = RFDETR(
+            model_name="rfdetr_nano",
+            label_info=3,
+            pretrained=False,
+        )
+        valid_bboxes = tv_tensors.BoundingBoxes(  # pyrefly: ignore[no-matching-overload]
+            torch.tensor([[10.0, 10.0, 50.0, 50.0]]),
+            format="XYXY",
+            canvas_size=(384, 384),
+        )
+        # validate_bboxes only inspects the first non-None entry, so the degenerate
+        # shape must be on a later sample to reach the model's defensive guard.
+        degenerate_bboxes = tv_tensors.BoundingBoxes(  # pyrefly: ignore[no-matching-overload]
+            torch.zeros((1, 0), dtype=torch.float32),
+            format="XYXY",
+            canvas_size=(384, 384),
+        )
+        entity = SampleBatch(
+            images=torch.randn(2, 3, 384, 384),
+            bboxes=[valid_bboxes, degenerate_bboxes],
+            labels=[torch.zeros(1, dtype=torch.long), torch.zeros(0, dtype=torch.long)],
+        )
+
+        result = model._customize_inputs(entity)
+
+        assert result["targets"][1]["boxes"].numel() == 0

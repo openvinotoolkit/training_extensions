@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { isPolygonValid } from '@geti-ui/smart-tools/utils';
 
 import { Annotation, Polygon } from '../../../../shared/types';
-import { useAnnotationActions } from '../../annotation-actions-provider.component';
+import { useAnnotationCommands } from '../../annotation-actions-provider.component';
 import { AnnotationShapeRenderer } from '../../annotations/annotation-shape-renderer.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
 import { TranslateShape } from '../edit-bounding-box/translate-shape.component';
@@ -22,7 +22,7 @@ export const EditPolygon = ({ annotation, zoom }: EditPolygonProps) => {
     const { roi } = useSelectedMediaItem();
     const isAddPoint = useRef(false);
     const [shape, setShape] = useState(annotation.shape);
-    const { updateAnnotations, deleteAnnotations } = useAnnotationActions();
+    const { updateAnnotations, deleteAnnotations } = useAnnotationCommands();
 
     useEffect(() => {
         setShape(annotation.shape);

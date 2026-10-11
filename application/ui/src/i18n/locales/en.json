@@ -45,6 +45,8 @@
             "no": "No",
             "unknown": "Unknown",
             "name": "Name",
+            "architecture": "Architecture",
+            "device": "Device",
             "on": "On",
             "off": "Off",
             "noMaximum": "No maximum",
@@ -70,8 +72,9 @@
             "seconds": "Seconds",
             "every": "every",
             "model": "Model",
+            "jobs": "Jobs",
             "labels": "Labels",
-            "language": "Language"
+            "bytesTransferred": "{{transferred}} of {{total}}"
         },
         "viewModes": {
             "large": "Large thumbnails",
@@ -99,8 +102,7 @@
         "models": "Models",
         "modelsDescription": "Models page to visualise your models",
         "inference": "Inference",
-        "inferenceDescription": "Inference page showing live inference on your project",
-        "preferences": "Preferences"
+        "inferenceDescription": "Inference page showing live inference on your project"
     },
     "dataset": {
         "validation": {
@@ -148,6 +150,7 @@
         },
         "upload": {
             "queued": "Queued",
+            "processing": "Processing",
             "uploaded": "Uploaded",
             "errorTitle": "Upload error",
             "details": "Upload details",
@@ -162,13 +165,18 @@
             "failedSummary_other": "Failed to upload {{count}} items",
             "mixedSummary_one": "Uploaded {{uploaded}} item, {{failed}} failed",
             "mixedSummary_other": "Uploaded {{uploaded}} items, {{failed}} failed",
+            "mixedCancelledSummary_one": "Uploaded {{uploaded}} item, {{failed}} failed, {{cancelled}} cancelled",
+            "mixedCancelledSummary_other": "Uploaded {{uploaded}} items, {{failed}} failed, {{cancelled}} cancelled",
             "genericError": "Failed to upload media.",
             "uploadMedia": "Upload media",
             "showDetails": "Show details",
             "inProgressToast_one": "Uploading {{count}} item...",
             "inProgressToast_other": "Uploading {{count}} items...",
             "inProgressSucceededPart": "{{count}} succeeded",
-            "inProgressFailedPart": "{{count}} failed"
+            "inProgressFailedPart": "{{count}} failed",
+            "cancelAll": "Cancel all",
+            "cancelledSummary_one": "Cancelled {{count}} upload",
+            "cancelledSummary_other": "Cancelled {{count}} uploads"
         },
         "empty": {
             "noMatches": "No media items match your filter.",
@@ -305,12 +313,6 @@
         "importExport": {
             "trigger": "Import/export dataset",
             "exportItem": "Export dataset"
-        },
-        "jobs": {
-            "cancel": {
-                "title": "Cancel job",
-                "confirmation": "Are you sure you want to cancel job {{jobId}}?"
-            }
         },
         "revisions": {
             "createdOn": "Created {{date}}",
@@ -788,6 +790,15 @@
                 "label": "Magnetic Lasso",
                 "description": "Hover along an object's edge and click periodically to snap the outline to its borders.",
                 "error": "Failed to select the shape boundaries, could you please try again?"
+            },
+            "ssim": {
+                "label": "Detection assistant",
+                "description": "Draw a box around an object to automatically find and annotate similar objects in the image.",
+                "loading": "Loading detection assistant, please wait...",
+                "error": "Error in Detection assistant tool: {{message}}",
+                "operations": {
+                    "workerBuild": "Detection assistant worker build"
+                }
             }
         },
         "video": {
@@ -813,7 +824,6 @@
     "models": {
         "jobs": {
             "error": "Job failed. Please check the logs for details and try again.",
-            "heading": "Jobs",
             "pending": "Pending...",
             "running": "Running...",
             "stopDialog": {
@@ -915,13 +925,17 @@
                 },
                 "toast": {
                     "trainingStarted": "Model training started successfully.",
-                    "trainingStartedWithLink": "Model training started successfully. <link>Open models screen to see progress.</link>"
+                    "trainingStartedWithLink": "Model training started successfully. <modelsLink>Open models screen to see progress.</modelsLink>"
                 },
                 "selectDataset": {
                     "label": "Select dataset",
-                    "useCurrentDataset": "Use current dataset",
+                    "useEntireDataset": "Use entire dataset",
                     "helpTitle": "Selecting a dataset",
-                    "helpDescription": "Choose the version of the dataset to use for training. If you want to train the new model\n                            on the exact same data (media and annotations) as another model, please select the\n                            corresponding dataset revision. Conversely, if you want to train on the most recent version\n                            of the data (what you see in the \"Dataset\" page), please select \"Use\n                            current dataset\"."
+                    "helpDescription": "Choose the data to use for training. Select \"Use entire dataset\" to train on the most recent version of all the data (what you see in the \"Dataset\" page). Select a dataset view to train only on the media assigned to that view. Select a dataset revision to train on the exact same data (media and annotations) as another model.",
+                    "sections": {
+                        "views": "Dataset views",
+                        "revisions": "Dataset revisions"
+                    }
                 },
                 "selectModel": {
                     "label": "Select input weights",
@@ -932,6 +946,7 @@
             },
             "validation": {
                 "notEnoughAnnotations": "In order to train a model, you need to annotate at least 3 items in your dataset, although we recommend annotating several more for better results.",
+                "notEnoughAnnotationsInView": "In order to train a model, you need to annotate at least 3 items in the selected dataset view, although we recommend annotating several more for better results.",
                 "emptySubsetsReason": "In order to train a model, each subset (training, validation, testing) needs at least one item. This condition is currently not satisfiable, because the {{subsetClause}} empty and {{assignmentDetail}}.",
                 "emptySubsetClause_one": "{{list}} subset is",
                 "emptySubsetClause_other": "{{list}} subsets are",
@@ -1012,7 +1027,6 @@
             "fineTunedFrom": "Fine-tuned from",
             "columns": {
                 "trained": "Trained",
-                "device": "Device",
                 "totalSize": "Total size"
             }
         },
@@ -1087,23 +1101,59 @@
             }
         },
         "columns": {
-            "modelName": "Model Name",
-            "architecture": "Architecture"
+            "modelName": "Model Name"
+        }
+    },
+    "jobs": {
+        "allProjects": "All projects",
+        "currentProjectLabel": "{{name}} (current)",
+        "projectsSection": "Projects",
+        "tabs": {
+            "all": "All",
+            "finished": "Finished"
+        },
+        "status": {
+            "pending": "Queued",
+            "cancelling": "Cancelling",
+            "done": "Completed"
+        },
+        "type": {
+            "quantize": "Optimization"
+        },
+        "columns": {
+            "type": "Type"
+        },
+        "cancel": {
+            "title": "Cancel job",
+            "confirmation": "Are you sure you want to cancel job {{jobId}}?"
+        },
+        "meta": {
+            "started": "Started {{time}}",
+            "elapsed": "Elapsed {{time}}"
+        },
+        "emptyState": {
+            "all": "No jobs",
+            "running": "No running jobs",
+            "finished": "No finished jobs",
+            "scheduled": "No queued jobs",
+            "cancelled": "No cancelled jobs",
+            "failed": "No failed jobs"
+        },
+        "actions": {
+            "viewLogs": "View logs"
         }
     },
     "license": {
         "label": "License: ",
         "agreement": {
-            "title": "License Agreement",
-            "intro": "By installing, using, or distributing this application, you acknowledge that:",
-            "termsRead": "You have read and understood the license terms at the links below;",
-            "termsGovern": "Confirmed the linked terms govern the contents you seek to access and use; and",
-            "termsAccepted": "Accepted and agreed to the linked license terms.",
+            "title": "License Agreements",
+            "intro": "Please review and accept the following licenses to continue using Geti.",
+            "progress": "{{current}} of {{total}}",
+            "required": "Required",
+            "optional": "Optional",
+            "fullLicense": "Read the full license",
+            "previous": "Previous",
             "accept": "Accept and continue"
-        },
-        "links": {
-            "intelSimplified": "Intel Simplified Software License",
-            "dinov2": "DINOv3 License"
         }
     },
     "application": {
@@ -1124,7 +1174,8 @@
         },
         "notifications": {
             "unexpectedError": "An unexpected error occurred. Please try again.",
-            "networkError": "Network error. Please check your connection and try again."
+            "networkError": "Network error. Please check your connection and try again.",
+            "uploadTransferError": "The file transfer failed. Please try again."
         }
     },
     "downloads": {

@@ -437,6 +437,7 @@ class HyperparametersUpdater:
         Supported keys:
         - learning_rate: float
         - batch_size: int
+        - num_workers: int
         - max_epochs: int (alias for num_iters)
         - early_stopping: dict with keys {enable, patience}
         - input_size: tuple (height, width)
@@ -450,6 +451,8 @@ class HyperparametersUpdater:
                 HyperparametersUpdater._update_learning_rate(value, config)
             elif key == "batch_size":
                 HyperparametersUpdater._update_batch_size(value, config)
+            elif key == "num_workers":
+                HyperparametersUpdater._update_num_workers(value, config)
             elif key == "max_epochs":
                 HyperparametersUpdater._update_max_epochs(value, config)
             elif key == "early_stopping":
@@ -487,6 +490,15 @@ class HyperparametersUpdater:
             return
         config["data"]["train_subset"]["batch_size"] = param_value
         config["data"]["val_subset"]["batch_size"] = param_value
+
+    @staticmethod
+    def _update_num_workers(param_value: int | None, config: dict) -> None:
+        """Update the number of dataloader workers for all subsets."""
+        if param_value is None:
+            logger.info("Number of workers is not provided, skipping update.")
+            return
+        for subset in ("train_subset", "val_subset", "test_subset"):
+            config["data"][subset]["num_workers"] = param_value
 
     @staticmethod
     def _update_max_epochs(param_value: int | None, config: dict) -> None:
@@ -740,6 +752,10 @@ class GetiConfigConverter:
                     for subset_name in ("train_subset", "val_subset", "test_subset"):
                         config_dict["data"][subset_name]["batch_size"] = value
 
+        if (num_workers := training_parameters.get("num_workers")) is not None:
+            for subset_name in ("train_subset", "val_subset", "test_subset"):
+                config_dict["data"][subset_name]["num_workers"] = num_workers
+
         early_stopping = training_parameters.get("early_stopping")
         if early_stopping is not None:
             if early_stopping.get("enable", False):
@@ -919,6 +935,7 @@ class GetiConfigConverter:
         hyperparams: dict[str, Any] = {
             "learning_rate": training_parameters.get("learning_rate"),
             "batch_size": training_parameters.get("batch_size"),
+            "num_workers": training_parameters.get("num_workers"),
             "max_epochs": training_parameters.get("max_epochs"),
             "early_stopping": training_parameters.get("early_stopping"),
             "input_size": (

@@ -38,8 +38,8 @@ test.describe('Project', () => {
 
         await expect(page.getByText('3 projects')).toBeVisible();
 
-        await page.getByRole('button', { name: /Preferences/ }).click();
-        await page.getByRole('radio', { name: /português/i }).click();
+        await page.getByRole('button', { name: 'Language' }).click();
+        await page.getByRole('menuitem', { name: /português/i }).click();
 
         await expect(page.getByText('3 projetos')).toBeVisible();
         await expect(page.locator('html')).toHaveAttribute('lang', 'pt');

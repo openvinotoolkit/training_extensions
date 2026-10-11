@@ -5,20 +5,7 @@ import { i18n } from '@/i18n';
 
 import { fetchClient } from './client';
 import type { MediaDTO, SourceMediaUpload, StagedDataset } from './shared-types';
-
-/**
- * Wraps a file in the `multipart/form-data` body every Geti upload endpoint expects.
- *
- * The generic `TBody` is inferred from the endpoint's expected request body: the OpenAPI
- * generator describes a multipart body as an object with a `file` field, but openapi-fetch has
- * to receive the FormData instance itself. This is the only place that discrepancy is handled.
- */
-const fileBody = <TBody>(file: File): NonNullable<TBody> => {
-    const body = new FormData();
-    body.append('file', file);
-
-    return body as unknown as NonNullable<TBody>;
-};
+import { createAbortError, discardUpload, transferFile, type TransferOptions } from './tus-upload';
 
 // openapi-fetch resolves with `{ data, error }` rather than rejecting, and its result union does
 // not narrow `data` from the `error` check, so both have to be tested before returning. Each
@@ -32,32 +19,72 @@ const unwrap = <T>(result: { data?: T; error?: unknown }, fallbackMessage: strin
     return result.data;
 };
 
-/** Uploads a single image or video into a project's dataset. */
-export const uploadDatasetMedia = async (projectId: string, file: File): Promise<MediaDTO> => {
-    const endpoint = '/api/projects/{project_id}/dataset/media';
-    const result = await fetchClient.POST(endpoint, {
-        params: { path: { project_id: projectId } },
-        body: fileBody(file),
-    });
+/**
+ * Transfers a file through the resumable upload API, then hands the completed upload to `consume`,
+ * which calls one of the `:from-upload` endpoints.
+ *
+ * Cancelling is only possible during the transfer: once the upload is being consumed the server
+ * creates the resource regardless. If consumption fails, the upload is discarded right away rather
+ * than lingering on the server until it expires.
+ */
+const uploadResumable = async <T>(
+    file: File,
+    consume: (uploadId: string) => Promise<T>,
+    options: TransferOptions = {}
+): Promise<T> => {
+    const uploadId = await transferFile(file, options);
 
-    return unwrap(result, i18n.t('dataset.upload.genericError'));
+    if (options.signal?.aborted) {
+        await discardUpload(uploadId);
+        throw createAbortError();
+    }
+
+    try {
+        return await consume(uploadId);
+    } catch (error) {
+        await discardUpload(uploadId);
+        throw error;
+    }
 };
 
-/** Uploads a dataset archive (.zip) to the import staging area. */
-export const uploadDatasetArchive = async (file: File): Promise<StagedDataset> => {
-    const endpoint = '/api/staged_datasets';
-    const result = await fetchClient.POST(endpoint, { body: fileBody(file) });
+/** Uploads a single image or video into a project's dataset through a resumable transfer. */
+export const uploadDatasetMedia = (projectId: string, file: File, options?: TransferOptions): Promise<MediaDTO> =>
+    uploadResumable(
+        file,
+        async (uploadId) =>
+            unwrap(
+                await fetchClient.POST('/api/projects/{project_id}/dataset/media:from-upload', {
+                    params: { path: { project_id: projectId } },
+                    body: { upload_id: uploadId },
+                }),
+                i18n.t('dataset.upload.genericError')
+            ),
+        options
+    );
 
-    return unwrap(result, i18n.t('dataset.import.prepareError'));
-};
+/** Uploads a dataset archive (.zip) to the import staging area through a resumable transfer. */
+export const uploadDatasetArchive = (file: File, options?: TransferOptions): Promise<StagedDataset> =>
+    uploadResumable(
+        file,
+        async (uploadId) =>
+            unwrap(
+                await fetchClient.POST('/api/staged_datasets:from-upload', { body: { upload_id: uploadId } }),
+                i18n.t('dataset.import.prepareError')
+            ),
+        options
+    );
 
-/** Uploads a video file to be used as an inference pipeline source. */
-export const uploadSourceVideo = async (file: File): Promise<SourceMediaUpload> => {
-    const endpoint = '/api/sources/media';
-    const result = await fetchClient.POST(endpoint, { body: fileBody(file) });
-
-    return unwrap(result, i18n.t('inference.sources.uploadError'));
-};
+/** Uploads a video file to be used as an inference pipeline source through a resumable transfer. */
+export const uploadSourceVideo = (file: File, options?: TransferOptions): Promise<SourceMediaUpload> =>
+    uploadResumable(
+        file,
+        async (uploadId) =>
+            unwrap(
+                await fetchClient.POST('/api/sources/media:from-upload', { body: { upload_id: uploadId } }),
+                i18n.t('inference.sources.uploadError')
+            ),
+        options
+    );
 
 /** Deletes an uploaded source video that is not referenced by any source. */
 export const deleteSourceVideo = async (sourceMediaId: string): Promise<void> => {

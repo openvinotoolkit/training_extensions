@@ -126,6 +126,23 @@ class TestExtractVideoFrames:
         np.testing.assert_array_equal(result, expected)
 
 
+class TestRelease:
+    @patch.object(VideoService, "_open_stream")
+    def test_release_closes_and_evicts_cached_entry(self, mock_open, video_service, mock_container, mock_stream):
+        mock_open.return_value = (mock_container, mock_stream, Fraction(1, 25), Fraction(25, 1))
+        mock_container.decode.return_value = [_make_frame(0)]
+        video_service.extract_video_frames(Path("video.mp4"), [0])
+
+        video_service.release(Path("video.mp4"))
+
+        mock_container.close.assert_called_once()
+        video_service.extract_video_frames(Path("video.mp4"), [0])
+        assert mock_open.call_count == 2
+
+    def test_release_unknown_path_is_noop(self, video_service):
+        video_service.release(Path("unknown.mp4"))
+
+
 class TestDecodeGroup:
     def test_seek_to_beginning_for_index_zero(self, mock_container, mock_stream):
         mock_container.decode.return_value = [_make_frame(0)]

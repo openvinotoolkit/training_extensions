@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.datumaro_converter import SampleMode
 from app.db.schema import DatasetItemDB, DatasetRevisionDB, MediaDB, PipelineDB
 from app.models import DatasetItemAnnotationStatus, DatasetItemSubset, Pipeline, Project
-from app.services import DatasetRevisionService, DatasetService
+from app.services import DatasetRevisionService, DatasetService, DatasetViewService, MediaService
 from app.services.base import ResourceNotFoundError, ResourceType
 from app.services.dataset_revision_service import DATASET_REVISION_ITEM_THUMBNAIL_SIZE
 
@@ -1094,3 +1094,274 @@ class TestDatasetRevisionServiceIntegration:
 
         assert excinfo.value.resource_type == ResourceType.DATASET_ITEM
         assert excinfo.value.resource_id == non_existent_id
+
+
+class TestDatasetRevisionServiceDatasetViews:
+    """Tests for dataset revisions created from a dataset view."""
+
+    @staticmethod
+    def _save_revision(
+        dataset_service: DatasetService,
+        dataset_revision_service: DatasetRevisionService,
+        project: Project,
+        dataset_view_id: UUID | None = None,
+        dataset_view_name: str | None = None,
+    ) -> UUID:
+        dataset = dataset_service.get_dm_dataset(
+            project.id,
+            project.task,
+            DatasetItemAnnotationStatus.WITH_ANNOTATIONS,
+            SampleMode.TRAINING,
+            dataset_view_id=dataset_view_id,
+        )
+        return dataset_revision_service.save_revision(
+            project_id=project.id,
+            dataset=dataset,
+            dataset_view_id=dataset_view_id,
+            dataset_view_name=dataset_view_name,
+        )
+
+    def test_save_revision_from_view_records_scope_and_name(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, _ in media_and_dataset_items],
+        )
+
+        revision_id = self._save_revision(
+            fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name
+        )
+
+        revision = fxt_dataset_revision_service.get_dataset_revision(project_id=project.id, revision_id=revision_id)
+        assert revision.dataset_view_id == view.id
+        assert revision.name == f"Collection One ({str(revision_id).split('-')[0]})"
+
+    def test_uptodate_revision_is_reused_for_the_same_view(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, _ in media_and_dataset_items],
+        )
+        revision_id = self._save_revision(
+            fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name
+        )
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert latest is not None
+        assert latest.id == revision_id
+
+    def test_view_revision_is_not_reused_for_the_entire_dataset(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, _ in media_and_dataset_items],
+        )
+        self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name)
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(project_id=project.id)
+
+        assert latest is None
+
+    def test_full_dataset_revision_is_not_reused_for_a_view(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project)
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, _ in media_and_dataset_items],
+        )
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert latest is None
+
+    def test_view_revision_is_invalidated_by_membership_change(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        media_ids = [UUID(media.id) for media, _ in media_and_dataset_items]
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id, name="Collection One", media_ids=media_ids
+        )
+        self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name)
+
+        # Removing a medium from the view changes the data the revision covers, so it must no longer be reused.
+        fxt_dataset_view_service.unassign_media(
+            project_id=project.id, dataset_view_id=view.id, media_ids=[media_ids[0]]
+        )
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert latest is None
+
+    def test_view_revision_is_invalidated_by_annotation_change(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, _ in media_and_dataset_items],
+        )
+        self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name)
+
+        unassigned_item = next(
+            ds_item
+            for _, ds_item in media_and_dataset_items
+            if ds_item.subset == DatasetItemSubset.UNASSIGNED.name.lower()
+        )
+        fxt_dataset_service.assign_dataset_item_subset(
+            project_id=project.id, dataset_item_id=UUID(unassigned_item.id), subset=DatasetItemSubset.TRAINING
+        )
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert latest is None
+
+    def test_view_revision_survives_changes_outside_the_view(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        unassigned_item = next(
+            ds_item
+            for _, ds_item in media_and_dataset_items
+            if ds_item.subset == DatasetItemSubset.UNASSIGNED.name.lower()
+        )
+        # The view deliberately excludes the item that is modified afterwards.
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, item in media_and_dataset_items if item.id != unassigned_item.id],
+        )
+        revision_id = self._save_revision(
+            fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name
+        )
+
+        fxt_dataset_service.assign_dataset_item_subset(
+            project_id=project.id, dataset_item_id=UUID(unassigned_item.id), subset=DatasetItemSubset.TRAINING
+        )
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert latest is not None
+        assert latest.id == revision_id
+
+    def test_view_revision_is_invalidated_by_media_deletion(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_media_service: MediaService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        media_ids = [UUID(media.id) for media, _ in media_and_dataset_items]
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id, name="Collection One", media_ids=media_ids
+        )
+        self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name)
+
+        # Deleting a medium cascades its view assignment, so the view must still be marked as changed.
+        fxt_media_service.delete_media(project=project, media_id=media_ids[0])
+
+        latest = fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+            project_id=project.id, dataset_view_id=view.id
+        )
+
+        assert latest is None
+
+    def test_view_revision_is_not_reused_after_the_view_is_deleted(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id,
+            name="Collection One",
+            media_ids=[UUID(media.id) for media, _ in media_and_dataset_items],
+        )
+        self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name)
+
+        fxt_dataset_view_service.delete_dataset_view(project_id=project.id, dataset_view_id=view.id)
+
+        # The revision keeps its scope marker, so it is neither reusable as a full-dataset one nor reachable.
+        assert fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(project_id=project.id) is None
+        assert (
+            fxt_dataset_revision_service.get_latest_uptodate_dataset_revision(
+                project_id=project.id, dataset_view_id=view.id
+            )
+            is None
+        )
+
+    def test_save_revision_from_view_without_all_subsets_raises(
+        self,
+        fxt_dataset_service: DatasetService,
+        fxt_dataset_revision_service: DatasetRevisionService,
+        fxt_dataset_view_service: DatasetViewService,
+        fxt_project_with_subset_items_on_disk: tuple[Project, list[tuple[MediaDB, DatasetItemDB]]],
+    ) -> None:
+        project, media_and_dataset_items = fxt_project_with_subset_items_on_disk
+        training_media = [
+            UUID(media.id)
+            for media, item in media_and_dataset_items
+            if item.subset == DatasetItemSubset.TRAINING.name.lower()
+        ]
+        view = fxt_dataset_view_service.create_dataset_view(
+            project_id=project.id, name="Only training", media_ids=training_media
+        )
+
+        with pytest.raises(ValueError, match="Only training"):
+            self._save_revision(fxt_dataset_service, fxt_dataset_revision_service, project, view.id, view.name)

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 
 import type { Annotation, Point } from '../../../../shared/types';
-import { useAnnotationActions } from '../../annotation-actions-provider.component';
+import { useAnnotationCommands } from '../../annotation-actions-provider.component';
 import { AnnotationShapeRenderer } from '../../annotations/annotation-shape-renderer.component';
 import { ANCHOR_SIZE, ResizeAnchor } from '../../resize-anchor.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
@@ -19,7 +19,7 @@ interface EditBoundingBoxProps {
 export const EditBoundingBox = ({ annotation, zoom }: EditBoundingBoxProps) => {
     const [shape, setShape] = useState(annotation.shape);
     const { roi } = useSelectedMediaItem();
-    const { updateAnnotations } = useAnnotationActions();
+    const { updateAnnotations } = useAnnotationCommands();
 
     const onComplete = () => {
         updateAnnotations([{ ...annotation, shape }]);

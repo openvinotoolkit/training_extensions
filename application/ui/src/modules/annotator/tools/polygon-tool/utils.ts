@@ -4,16 +4,16 @@
 import { PointerEvent, SVGProps } from 'react';
 
 import type { Label } from '@/api/types';
+import eraserToolCursor from '@/assets/icons/cursor/eraser-tool.png';
+import lassoClosingCursor from '@/assets/icons/cursor/lasso-closing.png';
+import lassoDrawingCursor from '@/assets/icons/cursor/lasso-drawing.png';
+import magneticLassoClosingCursor from '@/assets/icons/cursor/magnetic-lasso-closing.png';
+import magneticLassoDrawingCursor from '@/assets/icons/cursor/magnetic-lasso-drawing.png';
+import polygonClosingCursor from '@/assets/icons/cursor/polygon-closing.png';
+import polygonDrawingCursor from '@/assets/icons/cursor/polygon-drawing.png';
 import { isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { isEmpty, isEqual, isNil, negate } from 'lodash-es';
 
-import eraserToolCursor from '../../../../assets/icons/cursor/eraser-tool.png';
-import lassoClosingCursor from '../../../../assets/icons/cursor/lasso-closing.png';
-import lassoDrawingCursor from '../../../../assets/icons/cursor/lasso-drawing.png';
-import magneticLassoClosingCursor from '../../../../assets/icons/cursor/magnetic-lasso-closing.png';
-import magneticLassoDrawingCursor from '../../../../assets/icons/cursor/magnetic-lasso-drawing.png';
-import polygonClosingCursor from '../../../../assets/icons/cursor/polygon-closing.png';
-import polygonDrawingCursor from '../../../../assets/icons/cursor/polygon-drawing.png';
 import { isEraserOrRightButton, isLeftButton } from '../../../../shared/buttons-utils';
 import { Point, Polygon as PolygonType } from '../../../../shared/types';
 import { DEFAULT_ANNOTATION_STYLES } from '../../utils';

@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import torch
+from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 if TYPE_CHECKING:
     from getitune.data.dataset.base import VisionDataset
@@ -38,19 +39,39 @@ class _CachedSample:
         self.masks = masks
 
 
-def _clone_for_cache(sample: DetectionSample | InstanceSegmentationSample) -> _CachedSample:
-    """Create a lightweight cache entry with cloned tensor data.
+def _clone_for_cache(sample: DetectionSample | InstanceSegmentationSample, max_size: int = 1024) -> _CachedSample:
+    """Clone a sample for caching, shrinking images larger than ``max_size`` on their longest side.
 
-    Cost: ~3ms for a 3x640x640 float32 image (memcpy only),
-    vs. ~260ms for ``copy.deepcopy`` on a full BaseSample.
+    Samples within the limit use tensor clones rather than deep-copying the full sample.
     """
     masks = getattr(sample, "masks", None)
     label = cast("torch.Tensor", sample.label)
+    _, height, width = sample.image.shape
+    if max(height, width) > max_size:
+        scale = max_size / max(height, width)
+        new_height = max(1, round(height * scale))
+        new_width = max(1, round(width * scale))
+        image = F.resize(
+            sample.image, [new_height, new_width], interpolation=F.InterpolationMode.BILINEAR, antialias=True
+        )
+        bboxes = sample.bboxes.float().clone()
+        bboxes[:, 0::2] *= new_width / width
+        bboxes[:, 1::2] *= new_height / height
+        if masks is not None:
+            masks = (
+                F.resize(masks, [new_height, new_width], interpolation=F.InterpolationMode.NEAREST, antialias=False)
+                if masks.numel()
+                else torch.zeros((0, new_height, new_width), dtype=masks.dtype, device=masks.device)
+            )
+    else:
+        image = sample.image.clone()
+        bboxes = sample.bboxes.clone()
+        masks = masks.clone() if masks is not None else None
     return _CachedSample(
-        image=sample.image.clone(),
-        bboxes=sample.bboxes.clone(),
+        image=image,
+        bboxes=bboxes,
         label=label.clone(),
-        masks=masks.clone() if masks is not None else None,
+        masks=masks,
     )
 
 

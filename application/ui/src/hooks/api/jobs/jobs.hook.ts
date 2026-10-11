@@ -17,10 +17,9 @@ import { isJobFailed, isQuantizeJob, isTrainJob } from '../util';
 
 const TERMINAL_STATUSES: string[] = ['DONE', 'FAILED', 'CANCELLED'];
 
-export const useStreamJobStatus = (jobId: string | undefined) => {
+export const useStreamJobStatus = (jobId: string | undefined, projectId: string | undefined) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const projectId = useProjectIdentifier();
     const modelIdRef = useRef<string | null>(null);
 
     const { close } = useSSE<Job>(jobId ? `/api/jobs/${jobId}/status` : undefined, {
@@ -51,6 +50,11 @@ export const useStreamJobStatus = (jobId: string | undefined) => {
         },
         onClose: () => {
             queryClient.invalidateQueries({ queryKey: getQueryKey(['get', '/api/jobs']) });
+
+            if (!projectId) {
+                return;
+            }
+
             queryClient.invalidateQueries({
                 queryKey: getQueryKey([
                     'get',
@@ -120,19 +124,23 @@ export const useSubmitJob = () => {
     });
 };
 
-const useListJobs = () => {
-    return $api.useQuery('get', '/api/jobs');
-};
-
 const isTrainOrQuantizeJob = (job: Job): job is TrainJob | QuantizeJob => isTrainJob(job) || isQuantizeJob(job);
+
+export const ACTIVE_JOB_STATUSES: string[] = ['PENDING', 'RUNNING', 'CANCELLING'];
+
+export const useModelJobs = () => {
+    return $api.useQuery('get', '/api/jobs', undefined, {
+        select: (jobs) => jobs.filter(isTrainOrQuantizeJob),
+    });
+};
 
 export const useGetCurrentRunningJobs = (): (QuantizeJob | TrainJob)[] | undefined => {
     const projectId = useProjectIdentifier();
-    const activeJobs = useListJobs();
+    const activeJobs = useModelJobs();
     const { isJobDismissed } = useDismissedJobs();
 
     return activeJobs.data?.filter((job): job is TrainJob | QuantizeJob => {
-        if (!isTrainOrQuantizeJob(job) || job.metadata.project.id !== projectId) {
+        if (job.metadata.project.id !== projectId) {
             return false;
         }
 

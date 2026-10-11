@@ -1,11 +1,11 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { ThumbsUp } from '@/assets/icons';
 import { useTranslation } from '@/i18n';
 import { Text } from '@geti-ui/ui';
 import { capitalize } from 'lodash-es';
 
-import { ReactComponent as ThumbsUp } from '../../../../../assets/icons/thumbs-up.svg';
 import { ModelBadge } from './model-badge.component';
 
 type PerformanceCategoryBadgeProps = {

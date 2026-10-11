@@ -5,7 +5,6 @@ import { deleteSourceVideo, uploadSourceVideo } from '@/api';
 import type { VideoFileSourceConfig } from '@/api/types';
 import type { TranslateFn } from '@/i18n';
 
-import type { PrepareFormData } from '../hooks/use-source-action.hook';
 import { getUniqueName } from '../utils';
 
 export const getVideoFileInitialConfig = (t: TranslateFn, existingNames: string[] = []): VideoFileSourceConfig => ({
@@ -16,10 +15,18 @@ export const getVideoFileInitialConfig = (t: TranslateFn, existingNames: string[
     loop: false,
 });
 
+export type VideoFileUploadOptions = {
+    onProgress?: (bytesSent: number, bytesTotal: number) => void;
+    signal?: AbortSignal;
+};
+
 // Uploads the selected file (if any) and writes the resulting path back into `video_path`, so
 // `videoFileBodyFormatter` can stay a plain, synchronous formatter like its sibling sources.
 // The returned rollback deletes the upload so it is not left orphaned when the source is not saved.
-export const prepareVideoFileFormData: PrepareFormData = async (formData) => {
+export const prepareVideoFileFormData = async (
+    formData: FormData,
+    { onProgress, signal }: VideoFileUploadOptions = {}
+): Promise<(() => Promise<void>) | undefined> => {
     const file = formData.get('video_file');
 
     // An untouched file input still yields a File entry (empty filename) once it has a `name`,
@@ -28,9 +35,12 @@ export const prepareVideoFileFormData: PrepareFormData = async (formData) => {
         return undefined;
     }
 
-    const { video_path } = await uploadSourceVideo(file);
-    formData.set('video_path', video_path);
+    const { video_path } = await uploadSourceVideo(file, {
+        signal,
+        onProgress: (bytesSent) => onProgress?.(bytesSent, file.size),
+    });
 
+    formData.set('video_path', video_path);
     // Uploads are stored as `<source_media_dir>/<uuid>/<filename>`; the UUID identifies the upload.
     const sourceMediaId = video_path.split(/[\\/]/).at(-2);
 

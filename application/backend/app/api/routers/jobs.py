@@ -21,6 +21,7 @@ from app.api.dependencies import (
     get_system_service,
 )
 from app.api.schemas.jobs import JobRequest, JobType, JobView
+from app.api.schemas.jobs.training import TrainingRequest
 from app.api.validators import JobID
 from app.core.jobs.control_plane import CancellationResult, JobQueue
 from app.core.jobs.models import JobStatus
@@ -47,6 +48,46 @@ from app.services.model_manifest_service import ModelManifestService
 router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
 
 
+def _build_training_job(
+    job_id: UUID,
+    job_request: TrainingRequest,
+    job_dir: Path,
+    data_dir: Path,
+    project_service: ProjectService,
+    system_service: SystemService,
+    dataset_view_service: DatasetViewService,
+) -> TrainingJob:
+    """Resolve the training request parameters into a ready-to-submit training job."""
+    device = system_service.training_device(job_request.parameters.device)
+    project = project_service.get_project_by_id(job_request.project_id)
+    arch_id = job_request.parameters.model_architecture_id
+    arch_name = ModelManifestService.get_model_manifest_by_id(arch_id).name
+    dataset_view_id = job_request.parameters.dataset_view_id
+    dataset_view_name = (
+        dataset_view_service.get_dataset_view_by_id(project_id=project.id, dataset_view_id=dataset_view_id).name
+        if dataset_view_id is not None
+        else None
+    )
+    return TrainingJob(
+        id=job_id,
+        project_id=project.id,
+        log_dir=job_dir,
+        data_dir=data_dir,
+        params=TrainingJobParams(
+            device=device,
+            model_architecture_id=arch_id,
+            model_architecture_name=arch_name,
+            parent_model_revision_id=job_request.parameters.parent_model_revision_id,
+            task=project.task,
+            project_id=project.id,
+            job_id=job_id,
+            dataset_revision_id=job_request.parameters.dataset_revision_id,
+            dataset_view_id=dataset_view_id,
+            dataset_view_name=dataset_view_name,
+        ),
+    )
+
+
 @router.post(
     "",
     response_model=JobView,
@@ -57,7 +98,8 @@ router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
         status.HTTP_404_NOT_FOUND: {"description": "Project, dataset or dataset view not found"},
         status.HTTP_409_CONFLICT: {"description": "Dataset is locked by another job"},
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
-            "description": "Dataset already in datumaro format and ready for import"
+            "description": "Dataset already in datumaro format and ready for import, "
+            "or mutually exclusive parameters were provided"
         },
     },
 )
@@ -76,25 +118,14 @@ async def submit_job(
         job_id = uuid4()
         match job_request.job_type:
             case JobType.TRAIN:
-                device = system_service.training_device(job_request.parameters.device)
-                project = project_service.get_project_by_id(job_request.project_id)
-                arch_id = job_request.parameters.model_architecture_id
-                arch_name = ModelManifestService.get_model_manifest_by_id(arch_id).name
-                job = TrainingJob(
-                    id=job_id,
-                    project_id=project.id,
-                    log_dir=job_dir,
+                job = _build_training_job(
+                    job_id=job_id,
+                    job_request=job_request,
+                    job_dir=job_dir,
                     data_dir=data_dir,
-                    params=TrainingJobParams(
-                        device=device,
-                        model_architecture_id=arch_id,
-                        model_architecture_name=arch_name,
-                        parent_model_revision_id=job_request.parameters.parent_model_revision_id,
-                        task=project.task,
-                        project_id=project.id,
-                        job_id=job_id,
-                        dataset_revision_id=job_request.parameters.dataset_revision_id,
-                    ),
+                    project_service=project_service,
+                    system_service=system_service,
+                    dataset_view_service=dataset_view_service,
                 )
             case JobType.QUANTIZE:
                 project = project_service.get_project_by_id(job_request.project_id)

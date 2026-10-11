@@ -35,6 +35,7 @@ from .staged_dataset_service import StagedDatasetService
 from .subset_assignment import SplitRatios, SubsetAssigner, SubsetService
 from .system_service import SystemService
 from .training_configuration_service import TrainingConfigurationService
+from .upload_service import UploadService
 from .video_stream_service import VideoStreamService
 
 __all__ = [
@@ -74,5 +75,6 @@ __all__ = [
     "SubsetService",
     "SystemService",
     "TrainingConfigurationService",
+    "UploadService",
     "VideoStreamService",
 ]

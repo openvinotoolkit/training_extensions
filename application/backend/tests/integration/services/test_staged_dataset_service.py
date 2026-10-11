@@ -165,6 +165,31 @@ def fxt_staged_dataset_service(tmp_path: Path) -> StagedDatasetService:
 
 class TestStagedDatasetServiceIntegration:
     @pytest.mark.asyncio
+    async def test_upload_from_path_moves_file(self, tmp_path: Path) -> None:
+        service = StagedDatasetService(staged_datasets_dir=tmp_path / "staged")
+        source_path = tmp_path / "uploads" / "upload.part"
+        source_path.parent.mkdir()
+        source_path.write_bytes(b"zip-bytes")
+
+        staged = await service.upload_from_path(filename="dataset.zip", source_path=source_path)
+
+        assert not source_path.exists()
+        target_path = tmp_path / "staged" / str(staged.id) / "dataset.zip"
+        assert staged.filename == str(target_path)
+        assert target_path.read_bytes() == b"zip-bytes"
+        assert staged.size == len(b"zip-bytes")
+        assert staged.compressed
+
+    @pytest.mark.asyncio
+    async def test_upload_from_path_missing_file_leaves_nothing_behind(self, tmp_path: Path) -> None:
+        service = StagedDatasetService(staged_datasets_dir=tmp_path / "staged")
+
+        with pytest.raises(FileNotFoundError):
+            await service.upload_from_path(filename="dataset.zip", source_path=tmp_path / "missing.part")
+
+        assert not any((tmp_path / "staged").iterdir())
+
+    @pytest.mark.asyncio
     async def test_upload_integration_writes_file_and_returns_metadata(
         self, tmp_path: Path, fxt_staged_dataset_service: StagedDatasetService
     ):

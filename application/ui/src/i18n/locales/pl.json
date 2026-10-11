@@ -45,6 +45,8 @@
             "no": "Nie",
             "unknown": "Nieznany",
             "name": "Nazwa",
+            "architecture": "Architektura",
+            "device": "Urządzenie",
             "on": "Wł.",
             "off": "Wył.",
             "noMaximum": "Brak maksimum",
@@ -70,8 +72,9 @@
             "seconds": "Sekundy",
             "every": "co",
             "model": "Model",
+            "jobs": "Zadania",
             "labels": "Etykiety",
-            "language": "Język"
+            "bytesTransferred": "{{transferred}} z {{total}}"
         },
         "viewModes": {
             "large": "Duże miniatury",
@@ -99,8 +102,7 @@
         "models": "Modele",
         "modelsDescription": "Strona modeli do wizualizacji Twoich modeli",
         "inference": "Wnioskowanie",
-        "inferenceDescription": "Strona wnioskowania pokazująca wnioskowanie na żywo w Twoim projekcie",
-        "preferences": "Preferencje"
+        "inferenceDescription": "Strona wnioskowania pokazująca wnioskowanie na żywo w Twoim projekcie"
     },
     "dataset": {
         "validation": {
@@ -148,6 +150,7 @@
         },
         "upload": {
             "queued": "W kolejce",
+            "processing": "Przetwarzanie",
             "uploaded": "Przesłano",
             "errorTitle": "Błąd przesyłania",
             "details": "Szczegóły przesyłania",
@@ -162,13 +165,18 @@
             "failedSummary_other": "Nie udało się przesłać {{count}} elementów",
             "mixedSummary_one": "Przesłano {{uploaded}} element, {{failed}} nieudane",
             "mixedSummary_other": "Przesłano {{uploaded}} elementów, {{failed}} nieudanych",
+            "mixedCancelledSummary_one": "Przesłano {{uploaded}} element, {{failed}} nieudane, {{cancelled}} anulowano",
+            "mixedCancelledSummary_other": "Przesłano {{uploaded}} elementów, {{failed}} nieudanych, {{cancelled}} anulowano",
             "genericError": "Nie udało się przesłać multimediów.",
             "uploadMedia": "Prześlij multimedia",
             "showDetails": "Pokaż szczegóły",
             "inProgressToast_one": "Przesyłanie {{count}} elementu...",
             "inProgressToast_other": "Przesyłanie {{count}} elementów...",
             "inProgressSucceededPart": "{{count}} pomyślnie",
-            "inProgressFailedPart": "{{count}} nieudanych"
+            "inProgressFailedPart": "{{count}} nieudanych",
+            "cancelAll": "Anuluj wszystko",
+            "cancelledSummary_one": "Anulowano {{count}} przesyłanie",
+            "cancelledSummary_other": "Anulowano {{count}} przesyłań"
         },
         "empty": {
             "noMatches": "Żadne elementy multimedialne nie pasują do filtra.",
@@ -305,12 +313,6 @@
         "importExport": {
             "trigger": "Importuj/eksportuj dataset",
             "exportItem": "Eksportuj dataset"
-        },
-        "jobs": {
-            "cancel": {
-                "title": "Anuluj zadanie",
-                "confirmation": "Czy na pewno chcesz anulować zadanie {{jobId}}?"
-            }
         },
         "revisions": {
             "createdOn": "Utworzono {{date}}",
@@ -792,6 +794,15 @@
                 "label": "Lasso magnetyczne",
                 "description": "Przesuwaj kursor wzdłuż krawędzi obiektu i klikaj okresowo, aby dopasować kontur do jego granic.",
                 "error": "Nie udało się zaznaczyć granic kształtu. Spróbuj ponownie."
+            },
+            "ssim": {
+                "label": "Asystent wykrywania",
+                "description": "Narysuj ramkę wokół obiektu, aby automatycznie znaleźć i oznaczyć podobne obiekty na obrazie.",
+                "loading": "Ładowanie asystenta wykrywania, poczekaj...",
+                "error": "Błąd narzędzia asystenta wykrywania: {{message}}",
+                "operations": {
+                    "workerBuild": "Kompilacja workera asystenta wykrywania"
+                }
             }
         },
         "video": {
@@ -817,7 +828,6 @@
     "models": {
         "jobs": {
             "error": "Zadanie nie powiodło się. Sprawdź dzienniki, aby uzyskać szczegóły, i spróbuj ponownie.",
-            "heading": "Zadania",
             "pending": "Oczekiwanie...",
             "running": "W trakcie...",
             "stopDialog": {
@@ -919,13 +929,17 @@
                 },
                 "toast": {
                     "trainingStarted": "Trenowanie modelu zostało pomyślnie rozpoczęte.",
-                    "trainingStartedWithLink": "Trenowanie modelu zostało pomyślnie rozpoczęte. <link>Otwórz ekran modeli, aby zobaczyć postęp.</link>"
+                    "trainingStartedWithLink": "Trenowanie modelu zostało pomyślnie rozpoczęte. <modelsLink>Otwórz ekran modeli, aby zobaczyć postęp.</modelsLink>"
                 },
                 "selectDataset": {
                     "label": "Wybierz dataset",
-                    "useCurrentDataset": "Użyj bieżącego datasetu",
+                    "useEntireDataset": "Użyj całego datasetu",
                     "helpTitle": "Wybór datasetu",
-                    "helpDescription": "Wybierz wersję datasetu, której chcesz użyć do trenowania. Jeśli chcesz wytrenować nowy model\n                            na dokładnie tych samych danych (multimediach i adnotacjach) co inny model, wybierz odpowiednią\n                            rewizję datasetu. Natomiast jeśli chcesz trenować na najnowszej wersji\n                            danych (widocznej na stronie „dataset”), wybierz „Użyj\n                            bieżącego datasetu”."
+                    "helpDescription": "Wybierz dane, których chcesz użyć do trenowania. Wybierz „Użyj całego datasetu”, aby trenować na najnowszej wersji wszystkich danych (widocznych na stronie „Dataset”). Wybierz widok datasetu, aby trenować tylko na multimediach przypisanych do tego widoku. Wybierz rewizję datasetu, aby trenować na dokładnie tych samych danych (multimediach i adnotacjach) co inny model.",
+                    "sections": {
+                        "views": "Widoki datasetu",
+                        "revisions": "Rewizje datasetu"
+                    }
                 },
                 "selectModel": {
                     "label": "Wybierz wagi wejściowe",
@@ -936,6 +950,7 @@
             },
             "validation": {
                 "notEnoughAnnotations": "Aby wytrenować model, musisz opisać adnotacjami co najmniej 3 elementy w datasecie, chociaż zalecamy opisanie kilku więcej, aby uzyskać lepsze wyniki.",
+                "notEnoughAnnotationsInView": "Aby wytrenować model, musisz opisać adnotacjami co najmniej 3 elementy w wybranym widoku datasetu, chociaż zalecamy opisanie kilku więcej, aby uzyskać lepsze wyniki.",
                 "emptySubsetsReason": "Aby wytrenować model, każdy podzbiór (treningowy, walidacyjny, testowy) musi zawierać co najmniej jeden element. Ten warunek nie jest obecnie spełniony, ponieważ {{subsetClause}} pusty(-e) i {{assignmentDetail}}.",
                 "emptySubsetClause_one": "podzbiór {{list}} jest",
                 "emptySubsetClause_other": "podzbiory {{list}} są",
@@ -1016,7 +1031,6 @@
             "fineTunedFrom": "Dostrojony na podstawie",
             "columns": {
                 "trained": "Wytrenowano",
-                "device": "Urządzenie",
                 "totalSize": "Całkowity rozmiar"
             }
         },
@@ -1091,23 +1105,59 @@
             }
         },
         "columns": {
-            "modelName": "Nazwa modelu",
-            "architecture": "Architektura"
+            "modelName": "Nazwa modelu"
+        }
+    },
+    "jobs": {
+        "allProjects": "Wszystkie projekty",
+        "currentProjectLabel": "{{name}} (bieżący)",
+        "projectsSection": "Projekty",
+        "tabs": {
+            "all": "Wszystkie",
+            "finished": "Zakończone"
+        },
+        "status": {
+            "pending": "W kolejce",
+            "cancelling": "W trakcie anulowania",
+            "done": "Zakończone"
+        },
+        "type": {
+            "quantize": "Optymalizacja"
+        },
+        "columns": {
+            "type": "Typ"
+        },
+        "cancel": {
+            "title": "Anuluj zadanie",
+            "confirmation": "Czy na pewno chcesz anulować zadanie {{jobId}}?"
+        },
+        "meta": {
+            "started": "Rozpoczęto {{time}}",
+            "elapsed": "Czas trwania: {{time}}"
+        },
+        "emptyState": {
+            "all": "Brak zadań",
+            "running": "Brak zadań w trakcie",
+            "finished": "Brak zakończonych zadań",
+            "scheduled": "Brak zadań w kolejce",
+            "cancelled": "Brak anulowanych zadań",
+            "failed": "Brak zadań zakończonych niepowodzeniem"
+        },
+        "actions": {
+            "viewLogs": "Wyświetl dzienniki"
         }
     },
     "license": {
         "label": "Licencja: ",
         "agreement": {
-            "title": "Umowa licencyjna",
-            "intro": "Instalując, używając lub rozpowszechniając tę aplikację, potwierdzasz, że:",
-            "termsRead": "Zapoznałeś się i zrozumiałeś warunki licencji dostępne pod poniższymi linkami;",
-            "termsGovern": "Potwierdziłeś, że powiązane warunki regulują treści, do których chcesz uzyskać dostęp i z których chcesz korzystać; oraz",
-            "termsAccepted": "Zaakceptowałeś i zgodziłeś się na powiązane warunki licencji.",
+            "title": "Umowy licencyjne",
+            "intro": "Zapoznaj się z poniższymi licencjami i zaakceptuj je, aby dalej korzystać z Geti.",
+            "progress": "{{current}} z {{total}}",
+            "required": "Wymagana",
+            "optional": "Opcjonalna",
+            "fullLicense": "Przeczytaj pełną treść licencji",
+            "previous": "Wstecz",
             "accept": "Akceptuj i kontynuuj"
-        },
-        "links": {
-            "intelSimplified": "Uproszczona licencja oprogramowania Intel",
-            "dinov2": "Licencja DINOv3"
         }
     },
     "application": {
@@ -1128,7 +1178,8 @@
         },
         "notifications": {
             "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
-            "networkError": "Błąd sieci. Sprawdź połączenie i spróbuj ponownie."
+            "networkError": "Błąd sieci. Sprawdź połączenie i spróbuj ponownie.",
+            "uploadTransferError": "Przesyłanie pliku nie powiodło się. Spróbuj ponownie."
         }
     },
     "downloads": {

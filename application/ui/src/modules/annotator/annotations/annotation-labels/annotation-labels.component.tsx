@@ -3,7 +3,8 @@
 
 import { PointerEvent, useMemo } from 'react';
 
-import { i18n, useTranslation } from '@/i18n';
+import { useTranslation } from '@/i18n';
+import { useNumberFormatter } from '@geti-ui/ui';
 
 import { useLabelResolver } from '../../../../shared/labels';
 import type { AnnotationLabel, AnnotationLabelRef } from '../../../../shared/types';
@@ -22,14 +23,6 @@ type AnnotationLabelsProps = {
     isRemovable?: boolean;
 };
 
-const formatPredictionScore = (score: number) => {
-    return new Intl.NumberFormat(i18n.resolvedLanguage ?? i18n.language, { style: 'percent' }).format(score);
-};
-
-const getLabelText = (label: AnnotationLabel) => {
-    return `${label.name} ${isPrediction(label) ? formatPredictionScore(label.probability) : ''}`.trim();
-};
-
 export const AnnotationLabels = ({
     labels,
     onRemove,
@@ -38,6 +31,11 @@ export const AnnotationLabels = ({
 }: AnnotationLabelsProps) => {
     const { resolveAnnotationLabel } = useLabelResolver();
     const { t } = useTranslation();
+    const percentFormatter = useNumberFormatter({ style: 'percent' });
+
+    const getLabelText = (label: AnnotationLabel) => {
+        return `${label.name} ${isPrediction(label) ? percentFormatter.format(label.probability) : ''}`.trim();
+    };
 
     const placeholderLabel = useMemo(
         () => ({

@@ -46,7 +46,7 @@ test.describe('Import dataset to project', () => {
                     pagination: { total: 0, count: 0, limit: 10, offset: 0 },
                 });
             }),
-            http.post('/api/staged_datasets', () => {
+            http.post('/api/staged_datasets:from-upload', () => {
                 return HttpResponse.json(getMockedStagedDataset({ id: STAGED_DATASET_ID }), { status: 201 });
             }),
             http.post('/api/jobs', async ({ request }) => {

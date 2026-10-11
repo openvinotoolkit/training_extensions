@@ -33,8 +33,8 @@ vi.mock('../select-annotation-provider.component', () => ({
 }));
 
 vi.mock('../annotation-actions-provider.component', () => ({
-    useAnnotationActions: () => ({
-        annotations: [],
+    useAnnotations: () => ({ annotations: [] }),
+    useAnnotationCommands: () => ({
         updateAnnotations: vi.fn(),
         addAnnotations: vi.fn(),
         addAnnotationWithEmptyLabel: vi.fn(),

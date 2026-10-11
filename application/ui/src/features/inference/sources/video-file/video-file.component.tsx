@@ -4,20 +4,25 @@
 import { useRef, useState } from 'react';
 
 import type { VideoFileSourceConfig } from '@/api/types';
+import { UploadProgress } from '@/components/upload-progress/upload-progress.component';
 import { useTranslation } from '@/i18n';
 import { Button, Flex, Switch, Text, TextField } from '@geti-ui/ui';
 
 import { acceptedVideoExtensions } from '../../../../shared/media-file-utils';
+import type { VideoFileUploadProgress } from './use-video-file-upload.hook';
 
 import classes from './video-file.module.scss';
 
 type VideoFileProps = {
     defaultState?: VideoFileSourceConfig;
+    /** Progress of the selected file's transfer while the source is being saved. */
+    uploadProgress?: VideoFileUploadProgress | null;
+    onCancelUpload?: () => void;
 };
 
 const ACCEPTED_VIDEO_EXTENSIONS = [acceptedVideoExtensions, '.flv', '.wmv', '.mpg', '.mpeg'].join(',');
 
-export const VideoFile = ({ defaultState }: VideoFileProps) => {
+export const VideoFile = ({ defaultState, uploadProgress, onCancelUpload }: VideoFileProps) => {
     const { t } = useTranslation();
     const [videoPath, setVideoPath] = useState(defaultState?.video_path ?? '');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -78,6 +83,16 @@ export const VideoFile = ({ defaultState }: VideoFileProps) => {
                             {t('inference.sources.fields.selectedFile', { fileName: selectedFile.name })}
                         </Text>
                     </Flex>
+                )}
+
+                {uploadProgress && (
+                    <UploadProgress
+                        bytesSent={uploadProgress.bytesSent}
+                        bytesTotal={uploadProgress.bytesTotal}
+                        // Once the transfer is complete, the server is already consuming the upload: cancelling the
+                        // signal at that point would no longer prevent the source from being saved.
+                        onCancel={uploadProgress.bytesSent < uploadProgress.bytesTotal ? onCancelUpload : undefined}
+                    />
                 )}
             </Flex>
 

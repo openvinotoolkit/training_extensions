@@ -7,7 +7,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import { HOTKEYS } from '../../../shared/hotkeys-definition';
 import { useLabelResolver } from '../../../shared/labels';
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotationCommands } from '../annotation-actions-provider.component';
 import { useAnnotatorLabels } from '../annotator-labels-provider.component';
 import { useSelectedAnnotations } from '../select-annotation-provider.component';
 import { drawingStyles } from '../tools/polygon-tool/utils';
@@ -15,7 +15,7 @@ import { useAnnotation } from './annotation-context';
 
 export const SelectableAnnotation = ({ children }: { children: ReactNode }) => {
     const annotation = useAnnotation();
-    const { deleteAnnotations } = useAnnotationActions();
+    const { deleteAnnotations } = useAnnotationCommands();
     const { setSelectedLabelId } = useAnnotatorLabels();
     const { setSelectedAnnotations, selectedAnnotations } = useSelectedAnnotations();
     const { resolveAnnotationLabel } = useLabelResolver();

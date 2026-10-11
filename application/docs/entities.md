@@ -34,6 +34,8 @@ of the dataset, namely a _dataset revision_ (`DatasetRevision`), that captures t
 that model is trained. A dataset revision is therefore an immutable entity, and is not affected by subsequent changes
 to the main dataset, for example when images are added or removed. In other words, it is always possible to access the
 exact data used to train a specific model, even if an image has been deleted or the annotations have been modified.
+A revision may optionally reference the `DatasetView` it was created from, when the model was trained on a view rather
+than the entire dataset.
 
 A _model revision_ (`ModelRevision`) is a model instance obtained by fine-tuning the weights of another model revision,
 or a set of publicly available pre-trained weights. For each model, it is important to store not only the training

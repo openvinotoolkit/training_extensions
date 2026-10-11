@@ -1,0 +1,306 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# Attribution of the original (upstream) pretrained models, used to build the licensing notices of the
+# models exported from Geti (see `app/services/demo_files_service.py`).
+#
+# Each entry matches one or more model architecture IDs (`fnmatch` patterns, case-sensitive) and provides:
+#   - name:      name of the original work
+#   - creators:  identification of the creators / licensors of the original work
+#   - copyright: verbatim copyright notice of the original work, as published upstream (null if none)
+#   - source:    URL of the original work
+#
+# Every model whose license requires attribution (MIT, BSD-3-Clause, CC BY-NC 4.0, CC BY-NC-SA 4.0) must be
+# matched by exactly one entry; this is enforced by `tests/unit/services/test_demo_files_service.py`.
+# Copyright notices were taken verbatim from the upstream LICENSE file or, when the LICENSE file does not contain
+# one, from the source file headers of the upstream project.
+
+# ---------------------------------------------------------------------------------------------------------------
+# MIT
+# ---------------------------------------------------------------------------------------------------------------
+
+- name: RepVGG
+  models:
+    - image-classification-timm-repvgg_*.rvgg_in1k
+  creators: DingXiaoH (Xiaohan Ding)
+  copyright: Copyright (c) 2020 DingXiaoH
+  source: https://github.com/DingXiaoH/RepVGG
+
+- name: CLIP
+  models:
+    - image-classification-timm-resnet*_clip.openai
+  creators: OpenAI
+  copyright: Copyright (c) 2021 OpenAI
+  source: https://github.com/openai/CLIP
+
+- name: OpenCLIP
+  models:
+    - image-classification-timm-resnet*_clip.cc12m
+    - image-classification-timm-resnet*_clip.yfcc15m
+    - image-classification-timm-vit_*_clip_*.laion400m_e32
+  creators: >-
+    Gabriel Ilharco, Mitchell Wortsman, Nicholas Carlini, Rohan Taori, Achal Dave, Vaishaal Shankar, John Miller,
+    Hongseok Namkoong, Hannaneh Hajishirzi, Ali Farhadi, Ludwig Schmidt
+  copyright: |-
+    Copyright (c) 2012-2021 Gabriel Ilharco, Mitchell Wortsman,
+    Nicholas Carlini, Rohan Taori, Achal Dave, Vaishaal Shankar,
+    John Miller, Hongseok Namkoong, Hannaneh Hajishirzi, Ali Farhadi,
+    Ludwig Schmidt
+  source: https://github.com/mlfoundations/open_clip
+
+- name: ConvMixer
+  models:
+    - image-classification-timm-convmixer_*.in1k
+  creators: Authors of "Patches Are All You Need?" (ICLR 2022)
+  copyright: Copyright (c) 2021 Author(s) of ICLR 2022 Submission "Patches Are All You Need?"
+  source: https://github.com/locuslab/convmixer
+
+- name: Florence-2 (DaViT vision encoder)
+  models:
+    - image-classification-timm-davit_*.msft_florence2
+  creators: Microsoft Corporation
+  copyright: Copyright (c) Microsoft Corporation.
+  source: https://huggingface.co/microsoft/Florence-2-base
+
+- name: EdgeNeXt
+  models:
+    - image-classification-timm-edgenext_*.in1k
+    - image-classification-timm-edgenext_*.in21k_ft_in1k
+    - image-classification-timm-edgenext_*.usi_in1k
+  creators: Muhammad Maaz
+  copyright: |-
+    Copyright (c) 2022 Muhammad Maaz
+    Copyright (c) Meta Platforms, Inc. and affiliates.
+  source: https://github.com/mmaaz60/EdgeNeXt
+
+- name: EdgeNeXt (weights trained by Ross Wightman for timm)
+  models:
+    - image-classification-timm-edgenext_small_rw.sw_in1k
+  creators: Ross Wightman
+  copyright: Copyright 2022, Ross Wightman
+  source: https://github.com/huggingface/pytorch-image-models
+
+- name: ViT with RoPE and registers (weights trained by Ross Wightman for timm)
+  models:
+    - image-classification-timm-vit_*_rope_reg*_gap_256.sbb_in1k
+  creators: Ross Wightman
+  copyright: Copyright 2023 Ross Wightman
+  source: https://github.com/huggingface/pytorch-image-models
+
+- name: EfficientViT (MSRA)
+  models:
+    - image-classification-timm-efficientvit_m*.r224_in1k
+  creators: Microsoft Corporation
+  copyright: Copyright (c) Microsoft Corporation.
+  source: https://github.com/microsoft/Cream/tree/main/EfficientViT
+
+- name: EVA, EVA-02 and EVA-CLIP
+  models:
+    - image-classification-timm-eva_giant_patch14_*
+    - image-classification-timm-eva_large_patch14_*
+    - image-classification-timm-eva02_*
+  creators: BAAI-Vision
+  copyright: Copyright (c) 2022 BAAI-Vision
+  source: https://github.com/baaivision/EVA
+
+- name: FocalNet
+  models:
+    - image-classification-timm-focalnet_*
+  creators: Microsoft Corporation
+  copyright: Copyright (c) Microsoft Corporation.
+  source: https://github.com/microsoft/FocalNet
+
+- name: HRNet
+  models:
+    - image-classification-timm-hrnet_w*.ms_in1k
+    - image-classification-timm-hrnet_w*.ms_aug_in1k
+  creators: Microsoft Corporation
+  copyright: Copyright (c) 2019 Microsoft Corporation
+  source: https://github.com/HRNet/HRNet-Image-Classification
+
+- name: HRNet SSLD (PaddleClas)
+  models:
+    - image-classification-timm-hrnet_w*_ssld.paddle_in1k
+  creators: PaddlePaddle Authors
+  copyright: null
+  source: https://github.com/PaddlePaddle/PaddleClas
+
+- name: RegNet (pycls)
+  models:
+    - image-classification-timm-regnet[xy]_*.pycls_in1k
+  creators: Facebook, Inc. and its affiliates
+  copyright: Copyright (c) Facebook, Inc. and its affiliates.
+  source: https://github.com/facebookresearch/pycls
+
+- name: SEER (VISSL)
+  models:
+    - image-classification-timm-regnety_*.seer
+    - image-classification-timm-regnety_*.seer_ft_in1k
+  creators: Facebook, Inc. and its affiliates
+  copyright: Copyright (c) Facebook, Inc. and its affiliates.
+  source: https://github.com/facebookresearch/vissl
+
+- name: RepGhost
+  models:
+    - image-classification-timm-repghostnet_*.in1k
+  creators: ChengpengChen (Chengpeng Chen)
+  copyright: Copyright (c) 2022 ChengpengChen
+  source: https://github.com/ChengpengChen/RepGhost
+
+- name: ReXNet
+  models:
+    - image-classification-timm-rexnet_*.nav_in1k
+  creators: NAVER Corp.
+  copyright: Copyright (c) 2020-present NAVER Corp.
+  source: https://github.com/clovaai/rexnet
+
+- name: SHViT
+  models:
+    - image-classification-timm-shvit_*.in1k
+  creators: ysj9909 (Seokju Yun)
+  copyright: Copyright (c) 2024 ysj9909
+  source: https://github.com/ysj9909/SHViT
+
+- name: Swin Transformer and Swin Transformer V2
+  models:
+    - image-classification-timm-swin_*_patch4_*.ms_*
+    - image-classification-timm-swinv2_*.ms_*
+  creators: Microsoft Corporation
+  copyright: Copyright (c) Microsoft Corporation.
+  source: https://github.com/microsoft/Swin-Transformer
+
+- name: Swin-S3 (AutoFormerV2)
+  models:
+    - image-classification-timm-swin_s3_*.ms_in1k
+  creators: Microsoft Corporation
+  copyright: Copyright (c) Microsoft Corporation.
+  source: https://github.com/microsoft/Cream/tree/main/AutoFormerV2
+
+- name: InternViT-300M
+  models:
+    - image-classification-timm-vit_intern300m_patch14_448.ogvl_dist
+  creators: OpenGVLab
+  copyright: Copyright (c) 2023 OpenGVLab
+  source: https://github.com/OpenGVLab/InternVL
+
+- name: TinyCLIP
+  models:
+    - image-classification-timm-vit_*_clip_224.tinyclip_*
+  creators: Microsoft Corporation
+  copyright: Copyright (c) Microsoft Corporation.
+  source: https://github.com/wkcn/TinyCLIP
+
+- name: ViTamin
+  models:
+    - image-classification-timm-vitamin_*
+  creators: Jieneng Chen, Qihang Yu, Xiaohui Shen, Alan Yuille, Liang-Chieh Chen
+  copyright: null
+  source: https://huggingface.co/jienengchen/ViTamin-B
+
+- name: EoMT
+  models:
+    - instance-segmentation-eomt-large-640
+  creators: Mobile Perception Systems Lab at TU/e
+  copyright: Copyright (c) 2025 Mobile Perception Systems Lab at TU/e
+  source: https://github.com/tue-mps/eomt
+
+# ---------------------------------------------------------------------------------------------------------------
+# BSD-3-Clause
+# ---------------------------------------------------------------------------------------------------------------
+
+- name: Deep Layer Aggregation (DLA)
+  models:
+    - image-classification-timm-dla*.in1k
+  creators: Fisher Yu
+  copyright: Copyright (c) 2018, Fisher Yu
+  source: https://github.com/ucbdrive/dla
+
+- name: RDNet
+  models:
+    - image-classification-timm-rdnet_*
+  creators: NAVER Cloud Corp.
+  copyright: Copyright (c) 2024-present NAVER Cloud Corp.
+  source: https://github.com/naver-ai/rdnet
+
+- name: torchvision
+  models:
+    - image-classification-timm-*.tv_in1k
+    - image-classification-timm-*.tv2_in1k
+  creators: Soumith Chintala and the torchvision contributors
+  copyright: |-
+    Copyright (c) Soumith Chintala 2016,
+    All rights reserved.
+  source: https://github.com/pytorch/vision
+
+# ---------------------------------------------------------------------------------------------------------------
+# CC BY-NC 4.0
+# ---------------------------------------------------------------------------------------------------------------
+
+- name: Hiera
+  models:
+    - image-classification-timm-hiera_*.mae
+    - image-classification-timm-hiera_*.mae_in1k_ft_in1k
+  creators: Meta Platforms, Inc. and affiliates
+  copyright: Copyright (c) Meta Platforms, Inc. and affiliates.
+  source: https://github.com/facebookresearch/hiera
+
+- name: SWAG
+  models:
+    - image-classification-timm-regnety_*.swag_*
+  creators: Meta Platforms, Inc. and affiliates
+  copyright: Copyright (c) Meta Platforms, Inc. and affiliates.
+  source: https://github.com/facebookresearch/SWAG
+
+- name: WSL-Images
+  models:
+    - image-classification-timm-resnext101_*.fb_wsl_ig1b_ft_in1k
+  creators: Facebook, Inc. and its affiliates
+  copyright: Copyright (c) Facebook, Inc. and its affiliates.
+  source: https://github.com/facebookresearch/WSL-Images
+
+- name: Semi-supervised and semi-weakly supervised ImageNet models
+  models:
+    - image-classification-timm-*.fb_ssl_yfcc100m_ft_in1k
+    - image-classification-timm-*.fb_swsl_ig1b_ft_in1k
+  creators: Facebook, Inc. and its affiliates
+  copyright: Copyright (c) Facebook, Inc. and its affiliates.
+  source: https://github.com/facebookresearch/semi-supervised-ImageNet1K-models
+
+- name: MAE
+  models:
+    - image-classification-timm-vit_*_224.mae
+  creators: Meta Platforms, Inc. and affiliates
+  copyright: Copyright (c) Meta Platforms, Inc. and affiliates.
+  source: https://github.com/facebookresearch/mae
+
+- name: MetaCLIP
+  models:
+    - image-classification-timm-vit_*_clip_*.metaclip*
+  creators: Meta Platforms, Inc. and affiliates
+  copyright: Copyright (c) Meta Platforms, Inc. and affiliates
+  source: https://github.com/facebookresearch/MetaCLIP
+
+- name: ConvNeXt V2
+  models:
+    - image-classification-convnextv2-*
+  creators: Meta Platforms, Inc. and affiliates
+  copyright: Copyright (c) Meta Platforms, Inc. and affiliates.
+  source: https://github.com/facebookresearch/ConvNeXt-V2
+
+- name: Mask2Former
+  models:
+    - instance-segmentation-mask2former-swin-*
+  creators: Meta, Inc.
+  copyright: Copyright (c) 2022 Meta, Inc.
+  source: https://github.com/facebookresearch/Mask2Former
+
+# ---------------------------------------------------------------------------------------------------------------
+# CC BY-NC-SA 4.0
+# ---------------------------------------------------------------------------------------------------------------
+
+- name: GC ViT
+  models:
+    - image-classification-timm-gcvit_*.in1k
+  creators: NVIDIA Corporation
+  copyright: Copyright (c) 2022, NVIDIA Corporation. All rights reserved.
+  source: https://github.com/NVlabs/GCVit

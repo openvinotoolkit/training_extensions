@@ -70,6 +70,31 @@ test.describe('Polygon', () => {
         });
     });
 
+    test('draws a freehand polygon by dragging', async ({ page, polygonTool, annotatorPage }) => {
+        await page.goto(`/projects/${mockedDetectionProject.id}/dataset/item-1`);
+        await polygonTool.selectPolygonTool();
+
+        await test.step('Drag along the outline without releasing', async () => {
+            await polygonTool.drawPolygon(polygonShape, { asLasso: true, finishShape: false });
+
+            await expect(page.getByLabel('new polygon')).toBeVisible();
+            expect(await annotatorPage.getAnnotationsListItems('annotation polygon')).toHaveLength(0);
+        });
+
+        await test.step('Release over the starting point to close the shape', async () => {
+            const relative = await withRelative(page);
+            const start = relative(polygonShape.points[0].x, polygonShape.points[0].y);
+
+            await page.mouse.move(start.x, start.y, { steps: 5 });
+            await page.mouse.up();
+
+            await expect(async () => {
+                expect(await annotatorPage.getAnnotationsListItems('annotation polygon')).toHaveLength(1);
+            }).toPass();
+            await expect(page.getByLabel('new polygon')).toBeHidden();
+        });
+    });
+
     test('undo/redo behaviour', async ({ page, polygonTool }) => {
         const partialShape: Polygon = {
             type: 'polygon',

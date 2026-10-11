@@ -8,12 +8,13 @@ import userEvent from '@testing-library/user-event';
 import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
+import { localISOString } from 'test-utils/local-iso-string';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
 import { ProjectCard } from './project-card.component';
-import { formatCreationDate, getProjectTypeTitle } from './util';
+import { getProjectTypeTitle } from './util';
 
 describe('ProjectCard', () => {
     const mockProject = getMockedProject({
@@ -27,7 +28,7 @@ describe('ProjectCard', () => {
                 { id: 'label-2', name: 'Dog', color: '#00FF00' },
             ],
         },
-        created_at: '2026-04-17T12:58:10.502Z',
+        created_at: localISOString(2026, 4, 17, 12, 58),
     });
 
     beforeEach(() => {
@@ -48,9 +49,7 @@ describe('ProjectCard', () => {
         expect(thumbnail).toHaveAttribute('alt', 'Test Project');
         expect(thumbnail).toHaveAttribute('src', `${API_BASE_URL}/api/projects/test-project-id/thumbnail`);
 
-        expect(
-            screen.getByText(new RegExp(`Created: ${formatCreationDate(mockProject.created_at)}`))
-        ).toBeInTheDocument();
+        expect(screen.getByText(new RegExp('Created: April 17, 2026 at 12:58 PM'))).toBeInTheDocument();
         expect(screen.getByText('Object detection')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /view project labels/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /open project options/i })).toBeInTheDocument();

@@ -7,6 +7,7 @@ from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID, uuid4
 
 import cv2
@@ -865,6 +866,126 @@ class TestMediaServiceIntegration:
         # Generate thumbnail on video upload
         thumbnail_file_path = tmp_path / f"projects/{project.id}/dataset/{created_media.id}-thumb.jpg"
         assert os.path.exists(thumbnail_file_path)
+
+    @pytest.mark.parametrize("format", [ImageFormat.JPG, ImageFormat.PNG, ImageFormat.TIFF])
+    def test_create_image_from_path_moves_file(
+        self,
+        tmp_path: Path,
+        fxt_media_service: MediaService,
+        fxt_project_with_pipeline: tuple[Project, Pipeline],
+        db_session: Session,
+        format: ImageFormat,
+    ) -> None:
+        """Test that an image given by path is moved (not copied) into the dataset."""
+        rng = np.random.default_rng(seed=42)
+        image = PILImage.fromarray(rng.integers(0, 255, (64, 96, 3), dtype=np.uint8), mode="RGB")
+        source_path = tmp_path / "uploads" / "upload.part"
+        source_path.parent.mkdir()
+        image.save(source_path, format=PILImage.registered_extensions()[f".{format}"])
+        original_bytes = source_path.read_bytes()
+        project, _ = fxt_project_with_pipeline
+
+        created_media = fxt_media_service.create_image(
+            ImageMetadata(project_id=project.id, name="test", image_format=format, data=source_path)
+        )
+
+        assert not source_path.exists()
+        binary_file_path = tmp_path / f"projects/{project.id}/dataset/{created_media.id}.{format}"
+        assert binary_file_path.read_bytes() == original_bytes
+        assert created_media.size == len(original_bytes)
+        assert (created_media.width, created_media.height) == (96, 64)
+        assert (tmp_path / f"projects/{project.id}/dataset/{created_media.id}-thumb.jpg").exists()
+        assert db_session.get(MediaDB, str(created_media.id)) is not None
+
+    def test_create_image_from_path_invalid_image(
+        self,
+        tmp_path: Path,
+        fxt_media_service: MediaService,
+        fxt_project_with_pipeline: tuple[Project, Pipeline],
+    ) -> None:
+        """Test that an invalid image given by path is left in place."""
+        source_path = tmp_path / "upload.part"
+        source_path.write_bytes(b"123")
+        project, _ = fxt_project_with_pipeline
+
+        with pytest.raises(InvalidImageError):
+            fxt_media_service.create_image(
+                ImageMetadata(project_id=project.id, name="test", image_format=ImageFormat.JPG, data=source_path)
+            )
+
+        assert source_path.read_bytes() == b"123"
+
+    def test_create_image_from_path_restores_file_on_failure(
+        self,
+        tmp_path: Path,
+        fxt_media_service: MediaService,
+        fxt_project_with_pipeline: tuple[Project, Pipeline],
+    ) -> None:
+        """Test that an image given by path is moved back if the media cannot be created."""
+        source_path = tmp_path / "upload.part"
+        PILImage.new("RGB", (8, 8)).save(source_path, format="PNG")
+        original_bytes = source_path.read_bytes()
+        project, _ = fxt_project_with_pipeline
+
+        with (
+            patch("app.services.media_service.MediaRepository.save", side_effect=RuntimeError("DB error")),
+            pytest.raises(RuntimeError),
+        ):
+            fxt_media_service.create_image(
+                ImageMetadata(project_id=project.id, name="test", image_format=ImageFormat.PNG, data=source_path)
+            )
+
+        assert source_path.read_bytes() == original_bytes
+        assert not list((tmp_path / f"projects/{project.id}/dataset").glob("*.png"))
+
+    def test_create_video_from_path_moves_file(
+        self,
+        tmp_path: Path,
+        fxt_video_data: Callable[[Path], None],
+        fxt_media_service: MediaService,
+        fxt_project_with_pipeline: tuple[Project, Pipeline],
+        db_session: Session,
+    ) -> None:
+        """Test that a video given by path is moved (not copied) into the dataset."""
+        source_path = tmp_path / "uploads" / "video.avi"
+        source_path.parent.mkdir()
+        fxt_video_data(source_path)
+        original_bytes = source_path.read_bytes()
+        project, _ = fxt_project_with_pipeline
+
+        created_media = fxt_media_service.create_video(
+            project_id=project.id, name="test", video_format=VideoFormat.AVI, data=source_path
+        )
+
+        assert not source_path.exists()
+        binary_file_path = tmp_path / f"projects/{project.id}/dataset/{created_media.id}.avi"
+        assert binary_file_path.read_bytes() == original_bytes
+        assert db_session.get(MediaDB, str(created_media.id)) is not None
+
+    def test_create_video_from_path_restores_file_on_failure(
+        self,
+        tmp_path: Path,
+        fxt_video_data: Callable[[Path], None],
+        fxt_media_service: MediaService,
+        fxt_project_with_pipeline: tuple[Project, Pipeline],
+    ) -> None:
+        """Test that a video given by path is moved back if the media cannot be created."""
+        source_path = tmp_path / "uploads" / "video.avi"
+        source_path.parent.mkdir()
+        fxt_video_data(source_path)
+        original_bytes = source_path.read_bytes()
+        project, _ = fxt_project_with_pipeline
+
+        with (
+            patch("app.services.media_service.MediaRepository.save", side_effect=RuntimeError("DB error")),
+            pytest.raises(RuntimeError),
+        ):
+            fxt_media_service.create_video(
+                project_id=project.id, name="test", video_format=VideoFormat.AVI, data=source_path
+            )
+
+        assert source_path.read_bytes() == original_bytes
+        assert not list((tmp_path / f"projects/{project.id}/dataset").glob("*.avi"))
 
     def test_create_media_invalid_image(
         self,

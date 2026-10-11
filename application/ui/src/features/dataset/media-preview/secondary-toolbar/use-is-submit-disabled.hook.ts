@@ -1,7 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useAnnotationActions } from '../../../../modules/annotator/annotation-actions-provider.component';
+import { useAnnotationSubmission } from '../../../../modules/annotator/annotation-actions-provider.component';
 import type { AnnotatorMode } from '../../../../modules/annotator/annotator-mode';
 
 type UseIsSubmitDisabledParams = {
@@ -15,7 +15,7 @@ export const useIsSubmitDisabled = ({
     hasSubsetChanged,
     isLoadingPredictions,
 }: UseIsSubmitDisabledParams): boolean => {
-    const { canSubmit, hasInvalidAnnotation, isSaving } = useAnnotationActions();
+    const { canSubmit, hasInvalidAnnotation, isSaving } = useAnnotationSubmission();
 
     const isContentSubmittable =
         mode === 'prediction' ? canSubmit : !hasInvalidAnnotation && (canSubmit || hasSubsetChanged);

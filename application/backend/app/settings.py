@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     job_dir: Path | None = None
     staged_datasets_dir: Path | None = None
     source_media_dir: Path | None = None
+    uploads_dir: Path | None = None  # default: data_dir / "uploads"
+    upload_max_size: int = Field(
+        default=50 * 1024**3, gt=0, description="Maximum size in bytes of a resumable upload (Tus-Max-Size)"
+    )
+    upload_ttl_hours: int = Field(
+        default=24, gt=0, description="Hours of inactivity after which an unfinished resumable upload expires"
+    )
 
     # Server
     host: str = Field(default="0.0.0.0", alias="HOST")  # noqa: S104
@@ -214,6 +221,8 @@ class Settings(BaseSettings):
             self.staged_datasets_dir = self.data_dir / "staged_datasets"
         if self.source_media_dir is None:
             self.source_media_dir = self.data_dir / "source_media"
+        if self.uploads_dir is None:
+            self.uploads_dir = self.data_dir / "uploads"
         if self.sam_ov_cache_path is None:
             self.sam_ov_cache_path = self.data_dir / ".sam_ov_cache"
 
@@ -228,6 +237,7 @@ class Settings(BaseSettings):
             self.job_dir,
             self.staged_datasets_dir,
             self.source_media_dir,
+            self.uploads_dir,
             self.sam_ov_cache_path,
         ]:
             if d:

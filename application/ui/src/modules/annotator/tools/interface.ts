@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Intel Corporation
+// Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ComponentType, SVGProps } from 'react';
@@ -12,7 +12,7 @@ export interface ToolConfig {
     label: string;
     ariaLabel: string;
     tooltip?: {
-        img: string;
+        img?: string;
         description: string;
     };
 }

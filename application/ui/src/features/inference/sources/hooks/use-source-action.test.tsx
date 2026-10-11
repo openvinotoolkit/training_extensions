@@ -3,16 +3,20 @@
 
 import { startTransition } from 'react';
 
-import { API_BASE_URL } from '@/api';
 import type { ImagesFolderSourceConfig, VideoFileSourceConfig } from '@/api/types';
 import { act, screen, waitFor } from '@testing-library/react';
-import { HttpResponse, http as mswHttp } from 'msw';
+import { HttpResponse } from 'msw';
 import { renderHook } from 'test-utils/render';
 
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { prepareVideoFileFormData, videoFileBodyFormatter } from '../video-file/utils';
 import { useSourceAction } from './use-source-action.hook';
+
+vi.mock('../../../../api/tus-upload', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('../../../../api/tus-upload')>()),
+    transferFile: vi.fn(async () => '00000000-0000-4000-8000-000000000001'),
+}));
 
 const mockedConfig: ImagesFolderSourceConfig = {
     id: 'images_folder-id',
@@ -212,7 +216,9 @@ describe('useSourceAction', () => {
             let sourceWasCreated = false;
 
             server.use(
-                mswHttp.post(`${API_BASE_URL}/api/sources/media`, () => {
+                http.post('/api/sources/media:from-upload', () => {
+                    // The 422 response has no documented schema in the OpenAPI spec (description only).
+                    // @ts-expect-error There is an incorrect type in OpenAPI
                     return HttpResponse.json({ detail: 'Unsupported video format' }, { status: 422 });
                 }),
                 http.post('/api/sources', () => {
@@ -249,12 +255,39 @@ describe('useSourceAction', () => {
             expect(sourceWasCreated).toBe(false);
             expect(result.current[0]).toEqual(videoConfig);
         });
+        it('neither creates the source nor reports an error when the video upload is cancelled', async () => {
+            let sourceWasCreated = false;
+            server.use(
+                http.post('/api/sources', () => {
+                    sourceWasCreated = true;
+                    return HttpResponse.json({ ...videoConfig, id: 'should-not-be-used' });
+                })
+            );
+
+            const { result } = renderHook(() =>
+                useSourceAction({
+                    config: videoConfig,
+                    isNewSource: true,
+                    bodyFormatter: videoFileBodyFormatter,
+                    prepareFormData: () => Promise.reject(new DOMException('The upload was cancelled.', 'AbortError')),
+                })
+            );
+            const [, submitAction] = result.current;
+
+            await act(async () => {
+                startTransition(async () => submitAction(new FormData()));
+            });
+
+            expect(screen.queryByText(/Failed to save source configuration/)).toBeNull();
+            expect(sourceWasCreated).toBe(false);
+            expect(result.current[0]).toEqual(videoConfig);
+        });
 
         const submitVideoFile = async (createSource: () => Response) => {
             const deletedIds: string[] = [];
 
             server.use(
-                http.post('/api/sources/media', () =>
+                http.post('/api/sources/media:from-upload', () =>
                     HttpResponse.json({ video_path: `/data/source_media/${sourceMediaId}/sample.mp4` }, { status: 201 })
                 ),
                 http.post('/api/sources', createSource),

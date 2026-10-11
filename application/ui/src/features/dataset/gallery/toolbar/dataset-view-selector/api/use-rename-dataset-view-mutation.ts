@@ -3,9 +3,9 @@
 
 import { $api } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
+import { datasetViewsQueryOptions } from 'hooks/api/dataset-views.hook';
 
 import { getQueryKey } from '../../../../../../query-client/query-client';
-import { datasetViewsQueryOptions } from './use-dataset-views';
 
 export const useRenameDatasetViewMutation = () => {
     const queryClient = useQueryClient();

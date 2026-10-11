@@ -1,1 +1,1192 @@
-{}
+{
+    "common": {
+        "actions": {
+            "cancel": "取消",
+            "close": "關閉",
+            "delete": "刪除",
+            "goBack": "返回",
+            "rename": "重新命名",
+            "save": "儲存",
+            "assign": "分配",
+            "back": "返回",
+            "clear": "清除",
+            "clearAll": "清除全部",
+            "confirm": "確認",
+            "connect": "連線",
+            "continue": "繼續",
+            "create": "建立",
+            "disconnect": "斷開連線",
+            "dismiss": "關閉",
+            "download": "下載",
+            "edit": "編輯",
+            "export": "匯出",
+            "hide": "隱藏",
+            "next": "下一步",
+            "refresh": "重新整理",
+            "remove": "移除",
+            "selectAll": "全選",
+            "showLess": "收起",
+            "showMore": "顯示更多",
+            "skip": "跳過",
+            "start": "開始",
+            "submit": "提交",
+            "train": "訓練",
+            "upload": "上載",
+            "undo": "復原",
+            "redo": "重做",
+            "annotate": "標註",
+            "addAndUse": "新增並使用",
+            "saveAndConnect": "儲存並連線",
+            "testConnection": "測試連線"
+        },
+        "labels": {
+            "allUppercase": "全部",
+            "yes": "是",
+            "no": "否",
+            "unknown": "未知",
+            "name": "名稱",
+            "architecture": "架構",
+            "device": "裝置",
+            "on": "開",
+            "off": "關",
+            "noMaximum": "無上限",
+            "active": "目前項目",
+            "dataset": "數據集",
+            "filters": "篩選條件",
+            "images": "圖片",
+            "videos": "影片",
+            "size": "大小",
+            "sizeUppercase": "大小",
+            "statusUppercase": "狀態",
+            "settings": "設定",
+            "training": "訓練",
+            "training_subset": "訓練",
+            "validation": "驗證",
+            "validation_subset": "驗證",
+            "testing": "測試",
+            "unassigned": "未分配",
+            "trainingLowercase": "訓練",
+            "validationLowercase": "驗證",
+            "testingLowercase": "測試",
+            "frames": "幀",
+            "seconds": "秒",
+            "every": "每",
+            "model": "模型",
+            "jobs": "工作",
+            "labels": "標籤",
+            "bytesTransferred": "{{transferred}} / {{total}}",
+            "language": "語言"
+        },
+        "viewModes": {
+            "large": "大縮略圖",
+            "medium": "中縮略圖",
+            "small": "小縮略圖"
+        },
+        "status": {
+            "pending": "等候中",
+            "running": "運行中",
+            "done": "完成",
+            "cancelled": "已取消",
+            "uploading": "上載中",
+            "failed": "失敗",
+            "error": "錯誤",
+            "disconnected": "未連線"
+        },
+        "errors": {
+            "unknown": "發生未知錯誤",
+            "unknownDetail": "未知錯誤"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Geti 標誌",
+        "datasetDescription": "數據收集頁面，用於瀏覽媒體檔案",
+        "models": "模型",
+        "modelsDescription": "模型頁面，用於瀏覽模型",
+        "inference": "推理",
+        "inferenceDescription": "推理頁面，用於檢視項目的即時推理效果",
+        "preferences": "偏好設定"
+    },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "使用該名稱的視圖已經存在。",
+            "invalidDateRange": "結束日期必須晚於開始日期"
+        },
+        "views": {
+            "deleted": "已刪除的視圖",
+            "title": "視圖",
+            "entireDataset": "整個數據集",
+            "assignToExistingView": "分配至現有視圖",
+            "assignTo": "分配至",
+            "selectView": "選擇視圖",
+            "assignmentNote": "此操作不會影響該視圖中已有的其他媒體檔案。",
+            "mediaAssigned_one": "已成功分配 {{count}} 個媒體檔案。",
+            "mediaAssigned_other": "已成功分配 {{count}} 個媒體檔案。",
+            "openView": "開啟 {{viewName}}",
+            "saveView": "儲存視圖",
+            "viewNameLabel": "視圖名稱",
+            "renameTitle": "重新命名數據集視圖",
+            "deleteTitle": "刪除確認",
+            "deleteConfirmation": "確定要刪除數據集視圖「{{viewName}}」嗎？",
+            "deleteSuccess": "數據集視圖「{{viewName}}」已成功刪除。",
+            "unassignFromView": "從該視圖移除",
+            "selectedMediaCount_one": "已選 {{count}} 個媒體檔案",
+            "selectedMediaCount_other": "已選 {{count}} 個媒體檔案"
+        },
+        "filters": {
+            "allMedia": "全部媒體",
+            "withAnnotations": "已標註的媒體",
+            "missingAnnotations": "缺少標註的媒體",
+            "subset": "按數據子集篩選",
+            "searchLabels": "搜尋標籤",
+            "labelsSelected_one": "已選 {{count}} 個標籤",
+            "labelsSelected_other": "已選 {{count}} 個標籤",
+            "toggleAll": "全選/取消全選",
+            "more": "更多篩選條件",
+            "dateRange": {
+                "heading": "按上載日期篩選",
+                "startDateLabel": "開始日期",
+                "endDateLabel": "結束日期",
+                "from": "從 {{date}}",
+                "to": "到 {{date}}"
+            }
+        },
+        "upload": {
+            "queued": "輪候中",
+            "processing": "處理中",
+            "uploaded": "已上載",
+            "errorTitle": "上載錯誤",
+            "details": "上載詳情",
+            "filename": "檔案名稱",
+            "uploadingSummary_one": "正在上載 {{total}} 個檔案，已上載 {{uploaded}} 個",
+            "uploadingSummary_other": "正在上載 {{total}} 個檔案，已上載 {{uploaded}} 個",
+            "uploadingFailedSummary_one": "正在上載 {{total}} 個檔案，已上載 {{uploaded}} 個，失敗 {{failed}} 個",
+            "uploadingFailedSummary_other": "正在上載 {{total}} 個檔案，已上載 {{uploaded}} 個，失敗 {{failed}} 個",
+            "uploadedSummary_one": "已上載 {{count}} 個檔案",
+            "uploadedSummary_other": "已上載 {{count}} 個檔案",
+            "failedSummary_one": "{{count}} 個檔案上載失敗",
+            "failedSummary_other": "{{count}} 個檔案上載失敗",
+            "mixedSummary_one": "已上載 {{uploaded}} 個檔案，失敗 {{failed}} 個",
+            "mixedSummary_other": "已上載 {{uploaded}} 個檔案，失敗 {{failed}} 個",
+            "mixedCancelledSummary_one": "已上載 {{uploaded}} 個檔案，失敗 {{failed}} 個，已取消 {{cancelled}} 個",
+            "mixedCancelledSummary_other": "已上載 {{uploaded}} 個檔案，失敗 {{failed}} 個，已取消 {{cancelled}} 個",
+            "genericError": "媒體檔案上載失敗。",
+            "uploadMedia": "上載媒體檔案",
+            "showDetails": "檢視詳情",
+            "inProgressToast_one": "正在上載 {{count}} 個檔案……",
+            "inProgressToast_other": "正在上載 {{count}} 個檔案……",
+            "inProgressSucceededPart": "成功 {{count}} 個",
+            "inProgressFailedPart": "失敗 {{count}} 個",
+            "cancelAll": "全部取消",
+            "cancelledSummary_one": "已取消 {{count}} 個上載",
+            "cancelledSummary_other": "已取消 {{count}} 個上載"
+        },
+        "empty": {
+            "noMatches": "沒有符合篩選條件的媒體檔案。",
+            "changeFilter": "請清除或更換篩選條件。",
+            "viewEmpty": "該視圖暫時沒有媒體檔案。",
+            "assignOrBack": "可以為該視圖分配媒體檔案，或返回整個數據集。",
+            "goToEntireDataset": "前往 {{datasetName}}",
+            "datasetEmpty": "目前數據集為空。",
+            "uploadToStart": "上載第一個媒體檔案即可開始。"
+        },
+        "review": {
+            "reviewed": "已審核",
+            "forReview": "待審核",
+            "selectSubsetPlaceholder": "選擇子集"
+        },
+        "statistics": {
+            "label": "數據集統計",
+            "title": "數據集統計",
+            "numberOfMedia": "媒體檔案數",
+            "annotatedImages": "已標註圖片",
+            "annotatedVideosFrames": "已標註影片 / 影片幀",
+            "numberOfObjectsPerLabel": "各標籤物件數量",
+            "unannotated": "未標註",
+            "annotated": "已標註",
+            "annotationsChartTooltip": "標註數量"
+        },
+        "delete": {
+            "title": "刪除媒體檔案",
+            "mediaItem": "刪除媒體檔案",
+            "confirmation_one": "確定要刪除 {{count}} 個檔案嗎？",
+            "confirmation_other": "確定要刪除 {{count}} 個檔案嗎？",
+            "deletingItems": "正在刪除……",
+            "deleteError": "刪除失敗，{{detail}}",
+            "deletedSuccess_one": "已成功刪除 {{count}} 個檔案",
+            "deletedSuccess_other": "已成功刪除 {{count}} 個檔案"
+        },
+        "bulkLabels": {
+            "title": "批次分配標籤",
+            "uploadInstructions": "請選擇要分配給已上載圖片的標籤，然後按一下「繼續」；如果想稍後再標註，請選擇「跳過」。",
+            "selectedInstructions": "請選擇要分配給所選圖片的標籤，然後按一下「分配」。",
+            "imageOnlyNote": "所選標籤只會分配給圖片，其中的影片（如有）將不帶標註上載。",
+            "selectedImagesNote": "所選標籤只會分配給圖片，其中的影片（如有）保持不變。",
+            "noResults": "找不到相符的結果，請換個關鍵字再試一次。",
+            "cancelUpload": "取消上載",
+            "assignLabelTooltip": "分配標籤",
+            "assignAllSuccess": "已成功為全部 {{count}} 張圖片分配標籤",
+            "assignAllFailure": "為 {{count}} 張圖片分配標籤時全部失敗",
+            "assignPartialSuccess": "{{total}} 張圖片中，已有 {{succeeded}} 張分配成功（{{failed}} 張失敗）"
+        },
+        "mediaActions": {
+            "downloadStarted": "{{fileName}} 已開始下載"
+        },
+        "gallery": {
+            "sortOldestFirst": "最早優先",
+            "sortNewestFirst": "最新優先",
+            "selectedCount": "已選 {{count}} 項",
+            "totalMediaCount_one": "共 {{count}} 個媒體檔案",
+            "totalMediaCount_other": "共 {{count}} 個媒體檔案",
+            "dropZone": {
+                "title": "將媒體檔案拖放到這裡",
+                "description": "圖片和影片將上載到此數據集。"
+            },
+            "mediaInfo": {
+                "annotatedFrames": "已標註幀數：{{count}}",
+                "totalFrames": "總幀數：{{count}}"
+            }
+        },
+        "import": {
+            "jobTitle": "匯入數據集 - {{fileName}} - {{size}}",
+            "processingMessage": "正在處理檔案 {{fileName}}，準備匯入",
+            "technicalDetails": "技術詳情",
+            "preparingJob": "準備中",
+            "stagedFileReadError": "讀取暫存檔案時發生錯誤",
+            "prepareError": "準備匯入時發生錯誤。",
+            "genericError": "匯入過程中發生錯誤。",
+            "importedSuccess": "數據集 {{fileName}}（{{size}}）匯入成功。",
+            "multipleFilesError": "不支援選擇資料夾或多個檔案，請只上載單一檔案。",
+            "unsupportedFormatError": "檔案格式不支援，請上載有效的 .zip 檔案。",
+            "datasetBeingUploaded": "數據集正在上載",
+            "dropZipHere": "將數據集 .zip 檔案拖放到這裡",
+            "learnMoreFormats": "了解支援的數據格式",
+            "dialogHeading": "匯入數據集",
+            "scanningMessage": "正在掃描並解析待匯入的數據集壓縮檔案……",
+            "mapLabelsMessage": "為已上載的數據集對應標籤",
+            "deleteStagedFile": {
+                "title": "刪除暫存檔案",
+                "confirmation": "確定要刪除數據集檔案「{{stagedDatasetId}}」嗎？"
+            },
+            "formatWarning": {
+                "boundingBoxToPolygon": "待匯入的數據集使用邊界框標註，而目前項目的數據集使用多邊形標註，匯入時標註會自動轉換為多邊形，以保持相容。",
+                "polygonToBoundingBox": "待匯入的數據集使用多邊形標註，而目前項目的數據集使用邊界框標註，匯入時標註會自動轉換為邊界框，以保持相容。"
+            },
+            "labelMapping": {
+                "statisticsHeading": "已匯入數據集統計",
+                "heading": "標籤對應（可選）",
+                "unmappedNote": "未對應的內容將以無標籤形式匯入",
+                "datasetLabelsColumn": "數據集中的標籤",
+                "projectLabelsColumn": "項目中的標籤",
+                "selectLabelPlaceholder": "請選擇標籤",
+                "imagesLabel": "圖片",
+                "framesLabel": "影片幀"
+            }
+        },
+        "export": {
+            "heading": "匯出 {{name}}",
+            "headingDatasetView": "匯出數據集視圖",
+            "datasetView": "視圖：{{name}}",
+            "statisticsHeading": "匯出數據集統計",
+            "settingsHeading": "匯出設定",
+            "filterByLabel": "按標籤篩選標註",
+            "selectFormat": "選擇數據集匯出格式",
+            "learnMoreFormats": "進一步了解匯出格式",
+            "processing": "正在處理數據集，準備匯出",
+            "readyForDownload": "數據集已準備就緒，可以下載",
+            "downloadStarted": "數據集已開始下載",
+            "error": "錯誤：{{error}}",
+            "itemsLabel": "項",
+            "details": {
+                "defaultName": "數據集",
+                "format": "格式：",
+                "media": "媒體：",
+                "onlyAnnotated": "僅已標註的媒體",
+                "labels": "標籤："
+            },
+            "warnings": {
+                "videos": "所選的數據集格式不支援匯出影片，影片中所有帶標註的幀將匯出為圖片。",
+                "emptyLabel": "所選的格式不支援空白標籤（例如「{{emptyLabelName}}」），包含空白標籤的圖片和影片幀將作為無標註匯出。",
+                "unsupportedItemsEmptyLabels": "空白標籤",
+                "unsupportedItemsVideos": "影片",
+                "unsupportedItems": "要保留{{items}}，請使用 Geti 匯出格式。",
+                "subsetNotIncluded": "匯出的數據集不包含各媒體檔案的數據子集資訊。"
+            }
+        },
+        "importExport": {
+            "trigger": "匯入 / 匯出數據集",
+            "exportItem": "匯出數據集"
+        },
+        "revisions": {
+            "createdOn": "建立於 {{date}}",
+            "unnamedName": "數據集 #{{id}}",
+            "notFoundForModel": "該模型沒有關聯的數據集版本",
+            "filesDeleted": "該數據集版本的檔案已被刪除。",
+            "noItemsInSubset": "該子集中沒有項目",
+            "itemAlt": "{{subset}} 項",
+            "trainingSubsets": {
+                "test": "測試集"
+            },
+            "rename": {
+                "title": "重新命名數據集版本",
+                "nameLabel": "數據集版本名稱"
+            },
+            "delete": {
+                "title": "刪除數據集版本",
+                "description": "確定要刪除數據集版本「{{name}}」嗎？之後仍可檢視模型統計資訊，但將無法存取訓練數據集檔案。"
+            }
+        },
+        "includeUnannotated": "包含未標註的媒體"
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "金鑰不能為空白",
+            "valueEmpty": "值不能為空白"
+        },
+        "connection": {
+            "testing": "正在測試連線……",
+            "inUse": "使用中",
+            "unreachable": "無法連線",
+            "ready": "就緒",
+            "saveErrorFallback": "請重試",
+            "removeSuccess": "「{{name}}」已成功移除！"
+        },
+        "confidenceThreshold": {
+            "label": "信心閾值"
+        },
+        "devices": {
+            "label": "推理裝置"
+        },
+        "sources": {
+            "uploadError": "影片檔案上載失敗。",
+            "deleteVideoError": "無法刪除已上載的影片檔案。",
+            "list": {
+                "addSource": "新增輸入源"
+            },
+            "types": {
+                "usbCamera": "USB 攝影機",
+                "ipCamera": "IP 攝影機",
+                "videoFile": "影片檔案",
+                "imagesFolder": "圖片資料夾",
+                "disconnected": "未連線"
+            },
+            "options": {
+                "usbCamera": "USB 攝影機",
+                "ipCamera": "IP 攝影機",
+                "videoFile": "影片檔案"
+            },
+            "add": {
+                "title": "新增輸入源"
+            },
+            "edit": {
+                "title": "編輯輸入源"
+            },
+            "form": {
+                "createSuccess": "輸入源設定建立成功。",
+                "updateSuccess": "輸入源設定更新成功。",
+                "saveError": "輸入源設定儲存失敗，{{details}}"
+            },
+            "menu": {
+                "connectSuccess": "已成功連線至「{{name}}」。",
+                "disconnectSuccess": "已成功中斷與「{{name}}」的連線。",
+                "disablePipelineAndDisconnectSuccess": "已成功停用管線並中斷與「{{name}}」的連線。",
+                "disconnectDialog": {
+                    "title": "斷開 {{name}}",
+                    "message": "斷開該輸入源還會停用推理管線。是否繼續？"
+                }
+            },
+            "settings": {
+                "loading": "載入中……",
+                "device": "裝置：{{name}}",
+                "unknownDevice": "未知裝置（id：{{deviceId}}）",
+                "ignoreExistingImages": "忽略已有圖片：{{value}}",
+                "streamUrl": "影片串流位址：{{url}}",
+                "videoPath": "影片路徑：{{path}}"
+            },
+            "fields": {
+                "imagesFolderPath": "圖片資料夾路徑",
+                "ignoreExistingImages": "忽略已有圖片",
+                "streamUrl": "影片串流位址：",
+                "requireAuthentication": "需要身份驗證",
+                "camera": "攝影機",
+                "videoFilePath": "影片檔案路徑",
+                "selectedFile": "已選擇：{{fileName}}",
+                "loopVideo": "循環播放影片"
+            },
+            "defaultNames": {
+                "usbCamera": "USB 攝影機輸入源",
+                "ipCamera": "IP 攝影機輸入源",
+                "videoFile": "影片檔案輸入源"
+            }
+        },
+        "sinks": {
+            "types": {
+                "folder": "資料夾",
+                "mqtt": "MQTT",
+                "webhook": "Webhook",
+                "ros": "ROS"
+            },
+            "options": {
+                "folder": "資料夾",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "新增輸出端"
+            },
+            "edit": {
+                "title": "編輯輸出端"
+            },
+            "form": {
+                "createSuccess": "輸出端設定建立成功。",
+                "updateSuccess": "輸出端設定更新成功。",
+                "saveError": "輸出端設定儲存失敗，{{details}}"
+            },
+            "menu": {
+                "connectSuccess": "已成功連線至「{{name}}」",
+                "disconnectSuccess": "已成功中斷與「{{name}}」的連線"
+            },
+            "settings": {
+                "rateLimit": "頻率限制：{{value}}",
+                "httpMethod": "HTTP 方法：{{value}}",
+                "timeout": "逾時：{{value}}",
+                "webhookUrl": "Webhook 位址：{{value}}",
+                "topic": "主題：{{value}}",
+                "brokerHost": "Broker 主機：{{value}}",
+                "brokerPort": "Broker 連接埠：{{value}}",
+                "outputFormats": "輸出格式：",
+                "outputFormatTypes": {
+                    "imageOriginal": "原始圖片",
+                    "imageWithPredictions": "包含預測的圖片",
+                    "predictions": "預測結果"
+                }
+            },
+            "rateLimit": {
+                "notSet": "未設定",
+                "samplesPerSecond_one": "每秒擷取 {{count}} 個樣本",
+                "samplesPerSecond_other": "每秒擷取 {{count}} 個樣本",
+                "oneSamplePerSeconds_one": "每 {{count}} 秒擷取 1 個樣本",
+                "oneSamplePerSeconds_other": "每 {{count}} 秒擷取 1 個樣本"
+            },
+            "fields": {
+                "samples": "樣本數",
+                "outputFormatsLabel": "輸出格式",
+                "outputFormatPredictions": "預測結果",
+                "outputFormatImageOriginal": "原始圖片",
+                "outputFormatImageWithPredictions": "包含預測的圖片",
+                "folderPath": "資料夾路徑",
+                "httpMethod": "HTTP 方法",
+                "timeout": "逾時",
+                "webhookUrl": "Webhook 位址",
+                "headers": "請求標頭",
+                "topic": "主題",
+                "brokerHost": "Broker 主機",
+                "brokerPort": "Broker 連接埠",
+                "authRequired": "需要身份驗證"
+            },
+            "webhook": {
+                "headersHelp": "依需要新增任意多個鍵值對，每對都將包含在「{{title}}」物件中。",
+                "keyPlaceholder": "金鑰",
+                "valuePlaceholder": "值"
+            },
+            "defaultNames": {
+                "localFolder": "本機資料夾輸出端",
+                "webhook": "Webhook 輸出端",
+                "mqtt": "MQTT 輸出端"
+            }
+        },
+        "pipeline": {
+            "activeModel": {
+                "loading": "模型：……"
+            },
+            "toggle": {
+                "enabledLabel": "管線已啟用",
+                "disabledLabel": "管線已停用",
+                "enabledSuccess": "管線啟用成功",
+                "disabledSuccess": "管線停用成功"
+            },
+            "configuration": {
+                "sidebarLabel": "管線設定",
+                "sourcesTab": "輸入",
+                "sinksTab": "輸出"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "數據擷取策略",
+            "maxDatasetSize": {
+                "title": "數據集大小上限",
+                "description": "最多擷取的項目數"
+            },
+            "captureRate": {
+                "title": "擷取頻率",
+                "description": "在串流播放時擷取幀",
+                "toggleLabel": "自動擷取"
+            },
+            "confidenceThreshold": {
+                "description": "信心值低於閾值時擷取幀",
+                "sliderLabel": "閾值"
+            }
+        },
+        "metrics": {
+            "time": "時間",
+            "sidebarLabel": "管線指標",
+            "empty": {
+                "title": "尚無可用統計",
+                "description": "管線開始執行並處理數據後，指標將顯示於此。"
+            },
+            "throughput": {
+                "title": "吞吐量",
+                "axisLabel": "請求/秒"
+            },
+            "latency": {
+                "title": "延遲",
+                "axisLabel": "ms"
+            }
+        },
+        "health": {
+            "overall": {
+                "idle": "閒置",
+                "problemsDetected": "偵測到問題"
+            },
+            "component": {
+                "healthy": "健康",
+                "finished": "已完成",
+                "unavailable": "無法使用"
+            },
+            "componentLabels": {
+                "source": "輸入源",
+                "sink": "輸出端"
+            }
+        },
+        "stream": {
+            "start": "開始串流",
+            "enablePipelineToStart": "啟用管線以開始串流",
+            "connectError": "影片串流連線失敗",
+            "captureFrame": "擷取幀",
+            "captureSuccess": "幀已擷取並加入數據集。"
+        },
+        "settings": {
+            "folderPath": "資料夾路徑：{{path}}",
+            "authRequired": "需要身份驗證：{{value}}"
+        }
+    },
+    "project": {
+        "delete": {
+            "confirmation": "確定要刪除項目「{{projectName}}」嗎？",
+            "success": "項目刪除成功"
+        },
+        "rename": {
+            "title": "更改項目名稱",
+            "success": "項目名稱更新成功"
+        },
+        "validation": {
+            "nameEmpty": "項目名稱不能為空",
+            "nameExists": "該項目名稱已被使用"
+        },
+        "panel": {
+            "manageProjects": "管理項目",
+            "enablePipelineBlocked": {
+                "title": "無法啟用管線",
+                "message": "請確保在啟用管線之前，已選擇模型和來源。"
+            }
+        },
+        "taskTypes": {
+            "detection": "物件偵測",
+            "classification": "影像分類",
+            "instanceSegmentation": "實例分割",
+            "multiLabelClassification": "多標籤分類",
+            "recommended": "{{taskType}}（建議）"
+        },
+        "list": {
+            "count_one": "共 {{count}} 個項目",
+            "count_other": "共 {{count}} 個項目",
+            "countFiltered_one": "共 {{count}} 個項目，篩選出 {{filtered}} 個",
+            "countFiltered_other": "共 {{count}} 個項目，篩選出 {{filtered}} 個",
+            "createNewProject": "新增項目",
+            "createProjectFromDataset": "從數據集建立",
+            "card": {
+                "created": "建立於：{{date}}"
+            },
+            "menu": {
+                "enablePipeline": "啟用管線",
+                "disablePipeline": "停用管線"
+            },
+            "sort": {
+                "label": "排序：",
+                "nameAscending": "依名稱（A-Z）",
+                "nameDescending": "依名稱（Z-A）",
+                "createdAtDescending": "依建立時間（最新優先）",
+                "createdAtAscending": "依建立時間（最早優先）"
+            },
+            "filters": {
+                "searchPlaceholder": "搜尋項目",
+                "taskType": "依工作類型篩選"
+            },
+            "noMatches": {
+                "title": "沒有符合條件的項目",
+                "description": "請調整搜尋關鍵字或工作類型篩選，再重新尋找。"
+            },
+            "empty": {
+                "intro": "歡迎使用 <name>Geti</name>，這是一個視覺 AI 平台，將引導你完成<highlight>完整的模型生命週期</highlight>，從數據集準備、訓練、優化，直到部署。"
+            },
+            "workflow": {
+                "addData": "新增數據",
+                "optimize": "優化模型",
+                "runInference": "運行推理",
+                "loop": "持續監控推理效果、補充數據，不斷迭代優化模型"
+            }
+        },
+        "create": {
+            "taskQuestion": "你希望模型完成哪一類工作？",
+            "labelsQuestion": "模型需要學會{{verb}}哪些物件？",
+            "submit": "建立項目",
+            "tasks": {
+                "detection": {
+                    "title": "物件偵測",
+                    "description": "識別並定位圖片中的物件",
+                    "advice": "最適用於：計數、追蹤",
+                    "verb": "檢測"
+                },
+                "instanceSegmentation": {
+                    "title": "實例分割",
+                    "description": "檢測目標並勾勒出具體的區域或形狀",
+                    "advice": "最適用於：測量、異形物件",
+                    "verb": "分割"
+                },
+                "classification": {
+                    "title": "影像分類",
+                    "description": "根據圖片內容對整張圖片進行分類",
+                    "advice": "最適用於：篩選、內容審查",
+                    "verb": "分類"
+                }
+            },
+            "classificationType": {
+                "title": "模型應該使用哪種分類方式？",
+                "singleLabel": {
+                    "label": "單一標籤",
+                    "description": "從互斥的標籤中只指定一個標籤",
+                    "warning": "至少需要 2 個標籤"
+                },
+                "multiLabel": {
+                    "label": "多標籤",
+                    "description": "從非互斥的標籤中指定一個或多個標籤"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "請至少新增一個物件"
+            },
+            "defaultName": "項目 #{{number}}"
+        },
+        "import": {
+            "title": "從數據集建立項目—匯入",
+            "labelMapping": {
+                "title": "標籤對應"
+            },
+            "preparingMessage": "正在準備將數據集匯入為新項目",
+            "taskSelection": {
+                "projectName": "項目名稱",
+                "selectTaskPlaceholder": "請選擇工作類型",
+                "recommendationHint": "建議類型是根據數據集中檢測到的標註類型自動給出的；如果選擇其他類型，匯入時標註會自動轉換，以符合所選類型。"
+            },
+            "jobsList": {
+                "selectTaskType": "選擇工作類型",
+                "mapLabelsButton": "對應標籤"
+            }
+        },
+        "taskType": "工作類型"
+    },
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "快捷鍵",
+            "nameExists": "該標籤名稱已被使用",
+            "hotkeyExists": "該快捷鍵已被使用"
+        },
+        "editor": {
+            "namePlaceholder": "標籤名稱",
+            "pin": "固定標籤",
+            "unpin": "取消固定",
+            "editTrigger": "編輯標籤",
+            "createTrigger": "新增標籤",
+            "delete": {
+                "title": "刪除標籤",
+                "message": "如果刪除 {{labelName}} 標籤，數據集中帶有該標籤的所有標註都將被刪除，但不會影響之前訓練出的模型。"
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "快捷鍵：{{hotkey}}",
+            "overflowCount": "+ {{count}} 個"
+        },
+        "empty": {
+            "noLabel": "無標籤",
+            "noObject": "無物件"
+        }
+    },
+    "annotator": {
+        "canvas": {
+            "hideLabels": "隱藏標籤",
+            "pixelView": "像素視圖",
+            "annotationFillOpacity": "標註填充不透明度",
+            "annotationBorderOpacity": "標註邊框不透明度",
+            "imageBrightness": "圖片亮度",
+            "imageContrast": "圖片對比度",
+            "imageSaturation": "圖片飽和度"
+        },
+        "actions": {
+            "zoomIn": "放大",
+            "zoomOut": "縮小",
+            "fitToScreen": "符合螢幕大小（{{hotkey}}）",
+            "undo": "復原（{{hotkey}}）",
+            "redo": "重做（{{hotkeys}}）",
+            "toggleFocus": "切換焦點",
+            "showAnnotations": "顯示標註（{{hotkey}}）",
+            "hideAnnotations": "隱藏標註（{{hotkey}}）"
+        },
+        "modes": {
+            "annotation": "標註",
+            "prediction": "預測"
+        },
+        "predictions": {
+            "settingsTitle": "預測設定",
+            "confirm": "確認預測"
+        },
+        "hotkeys": {
+            "alternatives": "{{primary}} 或 {{alternative}}",
+            "title": "快捷鍵",
+            "submitAnnotationsPredictions": "提交標註/預測",
+            "previousMedia": "上一個媒體",
+            "nextMedia": "下一個媒體",
+            "deleteSelectedAnnotation": "刪除所選標註",
+            "toggleAnnotationsVisibility": "顯示或隱藏所有標註",
+            "selectAllAnnotations": "選擇所有標註",
+            "deselectAllAnnotations": "取消選擇所有標註",
+            "selectNextAnnotation": "選擇下一個標註",
+            "resetZoom": "重設縮放"
+        },
+        "tools": {
+            "selection": {
+                "label": "選擇"
+            },
+            "boundingBox": {
+                "label": "邊界框",
+                "description": "在圖片中圈選出包圍物件的矩形或正方形。"
+            },
+            "autoSegmentation": {
+                "label": "自動分割",
+                "detectionDescription": "將游標移至物件上方預覽建議的矩形，然後按一下以建立標註。",
+                "segmentationDescription": "將游標移至物件上方預覽建議的多邊形，然後按一下以建立標註。",
+                "loading": "正在處理圖片，請稍候……",
+                "error": "Segment Anything 工具出錯：{{message}}",
+                "unknownError": "發生未知錯誤，請重新整理頁面重試。",
+                "timeoutError": "{{operation}} 在 {{timeoutMs}}ms 後逾時，請嘗試重新整理頁面。",
+                "embeddingError": "無法取得圖片嵌入（{{status}}{{statusText}}）。",
+                "operations": {
+                    "workerBuild": "SAM 背景程式建置",
+                    "workerInit": "SAM 背景程式初始化",
+                    "decoder": "SAM 解碼器"
+                }
+            },
+            "polygon": {
+                "label": "多邊形",
+                "description": "逐一點選以放置頂點，或按住拖放以徒手繪製。適合需要像素級精度的不規則形狀。"
+            },
+            "magneticLasso": {
+                "label": "智能勾邊",
+                "description": "沿著物件邊緣移動並定時點選，將輪廓吸附至其邊界。",
+                "error": "形狀邊界選取失敗，請再試一次。"
+            },
+            "ssim": {
+                "label": "檢測助手",
+                "description": "在物件周圍繪製方框，即可自動尋找並標註圖片中的相似物件。",
+                "loading": "正在載入檢測助手，請稍候……",
+                "error": "檢測助手工具發生錯誤：{{message}}",
+                "operations": {
+                    "workerBuild": "檢測助手工作進程建置"
+                }
+            }
+        },
+        "video": {
+            "playback": {
+                "slower": "更慢",
+                "slow": "慢速",
+                "normal": "正常",
+                "speed": "播放速度",
+                "showAllFrames": "顯示所有幀",
+                "showOneFramePerSecond": "每秒顯示 1 幀"
+            },
+            "frames": {
+                "currentTotal": "目前幀：{{currentFrame}} / 總幀數：{{totalFrames}}",
+                "thumbnailAlt": "第 {{frameNumber}} 幀縮圖"
+            },
+            "errors": {
+                "network": "由於網絡錯誤無法播放影片，請重新整理後重試。",
+                "unableToPlay": "無法播放影片，請重試。",
+                "unsupportedFormat": "無法播放影片，請換用其他影片格式（mp4/webm）。"
+            }
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "工作失敗，請檢視記錄了解詳情，然後重試。",
+            "pending": "等候中……",
+            "running": "運行中……",
+            "stopDialog": {
+                "title": "停止工作",
+                "confirmation": "確定要停止該工作嗎？"
+            },
+            "logs": "記錄",
+            "startedAt": "開始時間：{{time}}",
+            "waitingToStart": "等待開始……",
+            "device": "裝置：{{device}}"
+        },
+        "detail": {
+            "loadError": "模型詳情載入失敗",
+            "tabs": {
+                "variants": "模型變體",
+                "metrics": "模型指標",
+                "parameters": "訓練參數",
+                "datasets": "訓練數據集"
+            }
+        },
+        "metrics": {
+            "noMetrics": "未有可用指標",
+            "loadError": "訓練指標載入失敗",
+            "evaluationsTitle": "評測",
+            "noEvaluations": "測試集評測指標暫不可用"
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "複製成功",
+                "copyError": "複製失敗",
+                "copyPathTooltip": "按一下複製路徑",
+                "showTraceback": "顯示堆疊追蹤",
+                "levelLabel": "級別",
+                "levelHelpTitle": "最低記錄級別",
+                "levelHelpDescription": "顯示所選級別以上的記錄項目。例如，選擇 WARNING 將顯示 WARNING、ERROR 和 CRITICAL 項目，並隱藏 DEBUG 和 INFO。",
+                "searchPlaceholder": "搜尋記錄……",
+                "connectionStatus": {
+                    "connecting": "連線中……",
+                    "connected": "即時",
+                    "error": "連線錯誤"
+                },
+                "entriesCount": "{{filtered}} / {{total}} 條",
+                "noEntries": "未有記錄項目",
+                "noMatchingEntries": "沒有相符的記錄項目",
+                "scrollToBottom": "捲動到底部",
+                "dialogTitle": "訓練記錄",
+                "loadError": "記錄載入失敗：{{message}}",
+                "noJobOrModel": "未指定工作或模型",
+                "fetchError": "模型記錄取得失敗：{{status}} {{statusText}}",
+                "downloadStarted": "訓練記錄下載已開始"
+            },
+            "parameters": {
+                "noParameters": "未有參數。",
+                "learningParameters": "學習參數",
+                "filters": "篩選條件",
+                "augmentations": "數據增強",
+                "intensityMapping": "強度對應"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "ImageNet Top-1 準確率",
+                    "mapOnCoco": "COCO mAP",
+                    "map50OnCoco": "COCO mAP50"
+                },
+                "card": {
+                    "numberOfParameters": "參數量：{{count}} 百萬",
+                    "gigaflops": "Gigaflops：{{value}}"
+                },
+                "sort": {
+                    "label": "模型排序：",
+                    "nameAsc": "名稱（A 到 Z）",
+                    "nameDesc": "名稱（Z 到 A）",
+                    "speedAsc": "速度（最快優先）",
+                    "speedDesc": "速度（最慢優先）",
+                    "accuracyAsc": "準確率（最低優先）",
+                    "accuracyDesc": "準確率（最高優先）"
+                },
+                "timm": {
+                    "heading": "TIMM 模型設定",
+                    "architectureFamilyLabel": "架構系列",
+                    "selectArchitecturePlaceholder": "選擇架構",
+                    "modelVariantLabel": "模型變體",
+                    "selectVariantPlaceholder": "選擇變體",
+                    "pretrainedWeightsLabel": "預訓練權重",
+                    "selectWeightsPlaceholder": "選擇權重",
+                    "parameters": "參數量：{{count}} 百萬",
+                    "gigaflops": "GigaFlops：{{value}}"
+                }
+            },
+            "devices": {
+                "selectLabel": "選擇訓練裝置"
+            },
+            "setup": {
+                "trigger": "訓練模型",
+                "dialog": {
+                    "title": "選擇要訓練的模型",
+                    "disabledReasonTitle": "為何無法開始訓練？",
+                    "advancedSettings": "進階設定"
+                },
+                "toast": {
+                    "trainingStarted": "模型訓練啟動成功。",
+                    "trainingStartedWithLink": "模型訓練已成功啟動。<link>開啟模型頁面檢視進度。</link>"
+                },
+                "selectDataset": {
+                    "label": "選擇數據集",
+                    "useEntireDataset": "使用整個數據集",
+                    "helpTitle": "選擇數據集",
+                    "helpDescription": "選擇用於訓練的數據集版本。如果希望新模型使用與其他模型完全相同的數據（媒體和標註）進行訓練，請選擇對應的數據集版本。反之，如果希望使用最新版本的數據（即「數據集」頁面中所見）進行訓練，請選擇「使用目前數據集」。",
+                    "sections": {
+                        "views": "數據集視圖",
+                        "revisions": "數據集版本"
+                    }
+                },
+                "selectModel": {
+                    "label": "選擇輸入權重",
+                    "defaultPretrainedWeights": "預設預訓練權重",
+                    "helpTitle": "選擇輸入權重",
+                    "helpDescription": "選擇已有模型繼續微調，或選擇「預設預訓練權重」，基於在大型公開數據集上預訓練的公開權重微調出新模型。"
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "要訓練模型，數據集中至少需要標註 3 項，不過為獲得更好的效果，建議多標註一些。",
+                "notEnoughAnnotationsInView": "要訓練模型，所選數據集視圖中至少需要標註 3 項，不過為獲得更好的效果，建議多標註一些。",
+                "emptySubsetsReason": "要訓練模型，每個子集（訓練集、驗證集、測試集）至少需要包含一項。目前不滿足該條件，因為{{subsetClause}}，且{{assignmentDetail}}。",
+                "emptySubsetClause_one": "{{list}} 子集為空",
+                "emptySubsetClause_other": "{{list}} 子集均為空",
+                "reviewedOnly_one": "還有 {{count}} 個已審核項待分配",
+                "reviewedOnly_other": "還有 {{count}} 個已審核項待分配",
+                "unannotatedOnly_one": "還有 {{count}} 項需先完成標註才能分配",
+                "unannotatedOnly_other": "還有 {{count}} 項需先完成標註才能分配",
+                "mixedReviewedClause_one": "有 {{count}} 個已審核項可分配",
+                "mixedReviewedClause_other": "有 {{count}} 個已審核項可分配",
+                "mixedUnannotatedClause_one": "{{count}} 項需先完成標註才能分配",
+                "mixedUnannotatedClause_other": "{{count}} 項需先完成標註才能分配",
+                "mixedAssignmentDetail": "{{reviewedClause}}，{{unannotatedClause}}",
+                "noUnassignedItems": "沒有可重新分配的未分配項"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "數據管理"
+                },
+                "notAvailable": "訓練設定無法使用。"
+            },
+            "learning": {
+                "title": "學習參數",
+                "tagDefault": "預設",
+                "tagModified": "已修改",
+                "inputSize": "輸入尺寸"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "訓練子集",
+                    "description": "指定尚未分配到子集的已標註樣本的分佈。請注意，之前訓練輪次中使用的樣本已有子集歸屬且將保持不變，以避免數據污染和評估偏差。",
+                    "unavailableTitle": "訓練子集設定無效",
+                    "unavailableDescription": "訓練子集中的媒體項不足，無法支援訓練集、驗證集和測試集的可配置劃分。",
+                    "unavailableHint": "請新增更多媒體項，確保每個子集至少包含一項。",
+                    "datasetSamples": "數據集：{{count}} 個樣本",
+                    "assignedSamples": "已分配：{{count}}",
+                    "unassignedSamples": "未分配：{{count}}",
+                    "distributionLabel": "新樣本分佈",
+                    "resultingDistribution": "最終數據集分佈：",
+                    "totalLabel": "總計：",
+                    "mediaItemsLabel": "個媒體項"
+                },
+                "filters": {
+                    "noMinimum": "無下限",
+                    "unlimited": "無限制"
+                },
+                "augmentation": {
+                    "title": "數據增強"
+                },
+                "tiling": {
+                    "title": "切片",
+                    "description": "切片是一種將高解像度圖片劃分為更小圖塊的技術，可能有助於提高小物件偵測任務的準確率。",
+                    "modeLabel": "切片模式",
+                    "modes": {
+                        "automatic": "自動",
+                        "custom": "自訂"
+                    },
+                    "offDescription": "模型將整張圖片作為一個整體處理，不劃分為更小的圖塊。這種方式簡單直接，但在高解像度圖片中偵測小物件時可能效果欠佳，因為模型可能遺漏精細細節",
+                    "automaticDescription": "這意味著系統將根據圖片解像度和標註尺寸自動設定參數。"
+                },
+                "intensityMapping": {
+                    "title": "強度對應"
+                }
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "分組依據",
+            "groupByDataset": "按數據集分組",
+            "groupByArchitecture": "按架構分組",
+            "hideFailedModels": "隱藏失敗的模型",
+            "showFailedModels": "顯示失敗的模型",
+            "searchPlaceholder": "搜尋模型……",
+            "noModelsFound": "找不到模型",
+            "empty": {
+                "title": "未有模型。",
+                "description": "訓練第一個模型即可開始。"
+            },
+            "deletedWeightsBadge": "權重已刪除",
+            "fineTunedFrom": "微調自",
+            "columns": {
+                "trained": "訓練時間",
+                "totalSize": "總大小"
+            }
+        },
+        "performance": {
+            "metrics": {
+                "accuracy": "準確率",
+                "precision": "精確率",
+                "recall": "召回率",
+                "fMeasure": "F值"
+            },
+            "categories": {
+                "balance": "均衡",
+                "speed": "速度",
+                "accuracy": "準確率"
+            }
+        },
+        "variants": {
+            "empty": "未有可用的模型變體。",
+            "columns": {
+                "precision": "精確度"
+            },
+            "quantizedInfo": {
+                "title": "經 NNCF PTQ 量化",
+                "maxAccuracyDrop": "最大準確率下降：{{value}}",
+                "calibrationDatasetSize": "校準數據集大小：{{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "模型下載已開始"
+        },
+        "optimize": {
+            "description": "使用 OpenVINO NNCF（INT8 量化）優化 FP16 模型",
+            "contextualHelp": "透過 INT8 量化，OpenVINO NNCF（神經網路壓縮框架）可縮小模型體積、加快推理速度，同時對準確率影響不大",
+            "start": "開始量化",
+            "dialogTitle": "量化",
+            "subheading": "將模型量化為 INT8",
+            "jobStarted": "量化工作已開始。",
+            "recommendedCalibrationSize": "建議校準數據集大小為 200–500 個媒體項",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "最大準確率下降（%）",
+                    "help": {
+                        "paragraph1": "驗證準確率允許的最大下降幅度。",
+                        "paragraph2": "請注意，當允許的最大準確率下降幅度較小時，精度感知量化可能需要很長的時間。",
+                        "paragraph3": "另請注意，最終測試準確率可能低於指定的驗證準確率閾值，尤其是數據集較小時。"
+                    }
+                },
+                "maxIterations": {
+                    "label": "最大迭代次數",
+                    "help": {
+                        "paragraph1": "精度感知量化的最大迭代次數。",
+                        "paragraph2": "精度感知量化會逐輪將模型層移出量化範圍，直到符合最大準確率下降標準。限制迭代次數可大幅縮短具有多層模型的量化時間。",
+                        "paragraph3": "僅在設定最大準確率下降時使用此參數。"
+                    }
+                },
+                "calibrationSize": {
+                    "label": "校準集大小上限",
+                    "help": "校準樣本將在數據集中隨機選取",
+                    "useFullDataset": "使用完整數據集"
+                }
+            }
+        },
+        "actions": {
+            "deleteWeights": "刪除權重",
+            "deleteModel": "刪除模型",
+            "viewLogs": "檢視訓練記錄",
+            "deleteWeightsDescription": "確定要刪除模型「{{modelName}}」的權重嗎？",
+            "deleteModelDescription": "確定要刪除模型「{{modelName}}」嗎？此動作無法復原。",
+            "renameDialog": {
+                "title": "重新命名模型",
+                "nameLabel": "模型名稱"
+            }
+        },
+        "columns": {
+            "modelName": "模型名稱"
+        }
+    },
+    "jobs": {
+        "allProjects": "所有項目",
+        "currentProjectLabel": "{{name}}（目前）",
+        "projectsSection": "項目",
+        "tabs": {
+            "all": "全部",
+            "finished": "已完成"
+        },
+        "status": {
+            "pending": "已排定",
+            "cancelling": "正在取消",
+            "done": "已完成"
+        },
+        "type": {
+            "quantize": "優化"
+        },
+        "columns": {
+            "type": "類型"
+        },
+        "cancel": {
+            "title": "取消工作",
+            "confirmation": "確定要取消工作 {{jobId}} 嗎？"
+        },
+        "meta": {
+            "started": "開始於 {{time}}",
+            "elapsed": "已用時間 {{time}}"
+        },
+        "emptyState": {
+            "all": "此類別中沒有工作",
+            "running": "沒有運行中的工作",
+            "finished": "沒有已完成的工作",
+            "scheduled": "沒有已排定的工作",
+            "cancelled": "沒有已取消的工作",
+            "failed": "沒有失敗的工作"
+        },
+        "actions": {
+            "viewLogs": "檢視紀錄"
+        }
+    },
+    "license": {
+        "label": "授權：",
+        "agreement": {
+            "title": "授權協議",
+            "intro": "請檢閱並接受以下授權，以繼續使用 Geti。",
+            "progress": "第 {{current}} 項，共 {{total}} 項",
+            "required": "必要",
+            "optional": "選用",
+            "fullLicense": "閱讀完整授權",
+            "previous": "上一步",
+            "accept": "接受並繼續"
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "正在載入，請稍候……"
+        },
+        "serverError": {
+            "heading": "伺服器錯誤"
+        },
+        "errorPage": {
+            "badRequest": "目前的要求有誤，伺服器無法處理。",
+            "forbidden": "你沒有權限存取此頁面。",
+            "notFound": "此頁面不存在！",
+            "unauthorized": "目前尚未登入或登入已失效，無法檢視該內容",
+            "serverError": "伺服器發生錯誤，未能完成你的要求。",
+            "serviceUnavailable": "API 服務目前無法使用",
+            "goHome": "回到首頁"
+        },
+        "notifications": {
+            "unexpectedError": "發生未知的錯誤，請重試。",
+            "networkError": "網絡連線異常，請檢查網絡後重試。",
+            "uploadTransferError": "檔案傳輸失敗，請重試。"
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "檔案下載失敗"
+        },
+        "saveDialog": {
+            "allFiles": "所有檔案",
+            "fileTypeFilter": "{{extension}} 檔案"
+        }
+    }
+}

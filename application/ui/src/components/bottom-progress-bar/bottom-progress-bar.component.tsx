@@ -7,10 +7,11 @@ import { View } from '@geti-ui/ui';
 
 type BottomProgressBarProps = {
     progress: number;
+    color?: string;
     children: ReactNode;
 };
 
-export const BottomProgressBar = ({ progress, children }: BottomProgressBarProps) => {
+export const BottomProgressBar = ({ progress, color, children }: BottomProgressBarProps) => {
     return (
         <View position='relative'>
             {children}
@@ -20,7 +21,8 @@ export const BottomProgressBar = ({ progress, children }: BottomProgressBarProps
                 left={0}
                 height='size-50'
                 width={`${progress}%`}
-                backgroundColor='informative'
+                backgroundColor={color ? undefined : 'informative'}
+                UNSAFE_style={color ? { backgroundColor: color } : undefined}
             />
         </View>
     );

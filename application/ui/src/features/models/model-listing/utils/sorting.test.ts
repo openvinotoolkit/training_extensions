@@ -474,13 +474,13 @@ describe('sortModels', () => {
 });
 
 describe('sortGroupedModelsByDatasetRevisionDate', () => {
-    // Builds a minimal DatasetGroup; the createdAt display string is irrelevant to ordering.
+    // Builds a minimal DatasetGroup; createdAt is irrelevant to ordering.
     const makeDatasetGroup = (id: string, models: ReturnType<typeof getMockedModel>[]) => ({
         group: {
             type: 'dataset' as const,
             id,
             name: `Dataset ${id}`,
-            createdAt: '-',
+            createdAt: null,
             labelCount: 0,
             imageCount: 0,
             trainingSubsets: { training: 0, validation: 0, testing: 0 },

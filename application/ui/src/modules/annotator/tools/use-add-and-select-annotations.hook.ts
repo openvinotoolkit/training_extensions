@@ -7,11 +7,12 @@ import type { Label } from '@/api/types';
 import { isEmpty } from 'lodash-es';
 
 import type { Shape } from '../../../shared/types';
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotationCommands, useAnnotations } from '../annotation-actions-provider.component';
 import { useSelectedAnnotations } from '../select-annotation-provider.component';
 
 export const useAddAndSelectAnnotations = () => {
-    const { addAnnotations, annotations, deleteAnnotations } = useAnnotationActions();
+    const { addAnnotations, deleteAnnotations } = useAnnotationCommands();
+    const { annotations } = useAnnotations();
     const { setSelectedAnnotations } = useSelectedAnnotations();
 
     const addAndSelectAnnotations = useCallback(

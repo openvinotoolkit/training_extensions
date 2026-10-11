@@ -7,7 +7,7 @@ unannotated_items_ratio: 0.0
 train_subset:
   subset_name: train
   batch_size: 8
-  num_workers: 8
+  num_workers: 4
   augmentations_cpu:
     - class_path: getitune.data.augmentation.transforms.Resize
       init_args:
@@ -34,7 +34,7 @@ train_subset:
 val_subset:
   subset_name: val
   batch_size: 8
-  num_workers: 8
+  num_workers: 4
   augmentations_cpu:
     - class_path: getitune.data.augmentation.transforms.Resize
       init_args:
@@ -59,7 +59,7 @@ val_subset:
 test_subset:
   subset_name: test
   batch_size: 8
-  num_workers: 8
+  num_workers: 4
   augmentations_cpu:
     - class_path: getitune.data.augmentation.transforms.Resize
       init_args:

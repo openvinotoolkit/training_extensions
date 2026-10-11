@@ -3,6 +3,7 @@
 
 import { useActionState } from 'react';
 
+import { isAbortError } from '@/api';
 import type { SourceConfigPayload } from '@/api/types';
 import { toast } from '@/components/toast/toast.component';
 import { useTranslation } from '@/i18n';
@@ -53,6 +54,11 @@ export const useSourceAction = <T extends SourceConfigPayload>({
             isFunction(onSaved) && onSaved(source_id);
             return { ...body, id: source_id };
         } catch (error: unknown) {
+            // The user cancelled the file transfer: keep the form as it is, without an error.
+            if (isAbortError(error)) {
+                return prevState;
+            }
+
             const details = getErrorMessage(error);
 
             toast({

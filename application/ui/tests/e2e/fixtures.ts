@@ -13,6 +13,7 @@ import { ModelsPage } from '../models/models-page';
 import { ProjectPage } from '../projects/project-page';
 
 interface Fixtures {
+    acceptLicense: void;
     projectPage: ProjectPage;
     datasetPage: DatasetPage;
     importDatasetPage: ImportDatasetPage;
@@ -24,6 +25,14 @@ interface Fixtures {
 }
 
 const test = testBase.extend<Fixtures>({
+    // A fresh backend would otherwise block every flow behind the license screen.
+    acceptLicense: [
+        async ({ request }, use) => {
+            await request.post('/api/license/accept');
+            await use();
+        },
+        { auto: true },
+    ],
     projectPage: async ({ page }, use) => {
         const projectPage = new ProjectPage(page);
 

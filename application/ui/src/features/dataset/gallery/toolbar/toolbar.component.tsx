@@ -18,6 +18,7 @@ import {
     ViewModes,
 } from '@geti-ui/ui';
 import { SortDown, SortUp } from '@geti-ui/ui/icons';
+import { useDatasetViewsQuery } from 'hooks/api/dataset-views.hook';
 import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
 import { useDatasetMediaWithReviewStatus } from 'hooks/use-dataset-media-with-review-status.hook';
 import { useSelectAllDatasetMedia } from 'hooks/use-select-all-dataset-media.hook';
@@ -30,7 +31,6 @@ import { DeleteMediaItem } from '../delete-media-item/delete-media-item.componen
 import { useSelectDatasetItem } from '../hooks/use-select-dataset-item.hook';
 import { AssignLabel } from './assign-label.component';
 import { DatasetStatistics } from './dataset-statistics/dataset-statistics.component';
-import { useDatasetViewsQuery } from './dataset-view-selector/api/use-dataset-views';
 import { AssignToExistingView } from './dataset-view-selector/assign-to-existing-view/assign-to-existing-view.component';
 import { DatasetViewSelector } from './dataset-view-selector/dataset-view-selector.component';
 import { SaveDatasetView } from './dataset-view-selector/save-dataset-view/save-dataset-view.component';

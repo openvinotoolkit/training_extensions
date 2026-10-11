@@ -16,6 +16,38 @@ def fxt_source_media_service(tmp_path: Path) -> SourceMediaService:
 
 class TestSourceMediaService:
     @pytest.mark.asyncio
+    async def test_upload_from_path_moves_file(self, tmp_path: Path) -> None:
+        service = SourceMediaService(source_media_dir=tmp_path / "source_media")
+        source_path = tmp_path / "uploads" / "upload.part"
+        source_path.parent.mkdir()
+        source_path.write_bytes(b"video-bytes")
+
+        video_path = await service.upload_from_path(filename="../../sample.mp4", source_path=source_path)
+
+        assert not source_path.exists()
+        assert video_path.name == "sample.mp4"
+        assert video_path.parent.parent == (tmp_path / "source_media").resolve()
+        UUID(video_path.parent.name)
+        assert video_path.read_bytes() == b"video-bytes"
+
+    @pytest.mark.asyncio
+    async def test_upload_from_path_failure_leaves_nothing_behind(self, tmp_path: Path) -> None:
+        service = SourceMediaService(source_media_dir=tmp_path / "source_media")
+        (tmp_path / "source_media").mkdir()
+
+        with pytest.raises(FileNotFoundError):
+            await service.upload_from_path(filename="sample.mp4", source_path=tmp_path / "missing.part")
+
+        assert not any((tmp_path / "source_media").iterdir())
+
+    @pytest.mark.asyncio
+    async def test_upload_from_path_rejects_filenames_without_a_usable_name(self, tmp_path: Path) -> None:
+        service = SourceMediaService(source_media_dir=tmp_path)
+
+        with pytest.raises(ValueError, match="Invalid filename"):
+            await service.upload_from_path(filename="..", source_path=tmp_path / "upload.part")
+
+    @pytest.mark.asyncio
     async def test_upload_writes_file_and_returns_resolved_path(
         self, tmp_path: Path, fxt_source_media_service: SourceMediaService
     ):

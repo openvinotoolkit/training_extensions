@@ -1,0 +1,5 @@
+Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms
+
+This model is a Model Derivative of Gemma: the original Gemma weights were modified (fine-tuned and
+exported) with Geti. Its use is subject to the use restrictions in Section 3.2 of the Gemma Terms of
+Use, including the Gemma Prohibited Use Policy found at ai.google.dev/gemma/prohibited_use_policy.

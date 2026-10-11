@@ -4,10 +4,10 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getMockedDatasetRevision } from 'mocks/mock-dataset-revision';
+import { localISOString } from 'test-utils/local-iso-string';
 import { render } from 'test-utils/render';
 
 import { getMockedModel, getMockedModelArchitecture } from '../../../../../../mocks/mock-model';
-import { formatDateTime, formatTrainingDateTime } from '../../../../../shared/date-utils';
 import { formatBytes } from '../../../../../shared/util';
 import { ModelRow } from './model-row.component';
 
@@ -25,8 +25,8 @@ describe('ModelRow', () => {
                     { id: 'label-2', name: 'dog' },
                 ],
             },
-            start_time: '2025-01-10T10:00:00.000000+00:00',
-            end_time: '2025-01-10T12:30:00.000000+00:00',
+            start_time: localISOString(2025, 1, 10, 10, 0),
+            end_time: localISOString(2025, 1, 10, 13, 30),
             dataset_revision_id: 'dataset-123',
             device: {
                 type: 'cuda',
@@ -54,6 +54,7 @@ describe('ModelRow', () => {
     const datasetRevision = getMockedDatasetRevision({
         id: 'dataset-123',
         name: 'Dataset 1',
+        created_at: localISOString(2025, 1, 1, 1, 0),
         item_counts: {
             total: 10,
             testing: 4,
@@ -76,15 +77,13 @@ describe('ModelRow', () => {
             );
 
             expect(screen.getByTestId('model-name')).toHaveTextContent('Test Model');
-            expect(
-                screen.getByText(formatTrainingDateTime(defaultModel.training_info.end_time).replace(/\n/g, ' '))
-            ).toBeInTheDocument();
+            expect(screen.getByText('Jan 10, 2025 01:30 PM')).toBeInTheDocument();
 
             const datasetBadge = screen.getByTestId('dataset-count');
             const labelsBadge = screen.getByTestId('labels-count');
 
             expect(screen.getByText(datasetRevision.name)).toBeInTheDocument();
-            expect(screen.getByText(formatDateTime(datasetRevision.created_at))).toBeInTheDocument();
+            expect(screen.getByText('Jan 01, 2025, 01:00 AM')).toBeInTheDocument();
             expect(within(datasetBadge).getByText('10')).toBeInTheDocument();
             expect(within(labelsBadge).getByText('2')).toBeInTheDocument();
 
@@ -107,9 +106,7 @@ describe('ModelRow', () => {
             );
 
             expect(screen.getByTestId('model-name')).toHaveTextContent('Test Model');
-            expect(
-                screen.getByText(formatTrainingDateTime(defaultModel.training_info.end_time).replace(/\n/g, ' '))
-            ).toBeInTheDocument();
+            expect(screen.getByText('Jan 10, 2025 01:30 PM')).toBeInTheDocument();
 
             expect(screen.getByText(modelArchitecture.name, { exact: false })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: modelArchitecture.license.name })).toHaveAttribute(

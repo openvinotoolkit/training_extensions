@@ -1273,6 +1273,23 @@ def fxt_training_configuration_view_json() -> dict:
                         "depends_on": None,
                     },
                     {
+                        "type": "parameter",
+                        "key": "num_workers",
+                        "name": "Number of workers",
+                        "description": (
+                            "Number of subprocesses used for data loading. 0 means that the data will be loaded in "
+                            "the main process. More workers can speed up data loading and augmentation, at the cost "
+                            "of higher CPU and memory usage."
+                        ),
+                        "value": 4,
+                        "default_value": 4,
+                        "value_type": "int",
+                        "min_value": 0,
+                        "max_value": 64,
+                        "allowed_values": None,
+                        "depends_on": None,
+                    },
+                    {
                         "type": "parameter_group",
                         "key": "early_stopping",
                         "name": "Early stopping",

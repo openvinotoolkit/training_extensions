@@ -25,7 +25,7 @@ type RenderOptions = RTLRenderOptions & {
 const TestProviders = ({ children, queryClient }: { children: ReactNode; queryClient: QueryClient }) => {
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
+            <ThemeProvider locale={'en-US'}>
                 <Suspense fallback={<Loading variant='intel' />}>{children}</Suspense>
                 <Toast />
             </ThemeProvider>

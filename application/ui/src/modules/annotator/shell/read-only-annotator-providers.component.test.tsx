@@ -12,7 +12,7 @@ import { render, renderHook } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotations, useIsAnnotatorReadOnly } from '../annotation-actions-provider.component';
 import { ReadOnlyAnnotatorProviders } from './read-only-annotator-providers.component';
 
 const mediaItem = getMockedMediaImage();
@@ -24,7 +24,7 @@ describe('ReadOnlyAnnotatorProviders', () => {
 
     it('renders children within the provider tree', async () => {
         render(
-            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={[]} isUserReviewed={false}>
+            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={[]}>
                 <span>child content</span>
             </ReadOnlyAnnotatorProviders>
         );
@@ -32,16 +32,16 @@ describe('ReadOnlyAnnotatorProviders', () => {
         expect(await screen.findByText('child content')).toBeInTheDocument();
     });
 
-    it('provides AnnotationActions with isReadOnlyMode true', async () => {
+    it('provides a read-only annotator', async () => {
         const wrapper = ({ children }: { children: ReactNode }) => (
-            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={[]} isUserReviewed={false}>
+            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={[]}>
                 {children}
             </ReadOnlyAnnotatorProviders>
         );
 
-        const { result } = renderHook(() => useAnnotationActions(), { wrapper });
+        const { result } = renderHook(() => useIsAnnotatorReadOnly(), { wrapper });
 
-        await waitFor(() => expect(result.current.isReadOnlyMode).toBe(true));
+        await waitFor(() => expect(result.current).toBe(true));
     });
 
     it('exposes annotations from initialAnnotationsDTO', async () => {
@@ -65,16 +65,12 @@ describe('ReadOnlyAnnotatorProviders', () => {
         ];
 
         const wrapper = ({ children }: { children: ReactNode }) => (
-            <ReadOnlyAnnotatorProviders
-                mediaItem={mediaItem}
-                initialAnnotationsDTO={initialAnnotationsDTO}
-                isUserReviewed={false}
-            >
+            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={initialAnnotationsDTO}>
                 {children}
             </ReadOnlyAnnotatorProviders>
         );
 
-        const { result } = renderHook(() => useAnnotationActions(), { wrapper });
+        const { result } = renderHook(() => useAnnotations(), { wrapper });
 
         await waitFor(() => {
             expect(result.current.annotations).toHaveLength(1);

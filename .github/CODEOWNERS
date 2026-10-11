@@ -5,8 +5,8 @@
 
 # CI and security
 .ci/ @open-edge-platform/geti-ci-maintain
-.github/actions/ @open-edge-platform/geti-ci-maintain
-.github/workflows/ @open-edge-platform/geti-ci-maintain
+.github/actions/ @sys-geti @open-edge-platform/geti-ci-maintain
+.github/workflows/ @sys-geti @open-edge-platform/geti-ci-maintain
 .github/renovate.json5 @open-edge-platform/geti-ci-maintain
 security.md @open-edge-platform/geti-ci-maintain
 
@@ -24,6 +24,7 @@ application/backend/uv.lock @sys-geti @open-edge-platform/geti-backend-write
 
 # Application frontend
 application/ui/ @open-edge-platform/geti-ui-write
+application/ui/package-lock.json @sys-geti @open-edge-platform/geti-ui-write
 
 # Application build and deployment
 .dockerignore @open-edge-platform/geti-backend-write

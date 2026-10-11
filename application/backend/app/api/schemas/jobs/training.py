@@ -1,7 +1,7 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Literal
+from typing import Literal, Self
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -26,6 +26,17 @@ class TrainingRequestParams(BaseModel):
         description="Dataset revision ID if reusing an existing dataset revision, "
         "null if training on the latest dataset",
     )
+    dataset_view_id: UUID | None = Field(
+        None,
+        description="Dataset view ID to train only on the media assigned to that view; "
+        "mutually exclusive with dataset_revision_id, null if training on the entire dataset",
+    )
+
+    @model_validator(mode="after")
+    def validate_dataset_selection(self) -> Self:
+        if self.dataset_revision_id is not None and self.dataset_view_id is not None:
+            raise ValueError("Parameters 'dataset_revision_id' and 'dataset_view_id' are mutually exclusive")
+        return self
 
     model_config = {
         "json_schema_extra": {
@@ -34,6 +45,7 @@ class TrainingRequestParams(BaseModel):
                 "model_architecture_id": "object-detection-atss-mobilenet-v2",
                 "parent_model_revision_id": "ef3983f1-cef0-4ebe-91db-7330f1dd6e27",
                 "dataset_revision_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "dataset_view_id": None,
             }
         }
     }
@@ -55,6 +67,7 @@ class TrainingRequest(BaseJobRequest):
                     "model_architecture_id": "object-detection-atss-mobilenet-v2",
                     "parent_model_revision_id": "ef3983f1-cef0-4ebe-91db-7330f1dd6e27",
                     "dataset_revision_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "dataset_view_id": None,
                 },
             }
         }
@@ -81,6 +94,13 @@ class ModelMetadata(BaseModel):
         description="Dataset revision ID if reusing an existing dataset revision, "
         "null if training on the latest dataset",
     )
+    dataset_view_id: UUID | None = Field(
+        None, description="Dataset view the model is being trained on, null if training on the entire dataset"
+    )
+    dataset_view_name: str | None = Field(
+        None,
+        description="Name of the dataset view the model is being trained on, null if training on the entire dataset",
+    )
 
 
 class TrainingMetadata(BaseModel):
@@ -102,6 +122,8 @@ class TrainingMetadata(BaseModel):
                     architecture=data.params.model_architecture_id,
                     parent_revision_id=data.params.parent_model_revision_id,
                     dataset_revision_id=data.params.dataset_revision_id,
+                    dataset_view_id=data.params.dataset_view_id,
+                    dataset_view_name=data.params.dataset_view_name,
                 ),
                 "device": DeviceInfoView.model_validate(data.params.device, from_attributes=True),
             }

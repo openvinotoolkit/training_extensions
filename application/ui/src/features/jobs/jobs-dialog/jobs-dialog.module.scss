@@ -1,0 +1,54 @@
+.list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.grid {
+    padding: var(--spectrum-global-dimension-size-150) var(--spectrum-global-dimension-size-200);
+    background-color: var(--spectrum-global-color-gray-75);
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    border-top: none;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--spectrum-global-color-gray-200);
+}
+
+.modelName {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.metaText {
+    font-size: var(--spectrum-global-dimension-font-size-75);
+    color: var(--spectrum-global-color-gray-700);
+}
+
+.metaRow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spectrum-global-dimension-size-100);
+}
+
+.errorText {
+    font-size: var(--spectrum-global-dimension-font-size-75);
+    color: var(--spectrum-semantic-negative-color-text-small);
+}
+
+.messageText {
+    font-size: var(--spectrum-global-dimension-font-size-75);
+}
+
+.toneEnergyBlue {
+    background-color: var(--energy-blue) !important;
+    color: var(--spectrum-global-color-gray-50);
+}
+
+.toneOrange {
+    background-color: var(--spectrum-global-color-orange-500) !important;
+    color: var(--spectrum-global-color-gray-50);
+}

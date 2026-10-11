@@ -10,17 +10,15 @@ import { useDismissedJobs } from 'hooks/storage/use-dismissed-jobs.hook';
 import { isEmpty, isNil } from 'lodash-es';
 
 import { useGetTaskModelArchitectures } from '../../hooks/api/use-get-model-architectures.hook';
-import { GroupByMode } from '../types';
 import { FailedJobRow } from './failed-job-row.component';
 import { RunningJobRow } from './running-job-row.component';
 import { RunningJobTableHeader } from './running-job-table-header.component';
 
 type CurrentRunningJobsProps = {
-    groupBy: GroupByMode;
     datasetRevisions: DatasetRevision[];
 };
 
-export const CurrentRunningJobs = ({ groupBy, datasetRevisions }: CurrentRunningJobsProps) => {
+export const CurrentRunningJobs = ({ datasetRevisions }: CurrentRunningJobsProps) => {
     const { t } = useTranslation();
     const cancelJobMutation = useCancelJob();
     const activeRunningJobs = useGetCurrentRunningJobs();
@@ -45,11 +43,11 @@ export const CurrentRunningJobs = ({ groupBy, datasetRevisions }: CurrentRunning
             UNSAFE_style={{ padding: 'var(--spectrum-global-dimension-size-300)' }}
         >
             <Heading level={2} UNSAFE_style={{ fontSize: dimensionValue('size-300') }}>
-                {t('models.jobs.heading')}
+                {t('common.labels.jobs')}
             </Heading>
 
             <View backgroundColor={'gray-75'}>
-                <RunningJobTableHeader groupBy={groupBy} />
+                <RunningJobTableHeader />
 
                 <div aria-label={'Current jobs'}>
                     {activeRunningJobs.map((job) =>
@@ -58,7 +56,6 @@ export const CurrentRunningJobs = ({ groupBy, datasetRevisions }: CurrentRunning
                                 key={job.job_id}
                                 job={job}
                                 onDismiss={() => dismissJob(job.job_id)}
-                                groupBy={groupBy}
                                 datasetRevisions={datasetRevisions}
                                 modelArchitectures={modelArchitectures}
                             />
@@ -67,7 +64,6 @@ export const CurrentRunningJobs = ({ groupBy, datasetRevisions }: CurrentRunning
                                 key={job.job_id}
                                 job={job}
                                 onCancel={() => handleCancelRunning(job.job_id)}
-                                groupBy={groupBy}
                                 datasetRevisions={datasetRevisions}
                                 modelArchitectures={modelArchitectures}
                             />

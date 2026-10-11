@@ -17,6 +17,11 @@ import {
 } from '../../providers/export-import-dataset-dialog-provider.component';
 import { ImportDatasetToProject } from './Import-dataset-to-project.component';
 
+vi.mock('../../../../api/tus-upload', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('../../../../api/tus-upload')>()),
+    transferFile: vi.fn(async () => '00000000-0000-4000-8000-000000000001'),
+}));
+
 vi.mock('../../../../hooks/storage/use-import-dataset-to-project.hook');
 
 describe('ImportDatasetToProject', () => {
@@ -44,7 +49,7 @@ describe('ImportDatasetToProject', () => {
                     })
                 );
             }),
-            http.post('/api/staged_datasets', () => {
+            http.post('/api/staged_datasets:from-upload', () => {
                 return HttpResponse.json(
                     {
                         id: mockedStagedDatasetId,

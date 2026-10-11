@@ -1,18 +1,21 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { uploadDatasetArchive } from '@/api';
+import { useEffect, useRef, useState } from 'react';
+
+import { isAbortError, uploadDatasetArchive } from '@/api';
+import { DropFiles } from '@/assets/illustrations';
 import { useTranslation } from '@/i18n';
 import { Button, Content, DropZone, FileTrigger, Flex, Heading, IllustratedMessage, Text } from '@geti-ui/ui';
 import { LinkOut } from '@geti-ui/ui/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useSubmitJob } from 'hooks/api/jobs/jobs.hook';
 
-import { ReactComponent as EmptyDataset } from '../../assets/drop-files.svg';
 import { Link } from '../../platform/components/link.component';
 import { getFilesFromDropEvent } from '../../shared/drop-zone.utils';
 import { ThreeDotsFlashing } from '../three-dots-flashing/three-dots-flashing.component';
 import { toast } from '../toast/toast.component';
+import { UploadProgress } from '../upload-progress/upload-progress.component';
 import { formatToFileArray, isSupportedDatasetZip } from './util';
 
 import classes from './import-upload-file.module.scss';
@@ -24,9 +27,37 @@ type ImportUploadFileProps = {
     onFileUploaded: (data: FileUploadedResponse) => void;
 };
 
+const useUploadFile = (onProgress: (bytesSent: number) => void) => {
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const stagedDatasetMutation = useMutation({
+        mutationFn: (file: File) => {
+            const abortController = new AbortController();
+            abortControllerRef.current = abortController;
+
+            return uploadDatasetArchive(file, { onProgress, signal: abortController.signal });
+        },
+        onSettled: () => {
+            abortControllerRef.current = null;
+        },
+        // A cancelled upload is a deliberate user action, not an error worth notifying about.
+        meta: { error: { notify: (error: unknown) => !isAbortError(error) } },
+    });
+
+    // Closing the dialog mid-transfer discards the partial upload instead of finishing it in the background.
+    useEffect(() => {
+        return () => {
+            abortControllerRef.current?.abort();
+        };
+    }, []);
+
+    return { stagedDatasetMutation, abort: () => abortControllerRef.current?.abort() };
+};
+
 export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUploadFileProps) => {
     const { t } = useTranslation();
-    const stagedDatasetMutation = useMutation({ mutationFn: uploadDatasetArchive });
+    const [bytesSent, setBytesSent] = useState(0);
+    const [fileSize, setFileSize] = useState(0);
+    const { stagedDatasetMutation, abort } = useUploadFile(setBytesSent);
     const prepareImportJobMutation = useSubmitJob();
 
     const handleLoadingFile = (files: File[]) => {
@@ -48,10 +79,13 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
             return;
         }
 
-        handleImportPrepare(files[0]);
+        // Failures are already reported by the mutations' error notifications.
+        handleImportPrepare(files[0]).catch(() => undefined);
     };
 
     const handleImportPrepare = async (file: File) => {
+        setBytesSent(0);
+        setFileSize(file.size);
         const stagedDataset = await stagedDatasetMutation.mutateAsync(file);
 
         const prepareImportJob = await prepareImportJobMutation.mutateAsync({
@@ -77,16 +111,30 @@ export const ImportUploadFile = ({ formatOptions, onFileUploaded }: ImportUpload
             onDrop={async (event) => handleLoadingFile(await getFilesFromDropEvent(event))}
         >
             <IllustratedMessage maxHeight={'size-4600'}>
-                <EmptyDataset />
+                <DropFiles />
 
                 <Content>
                     {isPending && (
                         <Flex alignItems={'center'} direction={'column'} gap={'size-100'}>
                             <Heading level={1} UNSAFE_className={classes.statusTitle}>
-                                {t('common.status.uploading')}
+                                {stagedDatasetMutation.isPending
+                                    ? t('common.status.uploading')
+                                    : t('dataset.import.preparingJob')}
                                 <ThreeDotsFlashing />
                             </Heading>
-                            <Text>{t('dataset.import.datasetBeingUploaded')}</Text>
+                            {stagedDatasetMutation.isPending && bytesSent < fileSize ? (
+                                <>
+                                    <Text>{t('dataset.import.datasetBeingUploaded')}</Text>
+                                    <UploadProgress
+                                        bytesSent={bytesSent}
+                                        bytesTotal={fileSize}
+                                        width={'size-4600'}
+                                        onCancel={abort}
+                                    />
+                                </>
+                            ) : (
+                                <Text>{t('dataset.import.scanningMessage')}</Text>
+                            )}
                         </Flex>
                     )}
 

@@ -4,6 +4,8 @@
 import { useTranslation } from '@/i18n';
 import { useGetDatasetItems } from 'hooks/use-get-dataset-items.hook';
 
+import { useTrainModelState } from '../train-model-provider.component';
+
 const MIN_NUMBER_OF_ANNOTATED_ITEMS = 3;
 
 export const useTrainModelDisabledReason = () => {
@@ -13,26 +15,48 @@ export const useTrainModelDisabledReason = () => {
         type: 'conjunction',
     });
 
-    const { totalCount, isPending: isTotalPending } = useGetDatasetItems({ annotationStatus: 'with_annotations' });
+    const { datasetSources, selectedDatasetSourceId } = useTrainModelState();
+    const selectedDatasetSource = datasetSources.find(({ id }) => id === selectedDatasetSourceId);
+    // A revision is an immutable snapshot that already satisfied these requirements when it was created.
+    const isRevisionSelected = selectedDatasetSource?.kind === 'revision';
+    const datasetViewId =
+        selectedDatasetSource?.kind === 'view' ? (selectedDatasetSource.value ?? undefined) : undefined;
+
+    // Only the totals are needed, so a single item per page is enough.
+    const countOptions = { datasetViewId, limit: 1, enabled: !isRevisionSelected };
+
+    const { totalCount, isPending: isTotalPending } = useGetDatasetItems({
+        annotationStatus: 'with_annotations',
+        ...countOptions,
+    });
     const { totalCount: trainingSubsetSize, isPending: isTrainingPending } = useGetDatasetItems({
         annotationStatus: 'with_annotations',
         subsets: ['training'],
+        ...countOptions,
     });
     const { totalCount: testingSubsetSize, isPending: isTestingPending } = useGetDatasetItems({
         annotationStatus: 'with_annotations',
         subsets: ['testing'],
+        ...countOptions,
     });
     const { totalCount: validationSubsetSize, isPending: isValidationPending } = useGetDatasetItems({
         annotationStatus: 'with_annotations',
         subsets: ['validation'],
+        ...countOptions,
     });
     const { totalCount: reviewedUnassignedSubsetSize, isPending: isReviewedUnassignedPending } = useGetDatasetItems({
         annotationStatus: 'with_annotations',
         subsets: ['unassigned'],
+        ...countOptions,
     });
     const { totalCount: unassignedSubsetSize, isPending: isUnassignedPending } = useGetDatasetItems({
         subsets: ['unassigned'],
+        ...countOptions,
     });
+
+    if (isRevisionSelected) {
+        return { reason: undefined, isPending: false };
+    }
 
     if (
         isTotalPending ||
@@ -42,12 +66,17 @@ export const useTrainModelDisabledReason = () => {
         isReviewedUnassignedPending ||
         isUnassignedPending
     ) {
-        return { reason: undefined };
+        return { reason: undefined, isPending: true };
     }
 
     if (totalCount < MIN_NUMBER_OF_ANNOTATED_ITEMS) {
         return {
-            reason: t('models.training.validation.notEnoughAnnotations'),
+            reason: t(
+                datasetViewId === undefined
+                    ? 'models.training.validation.notEnoughAnnotations'
+                    : 'models.training.validation.notEnoughAnnotationsInView'
+            ),
+            isPending: false,
         };
     }
 
@@ -60,7 +89,7 @@ export const useTrainModelDisabledReason = () => {
     const emptySubsets = subsetSizes.filter(({ value }) => value === 0);
 
     if (emptySubsets.length === 0 || emptySubsets.length <= reviewedUnassignedSubsetSize) {
-        return { reason: undefined };
+        return { reason: undefined, isPending: false };
     }
 
     const emptySubsetNames = emptySubsets.map(({ label }) => label);
@@ -92,5 +121,6 @@ export const useTrainModelDisabledReason = () => {
 
     return {
         reason: t('models.training.validation.emptySubsetsReason', { subsetClause, assignmentDetail }),
+        isPending: false,
     };
 };

@@ -66,6 +66,18 @@ class TestDetectionSampleNoneAnnotations:
         assert batch.labels is not None
         assert all(label.dtype == torch.long for label in batch.labels)
 
+    def test_detection_sample_degenerate_empty_bboxes_reshaped(self) -> None:
+        """Verify a degenerate (1, 0) empty bboxes tensor is reshaped to (0, 4)."""
+        img_size = (64, 64)
+        sample = DetectionSample(
+            image=tv_tensors.Image(torch.randint(0, 256, (3, *img_size), dtype=torch.uint8)),
+            dm_image_info=DmImageInfo(height=img_size[0], width=img_size[1]),
+            bboxes=torch.zeros((1, 0), dtype=torch.float32),
+            label=None,
+        )
+        assert isinstance(sample.bboxes, tv_tensors.BoundingBoxes)
+        assert sample.bboxes.shape == (0, 4)
+
 
 class TestInstanceSegmentationSampleNoneAnnotations:
     """Test InstanceSegmentationSample.__post_init__ converts None fields to empty tensors."""
@@ -124,6 +136,19 @@ class TestInstanceSegmentationSampleNoneAnnotations:
         # Masks should be present for both samples
         assert batch.masks is not None
         assert len(batch.masks) == 2
+
+    def test_instance_seg_sample_degenerate_empty_bboxes_reshaped(self) -> None:
+        """Verify a degenerate (1, 0) empty bboxes tensor is reshaped to (0, 4)."""
+        img_size = (48, 64)
+        sample = InstanceSegmentationSample(
+            image=tv_tensors.Image(torch.randint(0, 256, (3, *img_size), dtype=torch.uint8)),
+            dm_image_info=DmImageInfo(height=img_size[0], width=img_size[1]),
+            bboxes=torch.zeros((1, 0), dtype=torch.float32),
+            label=None,
+            masks=None,
+        )
+        assert isinstance(sample.bboxes, tv_tensors.BoundingBoxes)
+        assert sample.bboxes.shape == (0, 4)
 
 
 class TestCollateFn:

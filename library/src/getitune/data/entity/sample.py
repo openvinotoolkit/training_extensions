@@ -127,6 +127,8 @@ class DetectionSample(BaseSample):
         # Ensure bboxes are tv_tensors.BoundingBoxes
         if not isinstance(self.bboxes, tv_tensors.BoundingBoxes):
             bboxes = self.bboxes if self.bboxes is not None else torch.zeros((0, 4), dtype=torch.float32)
+            # Round-tripping through storage can yield a degenerate (1, 0) empty tensor instead of (0, 4).
+            bboxes = bboxes.reshape(-1, 4)
             self.bboxes = tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
@@ -186,6 +188,8 @@ class InstanceSegmentationSample(BaseSample):
         # Ensure bboxes are tv_tensors.BoundingBoxes
         if not isinstance(self.bboxes, tv_tensors.BoundingBoxes):
             bboxes = self.bboxes if self.bboxes is not None else torch.zeros((0, 4), dtype=torch.float32)
+            # Round-tripping through storage can yield a degenerate (1, 0) empty tensor instead of (0, 4).
+            bboxes = bboxes.reshape(-1, 4)
             self.bboxes = tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,

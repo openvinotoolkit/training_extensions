@@ -58,8 +58,11 @@ dataset_view_items }o---|| media
 
 class dataset_revisions << (T,#FFAAAA) >> {
   project_id : UUID
+  dataset_view_id : UUID
   files_deleted : BOOLEAN
 }
+
+dataset_revisions }o---o| dataset_views
 
 object MediaBinary {
   <i>format</i> : jpg / png

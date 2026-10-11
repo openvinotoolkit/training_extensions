@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { type LogEntry } from '../src/features/models/training-logs/log-types';
+import { type LogEntry } from '../src/components/training-logs/log-types';
 
 export const getMockedLogEntry = (overrides: Partial<LogEntry['record']> = {}): LogEntry => ({
     text: overrides.message ?? 'Test log message',

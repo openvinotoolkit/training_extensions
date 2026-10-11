@@ -313,6 +313,46 @@ class TestJobController:
         assert job.progress == expected_progress
 
     @pytest.mark.asyncio
+    async def test_handle_job_events_failed_while_cancelling_marks_cancelled(self, fxt_job_controller, fxt_job):
+        """Test that a Failed event received while the job is CANCELLING results in CANCELLED, not FAILED.
+
+        This covers the race where a runner is force-terminated (e.g. SIGTERM/SIGKILL) before it can emit
+        a Cancelled event, so the controller must not let the resulting Failed event override the fact
+        that cancellation was already in progress.
+        """
+        job = fxt_job()
+        job.start()
+        job.cancelling()
+        event_queue = asyncio.Queue()
+
+        await event_queue.put(Failed("process exit -15"))
+        await event_queue.put(None)  # pyrefly: ignore[bad-argument-type]
+
+        with patch("app.core.jobs.control_plane.controller.logger") as mock_logger:
+            await fxt_job_controller._handle_job_events(job, event_queue)
+            mock_logger.info.assert_any_call(
+                "Job {} force-terminated during cancellation; marking as cancelled", job.id
+            )
+
+        assert job.status == JobStatus.CANCELLED
+        assert job.error is None
+
+    @pytest.mark.asyncio
+    async def test_handle_job_events_failed_while_running_marks_failed(self, fxt_job_controller, fxt_job):
+        """Test that a Failed event received while the job is RUNNING (not cancelling) still marks it FAILED."""
+        job = fxt_job()
+        job.start()
+        event_queue = asyncio.Queue()
+
+        await event_queue.put(Failed("boom"))
+        await event_queue.put(None)  # pyrefly: ignore[bad-argument-type]
+
+        await fxt_job_controller._handle_job_events(job, event_queue)
+
+        assert job.status == JobStatus.FAILED
+        assert job.error == "boom"
+
+    @pytest.mark.asyncio
     async def test_setup_job_execution_creates_thread_and_cancel_task(
         self, fxt_job_controller, fxt_runner_factory, fxt_job
     ):

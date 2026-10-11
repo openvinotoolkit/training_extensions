@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import type { Model } from '@/api/types';
+import { TrainingLogsDialog } from '@/components/training-logs/training-logs-dialog.component';
 import { useTranslation } from '@/i18n';
 import { ActionButton, AlertDialog, DialogContainer, Item, Key, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
@@ -12,7 +13,6 @@ import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isFailedModel, isTrainingModel } from '../../../../../shared/model-status';
 import { useDeleteModel } from '../../../hooks/api/use-delete-model.hook';
 import { useRenameModel } from '../../../hooks/api/use-rename-model.hook';
-import { TrainingLogsDialog } from '../../../training-logs/training-logs-dialog.component';
 import { hasDeletedWeights } from '../../utils/utils';
 import { RenameModelDialog } from '../model-row/rename-model-dialog.component';
 
@@ -143,7 +143,9 @@ export const ModelActions = ({ model }: ModelActionsProps) => {
                 )}
             </DialogContainer>
             <DialogContainer type={'fullscreen'} onDismiss={() => setIsDialogOpen(null)}>
-                {isDialogOpen === DIALOG_TYPES.LOGS && <TrainingLogsDialog modelId={model.id} />}
+                {isDialogOpen === DIALOG_TYPES.LOGS && (
+                    <TrainingLogsDialog modelId={model.id} projectId={projectId} isJobActive={false} />
+                )}
             </DialogContainer>
         </>
     );

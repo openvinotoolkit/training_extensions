@@ -41,7 +41,7 @@ overrides:
       - 640
     train_subset:
       batch_size: 16
-      num_workers: 6
+      num_workers: 4
       augmentations_cpu:
         - class_path: getitune.data.augmentation.transforms.CachedMosaic
           init_args:

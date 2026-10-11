@@ -45,6 +45,8 @@
             "no": "否",
             "unknown": "未知",
             "name": "名称",
+            "architecture": "架构",
+            "device": "设备",
             "on": "开",
             "off": "关",
             "noMaximum": "无上限",
@@ -70,8 +72,9 @@
             "seconds": "秒",
             "every": "每",
             "model": "模型",
+            "jobs": "任务",
             "labels": "标签",
-            "language": "语言"
+            "bytesTransferred": "{{transferred}} / {{total}}"
         },
         "viewModes": {
             "large": "大缩略图",
@@ -99,8 +102,7 @@
         "models": "模型",
         "modelsDescription": "模型页面，用于浏览模型",
         "inference": "推理",
-        "inferenceDescription": "推理页面，用于查看项目的实时推理效果",
-        "preferences": "首选项"
+        "inferenceDescription": "推理页面，用于查看项目的实时推理效果"
     },
     "dataset": {
         "validation": {
@@ -131,7 +133,7 @@
         "filters": {
             "allMedia": "全部媒体",
             "withAnnotations": "已标注的媒体",
-            "missingAnnotations": "缺少标注的媒体",
+            "missingAnnotations": "未标注的媒体",
             "subset": "按数据子集筛选",
             "searchLabels": "搜索标签",
             "labelsSelected_one": "已选 {{count}} 个标签",
@@ -148,6 +150,7 @@
         },
         "upload": {
             "queued": "排队中",
+            "processing": "处理中",
             "uploaded": "已上传",
             "errorTitle": "上传错误",
             "details": "上传详情",
@@ -162,13 +165,18 @@
             "failedSummary_other": "{{count}} 个文件上传失败",
             "mixedSummary_one": "已上传 {{uploaded}} 个文件，失败 {{failed}} 个",
             "mixedSummary_other": "已上传 {{uploaded}} 个文件，失败 {{failed}} 个",
+            "mixedCancelledSummary_one": "已上传 {{uploaded}} 个文件，失败 {{failed}} 个，已取消 {{cancelled}} 个",
+            "mixedCancelledSummary_other": "已上传 {{uploaded}} 个文件，失败 {{failed}} 个，已取消 {{cancelled}} 个",
             "genericError": "媒体文件上传失败。",
             "uploadMedia": "上传媒体文件",
             "showDetails": "查看详情",
             "inProgressToast_one": "正在上传 {{count}} 个文件……",
             "inProgressToast_other": "正在上传 {{count}} 个文件……",
             "inProgressSucceededPart": "成功 {{count}} 个",
-            "inProgressFailedPart": "失败 {{count}} 个"
+            "inProgressFailedPart": "失败 {{count}} 个",
+            "cancelAll": "全部取消",
+            "cancelledSummary_one": "已取消 {{count}} 个上传",
+            "cancelledSummary_other": "已取消 {{count}} 个上传"
         },
         "empty": {
             "noMatches": "没有符合筛选条件的媒体文件。",
@@ -248,7 +256,7 @@
             "multipleFilesError": "不支持选择文件夹或多个文件，请只上传单个文件。",
             "unsupportedFormatError": "文件格式不支持，请上传有效的 .zip 文件。",
             "datasetBeingUploaded": "数据集正在上传",
-            "dropZipHere": "把数据集 .zip 文件拖拽到这里",
+            "dropZipHere": "将数据集 .zip 文件拖拽到这里",
             "learnMoreFormats": "了解支持的数据格式",
             "dialogHeading": "导入数据集",
             "scanningMessage": "正在扫描解析待导入的数据集压缩包……",
@@ -305,12 +313,6 @@
         "importExport": {
             "trigger": "导入 / 导出数据集",
             "exportItem": "导出数据集"
-        },
-        "jobs": {
-            "cancel": {
-                "title": "取消任务",
-                "confirmation": "确定要取消任务 {{jobId}} 吗？"
-            }
         },
         "revisions": {
             "createdOn": "创建于 {{date}}",
@@ -788,6 +790,15 @@
                 "label": "智能勾边",
                 "description": "沿着目标边缘移动并定时点击，将轮廓吸附到其边界。",
                 "error": "形状边界选取失败，请再试一次。"
+            },
+            "ssim": {
+                "label": "检测助手",
+                "description": "在目标周围绘制一个框，即可自动查找并标注图像中的相似目标。",
+                "loading": "正在加载检测助手，请稍候……",
+                "error": "检测助手工具出错：{{message}}",
+                "operations": {
+                    "workerBuild": "检测助手工作进程构建"
+                }
             }
         },
         "video": {
@@ -813,7 +824,6 @@
     "models": {
         "jobs": {
             "error": "任务失败，请查看日志了解详情，然后重试。",
-            "heading": "任务",
             "pending": "等待中……",
             "running": "运行中……",
             "stopDialog": {
@@ -915,13 +925,17 @@
                 },
                 "toast": {
                     "trainingStarted": "模型训练启动成功。",
-                    "trainingStartedWithLink": "模型训练已成功启动。<link>打开模型页面查看进度。</link>"
+                    "trainingStartedWithLink": "模型训练已成功启动。<modelsLink>打开模型页面查看进度。</modelsLink>"
                 },
                 "selectDataset": {
                     "label": "选择数据集",
-                    "useCurrentDataset": "使用当前数据集",
+                    "useEntireDataset": "使用整个数据集",
                     "helpTitle": "选择数据集",
-                    "helpDescription": "选择用于训练的数据集版本。如果希望新模型使用与其他模型完全相同的数据（媒体和标注）进行训练，请选择对应的数据集版本。反之，如果希望使用最新版本的数据（即“数据集”页面中所见）进行训练，请选择“使用当前数据集”。"
+                    "helpDescription": "选择用于训练的数据。选择“使用整个数据集”可使用全部数据的最新版本（即“数据集”页面中所见）进行训练。选择数据集视图可仅使用分配给该视图的媒体进行训练。选择数据集版本可使用与其他模型完全相同的数据（媒体和标注）进行训练。",
+                    "sections": {
+                        "views": "数据集视图",
+                        "revisions": "数据集版本"
+                    }
                 },
                 "selectModel": {
                     "label": "选择输入权重",
@@ -932,6 +946,7 @@
             },
             "validation": {
                 "notEnoughAnnotations": "要训练模型，数据集中至少需要标注 3 项，不过为获得更好的效果，建议多标注一些。",
+                "notEnoughAnnotationsInView": "要训练模型，所选数据集视图中至少需要标注 3 项，不过为获得更好的效果，建议多标注一些。",
                 "emptySubsetsReason": "要训练模型，每个子集（训练集、验证集、测试集）至少需要包含一项。目前不满足该条件，因为{{subsetClause}}，且{{assignmentDetail}}。",
                 "emptySubsetClause_one": "{{list}} 子集为空",
                 "emptySubsetClause_other": "{{list}} 子集均为空",
@@ -1012,7 +1027,6 @@
             "fineTunedFrom": "微调自",
             "columns": {
                 "trained": "训练时间",
-                "device": "设备",
                 "totalSize": "总大小"
             }
         },
@@ -1087,23 +1101,59 @@
             }
         },
         "columns": {
-            "modelName": "模型名称",
-            "architecture": "架构"
+            "modelName": "模型名称"
+        }
+    },
+    "jobs": {
+        "allProjects": "所有项目",
+        "currentProjectLabel": "{{name}}（当前）",
+        "projectsSection": "项目",
+        "tabs": {
+            "all": "全部",
+            "finished": "已完成"
+        },
+        "status": {
+            "pending": "排队中",
+            "cancelling": "正在取消",
+            "done": "已完成"
+        },
+        "type": {
+            "quantize": "优化"
+        },
+        "columns": {
+            "type": "类型"
+        },
+        "cancel": {
+            "title": "取消任务",
+            "confirmation": "确定要取消任务 {{jobId}} 吗？"
+        },
+        "meta": {
+            "started": "开始于 {{time}}",
+            "elapsed": "已用时 {{time}}"
+        },
+        "emptyState": {
+            "all": "没有任务",
+            "running": "没有正在运行的任务",
+            "finished": "没有已完成的任务",
+            "scheduled": "没有排队中的任务",
+            "cancelled": "没有已取消的任务",
+            "failed": "没有失败的任务"
+        },
+        "actions": {
+            "viewLogs": "查看日志"
         }
     },
     "license": {
         "label": "许可：",
         "agreement": {
             "title": "许可协议",
-            "intro": "安装、使用或分发本应用，即表示您确认：",
-            "termsRead": "您已阅读并理解下方链接中的许可条款；",
-            "termsGovern": "确认所访问和使用内容的适用条款为链接中的条款；且",
-            "termsAccepted": "已接受并同意链接中的许可条款。",
+            "intro": "请查看并接受以下许可，以继续使用 Geti。",
+            "progress": "第 {{current}} 项，共 {{total}} 项",
+            "required": "必需",
+            "optional": "可选",
+            "fullLicense": "阅读完整许可",
+            "previous": "上一步",
             "accept": "接受并继续"
-        },
-        "links": {
-            "intelSimplified": "Intel Simplified Software License",
-            "dinov2": "DINOv3 License"
         }
     },
     "application": {
@@ -1124,7 +1174,8 @@
         },
         "notifications": {
             "unexpectedError": "发生未知错误，请重试。",
-            "networkError": "网络连接异常，请检查网络后重试。"
+            "networkError": "网络连接异常，请检查网络后重试。",
+            "uploadTransferError": "文件传输失败。请重试。"
         }
     },
     "downloads": {

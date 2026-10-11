@@ -3,6 +3,10 @@
 
 """Unit tests for DEIM Transformer Decoder."""
 
+from __future__ import annotations
+
+import copy
+
 import pytest
 import torch
 
@@ -105,6 +109,103 @@ class TestTransformerDecoderLayer:
         # Without position embedding
         result_no_pos = decoder_layer.with_pos_embed(tensor, None)
         assert torch.allclose(result_no_pos, tensor)
+
+    @pytest.mark.parametrize("use_mask", [False, True])
+    def test_self_attention_matches_multihead_attention(self, decoder_layer, use_mask):
+        """Self-attention must match nn.MultiheadAttention(q, k, value=target) semantics.
+
+        Q/K come from the position-embedded queries, V from the raw target.
+        """
+        torch.manual_seed(0)
+        batch_size, num_queries, hidden_dim, n_head = 2, 50, 256, 8
+        target = torch.randn(batch_size, num_queries, hidden_dim)
+        pos = torch.randn(batch_size, num_queries, hidden_dim)
+        qk = decoder_layer.with_pos_embed(target, pos)
+
+        attn_mask = None
+        if use_mask:
+            attn_mask = torch.zeros(num_queries, num_queries, dtype=torch.bool)
+            attn_mask[: num_queries // 2, num_queries // 2 :] = True
+
+        mha = torch.nn.MultiheadAttention(hidden_dim, n_head, batch_first=True)
+        mha.in_proj_weight.data.copy_(decoder_layer.qkv_proj.weight)
+        mha.in_proj_bias.data.copy_(decoder_layer.qkv_proj.bias)
+        mha.out_proj.load_state_dict(decoder_layer.out_proj.state_dict())
+        mha.eval()
+
+        with torch.no_grad():
+            expected, _ = mha(qk, qk, target, attn_mask=attn_mask, need_weights=False)
+            actual = decoder_layer._self_attention(qk, target, attn_mask=attn_mask)
+
+        torch.testing.assert_close(actual, expected, rtol=1e-5, atol=1e-5)
+
+    @staticmethod
+    def _forward_inputs(batch_size: int = 2, num_queries: int = 30, hidden_dim: int = 256, n_head: int = 8) -> dict:
+        """Build decoder-layer forward inputs with a nonzero positional embedding."""
+        spatial_shapes = [[8, 8], [4, 4], [2, 2]]
+        return {
+            "target": torch.randn(batch_size, num_queries, hidden_dim),
+            "reference_points": torch.rand(batch_size, num_queries, 1, 4),
+            "value": tuple(torch.randn(batch_size, n_head, hidden_dim // n_head, h * w) for h, w in spatial_shapes),
+            "spatial_shapes": spatial_shapes,
+            "query_pos_embed": torch.randn(batch_size, num_queries, hidden_dim) * 2.0,
+        }
+
+    def test_forward_projects_value_from_raw_target(self, decoder_layer, monkeypatch):
+        """forward must feed Q/K with target + pos and V with the raw target (no positional embedding)."""
+        torch.manual_seed(0)
+        inputs = self._forward_inputs()
+        target, pos = inputs["target"], inputs["query_pos_embed"]
+        captured: dict[str, torch.Tensor] = {}
+        original = decoder_layer._self_attention
+
+        def spy(qk: torch.Tensor, v: torch.Tensor, attn_mask: torch.Tensor | None = None) -> torch.Tensor:
+            captured["qk"], captured["v"] = qk.clone(), v.clone()
+            return original(qk, v, attn_mask=attn_mask)
+
+        monkeypatch.setattr(decoder_layer, "_self_attention", spy)
+        with torch.no_grad():
+            decoder_layer(**inputs)
+
+        torch.testing.assert_close(captured["qk"], target + pos)
+        torch.testing.assert_close(captured["v"], target)
+        assert not torch.allclose(captured["v"], captured["qk"])
+
+    def test_forward_matches_multihead_attention_reference(self, decoder_layer):
+        """End-to-end layer output must match a reference whose self-attention is nn.MultiheadAttention.
+
+        The reference uses ``mha(target + pos, target + pos, value=target)`` like upstream DEIMv2, so
+        projecting V from the position-embedded queries would make the outputs diverge.
+        """
+        torch.manual_seed(0)
+        decoder_layer.eval()
+        inputs = self._forward_inputs()
+        target, pos = inputs["target"], inputs["query_pos_embed"]
+
+        mha = torch.nn.MultiheadAttention(256, 8, batch_first=True)
+        mha.in_proj_weight.data.copy_(decoder_layer.qkv_proj.weight)
+        mha.in_proj_bias.data.copy_(decoder_layer.qkv_proj.bias)
+        mha.out_proj.load_state_dict(decoder_layer.out_proj.state_dict())
+        mha.eval()
+
+        reference_layer = copy.deepcopy(decoder_layer)
+
+        def reference_self_attention(
+            qk: torch.Tensor,
+            v: torch.Tensor,
+            attn_mask: torch.Tensor | None = None,
+        ) -> torch.Tensor:
+            # Independent of what forward passes in: always use upstream semantics.
+            out, _ = mha(target + pos, target + pos, target, need_weights=False)
+            return out
+
+        reference_layer._self_attention = reference_self_attention
+
+        with torch.no_grad():
+            actual = decoder_layer(**inputs)
+            expected = reference_layer(**inputs)
+
+        torch.testing.assert_close(actual, expected, rtol=1e-5, atol=1e-5)
 
 
 class TestDEIMTransformerModule:

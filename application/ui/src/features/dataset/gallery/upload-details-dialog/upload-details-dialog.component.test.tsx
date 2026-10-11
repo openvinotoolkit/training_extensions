@@ -161,4 +161,98 @@ describe('UploadDetailsDialog', () => {
 
         expect(screen.getByText('Uploaded 1 item, 1 failed')).toBeVisible();
     });
+    it('shows a progress bar with the transferred bytes while an item is uploading', () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([makeFile('one.jpg', 4000)]);
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        act(() => {
+            result.current.upload.setItemUploading(ids[0]);
+            result.current.upload.setItemTransferProgress(ids[0], 1000);
+        });
+
+        expect(screen.getByRole('progressbar', { name: 'Upload progress' })).toHaveAttribute('aria-valuenow', '25');
+        expect(screen.getByText('1 kB of 4 kB')).toBeVisible();
+    });
+
+    it('cancels a single upload from its row', async () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([makeFile('one.jpg'), makeFile('two.jpg')]);
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
+        });
+        const signal = result.current.upload.getItemAbortSignal(ids[0]);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel upload of one.jpg' }));
+
+        expect(signal?.aborted).toBe(true);
+        expect(result.current.upload.getItemAbortSignal(ids[1])?.aborted).toBe(false);
+        expect(screen.getByText('Cancelled')).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Cancel upload of one.jpg' })).toBeNull();
+    });
+
+    it('cancels all pending uploads but not the finished ones', async () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([makeFile('one.jpg'), makeFile('two.jpg')]);
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
+        });
+        act(() => {
+            result.current.upload.setItemUploaded(ids[0]);
+        });
+
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel all' }));
+
+        expect(screen.getByText('Uploaded')).toBeVisible();
+        expect(screen.getByText('Cancelled')).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Cancel all' })).toBeNull();
+    });
+
+    it('shows the cancelled final subheader when every upload was cancelled', () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([makeFile('one.jpg'), makeFile('two.jpg')]);
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        act(() => {
+            result.current.upload.cancelItems(ids);
+            result.current.upload.finishUploadProgress();
+        });
+
+        expect(screen.getByText('Cancelled 2 uploads')).toBeVisible();
+    });
+
+    it('shows a mixed final subheader including cancelled uploads when the batch was not fully cancelled', () => {
+        const { result } = renderUpload();
+
+        let ids: string[] = [];
+        act(() => {
+            ids = result.current.upload.startUploadProgress([
+                makeFile('one.jpg'),
+                makeFile('two.jpg'),
+                makeFile('three.jpg'),
+            ]);
+            result.current.dispatch({ type: 'OPEN_DIALOG' });
+        });
+
+        act(() => {
+            result.current.upload.setItemUploaded(ids[0]);
+            result.current.upload.setItemFailed(ids[1], 'bad');
+            result.current.upload.cancelItems([ids[2]]);
+            result.current.upload.finishUploadProgress();
+        });
+
+        expect(screen.getByText('Uploaded 1 item, 1 failed, 1 cancelled')).toBeVisible();
+    });
 });

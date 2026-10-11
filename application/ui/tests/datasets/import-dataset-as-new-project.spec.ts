@@ -47,7 +47,7 @@ test.describe('Import dataset as new project', () => {
             http.get('/api/staged_datasets/{staged_dataset_id}', () => {
                 return HttpResponse.json(stagedDatasetWithMetadata, { status: 200 });
             }),
-            http.post('/api/staged_datasets', () => {
+            http.post('/api/staged_datasets:from-upload', () => {
                 return HttpResponse.json(getMockedStagedDataset({ id: STAGED_DATASET_ID }), { status: 201 });
             }),
             http.post('/api/jobs', async ({ request }) => {

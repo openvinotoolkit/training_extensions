@@ -96,6 +96,20 @@ In the web interface, a dataset view is not a separate page: it is selected via 
 on the project's dataset page, e.g. `/projects/<project_id>/dataset?datasetViewId=<dataset_view_id>`. When the
 parameter is absent, the page shows the entire dataset.
 
+### Training on a dataset view
+
+A model can be trained on a single view instead of the entire dataset, by passing `dataset_view_id` in the parameters
+of a training job (see [jobs](jobs.md)). The parameter is mutually exclusive with `dataset_revision_id`: a training
+job either uses the live data (entire dataset or one of its views) or an existing revision.
+
+When a view is selected, the job only considers the media assigned to that view, including the frames of any video
+assigned to it. Subset assignment (training/validation/testing) for items that do not have a subset yet is likewise
+restricted to the view, so the configured split ratios apply to the view's own items. Training fails with an
+explanatory error if the view does not hold enough annotated items to fill all three subsets.
+
+In the web interface, the "Train model" dialog lists the existing views next to the dataset revisions, and preselects
+the view that is currently open on the dataset page.
+
 ## Dataset revisions
 
 A dataset revision in Geti is an immutable snapshot of a dataset (or dataset view), capturing its exact state at
@@ -103,6 +117,11 @@ a specific point in time.
 This mechanism is essential for ensuring traceability and reproducibility in machine learning workflows,
 particularly when training or evaluating models. When a user initiates a training or evaluation job, Geti
 creates a dataset revision that includes all the items, annotations, and metadata as they existed at that moment.
+
+A revision is only created when no equivalent one already exists: Geti reuses the latest revision of the same scope
+(the entire dataset, or one specific view) as long as nothing it covers has changed since. For a view-scoped revision,
+both annotation edits on its items and changes to the view membership invalidate the reuse. Revisions created from a
+view are named after it (for example `Collection One (1ed5487a)`) instead of the generic `Dataset (1ed5487a)`.
 
 Dataset revisions are tightly integrated with model management. Each model revision references the dataset revision
 it was trained on, allowing users to trace back and audit the exact data that contributed to a model’s performance.
@@ -146,7 +165,10 @@ The database saves the relevant information in the following tables:
   Each record contains the id of the media item and the id of the view it belongs to. Referencing media (rather
   than dataset items) allows a video to be assigned to a view before any of its frames have been annotated.
 - `dataset_revisions`: simple metadata about each revision, such as creation time and number of items. The actual data
-  is instead stored in a file on the filesystem.
+  is instead stored in a file on the filesystem. The nullable `dataset_view_id` column records the view the revision
+  was created from; it is null for revisions that cover the entire dataset. It is intentionally not a foreign key:
+  the value is kept even after the view is deleted, so that a view-scoped revision is never mistaken for a
+  full-dataset one (at the cost of leaving a reference that no longer resolves).
 - `dataset_items_tags`: a many-to-many relationship table that associates tags with dataset items. Each record contains
   the id of the dataset item and the the tag as a string.
 

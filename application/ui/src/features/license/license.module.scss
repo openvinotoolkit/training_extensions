@@ -1,17 +1,84 @@
-// Copyright (C) 2025 Intel Corporation
+// Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
-
-.list {
-    list-style-type: disc;
-    padding-inline-start: var(--spectrum-global-dimension-size-500);
-    margin-block: var(--spectrum-global-dimension-size-100);
-}
 
 .licenseBackground {
     background-color: var(--spectrum-global-color-gray-100);
     background-image: url('../../assets/background.webp');
     background-blend-mode: luminosity;
     background-position: center;
-    background-repeat: no-repeat;
     background-size: cover;
+}
+
+.dialog {
+    box-shadow: 0 8px 32px rgb(0 0 0 / 40%);
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spectrum-global-dimension-size-50);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--spectrum-global-dimension-size-150);
+    width: 100%;
+    padding: var(--spectrum-global-dimension-size-150);
+    border: none;
+    border-inline-start: 3px solid transparent;
+    border-radius: var(--spectrum-alias-border-radius-regular);
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+
+    &:hover,
+    &[aria-current='step'] {
+        background-color: var(--spectrum-global-color-gray-200);
+    }
+
+    &[aria-current='step'] {
+        border-inline-start-color: var(--spectrum-global-color-blue-500);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
+
+.stepNumber {
+    display: grid;
+    place-items: center;
+    width: var(--spectrum-global-dimension-size-400);
+    height: var(--spectrum-global-dimension-size-400);
+    border-radius: 50%;
+    background-color: var(--spectrum-global-color-gray-300);
+
+    [aria-current='step'] > & {
+        color: var(--spectrum-global-color-static-white);
+        background-color: var(--spectrum-global-color-blue-500);
+    }
+}
+
+.stepLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spectrum-global-dimension-size-75);
+}
+
+.notice {
+    overflow-y: auto;
+}
+
+.noticeText {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
 }

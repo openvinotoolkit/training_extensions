@@ -17,7 +17,7 @@ export type SortDescriptor = {
 export type DatasetGroup = {
     id: string;
     name: string;
-    createdAt: string;
+    createdAt: string | null;
     labelCount: number;
     imageCount: number;
     trainingSubsets: {

@@ -8,9 +8,16 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
-from app.api.dependencies import get_file_name_and_extension, get_source_media_service, get_source_service
+from app.api.dependencies import (
+    get_file_name_and_extension,
+    get_source_media_service,
+    get_source_service,
+    get_upload_service,
+)
 from app.api.schemas import SourceMediaDeletionView, SourceMediaUploadView
-from app.services import SourceMediaService, SourceService
+from app.api.schemas.upload import FromUploadRequest
+from app.api.upload_utils import FROM_UPLOAD_RESPONSES, consume_upload, split_upload_filename
+from app.services import SourceMediaService, SourceService, UploadService
 from app.services.base import ResourceInUseError, ResourceNotFoundError
 
 router = APIRouter(prefix="/api/sources/media", tags=["Sources"])
@@ -18,6 +25,17 @@ router = APIRouter(prefix="/api/sources/media", tags=["Sources"])
 # Formats supported by OpenCV's VideoCapture for streaming a video file source. Not constrained by
 # the dataset media pipeline's thumbnailing requirements, so a broader set of formats is allowed here.
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv", "webm", "flv", "wmv", "m4v", "mpg", "mpeg"}
+
+
+def _validate_video_extension(extension: str) -> None:
+    if extension.lower() not in ALLOWED_VIDEO_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=(
+                f"Unsupported video format '{extension}'. "
+                f"Supported formats: {', '.join(sorted(ALLOWED_VIDEO_EXTENSIONS))}."
+            ),
+        )
 
 
 @router.post(
@@ -41,20 +59,43 @@ async def upload_source_media(
     the source's 'video_path'.
     """
     name, extension = file_name_and_extension
-    if extension.lower() not in ALLOWED_VIDEO_EXTENSIONS:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=(
-                f"Unsupported video format '{extension}'. "
-                f"Supported formats: {', '.join(sorted(ALLOWED_VIDEO_EXTENSIONS))}."
-            ),
-        )
+    _validate_video_extension(extension)
 
     try:
         video_path = await source_media_service.upload(filename=f"{name}.{extension}", file_obj=file.file)
         return SourceMediaUploadView(video_path=str(video_path))
     finally:
         await file.close()
+
+
+@router.post(
+    ":from-upload",
+    response_model=SourceMediaUploadView,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        **FROM_UPLOAD_RESPONSES,
+        status.HTTP_201_CREATED: {"description": "Video stored successfully"},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"description": "Unsupported video format"},
+    },
+)
+async def upload_source_media_from_upload(
+    body: FromUploadRequest,
+    source_media_service: Annotated[SourceMediaService, Depends(get_source_media_service)],
+    upload_service: Annotated[UploadService, Depends(get_upload_service)],
+) -> SourceMediaUploadView:
+    """Store a video previously uploaded with the resumable upload API (`/api/uploads`), to be used as the
+    'video_path' of a 'video_file' pipeline source.
+
+    The upload must be complete; it is consumed by this operation (the file is moved, not copied) and cannot be used
+    again. As for direct uploads, no dataset media record is created.
+    """
+    async with consume_upload(upload_service, body.upload_id) as claimed:
+        name, extension = split_upload_filename(claimed.upload.filename)
+        _validate_video_extension(extension)
+        video_path = await source_media_service.upload_from_path(
+            filename=f"{name}.{extension}", source_path=claimed.path
+        )
+    return SourceMediaUploadView(video_path=str(video_path))
 
 
 @router.delete(

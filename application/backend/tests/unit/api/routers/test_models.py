@@ -15,6 +15,7 @@ from app.api.dependencies import (
 )
 from app.api.schemas import TrainingConfigurationView
 from app.models import DatasetItemSubset, EvaluationResult, ModelRevision, ModelVariant, TrainingInfo, TrainingStatus
+from app.models.model_manifest import License
 from app.models.model_revision import ModelFormat, ModelPrecision
 from app.services import MediaService, ModelService, ResourceInUseError, ResourceNotFoundError, ResourceType
 from app.services.inference import InferenceServer
@@ -306,6 +307,10 @@ class TestModelEndpoints:
             format=model_format,
             precision=ModelPrecision(model_precision),
         )
+        fxt_model_service.get_model_license.return_value = License(
+            name="AGPL-3.0", url="https://www.ultralytics.com/legal/agpl-3-0-software-license"
+        )
+        fxt_model_service.get_model_attribution.return_value = None
 
         response = fxt_client.get(
             f"/api/projects/{fxt_get_project.id}/models/{fxt_model.id}/variants/{model_variant_id}/binary"
@@ -341,11 +346,17 @@ class TestModelEndpoints:
                 assert "demo_async.py" in namelist
                 assert "pyproject.toml" in namelist
                 assert "README.md" in namelist
+                assert "LICENSE" in namelist
+                assert "## Licensing" in zip_file.read("README.md").decode()
+                fxt_model_service.get_model_attribution.assert_called_once_with(
+                    project_id=fxt_get_project.id, model_id=fxt_model.id
+                )
             else:
                 assert "demo.py" not in namelist
                 assert "demo_async.py" not in namelist
                 assert "pyproject.toml" not in namelist
                 assert "README.md" not in namelist
+                assert "LICENSE" not in namelist
 
         fxt_model_service.get_model_binary_files.assert_called_once_with(
             project_id=fxt_get_project.id,

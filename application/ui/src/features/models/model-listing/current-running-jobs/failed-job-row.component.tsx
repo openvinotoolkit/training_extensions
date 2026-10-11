@@ -29,14 +29,13 @@ const DismissFailedJob = ({ onDismiss }: { onDismiss: () => void }) => {
 };
 
 // The failed job's error is not shown here, it can be an arbitrarily long traceback; the logs dialog has it
-export const FailedJobRow = ({ job, onDismiss, groupBy, datasetRevisions, modelArchitectures }: FailedJobRowProps) => {
+export const FailedJobRow = ({ job, onDismiss, datasetRevisions, modelArchitectures }: FailedJobRowProps) => {
     return (
         <JobRow
             job={job}
             progress={0}
             statusBadges={<FailedStatusBadge />}
             actions={onDismiss && <DismissFailedJob onDismiss={onDismiss} />}
-            groupBy={groupBy}
             datasetRevisions={datasetRevisions}
             modelArchitectures={modelArchitectures}
         />

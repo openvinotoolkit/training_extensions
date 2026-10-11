@@ -4,11 +4,11 @@
 import type { ExportDatasetMetadata } from '@/api/types';
 import { useTranslation } from '@/i18n';
 import { dimensionValue, Divider, Flex, Grid, Text } from '@geti-ui/ui';
+import { useOptionalDatasetViewsQuery } from 'hooks/api/dataset-views.hook';
 import { isEmpty, isNil } from 'lodash-es';
 
 import { useProject } from '../../../../../../hooks/api/project.hook';
 import { isNonEmptyString } from '../../../../../../shared/util';
-import { useOptionalDatasetViewsQuery } from '../../../../gallery/toolbar/dataset-view-selector/api/use-dataset-views';
 
 type ExportJobDetailsProps = {
     datasetName?: string;

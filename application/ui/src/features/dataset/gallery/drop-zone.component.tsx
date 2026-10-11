@@ -3,6 +3,7 @@
 
 import { ReactNode } from 'react';
 
+import { DropFiles } from '@/assets/illustrations';
 import { useTranslation } from '@/i18n';
 import {
     AriaDropZone,
@@ -15,7 +16,6 @@ import {
     type SpectrumDropZoneProps,
 } from '@geti-ui/ui';
 
-import { ReactComponent as DropFiles } from '../../../assets/drop-files.svg';
 import { getFilesFromDropEvent } from '../../../shared/drop-zone.utils';
 
 import classes from './drop-zone.component.module.scss';

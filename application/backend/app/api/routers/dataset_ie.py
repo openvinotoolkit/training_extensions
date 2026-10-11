@@ -8,13 +8,27 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.params import Depends
 from starlette.responses import StreamingResponse
 
-from app.api.dependencies import get_staged_dataset_service
+from app.api.dependencies import get_staged_dataset_service, get_upload_service
 from app.api.io_utils import file_iterator
 from app.api.schemas import StagedDatasetView
+from app.api.schemas.upload import FromUploadRequest
+from app.api.upload_utils import FROM_UPLOAD_RESPONSES, consume_upload
 from app.api.validators import StagedDatasetID
-from app.services import StagedDatasetService
+from app.services import StagedDatasetService, UploadService
 
 router = APIRouter(prefix="/api/staged_datasets", tags=["Dataset Import/Export"])
+
+
+# Filename of the archive within the staged dataset directory.
+STAGED_ARCHIVE_FILENAME = "dataset.zip"
+
+
+def _validate_archive_filename(filename: str | None) -> None:
+    if not filename or not filename.endswith(".zip"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Only zip files are allowed.",
+        )
 
 
 @router.post(
@@ -32,15 +46,39 @@ async def upload_archive(
 ) -> StagedDatasetView:
     """Upload dataset archive to the staging area"""
     try:
-        if not file.filename or not file.filename.endswith(".zip"):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="Only zip files are allowed.",
-            )
-        staged_dataset = await staged_datasets_service.upload(filename="dataset.zip", file_obj=file.file)
+        _validate_archive_filename(file.filename)
+        staged_dataset = await staged_datasets_service.upload(filename=STAGED_ARCHIVE_FILENAME, file_obj=file.file)
         return StagedDatasetView.model_validate(staged_dataset, from_attributes=True)
     finally:
         await file.close()
+
+
+@router.post(
+    ":from-upload",
+    response_model=StagedDatasetView,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        **FROM_UPLOAD_RESPONSES,
+        status.HTTP_201_CREATED: {"description": "Dataset archive staged successfully"},
+    },
+)
+async def upload_archive_from_upload(
+    body: FromUploadRequest,
+    staged_datasets_service: Annotated[StagedDatasetService, Depends(get_staged_dataset_service)],
+    upload_service: Annotated[UploadService, Depends(get_upload_service)],
+) -> StagedDatasetView:
+    """
+    Stage a dataset archive previously uploaded with the resumable upload API (`/api/uploads`).
+
+    The upload must be complete; it is consumed by this operation (the file is moved, not copied, to the staging
+    area) and cannot be used again.
+    """
+    async with consume_upload(upload_service, body.upload_id) as claimed:
+        _validate_archive_filename(claimed.upload.filename)
+        staged_dataset = await staged_datasets_service.upload_from_path(
+            filename=STAGED_ARCHIVE_FILENAME, source_path=claimed.path
+        )
+    return StagedDatasetView.model_validate(staged_dataset, from_attributes=True)
 
 
 @router.get(

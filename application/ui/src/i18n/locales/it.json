@@ -45,6 +45,8 @@
             "no": "No",
             "unknown": "Sconosciuto",
             "name": "Nome",
+            "architecture": "Architettura",
+            "device": "Dispositivo",
             "on": "Attivo",
             "off": "Inattivo",
             "noMaximum": "Nessun massimo",
@@ -70,8 +72,9 @@
             "seconds": "Secondi",
             "every": "ogni",
             "model": "Modello",
+            "jobs": "Processi",
             "labels": "Etichette",
-            "language": "Lingua"
+            "bytesTransferred": "{{transferred}} di {{total}}"
         },
         "viewModes": {
             "large": "Anteprime grandi",
@@ -99,8 +102,7 @@
         "models": "Modelli",
         "modelsDescription": "Pagina dei modelli per visualizzare i tuoi modelli",
         "inference": "Inferenza",
-        "inferenceDescription": "Pagina di inferenza che mostra l'inferenza in tempo reale sul tuo progetto",
-        "preferences": "Preferenze"
+        "inferenceDescription": "Pagina di inferenza che mostra l'inferenza in tempo reale sul tuo progetto"
     },
     "dataset": {
         "validation": {
@@ -148,6 +150,7 @@
         },
         "upload": {
             "queued": "In coda",
+            "processing": "Elaborazione",
             "uploaded": "Caricato",
             "errorTitle": "Errore di caricamento",
             "details": "Dettagli caricamento",
@@ -162,13 +165,18 @@
             "failedSummary_other": "Impossibile caricare {{count}} elementi",
             "mixedSummary_one": "{{uploaded}} elemento caricato, {{failed}} non riuscito",
             "mixedSummary_other": "{{uploaded}} elementi caricati, {{failed}} non riusciti",
+            "mixedCancelledSummary_one": "{{uploaded}} elemento caricato, {{failed}} non riuscito, {{cancelled}} annullato",
+            "mixedCancelledSummary_other": "{{uploaded}} elementi caricati, {{failed}} non riusciti, {{cancelled}} annullati",
             "genericError": "Impossibile caricare media.",
             "uploadMedia": "Carica media",
             "showDetails": "Mostra dettagli",
             "inProgressToast_one": "Caricamento {{count}} elemento in corso...",
             "inProgressToast_other": "Caricamento {{count}} elementi in corso...",
             "inProgressSucceededPart": "{{count}} riusciti",
-            "inProgressFailedPart": "{{count}} non riusciti"
+            "inProgressFailedPart": "{{count}} non riusciti",
+            "cancelAll": "Annulla tutto",
+            "cancelledSummary_one": "{{count}} caricamento annullato",
+            "cancelledSummary_other": "{{count}} caricamenti annullati"
         },
         "empty": {
             "noMatches": "Nessun media corrisponde al tuo filtro.",
@@ -305,12 +313,6 @@
         "importExport": {
             "trigger": "Importa/esporta dataset",
             "exportItem": "Esporta dataset"
-        },
-        "jobs": {
-            "cancel": {
-                "title": "Annulla processo",
-                "confirmation": "Sei sicuro di voler annullare il processo {{jobId}}?"
-            }
         },
         "revisions": {
             "createdOn": "Creato {{date}}",
@@ -788,6 +790,15 @@
                 "label": "Laccio magnetico",
                 "description": "Passa il mouse lungo il bordo di un oggetto e fai clic periodicamente per agganciare il contorno ai suoi bordi.",
                 "error": "Impossibile selezionare i limiti della forma, puoi provare di nuovo?"
+            },
+            "ssim": {
+                "label": "Assistente di rilevamento",
+                "description": "Disegna un riquadro attorno a un oggetto per trovare e annotare automaticamente oggetti simili nell'immagine.",
+                "loading": "Caricamento dell'assistente di rilevamento in corso, per favore aspetta...",
+                "error": "Errore nello strumento Assistente di rilevamento: {{message}}",
+                "operations": {
+                    "workerBuild": "Compilazione worker dell'Assistente di rilevamento"
+                }
             }
         },
         "video": {
@@ -813,7 +824,6 @@
     "models": {
         "jobs": {
             "error": "Processo non riuscito. Controlla i log per i dettagli e riprova.",
-            "heading": "Processi",
             "pending": "In sospeso...",
             "running": "In corso...",
             "stopDialog": {
@@ -915,13 +925,17 @@
                 },
                 "toast": {
                     "trainingStarted": "Addestramento del modello avviato con successo.",
-                    "trainingStartedWithLink": "Addestramento del modello avviato con successo. <link>Apri la schermata dei modelli per visualizzare l'avanzamento.</link>"
+                    "trainingStartedWithLink": "Addestramento del modello avviato con successo. <modelsLink>Apri la schermata dei modelli per visualizzare l'avanzamento.</modelsLink>"
                 },
                 "selectDataset": {
                     "label": "Seleziona dataset",
-                    "useCurrentDataset": "Usa dataset attuale",
+                    "useEntireDataset": "Usa l'intero dataset",
                     "helpTitle": "Selezione di un dataset",
-                    "helpDescription": "Scegli la versione del dataset da usare per l'addestramento. Se desideri addestrare il nuovo modello esattamente sui stessi dati (media e annotazioni) di un altro modello, seleziona la revisione del dataset corrispondente. Al contrario, se desideri addestrare sulla versione più recente dei dati (quello che vedi nella pagina \"Dataset\"), seleziona \"Usa dataset attuale\"."
+                    "helpDescription": "Scegli i dati da usare per l'addestramento. Seleziona \"Usa l'intero dataset\" per addestrare sulla versione più recente di tutti i dati (quello che vedi nella pagina \"Dataset\"). Seleziona una vista del dataset per addestrare solo sui media assegnati a quella vista. Seleziona una revisione del dataset per addestrare esattamente sugli stessi dati (media e annotazioni) di un altro modello.",
+                    "sections": {
+                        "views": "Viste del dataset",
+                        "revisions": "Revisioni del dataset"
+                    }
                 },
                 "selectModel": {
                     "label": "Seleziona pesi di input",
@@ -932,6 +946,7 @@
             },
             "validation": {
                 "notEnoughAnnotations": "Per addestrare un modello, è necessario annotare almeno 3 elementi nel tuo dataset, sebbene consigliamo di annotarne diversi di più per ottenere risultati migliori.",
+                "notEnoughAnnotationsInView": "Per addestrare un modello, è necessario annotare almeno 3 elementi nella vista del dataset selezionata, sebbene consigliamo di annotarne diversi di più per ottenere risultati migliori.",
                 "emptySubsetsReason": "Per addestrare un modello, ogni sottoinsieme (addestramento, validazione, test) deve contenere almeno un elemento. Questa condizione non è attualmente soddisfacibile, poiché {{subsetClause}} vuoto e {{assignmentDetail}}.",
                 "emptySubsetClause_one": "{{list}} sottoinsieme è",
                 "emptySubsetClause_other": "{{list}} sottoinsiemi sono",
@@ -1012,7 +1027,6 @@
             "fineTunedFrom": "Ottimizzazione fine da",
             "columns": {
                 "trained": "Addestrato",
-                "device": "Dispositivo",
                 "totalSize": "Dimensione totale"
             }
         },
@@ -1087,23 +1101,59 @@
             }
         },
         "columns": {
-            "modelName": "Nome modello",
-            "architecture": "Architettura"
+            "modelName": "Nome modello"
+        }
+    },
+    "jobs": {
+        "allProjects": "Tutti i progetti",
+        "currentProjectLabel": "{{name}} (attuale)",
+        "projectsSection": "Progetti",
+        "tabs": {
+            "all": "Tutti",
+            "finished": "Completati"
+        },
+        "status": {
+            "pending": "In coda",
+            "cancelling": "Annullamento in corso",
+            "done": "Completato"
+        },
+        "type": {
+            "quantize": "Ottimizzazione"
+        },
+        "columns": {
+            "type": "Tipo"
+        },
+        "cancel": {
+            "title": "Annulla processo",
+            "confirmation": "Sei sicuro di voler annullare il processo {{jobId}}?"
+        },
+        "meta": {
+            "started": "Avviato {{time}}",
+            "elapsed": "Tempo trascorso: {{time}}"
+        },
+        "emptyState": {
+            "all": "Nessun processo",
+            "running": "Nessun processo in corso",
+            "finished": "Nessun processo completato",
+            "scheduled": "Nessun processo in coda",
+            "cancelled": "Nessun processo annullato",
+            "failed": "Nessun processo fallito"
+        },
+        "actions": {
+            "viewLogs": "Visualizza log"
         }
     },
     "license": {
         "label": "Licenza: ",
         "agreement": {
-            "title": "Accordo di licenza",
-            "intro": "Installando, utilizzando o distribuendo questa applicazione, riconosci che:",
-            "termsRead": "Hai letto e compreso i termini di licenza ai link seguenti;",
-            "termsGovern": "Confermato che i termini collegati disciplinano i contenuti che cerchi di accedere e utilizzare; e",
-            "termsAccepted": "Accettato e concordato i termini di licenza collegati.",
+            "title": "Accordi di licenza",
+            "intro": "Leggi e accetta le seguenti licenze per continuare a usare Geti.",
+            "progress": "{{current}} di {{total}}",
+            "required": "Obbligatoria",
+            "optional": "Facoltativa",
+            "fullLicense": "Leggi la licenza completa",
+            "previous": "Precedente",
             "accept": "Accetta e continua"
-        },
-        "links": {
-            "intelSimplified": "Licenza software semplificata Intel",
-            "dinov2": "Licenza DINOv3"
         }
     },
     "application": {
@@ -1124,7 +1174,8 @@
         },
         "notifications": {
             "unexpectedError": "Si è verificato un errore imprevisto. Per favore riprova.",
-            "networkError": "Errore di rete. Controlla la tua connessione e riprova."
+            "networkError": "Errore di rete. Controlla la tua connessione e riprova.",
+            "uploadTransferError": "Il trasferimento del file non è riuscito. Riprova."
         }
     },
     "downloads": {

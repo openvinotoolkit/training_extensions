@@ -18,26 +18,17 @@
 
 </div>
 
-**_Geti™_** is an end-to-end platform for building AI computer vision models.
-
-Available as a Docker container or native Windows application, Geti™ guides you through the entire model lifecycle—from dataset preparation and training to optimization and deployment.
-Geti™ is optimized for fine-tuning and fast inference across the full Intel® XPU portfolio.
-
-The Geti™ application is powered by **_getitune_**, an open-source engine for model training and optimization, which is also available standalone as a Python library. Geti™ and _getitune_ are both developed in this repository, in the [`application`](application/) and [`library`](library/) folders, respectively.
+**_Geti™_** is an open-source, end-to-end platform for building and continuously improving your own computer vision models. It covers annotation, fine-tuning, optimization, deployment, and inference — with 1,600+ model variants for detection, classification, and segmentation, optimized by OpenVINO™ for Intel® CPUs, GPUs, and NPUs.
 
 <p align="center">
  <img src="assets/model-lifecycle-infinity-light.png" width="600" alt="Geti™ - Learning Cycle"/>
 </p>
 
-> [!NOTE]
-> Geti™ underwent a major revamp in v3.0, resulting in a new application that is much more lightweight and easier to install than before, while adding many new features and SOTA models. This repository contains the latest Geti™ v3. Legacy versions remain available in the old [`geti_v2`](https://github.com/open-edge-platform/geti_v2) repository; to migrate from Geti™ v2 to v3, please follow [this guide](https://docs.geti.intel.com/docs/user-guide/getting-started/installation/migration-from-geti-2x).
+The Geti™ application is powered by **_getitune_**, its engine for model training and optimization, which is also available standalone as a Python library. Choose the application for a no-code experience, or the `getitune` Python API for code-first workflows — both paths lead to production-ready models. Both are developed in this repository, under [`application/`](application/) and [`library/`](library/).
 
-> [!NOTE]
-> This repository previously hosted the _OpenVINO Training Extensions (OTX)_ project, now fully replaced by _getitune_. The legacy [`otx`](https://pypi.org/project/otx/) package is still available in Pypi although deprecated; it's recommended to migrate to `getitune`, which has a similar interface to `otx` and extends it with several new models.
+## Full lifecycle with an intuitive SME interface
 
-## Quick start with Geti™
-
-There are several ways to run Geti™, choose the one that best fits your workflow:
+The Geti™ application runs as a native Windows app or a pre-built Docker image for Linux.
 
 - Install as a [**Windows application (MSIX)**](application/docs/install.md#windows-app)
 - Run as a [**Docker container**](application/docs/install.md#run-with-docker)
@@ -46,20 +37,24 @@ There are several ways to run Geti™, choose the one that best fits your workfl
 
 For complete, step-by-step instructions - including prerequisites, GPU/accelerator support, container and source builds, the install script, and troubleshooting - see the [Installation guide](application/docs/install.md). To update an existing Geti™ installation to a newer version, follow the [Upgrade guide](application/docs/upgrade.md).
 
-Once Geti™ is up and running, follow the intuitive UI to train your first model.
-
 <p align="center">
-  <img src="assets/application.gif" alt="Application demo" width="80%">
+  <img src="assets/geti-application-demo.gif" alt="Build and optimize a model in the Geti™ application" width="80%">
 </p>
 
 > [!TIP]
 > The [documentation](https://docs.geti.intel.com/) is a valuable resource to learn more about Geti™ and its capabilities.  
 > New users are encouraged to read the step-by-step tutorial ["Train your first model"](https://docs.geti.intel.com/docs/user-guide/quick-start/training-your-first-model).
 
-## Quick start with Geti Library (`getitune`)
+## Full lifecycle with a simple Python API
 
-Geti's training engine is published on PyPI and can train, optimize, and deploy models
-from Python.
+Geti's training engine is also available on PyPI as `getitune`, an open-source Python library for training, optimizing, and deploying models.
+
+<p align="center">
+  <img src="library/assets/getitune-demo.gif" alt="Train and optimize a model with the getitune Python API" width="80%">
+</p>
+
+<details>
+<summary>Install <code>getitune</code> and run the demo code</summary>
 
 ```bash
 uv pip install "getitune[xpu]" --extra-index-url https://download.pytorch.org/whl/xpu    # for Intel® XPU acceleration
@@ -70,47 +65,45 @@ uv pip install getitune # CPU-only by default
 > [!IMPORTANT]  
 > The PyPI package does NOT include **Ultralytics YOLO models**, which are distributed under the [AGPL-3.0 license](https://www.ultralytics.com/license). To enable these models, build from source with the `ultralytics` extra as explained in the [getitune documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/installation).
 
-**Discover available models and train a model in just a few lines of code:**
+**Pick a model, then train, export, and quantize it:**
 
 ```python
 from getitune.engine import create_engine
 from getitune.utils import list_models
 
-# Explore available models for your task
-all_models = list_models()                    # List all model names
+# Explore available models to pick the one you need
+all_models = list_models()                        # All model names
 detection_models = list_models(task="DETECTION")  # Filter by task
-recipes = list_models(return_recipes=True)    # Get full recipe YAML paths
+recipes = list_models(return_recipes=True)        # Full recipe YAML paths
 
-# Create an engine using any model name or recipe path
+# Choose a model and point it at your dataset
 engine = create_engine(
-    model="efficientnet_b0",                  # model name, recipe YAML path, or exported IR/ONNX
-    data="/path/to/dataset",                  # dataset directory or YAML path
-    work_dir="./my_workspace",                # checkpoints and logs directory
-    device="auto",                            # "auto", "cpu", "gpu", "xpu".
+    model="edgecrafter_m",
+    data="./led_counting",
+    work_dir="./my_workspace",  # checkpoints, exports, and logs
+    device="auto",  # "auto", "cpu", "gpu", or "xpu"
 )
 
-# Train and validate
-engine.train(max_epochs=50)
-metrics = engine.test()
+# Train the model on your own Intel CPU or GPU
+engine.train()
 
-# Export to OpenVINO IR (default) for deployment
+# Export the trained model to OpenVINO format (.xml + .bin)
 exported_model_path = engine.export()
 
-# load exported OpenVINO model
-ov_engine = create_engine(model=exported_model_path, data=engine.datamodule)
+# Load the exported model into the OpenVINO engine
+openvino_engine = create_engine(model=exported_model_path, data=engine.datamodule)
 
-# optimize the model for edge deployment
-optimized_model_path = ov_engine.optimize()
+# Quantize the model to INT8, optimized for Intel hardware
+optimized_model_path = openvino_engine.optimize()
 
-# test the optimized model
-metrics = ov_engine.test()
-
-# predict with the optimized model
-predictions = ov_engine.predict()
+# Run inference with the optimized INT8 model
+predictions = openvino_engine.predict(checkpoint=optimized_model_path)
 ```
 
 See the [getitune documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/quick-start) for the full list of recipes,
 advanced configuration, dataset support, backend-specific options, and deployment/optimization examples.
+
+</details>
 
 ## Key Features
 

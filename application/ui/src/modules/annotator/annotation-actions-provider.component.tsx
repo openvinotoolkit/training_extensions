@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, ReactNode, useContext, useMemo, useRef } from 'react';
+import { Context, createContext, ReactNode, useContext, useMemo, useRef } from 'react';
 
 import { $api } from '@/api';
 import type { AnnotationDTO, DatasetItem, DatasetSubset, Label, Media } from '@/api/types';
@@ -24,30 +24,36 @@ type DatasetItemsPage = { items: DatasetItem[] };
 
 type AnnotationsContextValue = {
     annotations: Annotation[];
-    canSubmit: boolean;
-    hasInvalidAnnotation: boolean;
-    addAnnotations: (shapes: Shape[], labels: AnnotationLabelRef[]) => string[];
-    addAnnotationWithEmptyLabel: (label: Label) => void;
-    deleteAnnotations: (annotationIds: string[]) => void;
-    updateAnnotations: (updatedAnnotations: Annotation[], labels?: AnnotationLabelRef[]) => void;
-    submitAnnotations: (subset: DatasetSubset) => Promise<void>;
-    submitPredictions: (subset: DatasetSubset) => Promise<void>;
-    resetAnnotations: () => void;
-    replaceAnnotations: (annotations: Annotation[]) => void;
-    isUserReviewed: boolean;
-    isSaving: boolean;
-    isReadOnlyMode: boolean;
     initialAnnotations: Annotation[];
     initialPredictions: Annotation[];
 };
 
+type AnnotationCommands = {
+    addAnnotations: (shapes: Shape[], labels: AnnotationLabelRef[]) => string[];
+    addAnnotationWithEmptyLabel: (label: Label) => void;
+    deleteAnnotations: (annotationIds: string[]) => void;
+    updateAnnotations: (updatedAnnotations: Annotation[], labels?: AnnotationLabelRef[]) => void;
+    resetAnnotations: () => void;
+    replaceAnnotations: (annotations: Annotation[]) => void;
+};
+
+type AnnotationSubmission = {
+    canSubmit: boolean;
+    hasInvalidAnnotation: boolean;
+    isSaving: boolean;
+    submitAnnotations: (subset: DatasetSubset) => Promise<void>;
+    submitPredictions: (subset: DatasetSubset) => Promise<void>;
+};
+
 const AnnotationsContext = createContext<AnnotationsContextValue | null>(null);
+const AnnotationCommandsContext = createContext<AnnotationCommands | null>(null);
+const AnnotationSubmissionContext = createContext<AnnotationSubmission | null>(null);
+const IsReadOnlyContext = createContext<boolean | null>(null);
 
 export type AnnotationActionsProviderProps = {
     children: ReactNode;
     initialAnnotationsDTO: AnnotationDTO[];
     initialPredictionsDTO: AnnotationDTO[];
-    isUserReviewed?: boolean;
     mediaItem: Media;
     mode: AnnotatorMode;
     isReadOnly?: boolean;
@@ -61,7 +67,6 @@ export const AnnotationActionsProvider = ({
     children,
     initialAnnotationsDTO,
     initialPredictionsDTO,
-    isUserReviewed = false,
     mediaItem,
     mode,
     isReadOnly = false,
@@ -133,10 +138,7 @@ export const AnnotationActionsProvider = ({
     }, [initialAnnotationsDTO]);
 
     const [annotations, setAnnotations, undoRedoActions] = useUndoRedoState<Annotation[]>(initialAnnotations);
-
-    const resetAnnotations = () => {
-        undoRedoActions.reset(initialAnnotations);
-    };
+    const resetHistory = undoRedoActions.reset;
 
     const prevInitialAnnotationsDTORef = useRef(initialAnnotationsDTO);
 
@@ -146,54 +148,56 @@ export const AnnotationActionsProvider = ({
         prevInitialAnnotationsDTORef.current = initialAnnotationsDTO;
     }
 
-    const updateAnnotations = (updatedAnnotations: Annotation[], labels?: AnnotationLabelRef[]) => {
-        if (labels !== undefined) {
-            const idsToUpdate = new Set(updatedAnnotations.map((a) => a.id));
+    // Updater-form setState keeps the commands stable while annotations change.
+    const commands = useMemo<AnnotationCommands>(() => {
+        const addAnnotations = (shapes: Shape[], labels: AnnotationLabelRef[]): string[] => {
+            const newAnnotations = shapes.map((shape) => ({
+                shape,
+                id: crypto.randomUUID(),
+                labels,
+            }));
 
-            setAnnotations((prevAnnotations) =>
-                prevAnnotations.map((annotation) =>
-                    idsToUpdate.has(annotation.id) ? { ...annotation, labels } : annotation
-                )
-            );
-        } else {
-            const updatedMap = new Map(updatedAnnotations.map((annotation) => [annotation.id, annotation]));
+            setAnnotations((prevAnnotations) => [...prevAnnotations, ...newAnnotations]);
 
-            setAnnotations((prevAnnotations) =>
-                prevAnnotations.map((annotation) => updatedMap.get(annotation.id) ?? annotation)
-            );
-        }
-    };
+            return newAnnotations.map((annotation) => annotation.id);
+        };
 
-    const addAnnotations = (shapes: Shape[], labels: AnnotationLabelRef[]): string[] => {
-        const newAnnotations = shapes.map((shape) => ({
-            shape,
-            id: crypto.randomUUID(),
-            labels,
-        }));
+        return {
+            addAnnotations,
+            updateAnnotations: (updatedAnnotations, labels) => {
+                if (labels !== undefined) {
+                    const idsToUpdate = new Set(updatedAnnotations.map((a) => a.id));
 
-        setAnnotations((prevAnnotations) => [...prevAnnotations, ...newAnnotations]);
+                    setAnnotations((prevAnnotations) =>
+                        prevAnnotations.map((annotation) =>
+                            idsToUpdate.has(annotation.id) ? { ...annotation, labels } : annotation
+                        )
+                    );
+                } else {
+                    const updatedMap = new Map(updatedAnnotations.map((annotation) => [annotation.id, annotation]));
 
-        return newAnnotations.map((annotation) => annotation.id);
-    };
-
-    const deleteAllAnnotations = () => {
-        setAnnotations([]);
-    };
-
-    const addAnnotationWithEmptyLabel = (emptyLabel: Label) => {
-        deleteAllAnnotations();
-        addAnnotations([{ type: 'full_image' }], [{ id: emptyLabel.id }]);
-    };
-
-    const deleteAnnotations = (annotationIds: string[]) => {
-        setAnnotations((prevAnnotations) =>
-            prevAnnotations.filter((annotation) => !annotationIds.includes(annotation.id))
-        );
-    };
-
-    const replaceAnnotations = (newAnnotations: Annotation[]) => {
-        setAnnotations(() => newAnnotations);
-    };
+                    setAnnotations((prevAnnotations) =>
+                        prevAnnotations.map((annotation) => updatedMap.get(annotation.id) ?? annotation)
+                    );
+                }
+            },
+            deleteAnnotations: (annotationIds) => {
+                setAnnotations((prevAnnotations) =>
+                    prevAnnotations.filter((annotation) => !annotationIds.includes(annotation.id))
+                );
+            },
+            addAnnotationWithEmptyLabel: (emptyLabel) => {
+                setAnnotations([]);
+                addAnnotations([{ type: 'full_image' }], [{ id: emptyLabel.id }]);
+            },
+            replaceAnnotations: (newAnnotations) => {
+                setAnnotations(() => newAnnotations);
+            },
+            resetAnnotations: () => {
+                resetHistory(initialAnnotations);
+            },
+        };
+    }, [setAnnotations, resetHistory, initialAnnotations]);
 
     const saveAnnotations = async (annotationsDTO: AnnotationDTO[], subset?: DatasetSubset) => {
         const query = isVideoFrame(mediaItem) ? { frame_index: mediaItem.frame_number } : undefined;
@@ -252,43 +256,50 @@ export const AnnotationActionsProvider = ({
             : !hasInvalidAnnotation && (hasChangedAnnotations || hasEmptyLabelSelection);
     const isReadOnlyMode = isReadOnly || mode === 'prediction';
 
+    const annotationsValue = useMemo<AnnotationsContextValue>(
+        () => ({ annotations: annotationsToRender, initialAnnotations, initialPredictions: predictions }),
+        [annotationsToRender, initialAnnotations, predictions]
+    );
+
+    const submission: AnnotationSubmission = {
+        canSubmit,
+        hasInvalidAnnotation,
+        isSaving: saveMutation.isPending,
+        submitAnnotations,
+        submitPredictions,
+    };
+
     return (
-        <AnnotationsContext.Provider
-            value={{
-                isUserReviewed,
-                annotations: annotationsToRender,
-                canSubmit,
-                hasInvalidAnnotation,
-
-                // Local
-                addAnnotations,
-                updateAnnotations,
-                deleteAnnotations,
-                addAnnotationWithEmptyLabel,
-                resetAnnotations,
-                replaceAnnotations,
-                initialAnnotations,
-                initialPredictions: predictions,
-
-                // Remote
-                submitAnnotations,
-                submitPredictions,
-
-                isSaving: saveMutation.isPending,
-                isReadOnlyMode,
-            }}
-        >
-            <UndoRedoProvider baseHistory={undoRedoActions}>{children}</UndoRedoProvider>
-        </AnnotationsContext.Provider>
+        <AnnotationCommandsContext value={commands}>
+            <AnnotationsContext value={annotationsValue}>
+                <IsReadOnlyContext value={isReadOnlyMode}>
+                    <AnnotationSubmissionContext value={submission}>
+                        <UndoRedoProvider baseHistory={undoRedoActions}>{children}</UndoRedoProvider>
+                    </AnnotationSubmissionContext>
+                </IsReadOnlyContext>
+            </AnnotationsContext>
+        </AnnotationCommandsContext>
     );
 };
 
-export const useAnnotationActions = () => {
-    const context = useContext(AnnotationsContext);
+const useRequiredContext = <T,>(
+    context: Context<T | null>,
+    hookName: 'useAnnotations' | 'useAnnotationCommands' | 'useIsAnnotatorReadOnly' | 'useAnnotationSubmission'
+): T => {
+    const value = useContext(context);
 
-    if (context === null) {
-        throw new Error('useAnnotationActions must be used within "AnnotationActionsProvider"');
+    if (value === null) {
+        throw new Error(`${hookName} must be used within "AnnotationActionsProvider"`);
     }
 
-    return context;
+    return value;
 };
+
+// Re-renders on every annotation change; components that only edit should use useAnnotationCommands.
+export const useAnnotations = () => useRequiredContext(AnnotationsContext, 'useAnnotations');
+
+export const useAnnotationCommands = () => useRequiredContext(AnnotationCommandsContext, 'useAnnotationCommands');
+
+export const useIsAnnotatorReadOnly = () => useRequiredContext(IsReadOnlyContext, 'useIsAnnotatorReadOnly');
+
+export const useAnnotationSubmission = () => useRequiredContext(AnnotationSubmissionContext, 'useAnnotationSubmission');

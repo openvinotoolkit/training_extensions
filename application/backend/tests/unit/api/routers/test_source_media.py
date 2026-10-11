@@ -70,6 +70,43 @@ class TestSourceMediaEndpoints:
         assert response.status_code == status.HTTP_201_CREATED
         fxt_source_media_service.upload.assert_called_once()
 
+    def test_upload_source_media_from_upload(
+        self, fxt_source_media_service, fxt_upload_service, fxt_create_upload, fxt_client
+    ):
+        resolved_path = Path("/data/source_media/712750b2-5a82-47ee-8fba-f3dc96cb615d/sample.mp4")
+        fxt_source_media_service.upload_from_path.return_value = resolved_path
+        upload_id = fxt_create_upload("sample.mp4")
+
+        response = fxt_client.post("/api/sources/media:from-upload", json={"upload_id": str(upload_id)})
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json() == {"video_path": str(resolved_path)}
+        # The uploaded video is moved, not copied
+        fxt_source_media_service.upload_from_path.assert_awaited_once_with(
+            filename="sample.mp4", source_path=fxt_upload_service.path_for(upload_id)
+        )
+        assert fxt_client.get(f"/api/uploads/{upload_id}").json()["state"] == "consumed"
+
+    @pytest.mark.parametrize("filename", ["sample.txt", "sample.jpg", "sample"])
+    def test_upload_source_media_from_upload_unsupported_format(
+        self, fxt_source_media_service, fxt_create_upload, fxt_client, filename
+    ):
+        upload_id = fxt_create_upload(filename)
+
+        response = fxt_client.post("/api/sources/media:from-upload", json={"upload_id": str(upload_id)})
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_source_media_service.upload_from_path.assert_not_called()
+        assert fxt_client.get(f"/api/uploads/{upload_id}").json()["state"] == "completed"
+
+    def test_upload_source_media_from_incomplete_upload(self, fxt_source_media_service, fxt_create_upload, fxt_client):
+        upload_id = fxt_create_upload("sample.mp4", data=b"abc", length=10)
+
+        response = fxt_client.post("/api/sources/media:from-upload", json={"upload_id": str(upload_id)})
+
+        assert response.status_code == status.HTTP_409_CONFLICT
+        fxt_source_media_service.upload_from_path.assert_not_called()
+
     def test_delete_source_media_success(self, fxt_source_service, fxt_client):
         source_media_id = "712750b2-5a82-47ee-8fba-f3dc96cb615d"
         deleted_path = f"/data/source_media/{source_media_id}/sample.mp4"

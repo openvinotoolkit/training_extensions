@@ -156,4 +156,29 @@ describe('VideoFile', () => {
 
         expect(handleSubmit).toHaveBeenCalled();
     });
+    it('shows the transfer progress and lets the user cancel it', async () => {
+        const onCancelUpload = vi.fn();
+        renderApp({ uploadProgress: { bytesSent: 500, bytesTotal: 2000 }, onCancelUpload });
+
+        expect(screen.getByRole('progressbar', { name: 'Upload progress' })).toHaveAttribute('aria-valuenow', '25');
+        expect(screen.getByText('500 B of 2 kB')).toBeVisible();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        expect(onCancelUpload).toHaveBeenCalledOnce();
+    });
+
+    it('does not show any progress when no transfer is running', () => {
+        renderApp({ uploadProgress: null });
+
+        expect(screen.queryByRole('progressbar')).toBeNull();
+    });
+
+    it('hides the cancel button once the transfer has completed', () => {
+        const onCancelUpload = vi.fn();
+        renderApp({ uploadProgress: { bytesSent: 2000, bytesTotal: 2000 }, onCancelUpload });
+
+        expect(screen.getByRole('progressbar', { name: 'Upload progress' })).toHaveAttribute('aria-valuenow', '100');
+        expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    });
 });

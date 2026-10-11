@@ -164,7 +164,6 @@ const MediaPreviewContent = ({
                 mediaItem={mediaItem}
                 initialAnnotationsDTO={initialAnnotations}
                 initialPredictionsDTO={initialPredictions}
-                isUserReviewed={isCurrentMediaReviewed}
                 mode={mode}
             >
                 <MediaPreviewPanels

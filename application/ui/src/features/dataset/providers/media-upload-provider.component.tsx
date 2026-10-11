@@ -8,8 +8,13 @@ import { useTranslation, type TranslateFn } from '@/i18n';
 import { Button, Flex, Loading, Text } from '@geti-ui/ui';
 
 import { UploadDetailsDialog } from '../gallery/upload-details-dialog/upload-details-dialog.component';
-import { IsUploadingContext, MediaUploadDispatchContext, MediaUploadStateContext } from './media-upload-context';
-import { computeSummary, INITIAL_STATE, reducer } from './media-upload-reducer';
+import {
+    IsUploadingContext,
+    MediaUploadAbortControllersContext,
+    MediaUploadDispatchContext,
+    MediaUploadStateContext,
+} from './media-upload-context';
+import { computeSummary, formatFinalSummary, INITIAL_STATE, reducer } from './media-upload-reducer';
 
 const UPLOAD_TOAST_ID = 'upload-progress-notification';
 const UPLOAD_TOAST_FONT_SIZE = 'var(--spectrum-global-dimension-font-size-75)';
@@ -67,17 +72,7 @@ const showInProgressToast = (total: number, succeeded: number, failed: number, o
     });
 };
 
-const showFinalToast = (succeeded: number, failed: number, openDialog: () => void, t: TranslateFn): void => {
-    let text: string;
-
-    if (failed === 0) {
-        text = t('dataset.upload.uploadedSummary', { count: succeeded });
-    } else if (succeeded === 0) {
-        text = t('dataset.upload.failedSummary', { count: failed });
-    } else {
-        text = t('dataset.upload.mixedSummary', { count: succeeded, uploaded: succeeded, failed });
-    }
-
+const showFinalToast = (text: string, openDialog: () => void): void => {
     toast({
         id: UPLOAD_TOAST_ID,
         type: 'neutral',
@@ -91,6 +86,7 @@ export const MediaUploadProvider = ({ children }: { children: ReactNode }) => {
     const { t } = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
     const lastToastUpdateRef = useRef(0);
+    const abortControllersRef = useRef(new Map<string, AbortController>());
 
     useEffect(() => {
         return () => removeToast(UPLOAD_TOAST_ID);
@@ -104,7 +100,7 @@ export const MediaUploadProvider = ({ children }: { children: ReactNode }) => {
 
         if (!state.isUploading) {
             lastToastUpdateRef.current = 0;
-            showFinalToast(summary.succeeded, summary.failed, openDialog, t);
+            showFinalToast(formatFinalSummary(t, summary), openDialog);
 
             return;
         }
@@ -123,13 +119,15 @@ export const MediaUploadProvider = ({ children }: { children: ReactNode }) => {
     }, [state.items, state.isUploading, t]);
 
     return (
-        <MediaUploadDispatchContext.Provider value={dispatch}>
-            <IsUploadingContext.Provider value={state.isUploading}>
-                <MediaUploadStateContext.Provider value={state}>
-                    {children}
-                    <UploadDetailsDialog />
-                </MediaUploadStateContext.Provider>
-            </IsUploadingContext.Provider>
-        </MediaUploadDispatchContext.Provider>
+        <MediaUploadAbortControllersContext.Provider value={abortControllersRef.current}>
+            <MediaUploadDispatchContext.Provider value={dispatch}>
+                <IsUploadingContext.Provider value={state.isUploading}>
+                    <MediaUploadStateContext.Provider value={state}>
+                        {children}
+                        <UploadDetailsDialog />
+                    </MediaUploadStateContext.Provider>
+                </IsUploadingContext.Provider>
+            </MediaUploadDispatchContext.Provider>
+        </MediaUploadAbortControllersContext.Provider>
     );
 };

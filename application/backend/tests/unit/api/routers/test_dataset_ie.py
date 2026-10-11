@@ -3,7 +3,7 @@
 
 import io
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 from urllib.parse import quote
 from uuid import uuid4
 
@@ -54,6 +54,51 @@ class TestDatasetIEEndpoints:
         assert response_data["ready_for_export"]
         assert not response_data["ready_for_import"]
         assert response_data["size"] == fxt_staged_dataset.size
+
+    @pytest.mark.asyncio
+    async def test_stage_dataset_archive_from_upload(
+        self,
+        fxt_staged_dataset_service: Mock,
+        fxt_staged_dataset: StagedDataset,
+        fxt_upload_service,
+        fxt_create_upload,
+        fxt_client: TestClient,
+    ) -> None:
+        upload_id = fxt_create_upload("my-dataset.zip")
+        fxt_staged_dataset_service.upload_from_path = AsyncMock(return_value=fxt_staged_dataset)
+
+        response = fxt_client.post("/api/staged_datasets:from-upload", json={"upload_id": str(upload_id)})
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json()["id"] == str(fxt_staged_dataset.id)
+        # The uploaded archive is moved, not copied
+        fxt_staged_dataset_service.upload_from_path.assert_awaited_once_with(
+            filename="dataset.zip", source_path=fxt_upload_service.path_for(upload_id)
+        )
+        fxt_staged_dataset_service.upload.assert_not_called()
+        assert fxt_client.get(f"/api/uploads/{upload_id}").json()["state"] == "consumed"
+        retry = fxt_client.post("/api/staged_datasets:from-upload", json={"upload_id": str(upload_id)})
+        assert retry.status_code == status.HTTP_410_GONE
+
+    def test_stage_dataset_archive_from_upload_not_zip(
+        self, fxt_staged_dataset_service: Mock, fxt_create_upload, fxt_client: TestClient
+    ) -> None:
+        upload_id = fxt_create_upload("dataset.tar")
+        fxt_staged_dataset_service.upload_from_path = AsyncMock()
+
+        response = fxt_client.post("/api/staged_datasets:from-upload", json={"upload_id": str(upload_id)})
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_staged_dataset_service.upload_from_path.assert_not_awaited()
+        assert fxt_client.get(f"/api/uploads/{upload_id}").json()["state"] == "completed"
+
+    @pytest.mark.usefixtures("fxt_upload_service")
+    def test_stage_dataset_archive_from_unknown_upload(
+        self, fxt_staged_dataset_service: Mock, fxt_client: TestClient
+    ) -> None:
+        response = fxt_client.post("/api/staged_datasets:from-upload", json={"upload_id": str(uuid4())})
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_upload_dataset_archive_missing_filename(self, fxt_staged_dataset_service: Mock, fxt_client: TestClient):
         files = {"file": ("", io.BytesIO(b"data"), "application/zip")}

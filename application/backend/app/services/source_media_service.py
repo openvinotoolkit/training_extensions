@@ -79,6 +79,43 @@ class SourceMediaService:
 
         return target_path.resolve()
 
+    async def upload_from_path(self, filename: str, source_path: Path) -> Path:
+        """
+        Store a video file that already exists on disk, by moving (not copying) it.
+
+        A new UUID subdirectory is created under the configured source media root, and the file is moved inside it
+        with the given filename. The move is offloaded to a worker thread; when the source file is on the same
+        filesystem, it is a cheap rename regardless of the video size.
+
+        Args:
+            filename: Target filename of the video within its dedicated subdirectory. Only the final path component
+                is used, so any directory separators or traversal segments are stripped.
+            source_path: Path of the video to move. The file is no longer at this location on success.
+
+        Returns:
+            The absolute path to the stored video file.
+
+        Raises:
+            ValueError: If the filename has no usable name component once sanitized.
+        """
+        safe_name = Path(filename).name
+        if not safe_name or safe_name in {".", ".."}:
+            raise ValueError(f"Invalid filename: {filename!r}")
+
+        target_dir = self._source_media_dir / str(uuid4())
+        target_path = target_dir / safe_name
+
+        def _perform_move() -> None:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.move(source_path, target_path)
+            except Exception:
+                shutil.rmtree(target_dir, ignore_errors=True)
+                raise
+
+        await to_thread.run_sync(_perform_move)
+        return target_path.resolve()
+
     def delete_video(self, video_path: str) -> None:
         """
         Remove a previously uploaded video and its dedicated UUID subdirectory.

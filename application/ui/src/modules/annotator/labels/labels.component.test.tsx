@@ -46,8 +46,8 @@ vi.mock('../select-annotation-provider.component', () => ({
 }));
 
 vi.mock('../annotation-actions-provider.component', () => ({
-    useAnnotationActions: () => ({
-        annotations: mockAnnotations.current,
+    useAnnotations: () => ({ annotations: mockAnnotations.current }),
+    useAnnotationCommands: () => ({
         updateAnnotations: mockUpdateAnnotations,
         addAnnotations: mockAddAnnotations,
         deleteAnnotations: mockDeleteAnnotations,

@@ -116,6 +116,41 @@ class TestJobControlPlaneIntegration:
             await fxt_job_controller.stop()
 
     @pytest.mark.asyncio
+    async def test_job_force_terminated_during_cancellation_is_marked_cancelled(
+        self, fxt_job_queue, fxt_job_controller, fxt_runnable_factory, fxt_job
+    ):
+        """Test that a job which fails (instead of reacting to cancellation) while CANCELLING ends up CANCELLED.
+
+        Regression test for https://github.com/open-edge-platform/geti/issues/7688: a runner that is force
+        terminated (e.g. via SIGTERM/SIGKILL) while a cancellation is in progress emits a Failed event, but the
+        job should still be reported as CANCELLED rather than FAILED.
+        """
+        fxt_runnable_factory.return_value = MockRunnable(
+            behavior=RunnableBehaviour.FAILURE_WHILE_CANCELLING, execution_time=0.1
+        )
+
+        job = fxt_job()
+        await fxt_job_queue.submit(job)
+
+        await fxt_job_controller.start()
+
+        try:
+            # Wait for job to start running
+            await self._wait_for_job_status(job, JobStatus.RUNNING, timeout=2.0)
+
+            # Cancel running job before it has a chance to react to the cancellation itself
+            result_job, result = fxt_job_queue.cancel(job.id)
+            assert result == CancellationResult.RUNNING_CANCELLING
+
+            # The runnable ignores cancellation and fails; the job should still end up cancelled
+            await self._wait_for_job_status(job, JobStatus.CANCELLED, timeout=2.0)
+
+            assert job.status == JobStatus.CANCELLED
+
+        finally:
+            await fxt_job_controller.stop()
+
+    @pytest.mark.asyncio
     async def test_multiple_jobs_concurrent_execution(
         self, fxt_job_queue, fxt_job_controller, fxt_runnable_factory, fxt_job
     ):

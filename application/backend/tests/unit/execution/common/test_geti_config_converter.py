@@ -454,6 +454,41 @@ class TestGetiConfigConverterConvert:
         assert result["data"]["train_subset"]["batch_size"] == 16
         assert result["data"]["val_subset"]["batch_size"] == 16
 
+    @pytest.mark.parametrize("num_workers", [0, 6])
+    def test_convert_applies_num_workers(self, num_workers: int) -> None:
+        getitune_cfg = _make_getitune_config()
+        geti_cfg = _make_geti_config(hyper_parameters={"training": {"num_workers": num_workers}})
+
+        with patch("getitune.tools.auto_configurator.AutoConfigurator") as MockAutoConfigurator:
+            MockAutoConfigurator.return_value.config = getitune_cfg
+            result = GetiConfigConverter.convert(geti_cfg)
+
+        for subset in ("train_subset", "val_subset", "test_subset"):
+            assert result["data"][subset]["num_workers"] == num_workers
+
+    def test_convert_huggingface_applies_num_workers(self) -> None:
+        from getitune.utils import get_getitune_root_path
+
+        recipe_path = get_getitune_root_path() / "recipe" / "detection" / "rtdetrv2_r18.yaml"
+        geti_cfg = _make_geti_config(hyper_parameters={"training": {"num_workers": 0}})
+
+        with patch.object(RecipeResolver, "resolve", return_value=Path(recipe_path)):
+            result = GetiConfigConverter.convert(geti_cfg)
+
+        for subset in ("train_subset", "val_subset", "test_subset"):
+            assert result["data"][subset]["num_workers"] == 0
+
+    def test_convert_ultralytics_applies_num_workers(self) -> None:
+        geti_cfg = _make_geti_config(
+            model_manifest_id="object-detection-yolo26-n",
+            hyper_parameters={"training": {"num_workers": 0}},
+        )
+
+        result = GetiConfigConverter.convert(geti_cfg)
+
+        for subset in ("train_subset", "val_subset", "test_subset"):
+            assert result["data"][subset]["num_workers"] == 0
+
     def test_convert_applies_max_epochs(self) -> None:
         getitune_cfg = _make_getitune_config()
         geti_cfg = _make_geti_config(hyper_parameters={"training": {"max_epochs": 50}})

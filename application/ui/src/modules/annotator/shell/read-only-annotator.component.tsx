@@ -7,7 +7,7 @@ import { ActionButton, Flex, Icon, Text, View } from '@geti-ui/ui';
 import { ChevronLeft, ChevronRight, CloseSemiBold } from '@geti-ui/ui/icons';
 import { isEmpty } from 'lodash-es';
 
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotations } from '../annotation-actions-provider.component';
 import { ReadOnlyAnnotatorCanvas } from '../annotator-canvas/read-only-annotator-canvas';
 import type { AnnotatorMode } from '../annotator-mode';
 import { BottomToolbar } from './bottom-toolbar/bottom-toolbar.component';
@@ -39,7 +39,7 @@ type ModesToggleProps = {
 };
 
 const ModesToggle = ({ mediaItem, mode, onModeChange }: ModesToggleProps) => {
-    const { initialAnnotations, initialPredictions } = useAnnotationActions();
+    const { initialAnnotations, initialPredictions } = useAnnotations();
 
     return (
         <Toolbar.Container>

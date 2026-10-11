@@ -251,9 +251,10 @@ _Response:_ HTTP 201 Created
 ```
 
 > [!NOTE]
-> For large datasets, a simple file upload endpoint may not be ideal in case of unreliable network connections.
-> Normally, a more robust upload mechanism would leverage resumable uploads (tus); in this case, for simplicity,
-> the recommended approach is to upload the dataset archive directly to the staging area folder, bypassing the API.
+> For large datasets, a single request upload is fragile on unreliable network connections. Instead, transfer the
+> archive with the [resumable upload API](api.md#resumable-uploads) (TUS), then stage it with
+> `POST /api/staged_datasets:from-upload` and the body `{"upload_id": "<id>"}`. The response is the same as above; the
+> archive is moved, not copied, into the staging area.
 
 ---
 

@@ -62,16 +62,37 @@ describe('createI18nInstance', () => {
         }
     );
 
-    it.each(['zh', 'zh-CN', 'zh-TW', 'zh-Hant-HK', 'zh-MO'])(
-        'renders Simplified Chinese for browser language %s',
-        (language) => {
-            setNavigatorLanguage(language);
-            const instance = createI18nInstance();
+    it.each(['zh', 'zh-CN', 'zh-Hant-HK'])('renders Simplified Chinese for browser language %s', (language) => {
+        setNavigatorLanguage(language);
+        const instance = createI18nInstance();
 
-            expect(instance.resolvedLanguage).toBe('zh-CN');
-            expect(instance.t('common.labels.dataset')).toBe('数据集');
-        }
-    );
+        expect(instance.resolvedLanguage).toBe('zh-CN');
+        expect(instance.t('common.labels.dataset')).toBe('数据集');
+    });
+
+    it.each(['zh-TW'])('renders Traditional Chinese (Taiwan) for browser language %s', (language) => {
+        setNavigatorLanguage(language);
+        const instance = createI18nInstance();
+
+        expect(instance.resolvedLanguage).toBe('zh-TW');
+        expect(instance.t('common.labels.dataset')).toBe('資料集');
+    });
+
+    it.each(['zh-HK'])('renders Traditional Chinese (Hong Kong) for browser language %s', (language) => {
+        setNavigatorLanguage(language);
+        const instance = createI18nInstance();
+
+        expect(instance.resolvedLanguage).toBe('zh-HK');
+        expect(instance.t('common.labels.dataset')).toBe('數據集');
+    });
+
+    it.each(['zh-MO'])('renders Traditional Chinese (Macau) for browser language %s', (language) => {
+        setNavigatorLanguage(language);
+        const instance = createI18nInstance();
+
+        expect(instance.resolvedLanguage).toBe('zh-MO');
+        expect(instance.t('common.labels.dataset')).toBe('數據集');
+    });
 
     it.each(['klingon', 'not a language'])('renders English for unsupported stored language %s', (language) => {
         localStorage.setItem(LANGUAGE_STORAGE_KEY, language);

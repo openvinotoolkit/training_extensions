@@ -117,7 +117,7 @@ test.describe('Dataset', () => {
         const totalFiles = firstBatchCount + 1;
 
         network.use(
-            http.post('/api/projects/{project_id}/dataset/media', async () => {
+            http.post('/api/projects/{project_id}/dataset/media:from-upload', async () => {
                 uploadRequestCount += 1;
                 const isLastUploadRequest = uploadRequestCount === totalFiles;
 
@@ -154,7 +154,7 @@ test.describe('Dataset', () => {
         ];
 
         network.use(
-            http.post('/api/projects/{project_id}/dataset/media', async () => {
+            http.post('/api/projects/{project_id}/dataset/media:from-upload', async () => {
                 return HttpResponse.json(getMockedMediaImage({ id: crypto.randomUUID() }), {
                     status: 201,
                 });
@@ -220,7 +220,7 @@ test.describe('Dataset', () => {
             let getMediaCount = 0;
 
             network.use(
-                http.post('/api/projects/{project_id}/dataset/media', async () => {
+                http.post('/api/projects/{project_id}/dataset/media:from-upload', async () => {
                     const media = mockedMedia[getMediaCount];
 
                     getMediaCount++;

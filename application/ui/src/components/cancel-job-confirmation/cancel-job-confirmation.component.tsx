@@ -41,19 +41,19 @@ export const CancelJobConfirmation = ({ jobId, onRemove }: CancelJobConfirmation
                 isDisabled={cancelMutation.isPending}
                 isPending={cancelMutation.isPending}
             >
-                {t('dataset.jobs.cancel.title')}
+                {t('jobs.cancel.title')}
             </Button>
             <AlertDialog
-                title={t('dataset.jobs.cancel.title')}
+                title={t('jobs.cancel.title')}
                 variant='destructive'
                 cancelLabel={t('common.actions.dismiss')}
                 autoFocusButton='primary'
-                primaryActionLabel={t('dataset.jobs.cancel.title')}
+                primaryActionLabel={t('jobs.cancel.title')}
                 onPrimaryAction={handleCancel}
                 onSecondaryAction={dialogState.close}
                 isPrimaryActionDisabled={cancelMutation.isPending}
             >
-                {t('dataset.jobs.cancel.confirmation', { jobId })}
+                {t('jobs.cancel.confirmation', { jobId })}
             </AlertDialog>
         </DialogTrigger>
     );

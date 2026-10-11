@@ -51,7 +51,7 @@ describe('RunningJobRow', () => {
         );
     });
 
-    it('renders all fields correctly when grouped by dataset', async () => {
+    it('renders all fields correctly, including both the architecture and the dataset', async () => {
         const job = getMockedTrainJob({
             metadata: {
                 project: { id: '123' },
@@ -84,12 +84,7 @@ describe('RunningJobRow', () => {
         });
 
         render(
-            <RunningJobRow
-                job={job}
-                groupBy={'dataset'}
-                datasetRevisions={[datasetRevision]}
-                modelArchitectures={[modelArchitecture]}
-            />
+            <RunningJobRow job={job} datasetRevisions={[datasetRevision]} modelArchitectures={[modelArchitecture]} />
         );
 
         expect(await screen.findByText('My Detection Model')).toBeVisible();
@@ -98,62 +93,11 @@ describe('RunningJobRow', () => {
         expect(screen.getByText('Device: CPU')).toBeVisible();
 
         expect(screen.getByText(new RegExp(modelArchitecture.name))).toBeVisible();
-        expect(screen.queryByText(datasetRevision.name)).not.toBeInTheDocument();
-        expect(screen.queryByTestId('dataset-count')).not.toBeInTheDocument();
-        expect(screen.queryByTestId('labels-count')).not.toBeInTheDocument();
-    });
 
-    it('renders all fields correctly when grouped by architecture', async () => {
-        const job = getMockedTrainJob({
-            metadata: {
-                project: { id: '123' },
-                model: {
-                    id: 'ef3983f1-cef0-4ebe-91db-7330f1dd6e27',
-                    name: 'ATSS (ef3983f1)',
-                    architecture: 'Custom_Object_Detection_Gen3_ATSS',
-                    parent_revision_id: null,
-                    dataset_revision_id: 'dataset-123',
-                },
-                device: {
-                    type: 'cpu',
-                    name: 'CPU',
-                },
-            },
-            status: 'RUNNING',
-            message: 'Running...',
-            started_at: '2026-01-19T08:15:00.000000+00:00',
-        });
-
-        const datasetRevision = getMockedDatasetRevision({
-            id: 'dataset-123',
-            name: 'Dataset 1',
-            item_counts: {
-                total: 10,
-                testing: 4,
-                training: 4,
-                validation: 2,
-            },
-        });
-
-        render(
-            <RunningJobRow
-                job={job}
-                groupBy={'architecture'}
-                datasetRevisions={[datasetRevision]}
-                modelArchitectures={[modelArchitecture]}
-            />
-        );
-
-        expect(await screen.findByText('My Detection Model')).toBeVisible();
-        expect(screen.getByText('Running')).toBeVisible();
-        expect(screen.getByText(/Started: Jan 19, 2026/i)).toBeVisible();
-        expect(screen.getByText('Device: CPU')).toBeVisible();
-
-        expect(screen.queryByText(new RegExp(modelArchitecture.name))).not.toBeInTheDocument();
-
-        expect(screen.getByText(datasetRevision.name)).toBeInTheDocument();
+        // The revision name only appears once the model behind the job has been fetched.
+        expect(await screen.findByText(datasetRevision.name)).toBeVisible();
         const datasetBadge = screen.getByTestId('dataset-count');
-        expect(within(datasetBadge).getByText(datasetRevision.item_counts?.total?.toString() ?? ''));
+        expect(within(datasetBadge).getByText(datasetRevision.item_counts?.total?.toString() ?? '')).toBeVisible();
 
         const labelsBadge = screen.getByTestId('labels-count');
         const labelSchemaRevision = mockModel.training_info.label_schema_revision ?? {};
@@ -161,7 +105,33 @@ describe('RunningJobRow', () => {
             'labels' in labelSchemaRevision && Array.isArray(labelSchemaRevision.labels)
                 ? labelSchemaRevision.labels.length
                 : '';
-        expect(within(labelsBadge).getByText(labelsCount));
+        expect(within(labelsBadge).getByText(labelsCount)).toBeVisible();
+    });
+
+    it('shows the dataset view a training job was started on, before its revision exists', async () => {
+        const job = getMockedTrainJob({
+            metadata: {
+                project: { id: '123' },
+                model: {
+                    id: mockModel.id,
+                    name: mockModel.name,
+                    architecture: modelArchitecture.id,
+                    parent_revision_id: null,
+                    dataset_revision_id: null,
+                    dataset_view_id: 'collection-one',
+                    dataset_view_name: 'Collection One',
+                },
+                device: {
+                    type: 'cpu',
+                    name: 'CPU',
+                },
+            },
+            status: 'RUNNING',
+        });
+
+        render(<RunningJobRow job={job} datasetRevisions={[]} modelArchitectures={[modelArchitecture]} />);
+
+        expect(await screen.findByText('Collection One')).toBeVisible();
     });
 
     it('renders Cancel button when onCancel is provided and job is running', async () => {
@@ -189,7 +159,6 @@ describe('RunningJobRow', () => {
                 job={job}
                 onCancel={mockCancel}
                 datasetRevisions={[]}
-                groupBy={'dataset'}
                 modelArchitectures={[modelArchitecture]}
             />
         );
@@ -224,7 +193,6 @@ describe('RunningJobRow', () => {
                 job={job}
                 onCancel={mockCancel}
                 datasetRevisions={[]}
-                groupBy={'dataset'}
                 modelArchitectures={[modelArchitecture]}
             />
         );
@@ -257,14 +225,7 @@ describe('RunningJobRow', () => {
         });
 
         it('subscribes to SSE when the component mounts with a running job', async () => {
-            render(
-                <RunningJobRow
-                    job={job}
-                    datasetRevisions={[]}
-                    groupBy={'dataset'}
-                    modelArchitectures={[modelArchitecture]}
-                />
-            );
+            render(<RunningJobRow job={job} datasetRevisions={[]} modelArchitectures={[modelArchitecture]} />);
 
             await waitFor(() => {
                 expect(MockEventSourceConstructor).toHaveBeenCalled();
@@ -276,7 +237,7 @@ describe('RunningJobRow', () => {
             server.use(http.get('/api/jobs', () => HttpResponse.json([job])));
 
             const { result: jobsResult } = renderHook(() => {
-                useStreamJobStatus(job.job_id);
+                useStreamJobStatus(job.job_id, job.metadata.project.id);
                 return useGetCurrentRunningJobs();
             });
 
@@ -301,7 +262,7 @@ describe('RunningJobRow', () => {
             server.use(http.get('/api/jobs', () => HttpResponse.json([job])));
 
             renderHook(() => {
-                useStreamJobStatus(job.job_id);
+                useStreamJobStatus(job.job_id, job.metadata.project.id);
             });
 
             await waitFor(() => {

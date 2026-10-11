@@ -1,17 +1,18 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { Suspense, useState } from 'react';
+import { ReactNode, Suspense, useState } from 'react';
 
 import type { TaskType } from '@/api/types';
-import { Preferences } from '@/components/preferences/preferences.component';
+import getiLogo from '@/assets/icons/geti-logo.webp';
+import { LanguagesSelector } from '@/components/languages-selector/languages-selector.component';
 import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Loading, Text, View } from '@geti-ui/ui';
 import { useProjects } from 'hooks/api/project.hook';
 import { partition } from 'lodash-es';
 import { Link } from 'react-router';
 
-import getiLogo from '../../../assets/icons/geti-logo.webp';
+import { version } from '../../../../package.json';
 import { paths } from '../../../constants/paths';
 import { isNonEmptyArray } from '../../../shared/util';
 import { EmptyProjectList } from './empty-project-list/empty-project-list.component';
@@ -71,14 +72,14 @@ const ProjectSidebar = ({
                 )}
             </Flex>
 
-            <View>
-                <Preferences />
-            </View>
+            <Flex gap={'size-200'} alignItems={'center'} justifyContent={'center'}>
+                <Text UNSAFE_className={classes.version}>Geti v{version}</Text>
+            </Flex>
         </Flex>
     );
 };
 
-const ProjectGrid = () => {
+const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
     const { t } = useTranslation();
     const projectsQuery = useProjects();
     const projects = projectsQuery.data;
@@ -120,11 +121,11 @@ const ProjectGrid = () => {
                 <Flex width={'100%'} alignItems={'center'} justifyContent={'space-between'} gap={'size-300'}>
                     {shouldShowFilters && <SortProjects sortBy={sortBy} onSort={setSortBy} />}
 
-                    {shouldShowFilters && (
-                        <Text marginStart={'auto'} UNSAFE_className={classes.projectMetadata}>
-                            {countLabel}
-                        </Text>
-                    )}
+                    <Flex marginStart={'auto'} alignItems={'center'} gap={'size-200'}>
+                        {shouldShowFilters && <Text UNSAFE_className={classes.projectMetadata}>{countLabel}</Text>}
+                        {jobsButton}
+                        <LanguagesSelector />
+                    </Flex>
                 </Flex>
 
                 {isFiltering && sortedProjects.length === 0 && <NoMatchingProjects />}
@@ -159,7 +160,7 @@ const ProjectGrid = () => {
     );
 };
 
-export const ProjectList = () => {
+export const ProjectList = ({ jobsButton }: { jobsButton?: ReactNode }) => {
     return (
         <View height={'100%'} position={'relative'}>
             <Content height={'100%'} margin={'0'}>
@@ -168,7 +169,7 @@ export const ProjectList = () => {
 
                     <View flex={1} UNSAFE_style={{ overflow: 'auto' }}>
                         <Suspense fallback={<Loading size='M' mode='inline' />}>
-                            <ProjectGrid />
+                            <ProjectGrid jobsButton={jobsButton} />
                         </Suspense>
                     </View>
                 </Flex>

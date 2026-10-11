@@ -1,8 +1,10 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { useTranslation } from '@/i18n';
 import { dimensionValue, Flex, Grid, Heading, Text } from '@geti-ui/ui';
 import { Image, Tag } from '@geti-ui/ui/icons';
+import { DATE_TIME_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 import { useNumberFormatter } from 'react-aria';
 
 import type { DatasetGroup } from '../../types';
@@ -18,6 +20,9 @@ export const DatasetGroupHeader = ({ dataset }: DatasetGroupHeaderProps) => {
     const hasDatasetRevisionData = dataset.imageCount > 0 && !dataset.filesDeleted;
     const gridColumns = hasDatasetRevisionData ? ['auto', '1fr', 'auto', 'max-content'] : ['auto', '1fr', 'auto'];
     const formatter = useNumberFormatter();
+    const { t } = useTranslation();
+    const formatDate = useFormatDate(DATE_TIME_FORMAT);
+    const createdAt = formatDate(dataset.createdAt);
 
     return (
         <Grid columns={gridColumns} alignItems={'center'} marginBottom={'size-225'} gap={'size-200'}>
@@ -33,7 +38,7 @@ export const DatasetGroupHeader = ({ dataset }: DatasetGroupHeaderProps) => {
                     color: 'var(--spectrum-global-color-gray-700)',
                 }}
             >
-                {dataset.createdAt}
+                {createdAt === null ? '-' : t('dataset.revisions.createdOn', { date: createdAt })}
             </Text>
 
             <Flex gap={'size-50'} justifyContent={'center'}>

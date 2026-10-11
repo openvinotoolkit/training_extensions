@@ -3,11 +3,13 @@
 
 """Application lifecycle management"""
 
+import asyncio
 import json
 import multiprocessing as mp
 import os
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
+from datetime import timedelta
 from functools import partial
 from multiprocessing.synchronize import Condition
 from pathlib import Path
@@ -45,6 +47,7 @@ from app.services.data_collect import DataCollector
 from app.services.event.event_bus import EventBus
 from app.services.inference import InferenceServer
 from app.services.subset_assignment import SubsetAssigner, SubsetService
+from app.services.upload_service import UploadService
 from app.services.video import CacheConfig, VideoService
 from app.settings import get_settings
 from app.webrtc import SDPHandler, WebRTCManager, WebRTCSettings
@@ -53,6 +56,9 @@ from app.webrtc import SDPHandler, WebRTCManager, WebRTCSettings
 # A failed or incompatible schema migration will deterministically fail again,
 # so the launcher/supervisor must NOT restart the process when it sees this code.
 MIGRATION_FATAL_EXIT_CODE = 3
+
+# Interval between two runs of the garbage collector of expired and consumed resumable uploads.
+UPLOAD_GC_INTERVAL_SECONDS = 15 * 60
 
 # Name of the machine-readable status file the backend drops into DATA_DIR right
 # before exiting with MIGRATION_FATAL_EXIT_CODE. The Tauri shell reads this file when it sees the
@@ -102,6 +108,19 @@ def clear_fatal_status(data_dir: Path) -> None:
         status_path.unlink(missing_ok=True)
     except OSError as exc:
         logger.warning("Could not remove stale fatal status file {}: {}", status_path, exc)
+
+
+async def collect_upload_garbage_periodically(upload_service: UploadService, interval_seconds: float) -> None:
+    """Periodically delete the resumable uploads that have expired or have been consumed, until cancelled.
+
+    Without this, abandoned uploads would silently fill the disk.
+    """
+    while True:
+        try:
+            await upload_service.collect_garbage()
+        except Exception:
+            logger.exception("Failed to garbage-collect resumable uploads")
+        await asyncio.sleep(interval_seconds)
 
 
 def setup_job_controller(
@@ -271,6 +290,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:  # noqa: PLR0915
     # it can't be mistaken for a fresh failure by the UI shell.
     clear_fatal_status(settings.data_dir)
 
+    if settings.uploads_dir is None:
+        raise RuntimeError("uploads_dir was not initialized")
+    upload_service = UploadService(
+        uploads_dir=settings.uploads_dir,
+        max_size=settings.upload_max_size,
+        ttl=timedelta(hours=settings.upload_ttl_hours),
+    )
+    app.state.upload_service = upload_service
+    upload_gc_task = asyncio.create_task(
+        collect_upload_garbage_periodically(upload_service, UPLOAD_GC_INTERVAL_SECONDS), name="upload_gc"
+    )
+
     # Worker processes are created with the "spawn" method to ensure a clean state and avoid issues with shared
     # resources, especially when the workers involve GPU usage or complex libraries that may not be fork-safe.
     # See https://github.com/open-edge-platform/training_extensions/issues/5701 for more details.
@@ -335,6 +366,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:  # noqa: PLR0915
     yield
 
     await job_controller.stop()
+    upload_gc_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await upload_gc_task
     # Shutdown
     logger.info("Shutting down {} application...", settings.app_name)
     video_service.close()

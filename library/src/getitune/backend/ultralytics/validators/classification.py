@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import multiprocessing
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import torch
@@ -53,7 +54,11 @@ class ClassificationValidator(GetiTuneValidatorMixin, _UltralyticsClassification
             raise TypeError(msg)
         test_key = self._datamodule.test_subset.subset_name
         val_key = self._datamodule.val_subset.subset_name
-        subset = self._datamodule.subsets.get(test_key) or self._datamodule.subsets[val_key]
+        test_subset = self._datamodule.subsets.get(test_key)
+        subset = test_subset or self._datamodule.subsets[val_key]
+        num_workers = (
+            self._datamodule.test_subset.num_workers if test_subset else self._datamodule.val_subset.num_workers
+        )
         adapter = UltralyticsDatasetAdapter(subset, task_kind=self._task_kind)
         return DataLoader(
             adapter,
@@ -61,6 +66,9 @@ class ClassificationValidator(GetiTuneValidatorMixin, _UltralyticsClassification
             shuffle=False,
             collate_fn=classification_collate_fn,
             pin_memory=self.device.type != "cpu",
+            num_workers=num_workers,
+            persistent_workers=num_workers > 0,
+            multiprocessing_context=multiprocessing.get_context("spawn") if num_workers > 0 else None,
         )
 
 
@@ -165,7 +173,11 @@ class MultiLabelClassificationValidator(GetiTuneValidatorMixin, _UltralyticsClas
             raise TypeError(msg)
         test_key = self._datamodule.test_subset.subset_name
         val_key = self._datamodule.val_subset.subset_name
-        subset = self._datamodule.subsets.get(test_key) or self._datamodule.subsets[val_key]
+        test_subset = self._datamodule.subsets.get(test_key)
+        subset = test_subset or self._datamodule.subsets[val_key]
+        num_workers = (
+            self._datamodule.test_subset.num_workers if test_subset else self._datamodule.val_subset.num_workers
+        )
         adapter = UltralyticsDatasetAdapter(subset, task_kind=self._task_kind)
         return DataLoader(
             adapter,
@@ -173,4 +185,7 @@ class MultiLabelClassificationValidator(GetiTuneValidatorMixin, _UltralyticsClas
             shuffle=False,
             collate_fn=multilabel_collate_fn,
             pin_memory=self.device.type != "cpu",
+            num_workers=num_workers,
+            persistent_workers=num_workers > 0,
+            multiprocessing_context=multiprocessing.get_context("spawn") if num_workers > 0 else None,
         )

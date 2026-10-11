@@ -176,12 +176,16 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             return weights_path
 
     @step("Assign Dataset Subsets")
-    def assign_subsets(self, training_config: TrainingConfiguration, project_id: UUID) -> None:
-        """Assigning subsets to all unassigned dataset items in the project dataset."""
+    def assign_subsets(
+        self, training_config: TrainingConfiguration, project_id: UUID, dataset_view_id: UUID | None = None
+    ) -> None:
+        """Assigning subsets to all unassigned dataset items in the project dataset, or in the selected view."""
         with self._db_session_factory() as db:
             self._subset_service.set_db_session(db)
             self.update_message("Retrieving unassigned items")
-            unassigned_items = self._subset_service.get_unassigned_items_with_labels(project_id)
+            unassigned_items = self._subset_service.get_unassigned_items_with_labels(
+                project_id, dataset_view_id=dataset_view_id
+            )
 
             if not unassigned_items:
                 self.update_message("No unassigned items found")
@@ -197,7 +201,9 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             logger.info("Target subset ratios for unassigned items: {}", target_ratios)
 
             self.update_message("Computing optimal subset assignments")
-            has_all_subsets_assigned = self._subset_service.has_all_subsets_assigned(project_id)
+            has_all_subsets_assigned = self._subset_service.has_all_subsets_assigned(
+                project_id, dataset_view_id=dataset_view_id
+            )
             pinned_group_subsets = self._subset_service.get_pinned_group_subsets(project_id)
             assignments = self._subset_assigner.assign(
                 unassigned_items, target_ratios, has_all_subsets_assigned, pinned_group_subsets
@@ -250,12 +256,15 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         getitune_training_config: dict,
         training_config: TrainingConfiguration,
         dataset_revision_id: UUID | None = None,
+        dataset_view_id: UUID | None = None,
+        dataset_view_name: str | None = None,
     ) -> DatasetInfo:
         """
         Prepare datasets for training, validation, and testing.
 
         If a specific dataset revision ID is provided, it loads that revision from the database.
-        Otherwise, it creates a new dataset from the current items in the database with user-verified annotations.
+        Otherwise, it creates a new dataset from the current items in the database with user-verified annotations,
+        restricted to the given dataset view when one is selected.
         """
 
         from getitune.config.data import SamplerConfig, SubsetConfig, TileConfig
@@ -284,7 +293,7 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
                 )
             else:
                 latest_dataset_revision = self._dataset_revision_service.get_latest_uptodate_dataset_revision(
-                    project_id=project_id
+                    project_id=project_id, dataset_view_id=dataset_view_id
                 )
                 if latest_dataset_revision is not None:
                     dataset_revision_id = latest_dataset_revision.id
@@ -299,16 +308,31 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
 
                 else:
                     # Create a dataset revision including only the items with user-verified annotations, then save it
-                    logger.info("Creating a new dataset revision with user-verified annotated items")
+                    if dataset_view_id is not None:
+                        logger.info(
+                            "Creating a new dataset revision with the user-verified annotated items "
+                            "of dataset view '{}' (ID={})",
+                            dataset_view_name,
+                            dataset_view_id,
+                        )
+                    else:
+                        logger.info("Creating a new dataset revision with user-verified annotated items")
                     dm_dataset = self._dataset_service.get_dm_dataset(
                         project_id=project_id,
                         task=task,
                         annotation_status=DatasetItemAnnotationStatus.WITH_ANNOTATIONS,
                         sample_mode=SampleMode.TRAINING,
+                        dataset_view_id=dataset_view_id,
                     )
-                    dataset_revision_id = self._dataset_revision_service.save_revision(
-                        project_id=project_id, dataset=dm_dataset
-                    )
+                    try:
+                        dataset_revision_id = self._dataset_revision_service.save_revision(
+                            project_id=project_id,
+                            dataset=dm_dataset,
+                            dataset_view_id=dataset_view_id,
+                            dataset_view_name=dataset_view_name,
+                        )
+                    except ValueError as exc:
+                        raise ExecutionErr(str(exc)) from exc
                     logger.info("Dataset revision saved with ID: {}", dataset_revision_id)
 
             # Apply filtering based on min/max annotation objects if enabled
@@ -759,13 +783,17 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         training_config, getitune_training_config = self.prepare_training_configuration(
             training_params=params, task=task
         )
-        self.assign_subsets(training_config=training_config, project_id=project_id)
+        self.assign_subsets(
+            training_config=training_config, project_id=project_id, dataset_view_id=params.dataset_view_id
+        )
         dataset_info = self.prepare_training_dataset(
             project_id=project_id,
             task=task,
             getitune_training_config=getitune_training_config,
             training_config=training_config,
             dataset_revision_id=params.dataset_revision_id,
+            dataset_view_id=params.dataset_view_id,
+            dataset_view_name=params.dataset_view_name,
         )
         self.prepare_model(
             training_params=params, dataset_revision_id=dataset_info.revision_id, configuration=training_config

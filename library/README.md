@@ -1,10 +1,6 @@
 <div align="center">
 
-<img src="../assets/geti-tune-header.png" alt="Geti Library">
-
-**A low-code transfer learning framework for training, evaluating, optimizing, and deploying computer vision models**
-
----
+<img src="assets/getitune-header.png" alt="Geti Library">
 
 [Key Features](#key-features) •
 [Supported Tasks & Models](#supported-tasks--models) •
@@ -14,10 +10,9 @@
 [Docs](https://docs.geti.intel.com/docs/user-guide/library/get-started/intro) •
 [License](#license)
 
-[![PyPI](https://img.shields.io/pypi/v/getitune)](https://pypi.org/project/getitune)
-
 <!-- markdownlint-disable MD042 -->
 
+[![PyPI](https://img.shields.io/pypi/v/getitune)](https://pypi.org/project/getitune)
 [![python](https://img.shields.io/badge/python-3.11%E2%80%933.14-green)]()
 [![pytorch](https://img.shields.io/badge/pytorch-2.12-orange)]()
 [![openvino](https://img.shields.io/badge/openvino-2026.3-purple)]()

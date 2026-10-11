@@ -118,11 +118,13 @@ def download_model_binary(
     filename = f"model-{str(model_id).split('-')[0]}-{model_variant.format}-{model_variant.precision}.zip"
 
     license = model_service.get_model_license(project_id=project.id, model_id=model_id)
+    attribution = model_service.get_model_attribution(project_id=project.id, model_id=model_id)
 
     demo_files = demo_files_service.build_demo_files(
         project_id=project.id,
         model_format=model_variant.format,
         license=license,
+        attribution=attribution,
     )
 
     # Create an in-memory zip file

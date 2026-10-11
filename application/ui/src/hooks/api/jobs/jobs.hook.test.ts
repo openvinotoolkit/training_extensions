@@ -12,7 +12,7 @@ import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
 import { MockEventSourceConstructor, resetMockEventSource } from '../../../test-utils/mock-event-source';
 import { useDismissedJobs } from '../../storage/use-dismissed-jobs.hook';
-import { useGetCurrentRunningJobs, useStreamJobStatus } from './jobs.hook';
+import { useGetCurrentRunningJobs, useModelJobs, useStreamJobStatus } from './jobs.hook';
 
 const PROJECT_ID = '123';
 
@@ -159,6 +159,21 @@ describe('useGetCurrentRunningJobs', () => {
     });
 });
 
+describe('useModelJobs', () => {
+    it('filters out non train/quantize jobs (e.g. export_dataset)', async () => {
+        const trainJob = createMockJobForProject();
+        const exportJob = getMockedJob({ job_id: 'export-job-1', job_type: 'export_dataset' });
+        server.use(http.get('/api/jobs', () => HttpResponse.json([trainJob, exportJob])));
+
+        const { result } = renderHook(() => useModelJobs());
+
+        await waitFor(() => {
+            expect(result.current.data).toHaveLength(1);
+            expect(result.current.data?.[0].job_id).toBe(trainJob.job_id);
+        });
+    });
+});
+
 describe('useStreamJobStatus', () => {
     beforeEach(() => {
         resetMockEventSource();
@@ -168,7 +183,7 @@ describe('useStreamJobStatus', () => {
         const toastSpy = vi.spyOn(toastModule, 'toast');
         const failedJob = getMockedJob({ status: 'FAILED' });
 
-        renderHook(() => useStreamJobStatus(failedJob.job_id));
+        renderHook(() => useStreamJobStatus(failedJob.job_id, PROJECT_ID));
 
         await waitFor(() => {
             expect(MockEventSourceConstructor).toHaveBeenCalled();

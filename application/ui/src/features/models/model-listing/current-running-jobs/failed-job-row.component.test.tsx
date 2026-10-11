@@ -45,7 +45,6 @@ describe('FailedJobRow', () => {
                 job={failedJob}
                 onDismiss={vi.fn()}
                 datasetRevisions={[]}
-                groupBy={'dataset'}
                 modelArchitectures={[modelArchitecture]}
             />
         );
@@ -58,14 +57,7 @@ describe('FailedJobRow', () => {
     });
 
     it('does not subscribe to SSE for a failed job', async () => {
-        render(
-            <FailedJobRow
-                job={failedJob}
-                datasetRevisions={[]}
-                groupBy={'dataset'}
-                modelArchitectures={[modelArchitecture]}
-            />
-        );
+        render(<FailedJobRow job={failedJob} datasetRevisions={[]} modelArchitectures={[modelArchitecture]} />);
 
         expect(await screen.findByText('Failed')).toBeVisible();
         expect(MockEventSourceConstructor).not.toHaveBeenCalled();
@@ -79,7 +71,6 @@ describe('FailedJobRow', () => {
                 job={failedJob}
                 onDismiss={mockDismiss}
                 datasetRevisions={[]}
-                groupBy={'dataset'}
                 modelArchitectures={[modelArchitecture]}
             />
         );

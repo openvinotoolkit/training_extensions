@@ -4,10 +4,10 @@
 import { PointerEvent, useRef, useState } from 'react';
 
 import type { Label } from '@/api/types';
+import selectionCursor from '@/assets/icons/selection.svg?url';
 import { clampBox, clampPointBetweenImage, pointsToRect } from '@geti-ui/smart-tools/utils';
 import { useEventListener } from 'hooks/event-listener.hook';
 
-import selectionCursor from '../../../../assets/icons/selection.svg?url';
 import { isLeftButton } from '../../../../shared/buttons-utils';
 import type { Point, Rect as RectInterface, RegionOfInterest } from '../../../../shared/types';
 import { Rectangle } from '../../shapes/rectangle.component';
@@ -24,9 +24,17 @@ interface DrawingBoxInterface {
     image: ImageData;
     selectedLabel: Label | null;
     zoom: number;
+    isDisabled?: boolean;
 }
 
-export const DrawingBox = ({ roi, zoom, image, selectedLabel, onComplete }: DrawingBoxInterface) => {
+export const DrawingBox = ({
+    roi,
+    zoom,
+    image,
+    selectedLabel,
+    onComplete,
+    isDisabled = false,
+}: DrawingBoxInterface) => {
     const [startPoint, setStartPoint] = useState<Point | null>(null);
     const [boundingBox, setBoundingBox] = useState<RectInterface | null>(null);
 
@@ -52,7 +60,7 @@ export const DrawingBox = ({ roi, zoom, image, selectedLabel, onComplete }: Draw
     };
 
     const onPointerDown = (event: PointerEvent<SVGSVGElement>): void => {
-        if (startPoint !== null || ref.current === null) {
+        if (isDisabled || startPoint !== null || ref.current === null) {
             return;
         }
 
@@ -111,7 +119,7 @@ export const DrawingBox = ({ roi, zoom, image, selectedLabel, onComplete }: Draw
             onPointerUp={onPointerUp}
             onPointerDown={onPointerDown}
             onPointerLeave={crosshair.onPointerLeave}
-            style={{ cursor: `url(${selectionCursor}) ${CURSOR_OFFSET}, auto` }}
+            style={{ cursor: isDisabled ? 'progress' : `url(${selectionCursor}) ${CURSOR_OFFSET}, auto` }}
         >
             {boundingBox ? (
                 <Rectangle

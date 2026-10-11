@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.db.schema import EvaluationDB, MetricScoreDB, ModelRevisionDB, ModelVariantDB
 from app.models import EvaluationResult, ModelRevision, ModelVariant, TrainingStatus
+from app.models.model_manifest import License
 from app.models.model_revision import ModelFormat, ModelPrecision
 from app.models.system import DeviceInfo
 from app.models.training_configuration.configuration import TrainingConfiguration
@@ -30,6 +31,7 @@ from app.repositories import (
 )
 from app.services.dataset_revision_service import DatasetRevisionService
 from app.services.model_manifest_service import ModelManifestService
+from app.supported_models.attributions import ModelAttribution, get_model_attribution
 from app.utils.onnx_metadata import read_onnx_metadata_attrs
 
 from .base import BaseSessionManagedService, ResourceInUseError, ResourceNotFoundError, ResourceType
@@ -208,7 +210,7 @@ class ModelService(BaseSessionManagedService):
             raise ResourceNotFoundError(ResourceType.MODEL, str(model_id))
         return model_rev_db.architecture
 
-    def get_model_license(self, project_id: UUID, model_id: UUID) -> str:
+    def get_model_license(self, project_id: UUID, model_id: UUID) -> License:
         """
         Get the license of a model by looking up its architecture in the model manifest.
 
@@ -217,14 +219,32 @@ class ModelService(BaseSessionManagedService):
             model_id (UUID): The unique identifier of the model.
 
         Returns:
-            str: The license string (e.g., "Apache 2.0", "AGPL-3.0").
+            License: The license name (e.g., "Apache 2.0", "AGPL-3.0") and URL to the license text.
 
         Raises:
             ResourceNotFoundError: If no model with the given model_id is found.
         """
         architecture = self.get_model_revision_architecture(project_id, model_id)
         manifest = ModelManifestService.get_model_manifest_by_id(architecture)
-        return manifest.license.name
+        return manifest.license
+
+    def get_model_attribution(self, project_id: UUID, model_id: UUID) -> ModelAttribution | None:
+        """
+        Get the attribution of the original (upstream) work a model is derived from.
+
+        Args:
+            project_id (UUID): The unique identifier of the project.
+            model_id (UUID): The unique identifier of the model.
+
+        Returns:
+            ModelAttribution | None: The creators, source and copyright notice of the original work,
+            or None if no attribution is registered for the model architecture.
+
+        Raises:
+            ResourceNotFoundError: If no model with the given model_id is found.
+        """
+        architecture = self.get_model_revision_architecture(project_id, model_id)
+        return get_model_attribution(architecture)
 
     def get_model_variants(self, project_id: UUID, model_id: UUID) -> list[ModelVariant]:
         """

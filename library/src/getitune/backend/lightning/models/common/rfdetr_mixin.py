@@ -145,7 +145,7 @@ class RFDETRMixin:
                 bb, ll = items[0], items[1]
                 mm = items[2] if has_masks else None
 
-                if len(bb) > 0 and getattr(bb, "canvas_size", None) is not None:
+                if bb.numel() > 0 and getattr(bb, "canvas_size", None) is not None:
                     h, w = bb.canvas_size
                     boxes_cxcywh = box_convert(bb.data, in_fmt="xyxy", out_fmt="cxcywh")
                     device = boxes_cxcywh.device

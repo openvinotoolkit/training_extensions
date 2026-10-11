@@ -17,10 +17,18 @@ import { EMPTY_LABEL_ID } from '../../shared/labels';
 import { renderHook } from '../../test-utils/render';
 import {
     AnnotationActionsProvider,
-    useAnnotationActions,
+    useAnnotationCommands,
+    useAnnotations,
+    useAnnotationSubmission,
     type AnnotationActionsProviderProps,
 } from './annotation-actions-provider.component';
 import type { AnnotatorMode } from './annotator-mode';
+
+const useAnnotationContexts = () => ({
+    ...useAnnotations(),
+    ...useAnnotationCommands(),
+    ...useAnnotationSubmission(),
+});
 
 const renderAnnotationActions = ({
     initialAnnotationsDTO = [],
@@ -28,7 +36,6 @@ const renderAnnotationActions = ({
     mediaItem = getMockedMediaImage(),
     mode = 'prediction' as AnnotatorMode,
     isReadOnly = false,
-    isUserReviewed = false,
     labels = [],
 }: Partial<AnnotationActionsProviderProps> & {
     labels: Label[];
@@ -46,13 +53,12 @@ const renderAnnotationActions = ({
             isReadOnly={isReadOnly}
             initialAnnotationsDTO={initialAnnotationsDTO}
             initialPredictionsDTO={initialPredictionsDTO}
-            isUserReviewed={isUserReviewed}
         >
             {children}
         </AnnotationActionsProvider>
     );
 
-    return renderHook(() => useAnnotationActions(), { wrapper });
+    return renderHook(() => useAnnotationContexts(), { wrapper });
 };
 
 describe('submitPredictions', () => {
@@ -245,5 +251,26 @@ describe('canSubmit on initial load', () => {
             expect(result.current.annotations).toHaveLength(2);
             expect(result.current.canSubmit).toBe(true);
         });
+    });
+});
+
+describe('annotation commands', () => {
+    it('keep the same identity while annotations change', async () => {
+        const label = getMockedLabel({ id: 'label-1' });
+        const { result } = renderAnnotationActions({ mode: 'annotation', labels: [label] });
+
+        await waitFor(() => expect(result.current).not.toBeNull());
+
+        const { addAnnotations, updateAnnotations, deleteAnnotations } = result.current;
+
+        act(() => {
+            result.current.addAnnotations([getMockedShape({ type: 'rectangle' })], [{ id: label.id }]);
+        });
+
+        await waitFor(() => expect(result.current.annotations).toHaveLength(1));
+
+        expect(result.current.addAnnotations).toBe(addAnnotations);
+        expect(result.current.updateAnnotations).toBe(updateAnnotations);
+        expect(result.current.deleteAnnotations).toBe(deleteAnnotations);
     });
 });

@@ -5,22 +5,20 @@ import { useState, type ReactNode } from 'react';
 
 import type { DatasetRevision, ModelArchitectureWithPerformanceCategory, QuantizeJob, TrainJob } from '@/api/types';
 import { BottomProgressBar } from '@/components/bottom-progress-bar/bottom-progress-bar.component';
+import { TrainingLogsDialog } from '@/components/training-logs/training-logs-dialog.component';
 import { useTranslation } from '@/i18n';
 import { Button, DialogContainer, Flex, Grid, Text } from '@geti-ui/ui';
-import { isJobPending, isTrainJob } from 'hooks/api/util';
+import { isJobPending, isJobRunning, isTrainJob } from 'hooks/api/util';
+import { DATE_TIME_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 
-import { formatDateTime } from '../../../../shared/date-utils';
 import { useGetModel } from '../../hooks/api/use-get-model.hook';
-import { TrainingLogsDialog } from '../../training-logs/training-logs-dialog.component';
 import { ArchitectureColumn } from '../components/model-row/architecture-column.component';
 import { DatasetColumn } from '../components/model-row/dataset-revision-column.component';
-import { GroupByMode } from '../types';
 import { RUNNING_JOB_GRID_COLUMNS } from './running-job-table-header.component';
 
 import classes from './current-running-jobs.module.scss';
 
 export type JobRowColumnsProps = {
-    groupBy: GroupByMode;
     datasetRevisions: DatasetRevision[];
     modelArchitectures: ModelArchitectureWithPerformanceCategory[];
 };
@@ -32,7 +30,7 @@ type JobRowProps = JobRowColumnsProps & {
     actions?: ReactNode;
 };
 
-const ViewLogsButton = ({ jobId }: { jobId: string }) => {
+const ViewLogsButton = ({ job }: { job: TrainJob | QuantizeJob }) => {
     const { t } = useTranslation();
     const [isLogsDialogOpen, setIsLogsDialogOpen] = useState(false);
 
@@ -42,21 +40,19 @@ const ViewLogsButton = ({ jobId }: { jobId: string }) => {
                 {t('models.jobs.logs')}
             </Button>
             <DialogContainer type={'fullscreen'} onDismiss={() => setIsLogsDialogOpen(false)}>
-                {isLogsDialogOpen && <TrainingLogsDialog jobId={jobId} />}
+                {isLogsDialogOpen && (
+                    <TrainingLogsDialog
+                        jobId={job.job_id}
+                        projectId={job.metadata.project.id}
+                        isJobActive={isJobRunning(job) || isJobPending(job)}
+                    />
+                )}
             </DialogContainer>
         </>
     );
 };
 
-export const JobRow = ({
-    job,
-    progress,
-    statusBadges,
-    actions,
-    groupBy,
-    datasetRevisions,
-    modelArchitectures,
-}: JobRowProps) => {
+export const JobRow = ({ job, progress, statusBadges, actions, datasetRevisions, modelArchitectures }: JobRowProps) => {
     const { t } = useTranslation();
     const modelId = job.metadata.model.id;
     const { data: trainingModel } = useGetModel(modelId, !isJobPending(job));
@@ -69,13 +65,15 @@ export const JobRow = ({
     const modelArchitecture = modelArchitectures.find(({ id }) => id === modelArchitectureId);
 
     const datasetRevision = datasetRevisions.find(({ id }) => id === trainingModel?.training_info.dataset_revision_id);
+    const datasetViewName = isTrainJob(job) ? (job.metadata.model.dataset_view_name ?? undefined) : undefined;
     const labelSchemaRevision = trainingModel?.training_info.label_schema_revision ?? {};
     const labelsCount =
         'labels' in labelSchemaRevision && Array.isArray(labelSchemaRevision.labels)
             ? labelSchemaRevision.labels.length
             : undefined;
 
-    const formattedStartedAt = job.started_at ? formatDateTime(job.started_at) : t('models.jobs.waitingToStart');
+    const formatDate = useFormatDate(DATE_TIME_FORMAT);
+    const formattedStartedAt = job.started_at ? (formatDate(job.started_at) ?? '-') : t('models.jobs.waitingToStart');
 
     return (
         <BottomProgressBar progress={progress}>
@@ -102,15 +100,19 @@ export const JobRow = ({
                 </Flex>
 
                 <Flex alignItems={'start'} direction={'column'} gap={'size-100'}>
-                    {groupBy === 'architecture' ? (
-                        <DatasetColumn datasetRevision={datasetRevision} labelsCount={labelsCount} />
-                    ) : (
-                        <ArchitectureColumn architectureId={modelArchitectureId} architecture={modelArchitecture} />
-                    )}
+                    <ArchitectureColumn architectureId={modelArchitectureId} architecture={modelArchitecture} />
+                </Flex>
+
+                <Flex alignItems={'start'} direction={'column'} gap={'size-100'}>
+                    <DatasetColumn
+                        datasetRevision={datasetRevision}
+                        labelsCount={labelsCount}
+                        pendingDatasetName={datasetViewName}
+                    />
                 </Flex>
 
                 <Flex gap={'size-100'} direction={'column'} alignItems={'center'}>
-                    <ViewLogsButton jobId={job.job_id} />
+                    <ViewLogsButton job={job} />
                     {actions}
                 </Flex>
             </Grid>

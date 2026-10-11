@@ -54,6 +54,8 @@ datas = [
     ('app/services/sam/mobile_sam.encoder.bin', 'app/services/sam'),
     # timm model catalog snapshot, read via importlib.resources at runtime
     ('app/supported_models/timm_catalog_snapshot.json', 'app/supported_models'),
+    # License texts bundled with exported models, read via importlib.resources at runtime
+    ('app/supported_models/licenses/*', 'app/supported_models/licenses'),
     *_collect_manifests(EXCLUDE_AGPL_MODELS),
     *copy_metadata("geti"),
     *copy_metadata("optree"),

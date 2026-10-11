@@ -4,6 +4,7 @@
 import { ReactNode, RefObject, useState } from 'react';
 
 import { CustomPopover, dimensionValue, Flex, ThemeProvider, View } from '@geti-ui/ui';
+import { useLocale } from 'react-aria';
 import { OverlayTriggerState } from 'react-stately';
 
 import { useEventListener } from '../../hooks/event-listener.hook';
@@ -17,6 +18,7 @@ type CursorContextMenuProps = {
 
 export const CursorContextMenu = ({ state, children, triggerRef, onOpen }: CursorContextMenuProps) => {
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+    const { locale } = useLocale();
 
     useEventListener(
         'contextmenu',
@@ -47,7 +49,7 @@ export const CursorContextMenu = ({ state, children, triggerRef, onOpen }: Curso
                 styles disappear. Re-apply ThemeProvider here so the tokens resolve, and provide the
                 popover surface (background/elevation) that CustomPopover does not style itself.
             */}
-            <ThemeProvider>
+            <ThemeProvider locale={locale}>
                 <View backgroundColor={'gray-100'} borderRadius={'regular'}>
                     <Flex
                         gap={'size-100'}

@@ -23,7 +23,7 @@ It provides an intuitive graphical interface to upload image or video data, anno
 train and optimize models, and run real-time inference through configurable pipelines.
 
 <p align="center">
-  <img src="../assets/application.gif" alt="Application demo" width="100%">
+  <img src="../assets/geti-application-demo.gif" alt="Build and optimize a model in the Geti application" width="100%">
 </p>
 
 Main capabilities:

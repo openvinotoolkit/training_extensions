@@ -35,7 +35,13 @@ class DatasetRevisionService(BaseSessionManagedService):
         super().__init__(db_session)
         self.projects_dir = data_dir / "projects"
 
-    def save_revision(self, project_id: UUID, dataset: Dataset) -> UUID:
+    def save_revision(
+        self,
+        project_id: UUID,
+        dataset: Dataset,
+        dataset_view_id: UUID | None = None,
+        dataset_view_name: str | None = None,
+    ) -> UUID:
         """
         Saves the dataset as a new revision.
 
@@ -45,6 +51,8 @@ class DatasetRevisionService(BaseSessionManagedService):
         Args:
             project_id: The UUID of the project to save the revision for.
             dataset: The Datumaro dataset to export.
+            dataset_view_id: The UUID of the dataset view the revision was built from, if any.
+            dataset_view_name: The name of that dataset view, used to name the revision.
 
         Returns:
             UUID: The UUID of the newly created dataset revision.
@@ -53,13 +61,15 @@ class DatasetRevisionService(BaseSessionManagedService):
 
         item_counts = self._count_dataset_revision_items(dataset=dataset)
         if not (item_counts.training and item_counts.validation and item_counts.testing):
+            scope = f"dataset view '{dataset_view_name or dataset_view_id}'" if dataset_view_id else "dataset"
             raise ValueError(
-                f"Cannot save dataset revision for {project_id} with an empty subset. Item counts: {item_counts}"
+                f"Cannot save dataset revision for {project_id}: the {scope} does not contain enough annotated "
+                f"items to fill the training, validation and testing subsets. Item counts: {item_counts}"
             )
         revision_repo = DatasetRevisionRepository(project_id=str(project_id), db=self.db_session)
         dataset_revision_id = str(uuid4())
         short_id = dataset_revision_id.split("-")[0]
-        dataset_name = f"Dataset ({short_id})"
+        dataset_name = f"{dataset_view_name} ({short_id})" if dataset_view_name else f"Dataset ({short_id})"
 
         revision_path = self.projects_dir / str(project_id) / "dataset_revisions" / dataset_revision_id
         logger.info("Saving dataset revision '{}' to '{}'.", dataset_revision_id, revision_path)
@@ -76,6 +86,7 @@ class DatasetRevisionService(BaseSessionManagedService):
                     id=dataset_revision_id,
                     project_id=str(project_id),
                     name=dataset_name,
+                    dataset_view_id=str(dataset_view_id) if dataset_view_id is not None else None,
                     total_count=item_counts.total,
                     training_count=item_counts.training,
                     validation_count=item_counts.validation,
@@ -111,20 +122,26 @@ class DatasetRevisionService(BaseSessionManagedService):
         parquet_path = self._get_revision_parquet_path(project_id, dataset_revision_id)
         return import_dataset(input_path=parquet_path.parent)
 
-    def get_latest_uptodate_dataset_revision(self, project_id: UUID) -> DatasetRevision | None:
+    def get_latest_uptodate_dataset_revision(
+        self, project_id: UUID, dataset_view_id: UUID | None = None
+    ) -> DatasetRevision | None:
         """
         Get latest up to date created dataset revision in a project, if it exists.
 
-        Up to date means the dataset revision was created after the last update on any dataset item in the project.
+        Up to date means the dataset revision was created after the last update on any dataset item it covers.
 
         Args:
             project_id (UUID): The UUID of the project
+            dataset_view_id (UUID | None): If given, only consider revisions created from this dataset view;
+                otherwise only consider revisions covering the entire dataset.
 
         Returns:
             DatasetRevision: The latest created dataset revision in a project or None if none exists
         """
         dataset_revision_repo = DatasetRevisionRepository(project_id=str(project_id), db=self.db_session)
-        dataset_revision_db = dataset_revision_repo.get_latest_uptodate_dataset_revision()
+        dataset_revision_db = dataset_revision_repo.get_latest_uptodate_dataset_revision(
+            dataset_view_id=str(dataset_view_id) if dataset_view_id is not None else None
+        )
         if dataset_revision_db is None:
             return None
         return DatasetRevision.model_validate(dataset_revision_db)
@@ -198,6 +215,9 @@ class DatasetRevisionService(BaseSessionManagedService):
                 id=str(dataset_revision.id),
                 project_id=str(project_id),
                 name=dataset_revision.name,
+                dataset_view_id=str(dataset_revision.dataset_view_id)
+                if dataset_revision.dataset_view_id is not None
+                else None,
                 files_deleted=dataset_revision.files_deleted,
                 size=0 if dataset_revision.files_deleted else dataset_revision.size,
                 total_count=dataset_revision.item_counts.total,

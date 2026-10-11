@@ -3,13 +3,13 @@
 
 import { ReactNode } from 'react';
 
+import { NoTrainedModels } from '@/assets/illustrations';
 import { useTranslation } from '@/i18n';
 import { dimensionValue, Divider, Flex, Heading } from '@geti-ui/ui';
 import { useGetCurrentRunningJobs } from 'hooks/api/jobs/jobs.hook';
 import { usePrefetchModels } from 'hooks/api/use-get-models.hook';
 import { isEmpty } from 'lodash-es';
 
-import { ReactComponent as NoTrainedModels } from '../../../assets/no-trained-models.svg';
 import { usePrefetchTaskModelArchitectures } from '../hooks/api/use-get-model-architectures.hook';
 import { TrainModel } from '../train-model/train-model.component';
 import { Header } from './components/header.component';
@@ -24,7 +24,7 @@ type ModelListingContainerProps = {
 const ModelListingContent = ({ exportJobs }: ModelListingContainerProps) => {
     const { t } = useTranslation();
     const runningJobs = useGetCurrentRunningJobs();
-    const { groupedModels, searchBy, datasetRevisions, groupBy, showFailedModels } = useModelListing();
+    const { groupedModels, searchBy, datasetRevisions, showFailedModels } = useModelListing();
 
     const hasNoResults = groupedModels.length === 0 && (searchBy.length > 0 || !showFailedModels);
     const hasNoModels = groupedModels.length === 0 && searchBy.length === 0 && showFailedModels;
@@ -38,7 +38,7 @@ const ModelListingContent = ({ exportJobs }: ModelListingContainerProps) => {
                 justifyContent={'center'}
                 UNSAFE_style={{ padding: dimensionValue('size-300') }}
             >
-                <CurrentRunningJobs groupBy={groupBy} datasetRevisions={datasetRevisions} />
+                <CurrentRunningJobs datasetRevisions={datasetRevisions} />
 
                 <Flex
                     direction={'column'}
@@ -67,7 +67,7 @@ const ModelListingContent = ({ exportJobs }: ModelListingContainerProps) => {
             <Divider size={'S'} marginY={'size-300'} />
 
             <Flex direction={'column'} flex={1} UNSAFE_style={{ overflowY: 'auto', scrollbarGutter: 'stable' }}>
-                <CurrentRunningJobs groupBy={groupBy} datasetRevisions={datasetRevisions} />
+                <CurrentRunningJobs datasetRevisions={datasetRevisions} />
 
                 {exportJobs}
 

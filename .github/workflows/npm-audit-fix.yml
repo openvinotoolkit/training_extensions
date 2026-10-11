@@ -91,6 +91,7 @@ jobs:
 
       - name: Create PR if lockfile changed
         if: steps.check-changes.outputs.changed == 'true'
+        id: create-pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.get-github-app-token.outputs.token }}
@@ -104,3 +105,20 @@ jobs:
           branch: "npm-audit-fix-${{ github.run_id }}"
           base: develop
           delete-branch: true
+          reviewers: sys-geti
+
+      # Automerge is restricted to safe-mode PRs (no --force)
+      - name: Enable auto-merge for safe mode PR
+        if: ${{
+          steps.check-changes.outputs.changed == 'true' &&
+          (github.event_name == 'schedule' || github.event.inputs.force_fix != 'true') &&
+          vars.RENOVATE_AUTOMERGE_ENABLED != 'false'
+          }}
+        env:
+          GH_TOKEN: ${{ steps.get-github-app-token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: |
+          gh pr merge --auto --squash \
+            --repo "$REPOSITORY" \
+            "$PR_NUMBER"

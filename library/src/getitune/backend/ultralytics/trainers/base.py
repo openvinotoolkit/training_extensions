@@ -141,7 +141,7 @@ class GetiTuneBaseTrainer:
             return super().get_dataloader(dataset_path, batch_size, rank, mode)  # type: ignore[misc]
 
         dataset = self.build_dataset(dataset_path, mode, batch_size)
-        nw: int = self.args.workers  # type: ignore[attr-defined]
+        nw = self._num_workers(mode)
 
         shuffle = mode == "train"
         return InfiniteDataLoader(
@@ -158,6 +158,14 @@ class GetiTuneBaseTrainer:
             worker_init_fn=seed_worker,
         )
 
+    def _num_workers(self, mode: str) -> int:
+        """Return the DataModule subset's ``num_workers`` for the given dataloader mode."""
+        if self._datamodule is None:
+            msg = "DataModule is required when _use_getitune_data=True"
+            raise RuntimeError(msg)
+        subset_cfg = self._datamodule.train_subset if mode == "train" else self._datamodule.val_subset
+        return subset_cfg.num_workers
+
     @property
     def _pin_memory(self) -> bool:
         """Return True if the device is not CPU (for DataLoader pin_memory)."""
@@ -166,15 +174,7 @@ class GetiTuneBaseTrainer:
         return device_type != "cpu"
 
     def _setup_train(self) -> None:
-        """Restore workers, run parent setup, then fix warmup for small datasets.
-
-        Ultralytics 8.4+ sets ``self.args.workers = 0`` when the device is
-        CPU (``if self.device.type in {"cpu", "mps"}``) during ``__init__``.
-        For the DataModule bridge this is counter-productive — our
-        CPU-augmentation pipeline (CachedMosaic, colour jitter, etc.) runs
-        in the DataLoader workers and benefits from parallelism.  We
-        restore a sensible default before the parent ``_setup_train``
-        creates the dataloaders.
+        """Run parent setup, then fix warmup for small datasets.
 
         Ultralytics enforces a minimum of 100 warmup iterations regardless
         of dataset size (``max(round(warmup_epochs * nb), 100)``).  For
@@ -186,8 +186,6 @@ class GetiTuneBaseTrainer:
         ``on_train_batch_start`` callback that applies the same LR /
         momentum ramp but respects the natural iteration count.
         """
-        if self._use_getitune_data and self.args.workers == 0:  # type: ignore[attr-defined]
-            self.args.workers = 4  # type: ignore[attr-defined]
         super()._setup_train()  # type: ignore[misc]
 
         if self._use_getitune_data:
