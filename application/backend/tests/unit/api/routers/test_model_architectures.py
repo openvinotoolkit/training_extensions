@@ -244,6 +244,12 @@ class TestGetModelArchitectureById:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not-a-real-architecture" in response.json()["detail"]
 
+    def test_unknown_timm_backbone_id_returns_404(self, fxt_client: TestClient):
+        """A well-formed but nonexistent timm backbone ID returns 404, not a 500."""
+        response = fxt_client.get("/api/model_architectures/image-classification-timm-not-a-real-backbone")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "image-classification-timm-not-a-real-backbone" in response.json()["detail"]
+
     def test_synthetic_timm_card_id_is_not_resolvable(self, fxt_client: TestClient):
         """The synthetic selector card ID stays unresolvable by design (it selects no concrete backbone)."""
         response = fxt_client.get("/api/model_architectures/image-classification-timm")
