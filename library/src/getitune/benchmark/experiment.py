@@ -485,9 +485,9 @@ def _ultralytics_torch_metric(task_type: TaskType | None) -> MetricCallable | No
 def _write_phase_metrics_csv(work_dir: Path, metrics: dict[str, Any] | None) -> None:
     """Persist a flat metric dict as ``<work_dir>/csv/version_0/metrics.csv``.
 
-    The Ultralytics engine returns metrics from ``test()`` but, unlike
-    Lightning's ``CSVLogger``, does not write them to disk.  Writing them to the
-    same path Lightning uses lets the existing scraping logic find them.
+    Ultralytics and Hugging Face engines return metrics from ``test()`` but do
+    not write them to disk. Writing them to the same path Lightning uses lets
+    the existing scraping logic find them.
     """
     if not metrics:
         return
@@ -681,11 +681,12 @@ class ExperimentExecutor:
         return "best_checkpoint" if self._backend == "huggingface" else "best_checkpoint.pt"
 
     def _build_torch_engine(self, work_dir: Path) -> Engine:
-        """Build the torch-side engine (Lightning or Ultralytics) for *work_dir*.
+        """Build the torch-side engine (Lightning, Ultralytics, or Hugging Face).
 
         The Ultralytics path mirrors the application's getitune trainer: it
         builds a model + datamodule from the recipe and dispatches them through
-        the library's ``create_engine`` factory.
+        the library's ``create_engine`` factory. Hugging Face recipes use
+        ``HFEngine.from_config``; other recipes use ``LightningEngine``.
         """
         if self.is_ultralytics:
             from getitune.backend.ultralytics.tools.configurator import Configurator
@@ -837,9 +838,9 @@ class ExperimentExecutor:
             metrics = engine.test(checkpoint=ckpt, **test_kwargs)
         wall = time.monotonic() - start
 
-        # The Ultralytics engine returns metrics without writing a metrics.csv;
-        # persist them where the scraper looks so both backends behave the same.
-        if self.is_ultralytics:
+        # These engines return test metrics without writing a metrics.csv;
+        # persist them where the scraper looks so benchmark reporting can scrape them.
+        if self._backend in {"ultralytics", "huggingface"}:
             _write_phase_metrics_csv(Path(engine.work_dir), metrics)
 
         num_samples = _count_test_samples(engine)

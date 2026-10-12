@@ -9,7 +9,7 @@ import builtins
 import json
 import time
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -32,6 +32,7 @@ from getitune.benchmark.experiment import (
     detect_resume_point,
     resolve_overrides,
 )
+from getitune.benchmark.report import aggregate_metrics_across_seeds
 from getitune.types.task import TaskType
 
 # ---------------------------------------------------------------------------
@@ -880,6 +881,38 @@ class TestExecutorBackendDispatch:
             device="cpu",
         )
         lightning_from_config.assert_not_called()
+
+    def test_huggingface_test_metrics_reach_report_aggregation(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        recipe = tmp_path / "mask2former.yaml"
+        recipe.write_text(_HF_RECIPE)
+        executor = ExperimentExecutor(recipe_path=recipe, data_path=tmp_path / "data", work_dir=tmp_path / "work")
+        test_work_dir = tmp_path / "work" / "test" / "torch"
+        engine = MagicMock()
+        engine.work_dir = test_work_dir
+        engine.datamodule = SimpleNamespace(subsets={"test": [object(), object()]})
+        engine.test.return_value = {"test/map": 0.75}
+        sampler = MagicMock()
+        sampler.__enter__.return_value.peak_mb = 0.0
+        monkeypatch.setattr(executor, "_build_torch_engine", lambda _work_dir: engine)
+        monkeypatch.setattr("getitune.benchmark.experiment._PeakRamSampler", lambda: sampler)
+        monkeypatch.setattr("getitune.benchmark.experiment._reset_peak_gpu_memory", lambda: None)
+        monkeypatch.setattr("getitune.benchmark.experiment._get_peak_gpu_memory_mb", lambda: 0.0)
+
+        phase = executor.test_torch()
+        result = ExperimentResult(
+            task="detection",
+            model="mask2former",
+            dataset="data",
+            scenario="default",
+            seed=0,
+            success=True,
+            phases=[phase],
+        )
+
+        report_metrics = aggregate_metrics_across_seeds([result])
+        assert report_metrics[("detection", "mask2former", "data", "default")]["torch:test/map"] == pytest.approx(0.75)
 
     def test_benchmark_defaults_follow_accelerator(self, tmp_path: Path) -> None:
         recipe = tmp_path / "atss.yaml"
