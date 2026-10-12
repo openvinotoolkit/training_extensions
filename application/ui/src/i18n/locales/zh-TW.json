@@ -619,7 +619,9 @@
             },
             "filters": {
                 "searchPlaceholder": "搜尋專案",
-                "taskType": "依工作類型篩選"
+                "taskType": "依工作類型篩選",
+                "models": "依模型篩選",
+                "withTrainedModels": "有已訓練模型"
             },
             "noMatches": {
                 "title": "沒有符合條件的專案",

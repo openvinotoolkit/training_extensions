@@ -617,7 +617,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Cerca progetti",
-                "taskType": "Filtra per tipo di attività"
+                "taskType": "Filtra per tipo di attività",
+                "models": "Filtra per modelli",
+                "withTrainedModels": "Con modelli addestrati"
             },
             "noMatches": {
                 "title": "Nessun progetto corrisponde ai tuoi filtri",

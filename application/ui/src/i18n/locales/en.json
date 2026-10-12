@@ -617,7 +617,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Search projects",
-                "taskType": "Filter by task type"
+                "taskType": "Filter by task type",
+                "models": "Filter by models",
+                "withTrainedModels": "With trained models"
             },
             "noMatches": {
                 "title": "No projects match your filters",

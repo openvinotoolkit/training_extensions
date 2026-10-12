@@ -617,7 +617,9 @@
             },
             "filters": {
                 "searchPlaceholder": "搜索项目",
-                "taskType": "按任务类型筛选"
+                "taskType": "按任务类型筛选",
+                "models": "按模型筛选",
+                "withTrainedModels": "有已训练模型"
             },
             "noMatches": {
                 "title": "没有符合条件的项目",

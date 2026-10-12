@@ -617,7 +617,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Buscar proyectos",
-                "taskType": "Filtrar por tipo de tarea"
+                "taskType": "Filtrar por tipo de tarea",
+                "models": "Filtrar por modelos",
+                "withTrainedModels": "Con modelos entrenados"
             },
             "noMatches": {
                 "title": "Ningún proyecto coincide con tus filtros",

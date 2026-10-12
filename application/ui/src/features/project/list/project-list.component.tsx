@@ -35,12 +35,16 @@ const ProjectSidebar = ({
     setSearchName,
     selectedTaskTypes,
     setSelectedTaskTypes,
+    onlyWithTrainedModels,
+    setOnlyWithTrainedModels,
 }: {
     shouldShowFilters: boolean;
     searchName: string;
     setSearchName: (value: string) => void;
     selectedTaskTypes: TaskType[];
     setSelectedTaskTypes: (taskTypes: TaskType[]) => void;
+    onlyWithTrainedModels: boolean;
+    setOnlyWithTrainedModels: (value: boolean) => void;
 }) => {
     const { t } = useTranslation();
 
@@ -67,6 +71,8 @@ const ProjectSidebar = ({
                             onSearchChange={setSearchName}
                             selectedTaskTypes={selectedTaskTypes}
                             onSelectedTaskTypesChange={setSelectedTaskTypes}
+                            onlyWithTrainedModels={onlyWithTrainedModels}
+                            onOnlyWithTrainedModelsChange={setOnlyWithTrainedModels}
                         />
                     </>
                 )}
@@ -90,8 +96,16 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
 
     const shouldShowFilters = projectsWithoutActivePipeline.length > 0;
 
-    const { searchName, setSearchName, selectedTaskTypes, setSelectedTaskTypes, filteredProjects, isFiltering } =
-        useProjectFilters(projectsWithoutActivePipeline);
+    const {
+        searchName,
+        setSearchName,
+        selectedTaskTypes,
+        setSelectedTaskTypes,
+        onlyWithTrainedModels,
+        setOnlyWithTrainedModels,
+        filteredProjects,
+        isFiltering,
+    } = useProjectFilters(projectsWithoutActivePipeline);
 
     const sortedProjects = SORT_BY_HANDLERS[sortBy](filteredProjects);
 
@@ -115,6 +129,8 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
                 setSearchName={setSearchName}
                 selectedTaskTypes={selectedTaskTypes}
                 setSelectedTaskTypes={setSelectedTaskTypes}
+                onlyWithTrainedModels={onlyWithTrainedModels}
+                setOnlyWithTrainedModels={setOnlyWithTrainedModels}
             />
 
             <Flex direction={'column'} gap={'size-300'} flex={1} minWidth={0} UNSAFE_className={classes.gridPanel}>
