@@ -15,12 +15,14 @@ import torch
 from torch import nn
 from torch.hub import download_url_to_file
 
+from getitune.backend.lightning.models.classification.heads.vision_transformer_head import VisionTransformerClsHead
 from getitune.engine import create_engine
 from getitune.types.export import ExportFormat
 from getitune.types.precision import Precision
 
 logger = logging.getLogger(__name__)
 
+_IMAGENET_NUM_CLASSES = 1000
 _DINOV2_BASE_URL = "https://dl.fbaipublicfiles.com/dinov2"
 _DINOV2_HEAD_URLS: dict[str, str] = {
     "dinov2-small": f"{_DINOV2_BASE_URL}/dinov2_vits14/dinov2_vits14_reg4_linear_head.pth",
@@ -55,12 +57,21 @@ def _apply_dinov2_linear_head(engine: Any, head_weights: Path | None, cache_dir:
 
     Raises:
         FileNotFoundError: If the given head weights file does not exist.
-        ValueError: If the model is not DINOv2 or the head shape does not match the model.
+        ValueError: If the model is not a multi-class DINOv2 classifier or the head shape does not match the model.
     """
     lightning_model = engine.model
     model_name = getattr(lightning_model, "model_name", "")
     if model_name not in _DINOV2_HEAD_URLS:
         message = f"--dinov2-linear-head requires a DINOv2 model, got {model_name!r}"
+        raise ValueError(message)
+
+    classifier = lightning_model.model
+    head = getattr(classifier, "head", None)
+    if not isinstance(head, VisionTransformerClsHead) or not hasattr(head.layers, "head"):
+        message = (
+            "--dinov2-linear-head supports only multi-class classification (MULTI_CLASS_CLS) DINOv2 models; "
+            f"got head {type(head).__name__!r} for task {getattr(lightning_model, 'task', None)!s}"
+        )
         raise ValueError(message)
 
     if head_weights is None:
@@ -73,7 +84,6 @@ def _apply_dinov2_linear_head(engine: Any, head_weights: Path | None, cache_dir:
         raise FileNotFoundError(message)
     state = torch.load(head_weights, map_location="cpu", weights_only=True)
 
-    classifier = lightning_model.model
     backbone = classifier.backbone
     embed_dim = backbone.embed_dim
     out_features, in_features = state["weight"].shape
@@ -83,9 +93,15 @@ def _apply_dinov2_linear_head(engine: Any, head_weights: Path | None, cache_dir:
             f"use the *_linear_head.pth matching {model_name!r}"
         )
         raise ValueError(message)
-    if out_features != lightning_model.num_classes:
+    if out_features != _IMAGENET_NUM_CLASSES:
         message = (
-            f"Official head has {out_features} classes but the model has {lightning_model.num_classes}; "
+            f"Head weights have {out_features} outputs, expected {_IMAGENET_NUM_CLASSES}; "
+            "--dinov2-linear-head requires the official ImageNet-1k *_linear_head.pth"
+        )
+        raise ValueError(message)
+    if lightning_model.num_classes != _IMAGENET_NUM_CLASSES:
+        message = (
+            f"Official head has {_IMAGENET_NUM_CLASSES} classes but the model has {lightning_model.num_classes}; "
             "use a dataset with the 1000 ImageNet classes (in ImageNet order)"
         )
         raise ValueError(message)
@@ -97,8 +113,8 @@ def _apply_dinov2_linear_head(engine: Any, head_weights: Path | None, cache_dir:
     linear = nn.Linear(in_features, out_features)
     linear.load_state_dict(state)
     linear.eval()
-    classifier.head.layers.head = linear
-    classifier.head.in_channels = in_features
+    head.layers.head = linear
+    head.in_channels = in_features
     logger.info("Applied DINOv2 linear head from %s", head_weights)
 
 
