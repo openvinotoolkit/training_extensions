@@ -43,6 +43,7 @@ $card-content-height: 68px;
 
 .thumbnailContainer {
     height: $thumbnail-height;
+    overflow: hidden;
     background-color: var(--spectrum-global-color-gray-100);
 }
 
@@ -63,6 +64,11 @@ $card-content-height: 68px;
     display: block;
     height: 100%;
     width: 100%;
+    transition: transform 0.2s ease-in-out;
+
+    .card:hover & {
+        transform: scale(1.1);
+    }
 }
 
 .thumbnailError {
