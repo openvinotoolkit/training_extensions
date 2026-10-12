@@ -125,7 +125,7 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
   </thead>
   <tbody>
     <tr>
-      <td rowspan="11"><b>Object Detection</b><br>Locate and classify objects with bounding boxes. Common use cases: counting items, defect localization, surveillance.</td>
+      <td rowspan="12"><b>Object Detection</b><br>Locate and classify objects with bounding boxes. Common use cases: counting items, defect localization, surveillance.</td>
       <td>D-FINE M / L / X</td>
       <td><a href="https://arxiv.org/abs/2412.04234">DEIM</a> + <a href="https://arxiv.org/abs/2410.13842">D-FINE</a></td>
     </tr>
@@ -154,6 +154,10 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://arxiv.org/abs/2304.08069">RT-DETR</a></td>
     </tr>
     <tr>
+      <td>RT-DETRv2 R18 / R34 / R50 / R101</td>
+      <td><a href="https://arxiv.org/abs/2407.17140">RT-DETRv2</a></td>
+    </tr>
+    <tr>
       <td>YOLO11 N / S / M / L / X</td>
       <td><a href="https://docs.ultralytics.com/models/yolo11#overview">Ultralytics YOLO11</a></td>
     </tr>
@@ -170,9 +174,17 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://arxiv.org/abs/2107.08430">YOLOX</a></td>
     </tr>
     <tr>
-      <td rowspan="7"><b>Instance Segmentation</b><br>Detect objects and produce pixel-precise masks per instance. Common use cases: medical imaging, robotics, area estimation.</td>
+      <td rowspan="9"><b>Instance Segmentation</b><br>Detect objects and produce pixel-precise masks per instance. Common use cases: medical imaging, robotics, area estimation.</td>
       <td>RTMDet Tiny</td>
       <td><a href="https://arxiv.org/abs/2212.07784">RTMDet</a></td>
+    </tr>
+    <tr>
+      <td>EoMT Large 640 / EoMT-DINOv3 Large 640</td>
+      <td><a href="https://arxiv.org/abs/2508.10104">DINOv3</a> + EoMT</td>
+    </tr>
+    <tr>
+      <td>Mask2Former Swin-T / S / B / L</td>
+      <td><a href="https://arxiv.org/abs/2112.01527">Mask2Former</a></td>
     </tr>
     <tr>
       <td>Mask-RCNN EfficientNet B2</td>
@@ -199,13 +211,21 @@ Would you like to see a specific model added? Let us know by opening a [GitHub i
       <td><a href="https://arxiv.org/abs/2606.03748">YOLO26</a></td>
     </tr>
     <tr>
-      <td rowspan="7"><b>Classification</b> (multi-class, multi-label)<br>Assign one or more labels to an entire image. Common use cases: defect classification, product categorization, content tagging.</td>
+      <td rowspan="9"><b>Classification</b> (multi-class, multi-label)<br>Assign one or more labels to an entire image. Common use cases: defect classification, product categorization, content tagging.</td>
       <td>ViT Tiny</td>
       <td><a href="https://arxiv.org/abs/2010.11929">ViT</a></td>
     </tr>
     <tr>
       <td>DINOv2 Small</td>
       <td><a href="https://arxiv.org/abs/2304.07193">DINOv2</a></td>
+    </tr>
+    <tr>
+      <td>DINOv3 ViT S / B / L; ConvNeXt T / S / B / L</td>
+      <td><a href="https://arxiv.org/abs/2508.10104">DINOv3</a></td>
+    </tr>
+    <tr>
+      <td>ConvNeXt V2 Atto / Base / Large</td>
+      <td><a href="https://arxiv.org/abs/2301.00808">ConvNeXt V2</a></td>
     </tr>
     <tr>
       <td>EfficientNet B0 / B3</td>
