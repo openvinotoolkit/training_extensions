@@ -214,8 +214,10 @@ def build_parser() -> argparse.ArgumentParser:
         const="auto",
         default=None,
         help=(
-            "Initialize the head of a DINOv2 model with the official facebookresearch/dinov2 linear head. "
-            "Pass a path to a *_linear_head.pth file, or omit the value to download it"
+            "Initialize the head of a DINOv2 model with pretrained weights."
+            "You can either provide the path to *_linear_head.pth file, "
+            "or omit the value to download the official facebookresearch/dinov2 weights "
+            "pretrained on ImageNet-1K."
         ),
     )
     return parser
