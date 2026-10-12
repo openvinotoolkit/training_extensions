@@ -54,9 +54,9 @@ const renderIsSubmitDisabled = ({
 
     return renderHook(
         () => {
-            const submission = useSubmitAnnotations({ mediaItem: getMockedMediaImage() });
+            const submission = useSubmitAnnotations({ mediaItem: getMockedMediaImage(), hasSubsetChanged });
 
-            return getIsSubmitDisabled({ mode, hasSubsetChanged, isLoadingPredictions, ...submission });
+            return getIsSubmitDisabled({ isLoadingPredictions, ...submission });
         },
         { wrapper }
     );

@@ -147,7 +147,7 @@ export const SecondaryToolbar = ({
     const { selectableModels } = usePredictionSetup();
     const isPlaying = videoPlayerContext?.videoControls?.isPlaying ?? false;
 
-    const { isSaving, submit, canSubmit, hasInvalidAnnotation } = useSubmitAnnotations({ mediaItem });
+    const { isSaving, submit, canSubmit } = useSubmitAnnotations({ mediaItem, hasSubsetChanged });
     const { initialAnnotations, initialPredictions } = useAnnotations();
 
     const handleSubmit = async () => {
@@ -169,14 +169,7 @@ export const SecondaryToolbar = ({
     const isAnnotationMode = mode === 'annotation';
     const showPredictionActions = isPredictionMode && !isEmpty(selectableModels);
 
-    const isSubmitDisabled = getIsSubmitDisabled({
-        mode,
-        hasSubsetChanged,
-        isLoadingPredictions,
-        canSubmit,
-        hasInvalidAnnotation,
-        isSaving,
-    });
+    const isSubmitDisabled = getIsSubmitDisabled({ isLoadingPredictions, canSubmit, isSaving });
 
     useHotkeys(
         [HOTKEYS.submit, HOTKEYS.submitAlternative],

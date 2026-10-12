@@ -93,7 +93,13 @@ const useSaveAnnotationsMutation = (mediaItem: Media) => {
     });
 };
 
-export const useSubmitAnnotations = ({ mediaItem }: { mediaItem: Media }) => {
+export const useSubmitAnnotations = ({
+    mediaItem,
+    hasSubsetChanged = false,
+}: {
+    mediaItem: Media;
+    hasSubsetChanged?: boolean;
+}) => {
     const projectId = useProjectIdentifier();
     const projectLabels = useProjectLabelsWithEmptyLabel();
     const { mode, annotations, initialAnnotations, initialPredictions } = useAnnotations();
@@ -153,7 +159,7 @@ export const useSubmitAnnotations = ({ mediaItem }: { mediaItem: Media }) => {
 
     const canSubmit = isPredictionMode
         ? initialPredictions.length > 0
-        : !hasInvalidAnnotation && (hasChangedAnnotations || hasEmptyLabelSelection);
+        : !hasInvalidAnnotation && (hasChangedAnnotations || hasEmptyLabelSelection || hasSubsetChanged);
 
     return {
         canSubmit,
