@@ -72,7 +72,6 @@ class HFEngine(Engine):
         device: str | DeviceType = "auto",
         checkpoint: PathLike | None = None,
         training: dict[str, Any] | None = None,
-        num_devices: int = 1,
         **kwargs,
     ) -> None:
         """Initialize the engine.
@@ -248,7 +247,14 @@ class HFEngine(Engine):
 
         fp16, bf16 = resolve_precision(precision)
         progress_fn, min_p, max_p = extract_progress_fn(callbacks)
-        self._set_runtime_device(world_size)
+        if self._device.index is not None:
+            if world_size > 1:
+                msg = (
+                    "A single-device selection is for single-process runs. For torchrun, select devices through the "
+                    "launcher-visible device configuration; each process is assigned by LOCAL_RANK."
+                )
+                raise ValueError(msg)
+            getattr(torch, self._device.type).set_device(self._device.index)
 
         trainer_callbacks: list[Any] = [cb for cb in (callbacks or []) if isinstance(cb, TrainerCallback)]
         if progress_fn is not None:
@@ -320,7 +326,10 @@ class HFEngine(Engine):
         if world_size == 1 and args.n_gpu > 1:
             # Per-image annotations cannot be scattered safely by DataParallel.
             args._n_gpu = 1  # noqa: SLF001
-        self._apply_training_arguments_device(args)
+        if self._device.index is not None:
+            # Transformers resets single-process runs to cuda:0 during setup.
+            args._setup_devices = self._device  # noqa: SLF001
+            getattr(torch, self._device.type).set_device(self._device)
         val_subset = self._datamodule.subsets.get("val")
         trainer = GetiTuneHFTrainer(
             self._model,
@@ -533,8 +542,9 @@ class HFEngine(Engine):
         }
         training_args_kwargs.update(kwargs)
 
+        world_size = int(os.environ.get("WORLD_SIZE", "1"))
         if self._device.index is not None:
-            if int(os.environ.get("WORLD_SIZE", "1")) > 1:
+            if world_size > 1:
                 msg = (
                     "A single-device selection is for single-process runs. For torchrun, select devices through the "
                     "launcher's visible-device configuration; each process is assigned by LOCAL_RANK."
@@ -542,12 +552,10 @@ class HFEngine(Engine):
                 raise ValueError(msg)
             getattr(torch, self._device.type).set_device(self._device.index)
 
-        self._set_runtime_device()
         args = TrainingArguments(**training_args_kwargs)
         if self._device.index is not None:
             args._setup_devices = self._device  # noqa: SLF001
             getattr(torch, self._device.type).set_device(self._device)
-        self._apply_training_arguments_device(args)
 
         return GetiTuneHFTrainer(
             self._model,
