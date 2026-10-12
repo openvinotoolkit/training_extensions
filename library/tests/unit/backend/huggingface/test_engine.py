@@ -236,13 +236,13 @@ def test_test_defaults_to_best_checkpoint(tmp_path: Path, model: _StubHFModel) -
     ("spec", "expected"),
     [("cpu", "cpu"), (DeviceType.cpu, "cpu"), ("gpu", "cuda"), ("cuda", "cuda"), ("xpu", "xpu")],
 )
-def test_resolve_device(spec: str | DeviceType, expected: str) -> None:
-    assert HFEngine._resolve_device(spec).type == expected
+def test_resolve_accelerator(spec: str | DeviceType, expected: str) -> None:
+    assert HFEngine._resolve_accelerator(spec).type == expected
 
 
-def test_resolve_device_auto_prefers_accelerator() -> None:
+def test_resolve_accelerator_auto_prefers_accelerator() -> None:
     """auto must resolve to a real device without raising."""
-    assert HFEngine._resolve_device("auto").type in {"xpu", "cuda", "cpu"}
+    assert HFEngine._resolve_accelerator("auto").type in {"xpu", "cuda", "cpu"}
 
 
 def test_datamodule_property_raises_when_unset(tmp_path: Path, model: _StubHFModel) -> None:

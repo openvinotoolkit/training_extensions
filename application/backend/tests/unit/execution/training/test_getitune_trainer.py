@@ -1047,7 +1047,7 @@ class TestGetiTuneTrainerTrainModel:
             assert training_config["model"]["init_args"]["pretrained_weights"] == weights_path
 
         train_kwargs = engine.train.call_args.kwargs
-        assert "devices" not in train_kwargs
+        assert train_kwargs["devices"] == [0]
         assert train_kwargs["batch"] == 2
         assert len(train_kwargs["callbacks"]) == 1
         progress_callback = train_kwargs["callbacks"][0]

@@ -72,6 +72,7 @@ class HFEngine(Engine):
         device: str | DeviceType = "auto",
         checkpoint: PathLike | None = None,
         training: dict[str, Any] | None = None,
+        num_devices: int = 1,
         **kwargs,
     ) -> None:
         """Initialize the engine.
@@ -104,12 +105,16 @@ class HFEngine(Engine):
         if not isinstance(model, HFModel):
             msg = f"model must be an HFModel instance, got {type(model)}"
             raise TypeError(msg)
+        if num_devices < 1:
+            msg = f"num_devices must be at least 1, got {num_devices}"
+            raise ValueError(msg)
 
         self._model = model
         self._work_dir = Path(work_dir or "./getitune-workspace").resolve()
         self._work_dir.mkdir(parents=True, exist_ok=True)
         self._device = self._resolve_accelerator(device)
         self._training_defaults = dict(training or {})
+        self.num_devices = num_devices
 
         if isinstance(data, DataModule):
             self._datamodule: DataModule | None = data
@@ -206,7 +211,7 @@ class HFEngine(Engine):
 
         world_size = int(os.environ.get("WORLD_SIZE", "1"))
         requested_num_devices, selected_device_index = self._resolve_devices(
-            devices, self._device.type
+            devices, self._device.type, self.num_devices
         )
         if world_size != requested_num_devices:
             msg = (
@@ -735,15 +740,14 @@ class HFEngine(Engine):
 
     @staticmethod
     def _resolve_devices(
-        devices: int | list[int] | None, device_type: str
+        devices: int | list[int] | None, device_type: str, default_num_devices: int = 1
     ) -> tuple[int, int | None]:
         """Resolve the Lightning-style device selection into a process count and optional device index."""
         if devices is None:
-            # Default to a single device with index 0
-            return 1, 0
+            return default_num_devices, 0 if default_num_devices == 1 else None
         if isinstance(devices, int):
-            requested_num_devices = 1
-            selected_device_index = devices
+            requested_num_devices = devices
+            selected_device_index = 0 if devices == 1 else None
         elif isinstance(devices, list):
             if any(not isinstance(index, int) or isinstance(index, bool) for index in devices):
                 msg = f"devices must contain integer indices, got {devices!r}"
