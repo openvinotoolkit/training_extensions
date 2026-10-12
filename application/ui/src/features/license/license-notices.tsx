@@ -3,6 +3,9 @@
 
 import type { ReactNode } from 'react';
 
+import { useTranslation } from '@/i18n';
+import { LinkOut } from '@geti-ui/ui/icons';
+
 import { Link } from '../../platform/components/link.component';
 
 // Everything in this file has legal meaning, so it is kept verbatim in English and never translated.
@@ -10,6 +13,16 @@ import { Link } from '../../platform/components/link.component';
 const ULTRALYTICS_TERMS_URL =
     // eslint-disable-next-line max-len
     'https://www.ultralytics.com/license?utm_source=intel&utm_medium=referral&utm_campaign=geti-model-garden&utm_content=user-notice';
+
+const FullLicenseLink = ({ href }: { href: string }) => {
+    const { t } = useTranslation();
+
+    return (
+        <Link href={href} target={'_blank'} rel={'noopener noreferrer'}>
+            {t('license.agreement.fullLicense')} <LinkOut size={'XS'} />
+        </Link>
+    );
+};
 
 /* eslint-disable max-len */
 const INTEL_SIMPLIFIED_NOTICE = [
@@ -40,16 +53,24 @@ export type LicenseNotice = {
     id: string;
     name: string;
     notice: ReactNode;
-    href: string;
     isRequired: boolean;
 };
 
 export const INTEL_SIMPLIFIED_LICENSE: LicenseNotice = {
     id: 'intel-simplified',
     name: 'Intel Simplified Software License',
-    notice: INTEL_SIMPLIFIED_NOTICE,
-    // eslint-disable-next-line max-len
-    href: 'https://www.intel.com/content/www/us/en/content-details/749362/intel-simplified-software-license-version-october-2022.html',
+    notice: (
+        <>
+            {INTEL_SIMPLIFIED_NOTICE}
+            {'\n\n'}
+            <FullLicenseLink
+                href={
+                    // eslint-disable-next-line max-len
+                    'https://www.intel.com/content/www/us/en/content-details/749362/intel-simplified-software-license-version-october-2022.html'
+                }
+            />
+        </>
+    ),
     isRequired: true,
 };
 
@@ -59,19 +80,24 @@ export const ULTRALYTICS_LICENSE: LicenseNotice = {
     notice: (
         <>
             {ULTRALYTICS_NOTICE}
+            {'\n\n'}
             <Link href={ULTRALYTICS_TERMS_URL} target={'_blank'} rel={'noopener noreferrer'}>
                 {ULTRALYTICS_TERMS_URL}
             </Link>
         </>
     ),
-    href: 'https://github.com/ultralytics/ultralytics/blob/main/LICENSE',
     isRequired: true,
 };
 
 export const DINOV3_LICENSE: LicenseNotice = {
     id: 'dinov3',
     name: 'DINOv3 License',
-    notice: DINOV3_NOTICE,
-    href: 'https://ai.meta.com/resources/models-and-libraries/dinov3-license/',
+    notice: (
+        <>
+            {DINOV3_NOTICE}
+            {'\n\n'}
+            <FullLicenseLink href={'https://ai.meta.com/resources/models-and-libraries/dinov3-license/'} />
+        </>
+    ),
     isRequired: false,
 };
