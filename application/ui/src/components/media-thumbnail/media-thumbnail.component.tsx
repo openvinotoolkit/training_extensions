@@ -44,22 +44,36 @@ export const MediaThumbnail = ({ onDoubleClick, onClick, url, alt, item }: Media
     const imgRef = useRef<HTMLImageElement>(null);
     const isScrolling = useIsScrolling();
     const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+    const [statusUrl, setStatusUrl] = useState(url);
+
+    // The virtualizer recycles tiles for other items, so hide the previous image during render:
+    // waiting for the effect lets the browser paint the `<img>` (and its alt text) for a frame.
+    if (statusUrl !== url) {
+        setStatusUrl(url);
+        setStatus('loading');
+    }
 
     // Tiles that fly past during a fast scroll would otherwise start a request and immediately
     // cancel it; enough of those wedge the connection and leave the gallery blank.
     useEffect(() => {
-        if (isScrolling || imgRef.current === null) {
+        const img = imgRef.current;
+
+        if (isScrolling || img === null) {
             return;
         }
 
         // Re-assigning the same value restarts the fetch, so every scroll stop would abort and
         // re-request the thumbnails that are already loading.
-        if (imgRef.current.getAttribute('src') === url) {
+        if (img.getAttribute('src') === url) {
+            // A tile recycled back to its previous item won't fire `load` again.
+            if (img.complete) {
+                setStatus(img.naturalWidth > 0 ? 'loaded' : 'error');
+            }
+
             return;
         }
 
-        setStatus('loading');
-        imgRef.current.src = url;
+        img.src = url;
     }, [url, isScrolling]);
 
     useEffect(() => {
@@ -72,6 +86,9 @@ export const MediaThumbnail = ({ onDoubleClick, onClick, url, alt, item }: Media
         };
     }, []);
 
+    // A recycled tile keeps its previous src until scrolling stops; ignore events from it.
+    const isCurrentSrc = (img: HTMLImageElement) => img.getAttribute('src') === url;
+
     return (
         <div onDoubleClick={onDoubleClick} onClick={onClick} className={classes.imgContainer}>
             <img
@@ -82,9 +99,13 @@ export const MediaThumbnail = ({ onDoubleClick, onClick, url, alt, item }: Media
                 })}
                 draggable={false}
                 decoding={'async'}
-                onLoad={() => setStatus('loaded')}
-                onError={() => {
-                    if (imgRef.current?.complete === true) {
+                onLoad={(event) => {
+                    if (isCurrentSrc(event.currentTarget)) {
+                        setStatus('loaded');
+                    }
+                }}
+                onError={(event) => {
+                    if (event.currentTarget.complete && isCurrentSrc(event.currentTarget)) {
                         setStatus('error');
                     }
                 }}

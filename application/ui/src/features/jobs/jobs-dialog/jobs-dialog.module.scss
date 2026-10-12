@@ -4,6 +4,10 @@
     overflow-y: auto;
 }
 
+.statusTabs [role='tab'] {
+    cursor: pointer;
+}
+
 .grid {
     padding: var(--spectrum-global-dimension-size-150) var(--spectrum-global-dimension-size-200);
     background-color: var(--spectrum-global-color-gray-75);

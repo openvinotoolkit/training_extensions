@@ -230,8 +230,11 @@
             "downloadStarted": "A transferência de {{fileName}} foi iniciada"
         },
         "gallery": {
-            "sortOldestFirst": "Mais antigos primeiro",
-            "sortNewestFirst": "Mais recentes primeiro",
+            "sort": {
+                "label": "Ordenar por:",
+                "uploadDateDescending": "Data de carregamento (mais recentes)",
+                "uploadDateAscending": "Data de carregamento (mais antigos)"
+            },
             "selectedCount": "{{count}} selecionados",
             "totalMediaCount_one": "{{count}} item multimédia",
             "totalMediaCount_other": "{{count}} itens multimédia",

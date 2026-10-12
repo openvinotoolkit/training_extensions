@@ -230,8 +230,11 @@
             "downloadStarted": "{{fileName}} download has started"
         },
         "gallery": {
-            "sortOldestFirst": "Oldest first",
-            "sortNewestFirst": "Newest first",
+            "sort": {
+                "label": "Sort Media by:",
+                "uploadDateDescending": "Upload date (newest)",
+                "uploadDateAscending": "Upload date (oldest)"
+            },
             "selectedCount": "{{count}} selected",
             "totalMediaCount_one": "{{count}} media item",
             "totalMediaCount_other": "{{count}} media items",

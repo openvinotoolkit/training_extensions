@@ -230,8 +230,11 @@
             "downloadStarted": "Rozpoczęto pobieranie {{fileName}}"
         },
         "gallery": {
-            "sortOldestFirst": "Od najstarszych",
-            "sortNewestFirst": "Od najnowszych",
+            "sort": {
+                "label": "Sortuj multimedia według:",
+                "uploadDateDescending": "Data przesłania (najnowsze)",
+                "uploadDateAscending": "Data przesłania (najstarsze)"
+            },
             "selectedCount": "Wybrano: {{count}}",
             "totalMediaCount_one": "{{count}} element multimedialny",
             "totalMediaCount_other": "{{count}} elementów multimedialnych",
