@@ -150,10 +150,11 @@ class RFDETR(RFDETRMixin, LightningDetectionModel):  # pyrefly: ignore[inconsist
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        # DETR models use Hungarian matching for one-to-one predictions, but on small datasets
-        # near-duplicate boxes can still appear. Use a conservative IoU threshold (0.8) to only
-        # suppress almost-identical duplicates without removing valid overlapping detections.
-        return super()._export_parameters.wrap(iou_threshold=0.8, nms_execute=True)
+        return super()._export_parameters.wrap(
+            confidence_threshold=0.5,
+            iou_threshold=None,
+            nms_execute=False,
+        )
 
     @property
     def _exporter(self) -> ModelExporter:

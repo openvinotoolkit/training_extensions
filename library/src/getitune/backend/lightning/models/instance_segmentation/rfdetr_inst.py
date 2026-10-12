@@ -149,10 +149,12 @@ class RFDETRInst(RFDETRMixin, LightningInstanceSegModel):  # pyrefly: ignore[inc
         """Defines parameters required to export a particular model implementation."""
         # RF-DETR-Seg outputs full-image masks (not per-box crops like Mask R-CNN), so we use
         # the "DETRInstSeg" model_type which triggers full-image mask postprocessing in ModelAPI.
-        # DETR models use Hungarian matching for one-to-one predictions, but on small datasets
-        # near-duplicate boxes can still appear. Use a conservative IoU threshold (0.8) to only
-        # suppress almost-identical duplicates without removing valid overlapping detections.
-        return super()._export_parameters.wrap(model_type="DETRInstSeg", iou_threshold=0.8)
+        return super()._export_parameters.wrap(
+            model_type="DETRInstSeg",
+            confidence_threshold=0.5,
+            iou_threshold=None,
+            nms_execute=False,
+        )
 
     @property
     def _exporter(self) -> ModelExporter:
