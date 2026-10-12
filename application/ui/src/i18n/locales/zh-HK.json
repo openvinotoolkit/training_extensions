@@ -232,8 +232,11 @@
             "downloadStarted": "{{fileName}} 已開始下載"
         },
         "gallery": {
-            "sortOldestFirst": "最早優先",
-            "sortNewestFirst": "最新優先",
+            "sort": {
+                "label": "排序：",
+                "uploadDateDescending": "依上載時間（最新優先）",
+                "uploadDateAscending": "依上載時間（最早優先）"
+            },
             "selectedCount": "已選 {{count}} 項",
             "totalMediaCount_one": "共 {{count}} 個媒體檔案",
             "totalMediaCount_other": "共 {{count}} 個媒體檔案",

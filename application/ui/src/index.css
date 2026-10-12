@@ -126,6 +126,10 @@ svg {
     z-index: 2 !important;
 }
 
+[role='tab'] {
+    cursor: pointer;
+}
+
 [class*='spectrum-Radio-input'] {
     cursor: pointer !important;
 

@@ -4,16 +4,14 @@
 import { ReactNode, Suspense, useState } from 'react';
 
 import type { TaskType } from '@/api/types';
-import getiLogo from '@/assets/icons/geti-logo.webp';
+import { GetiLogoLink } from '@/components/geti-logo-link/geti-logo-link.component';
 import { LanguagesSelector } from '@/components/languages-selector/languages-selector.component';
 import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Loading, Text, View } from '@geti-ui/ui';
 import { useProjects } from 'hooks/api/project.hook';
 import { partition } from 'lodash-es';
-import { Link } from 'react-router';
 
 import { version } from '../../../../package.json';
-import { paths } from '../../../constants/paths';
 import { isNonEmptyArray } from '../../../shared/util';
 import { EmptyProjectList } from './empty-project-list/empty-project-list.component';
 import { NoMatchingProjects } from './filter-projects/no-matching-projects.component';
@@ -42,17 +40,10 @@ const ProjectSidebar = ({
     selectedTaskTypes: TaskType[];
     setSelectedTaskTypes: (taskTypes: TaskType[]) => void;
 }) => {
-    const { t } = useTranslation();
-
     return (
         <Flex direction={'column'} gap={'size-300'} justifyContent={'space-between'} UNSAFE_className={classes.sidebar}>
             <Flex direction={'column'} gap={'size-300'}>
-                <Link to={paths.project.index({})} viewTransition>
-                    <Flex alignItems={'center'} gap={'size-50'}>
-                        <img src={getiLogo} alt={t('navigation.logoAlt')} className={classes.logo} />
-                        <Text UNSAFE_className={classes.logoText}>Geti™</Text>
-                    </Flex>
-                </Link>
+                <GetiLogoLink />
 
                 <Divider size={'S'} />
 
@@ -72,9 +63,7 @@ const ProjectSidebar = ({
                 )}
             </Flex>
 
-            <Flex gap={'size-200'} alignItems={'center'} justifyContent={'center'}>
-                <Text UNSAFE_className={classes.version}>Geti v{version}</Text>
-            </Flex>
+            <Text UNSAFE_className={classes.version}>Geti v{version}</Text>
         </Flex>
     );
 };

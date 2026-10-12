@@ -96,6 +96,34 @@ describe('MediaThumbnail', () => {
         expect(getSkeleton()).toBeInTheDocument();
     });
 
+    it('hides the previous image when the tile is recycled for another item while scrolling', async () => {
+        const Thumbnail = () => {
+            const [url, setUrl] = useState('test-image.jpg');
+
+            return (
+                <>
+                    <button onClick={() => setUrl('other-image.jpg')}>Next</button>
+                    <MediaThumbnail url={url} alt='Test Image' item={{ type: 'image' }} />
+                </>
+            );
+        };
+
+        render(<Thumbnail />);
+        fireEvent.load(getImage());
+
+        vi.mocked(useIsScrolling).mockReturnValue(true);
+        await userEvent.click(screen.getByRole('button'));
+
+        expect(getImage()).toHaveAttribute('src', 'test-image.jpg');
+        expect(getImage().className).toContain('imgHidden');
+        expect(getSkeleton()).toBeInTheDocument();
+
+        // A late load from the previous item's request must not reveal the wrong image.
+        fireEvent.load(getImage());
+
+        expect(getImage().className).toContain('imgHidden');
+    });
+
     it('stops the skeleton but keeps the image hidden when the thumbnail fails to load', () => {
         render(<MediaThumbnail url='test-image.jpg' alt='Test Image' item={{ type: 'image' }} />);
 

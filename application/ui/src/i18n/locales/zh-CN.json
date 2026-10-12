@@ -230,8 +230,11 @@
             "downloadStarted": "{{fileName}} 已开始下载"
         },
         "gallery": {
-            "sortOldestFirst": "最早优先",
-            "sortNewestFirst": "最新优先",
+            "sort": {
+                "label": "排序：",
+                "uploadDateDescending": "按上传时间（最新优先）",
+                "uploadDateAscending": "按上传时间（最早优先）"
+            },
             "selectedCount": "已选 {{count}} 项",
             "totalMediaCount_one": "共 {{count}} 个媒体文件",
             "totalMediaCount_other": "共 {{count}} 个媒体文件",
