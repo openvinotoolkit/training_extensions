@@ -177,14 +177,22 @@ def _training_artifacts_complete(seed_dir: Path) -> bool:
 
     Lightning and Ultralytics both write per-run CSVs under
     ``train/csv/version_*/metrics.csv``; the direct ``train/metrics.csv`` path
-    is kept as a legacy fallback for hand-crafted result directories.
+    is kept as a legacy fallback for hand-crafted result directories. Hugging
+    Face checkpoints are saved as a ``best_checkpoint/`` directory; the other
+    backends use ``best_checkpoint.pt``.
     """
     metric_candidates = [
         *sorted(seed_dir.glob("train/csv/version_*/metrics.csv")),
         seed_dir / "train" / "metrics.csv",
     ]
     has_metrics = any(path.exists() and path.stat().st_size > 0 for path in metric_candidates)
-    return has_metrics and (seed_dir / "train" / "best_checkpoint.pt").exists()
+    return has_metrics and _training_checkpoint_exists(seed_dir)
+
+
+def _training_checkpoint_exists(seed_dir: Path) -> bool:
+    """Return whether any supported backend's canonical checkpoint exists."""
+    train_dir = seed_dir / "train"
+    return (train_dir / "best_checkpoint.pt").exists() or (train_dir / "best_checkpoint").is_dir()
 
 
 def _has_measured_artifacts(seed_dir: Path) -> bool:
@@ -209,8 +217,7 @@ def detect_resume_point(seed_dir: Path, required_phases: set[str] | None = None)
             shutil.rmtree(seed_dir)
         return False, None
 
-    checkpoint_exists = (seed_dir / "train" / "best_checkpoint.pt").exists()
-    if not checkpoint_exists:
+    if not _training_checkpoint_exists(seed_dir):
         # metrics exist but checkpoint missing -> corrupt
         shutil.rmtree(seed_dir)
         return False, None
@@ -437,10 +444,10 @@ def _count_test_samples(engine: Engine) -> int:
 def _recipe_backend(recipe_path: Path) -> tuple[str, TaskType | None]:
     """Inspect a recipe and return ``(backend, task_type)``.
 
-    ``backend`` is ``"ultralytics"`` when the recipe declares
-    ``backend: ultralytics``, otherwise ``"lightning"``.  ``task_type`` is the
+    ``backend`` reflects an explicitly declared ``ultralytics`` or
+    ``huggingface`` backend, otherwise ``"lightning"``. ``task_type`` is the
     parsed :class:`TaskType` for ultralytics recipes (read from the ``task``
-    field) and ``None`` for the Lightning path.
+    field) and ``None`` for other backends.
     """
     try:
         with recipe_path.open(encoding="utf-8") as fh:
@@ -452,6 +459,8 @@ def _recipe_backend(recipe_path: Path) -> tuple[str, TaskType | None]:
         task_raw = raw.get("task")
         task_type = TaskType(task_raw) if task_raw else None
         return "ultralytics", task_type
+    if isinstance(raw, dict) and raw.get("backend") == "huggingface":
+        return "huggingface", None
     return "lightning", None
 
 
@@ -669,7 +678,7 @@ class ExperimentExecutor:
     @property
     def _checkpoint_name(self) -> str:
         """Trained-checkpoint filename written by the engine after training."""
-        return "best_checkpoint.pt"
+        return "best_checkpoint" if self._backend == "huggingface" else "best_checkpoint.pt"
 
     def _build_torch_engine(self, work_dir: Path) -> Engine:
         """Build the torch-side engine (Lightning or Ultralytics) for *work_dir*.
@@ -710,6 +719,18 @@ class ExperimentExecutor:
                 },
             )
 
+        if self._backend == "huggingface":
+            from getitune.backend.huggingface.engine import HFEngine
+
+            overrides = resolve_overrides(self.scenario_overrides)
+            return HFEngine.from_config(
+                config_path=self.recipe_path,
+                data=self.data_path,
+                work_dir=work_dir,
+                device=self.accelerator,
+                **overrides,
+            )
+
         from getitune.backend.lightning.engine import LightningEngine
 
         overrides = resolve_overrides(self.scenario_overrides)
@@ -729,11 +750,15 @@ class ExperimentExecutor:
 
         kwargs: dict[str, Any] = {"seed": self.seed}
         # The Ultralytics trainer expects a boolean ``deterministic``; coerce the
-        # Lightning-style "warn" sentinel away for that backend.
+        # Lightning-style "warn" sentinel away for that backend. Transformers
+        # exposes the equivalent setting as ``full_determinism``.
         deterministic = self.deterministic
-        if self.is_ultralytics and not isinstance(deterministic, bool):
-            deterministic = False
-        kwargs["deterministic"] = deterministic
+        if self._backend == "huggingface":
+            kwargs["full_determinism"] = deterministic is True
+        else:
+            if self.is_ultralytics and not isinstance(deterministic, bool):
+                deterministic = False
+            kwargs["deterministic"] = deterministic
         if self.max_epochs is not None and self.max_epochs > 0:
             kwargs["max_epochs"] = self.max_epochs
         kwargs.update(self.extra_train_kwargs)

@@ -775,6 +775,13 @@ model:
   class_path: getitune.backend.lightning.models.detection.atss.ATSS
 """
 
+_HF_RECIPE = """\
+backend: huggingface
+task: INSTANCE_SEGMENTATION
+model:
+  class_path: getitune.backend.huggingface.models.instance_segmentation.HFInstSegModel
+"""
+
 
 class TestRecipeBackend:
     def test_ultralytics_recipe_detected(self, tmp_path: Path) -> None:
@@ -789,6 +796,13 @@ class TestRecipeBackend:
         recipe.write_text(_LIGHTNING_RECIPE)
         backend, task_type = _recipe_backend(recipe)
         assert backend == "lightning"
+        assert task_type is None
+
+    def test_huggingface_recipe_detected(self, tmp_path: Path) -> None:
+        recipe = tmp_path / "mask2former.yaml"
+        recipe.write_text(_HF_RECIPE)
+        backend, task_type = _recipe_backend(recipe)
+        assert backend == "huggingface"
         assert task_type is None
 
     def test_missing_recipe_raises_value_error(self, tmp_path: Path) -> None:
@@ -838,6 +852,34 @@ class TestExecutorBackendDispatch:
         )
         assert executor.is_ultralytics is False
         assert executor._checkpoint_name == "best_checkpoint.pt"
+
+    def test_huggingface_recipe_builds_hf_engine(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        from getitune.backend.huggingface.engine import HFEngine
+        from getitune.backend.lightning.engine import LightningEngine
+
+        recipe = tmp_path / "mask2former.yaml"
+        recipe.write_text(_HF_RECIPE)
+        executor = ExperimentExecutor(
+            recipe_path=recipe,
+            data_path=tmp_path / "data",
+            work_dir=tmp_path / "work",
+            accelerator="cpu",
+        )
+        hf_from_config = MagicMock(return_value=object())
+        lightning_from_config = MagicMock()
+        monkeypatch.setattr(HFEngine, "from_config", hf_from_config)
+        monkeypatch.setattr(LightningEngine, "from_config", lightning_from_config)
+
+        engine = executor._build_torch_engine(tmp_path / "work" / "train")
+
+        assert engine is hf_from_config.return_value
+        hf_from_config.assert_called_once_with(
+            config_path=recipe,
+            data=tmp_path / "data",
+            work_dir=tmp_path / "work" / "train",
+            device="cpu",
+        )
+        lightning_from_config.assert_not_called()
 
     def test_benchmark_defaults_follow_accelerator(self, tmp_path: Path) -> None:
         recipe = tmp_path / "atss.yaml"
@@ -980,3 +1022,58 @@ class TestDetectResumePointUltralytics:
         assert skip is False
         assert resume_from == "test/torch"
         assert seed_dir.exists()  # not deleted as corrupt
+
+
+class TestDetectResumePointHuggingFace:
+    def test_save_pretrained_directory_is_accepted(self, tmp_path: Path) -> None:
+        seed_dir = tmp_path / "seed"
+        metrics = seed_dir / "train" / "csv" / "version_0" / "metrics.csv"
+        metrics.parent.mkdir(parents=True)
+        metrics.write_text("train/loss\n0.5\n")
+        checkpoint = seed_dir / "train" / "best_checkpoint"
+        checkpoint.mkdir()
+        (checkpoint / "config.json").write_text("{}")
+
+        skip, resume_from = detect_resume_point(seed_dir)
+
+        assert skip is False
+        assert resume_from == "test/torch"
+        assert seed_dir.exists()
+
+
+def test_huggingface_executor_uses_checkpoint_directory(tmp_path: Path) -> None:
+    recipe = tmp_path / "mask2former.yaml"
+    recipe.write_text(_HF_RECIPE)
+    executor = ExperimentExecutor(recipe_path=recipe, data_path=tmp_path / "data", work_dir=tmp_path / "work")
+
+    assert executor._checkpoint_name == "best_checkpoint"
+
+
+@pytest.mark.parametrize(("deterministic", "full_determinism"), [(True, True), (False, False), ("warn", False)])
+def test_huggingface_training_maps_determinism(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    deterministic: bool | str,
+    full_determinism: bool,
+) -> None:
+    recipe = tmp_path / "mask2former.yaml"
+    recipe.write_text(_HF_RECIPE)
+    executor = ExperimentExecutor(
+        recipe_path=recipe,
+        data_path=tmp_path / "data",
+        work_dir=tmp_path / "work",
+        deterministic=deterministic,
+    )
+    engine = MagicMock()
+    sampler = MagicMock()
+    sampler.__enter__.return_value.peak_mb = 0.0
+    monkeypatch.setattr(executor, "_build_torch_engine", lambda _work_dir: engine)
+    monkeypatch.setattr("getitune.benchmark.experiment._PeakRamSampler", lambda: sampler)
+    monkeypatch.setattr("getitune.benchmark.experiment._reset_peak_gpu_memory", lambda: None)
+    monkeypatch.setattr("getitune.benchmark.experiment._get_peak_gpu_memory_mb", lambda: 0.0)
+
+    executor.train()
+
+    train_kwargs = engine.train.call_args.kwargs
+    assert train_kwargs["full_determinism"] is full_determinism
+    assert "deterministic" not in train_kwargs
