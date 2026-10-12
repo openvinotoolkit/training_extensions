@@ -668,6 +668,8 @@ class FMeasure(Metric):
         self._best_nms_threshold: float | None = None
         self._f_measure = float("-inf")
 
+        self.preds: list[Tensor]
+        self.targets: list[Tensor]
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("targets", default=[], dist_reduce_fx=None)
         self.reset()

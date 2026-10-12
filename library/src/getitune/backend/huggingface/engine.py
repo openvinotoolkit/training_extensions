@@ -109,12 +109,8 @@ class HFEngine(Engine):
         self._model = model
         self._work_dir = Path(work_dir or "./getitune-workspace").resolve()
         self._work_dir.mkdir(parents=True, exist_ok=True)
-        self._device = self._resolve_device(device)
+        self._device = self._resolve_accelerator(device)
         self._training_defaults = dict(training or {})
-        if num_devices < 1:
-            msg = f"num_devices must be at least 1, got {num_devices}"
-            raise ValueError(msg)
-        self.num_devices = num_devices
 
         if isinstance(data, DataModule):
             self._datamodule: DataModule | None = data
@@ -148,6 +144,7 @@ class HFEngine(Engine):
         metric: MetricCallable | None = None,
         val_check_interval: int | None = None,
         monitor: str | None = None,
+        devices: int | list[int] | None = None,
         **kwargs,
     ) -> METRICS:
         """Train the model.
@@ -183,6 +180,11 @@ class HFEngine(Engine):
             monitor: Metric key used for best checkpointing and early
                 stopping, e.g. ``"val/map"`` or ``"val/Dice"``. Falls back to
                 the recipe's ``training.monitor``, then to a task default.
+            devices: device selection. A one-element
+                list selects that CUDA/XPU device for a single-process run;
+                an integer or longer list specifies the process count for
+                torchrun, which assigns devices from the launcher's visible
+                devices by ``LOCAL_RANK``.
             **kwargs: Additional ``transformers.TrainingArguments`` overrides.
 
         Returns:
@@ -204,12 +206,18 @@ class HFEngine(Engine):
             raise ValueError(msg)
 
         world_size = int(os.environ.get("WORLD_SIZE", "1"))
-        if world_size != self.num_devices:
+        requested_num_devices, selected_device_index = self._resolve_devices(
+            devices, self._device.type
+        )
+        if world_size != requested_num_devices:
             msg = (
-                f"HFEngine is configured for {self.num_devices} device(s), but WORLD_SIZE={world_size}. "
-                "For multi-device training, launch with torchrun and set num_devices to the process count."
+                f"HFEngine is configured for {requested_num_devices} device(s), but WORLD_SIZE={world_size}. "
+                "For multi-device training, launch with torchrun and set devices to the process count."
             )
             raise ValueError(msg)
+        self.num_devices = requested_num_devices
+        if selected_device_index is not None:
+            self._device = torch.device(self._device.type, selected_device_index)
 
         defaults = self._training_defaults
         max_epochs = max_epochs if max_epochs is not None else defaults.get("max_epochs")
@@ -240,6 +248,7 @@ class HFEngine(Engine):
 
         fp16, bf16 = resolve_precision(precision)
         progress_fn, min_p, max_p = extract_progress_fn(callbacks)
+        self._set_runtime_device(world_size)
 
         trainer_callbacks: list[Any] = [cb for cb in (callbacks or []) if isinstance(cb, TrainerCallback)]
         if progress_fn is not None:
@@ -311,6 +320,7 @@ class HFEngine(Engine):
         if world_size == 1 and args.n_gpu > 1:
             # Per-image annotations cannot be scattered safely by DataParallel.
             args._n_gpu = 1  # noqa: SLF001
+        self._apply_training_arguments_device(args)
         val_subset = self._datamodule.subsets.get("val")
         trainer = GetiTuneHFTrainer(
             self._model,
@@ -522,7 +532,22 @@ class HFEngine(Engine):
             "use_cpu": self._device.type == "cpu",
         }
         training_args_kwargs.update(kwargs)
+
+        if self._device.index is not None:
+            if int(os.environ.get("WORLD_SIZE", "1")) > 1:
+                msg = (
+                    "A single-device selection is for single-process runs. For torchrun, select devices through the "
+                    "launcher's visible-device configuration; each process is assigned by LOCAL_RANK."
+                )
+                raise ValueError(msg)
+            getattr(torch, self._device.type).set_device(self._device.index)
+
+        self._set_runtime_device()
         args = TrainingArguments(**training_args_kwargs)
+        if self._device.index is not None:
+            args._setup_devices = self._device  # noqa: SLF001
+            getattr(torch, self._device.type).set_device(self._device)
+        self._apply_training_arguments_device(args)
 
         return GetiTuneHFTrainer(
             self._model,
@@ -663,7 +688,7 @@ class HFEngine(Engine):
         return canonical if canonical.exists() else None
 
     @staticmethod
-    def _resolve_device(device: str | DeviceType) -> torch.device:
+    def _resolve_accelerator(device: str | DeviceType) -> torch.device:
         """Resolve a device spec to a :class:`torch.device`.
 
         ``"auto"`` prefers XPU, then CUDA, then CPU, matching the rest of
@@ -688,13 +713,49 @@ class HFEngine(Engine):
 
         if name == "auto":
             if is_xpu_available():
-                return torch.device("xpu")
-            if torch.cuda.is_available():
-                return torch.device("cuda")
-            return torch.device("cpu")
-        if name in ("cuda", "gpu"):
-            return torch.device("cuda")
-        return torch.device(name)
+                resolved_device = torch.device("xpu")
+            elif torch.cuda.is_available():
+                resolved_device = torch.device("cuda")
+            else:
+                resolved_device = torch.device("cpu")
+        elif name in ("cuda", "gpu"):
+            resolved_device = torch.device("cuda")
+        else:
+            resolved_device = torch.device(name)
+
+        return resolved_device
+
+    @staticmethod
+    def _resolve_devices(
+        devices: int | list[int] | None, device_type: str
+    ) -> tuple[int, int | None]:
+        """Resolve the Lightning-style device selection into a process count and optional device index."""
+        if devices is None:
+            # Default to a single device with index 0
+            return 1, 0
+        if isinstance(devices, int):
+            requested_num_devices = 1
+            selected_device_index = devices
+        elif isinstance(devices, list):
+            if any(not isinstance(index, int) or isinstance(index, bool) for index in devices):
+                msg = f"devices must contain integer indices, got {devices!r}"
+                raise TypeError(msg)
+            if any(index < 0 for index in devices):
+                msg = f"device indices must be non-negative, got {devices!r}"
+                raise ValueError(msg)
+            if device_type not in ("cuda", "xpu"):
+                msg = f"Explicit device indices are only supported for CUDA and XPU, got {device_type}"
+                raise ValueError(msg)
+            requested_num_devices = len(devices)
+            selected_device_index = devices[0] if len(devices) == 1 else None
+        else:
+            msg = f"devices must be an integer, a list of indices, or None, got {devices!r}"
+            raise TypeError(msg)
+
+        if requested_num_devices < 1:
+            msg = f"devices must select at least one device, got {devices!r}"
+            raise ValueError(msg)
+        return requested_num_devices, selected_device_index
 
     def __repr__(self) -> str:
         """Return a concise engine summary."""
