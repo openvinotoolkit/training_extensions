@@ -370,7 +370,8 @@ class GetiTuneBaseTrainer:
         ``_max_grad_norm`` from the trainer class attribute (set by the
         engine when popping ``max_grad_norm`` from train args) so users can
         control clipping via the backend UI.  A value of ``0.0`` disables
-        clipping entirely.
+        clipping entirely. Mixed-dtype model and EMA weights use the
+        per-tensor update because Ultralytics' foreach update requires matching dtypes.
         """
         max_norm = getattr(self, "_max_grad_norm", None)
         if max_norm is None:
@@ -382,7 +383,23 @@ class GetiTuneBaseTrainer:
         self.scaler.update()  # type: ignore[attr-defined]
         self.optimizer.zero_grad()  # type: ignore[attr-defined]
         if self.ema:  # type: ignore[attr-defined]
-            self.ema.update(self.model)  # type: ignore[attr-defined]
+            model_parameter = next(self.model.parameters(), None)  # type: ignore[attr-defined]
+            ema_parameter = next(self.ema.ema.parameters(), None)  # type: ignore[attr-defined]
+            if (
+                self.ema.enabled  # type: ignore[attr-defined]
+                and model_parameter is not None
+                and ema_parameter is not None
+                and model_parameter.dtype != ema_parameter.dtype
+            ):
+                self.ema.updates += 1  # type: ignore[attr-defined]
+                decay = self.ema.decay(self.ema.updates)  # type: ignore[attr-defined]
+                model_state = self.model.state_dict()  # type: ignore[attr-defined]
+                with torch.no_grad():
+                    for key, ema_value in self.ema.ema.state_dict().items():  # type: ignore[attr-defined]
+                        if ema_value.dtype.is_floating_point:
+                            ema_value.mul_(decay).add_(model_state[key].detach(), alpha=1 - decay)
+            else:
+                self.ema.update(self.model)  # type: ignore[attr-defined]
 
     def plot_training_labels(self) -> None:
         """Skip label plotting (adapter has no ``labels`` attr)."""

@@ -187,6 +187,31 @@ def test_move_batch_to_device_uses_non_blocking_for_xpu() -> None:
     assert result["meta"] == "value"
 
 
+def test_optimizer_step_updates_fp32_ema_from_bf16_model() -> None:
+    """EMA update supports BF16 model weights while keeping EMA weights FP32."""
+    from ultralytics.utils.torch_utils import ModelEMA
+
+    model = torch.nn.Linear(2, 1)
+    ema = ModelEMA(model)
+    model.bfloat16()
+    trainer = object.__new__(DetectionTrainer)
+    trainer.model = model
+    trainer.ema = ema
+    trainer.args = SimpleNamespace(max_grad_norm=0)
+    trainer.scaler = MagicMock()
+    trainer.optimizer = MagicMock()
+
+    ema_before = ema.ema.weight.detach().clone()
+    decay = ema.decay(1)
+    expected = ema_before.lerp_(model.weight.float(), 1 - decay)
+
+    trainer.optimizer_step()
+
+    assert ema.updates == 1
+    assert ema.ema.weight.dtype == torch.float32
+    assert torch.allclose(ema.ema.weight, expected)
+
+
 class TestClearMemory:
     """Tests for the optimized _clear_memory override in GetiTuneBaseTrainer."""
 
