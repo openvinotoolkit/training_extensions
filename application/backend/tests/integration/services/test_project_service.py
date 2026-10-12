@@ -7,8 +7,8 @@ import pytest
 from PIL import Image
 from sqlalchemy.orm import Session
 
-from app.db.schema import LabelDB, MediaDB, PipelineDB, ProjectDB
-from app.models import Label, Task, TaskType
+from app.db.schema import LabelDB, MediaDB, ModelRevisionDB, PipelineDB, ProjectDB
+from app.models import Label, Task, TaskType, TrainingStatus
 from app.models.media import ImageFormat
 from app.services import ResourceWithIdAlreadyExistsError
 from app.services.base import ResourceInUseError, ResourceNotFoundError, ResourceType
@@ -134,6 +134,37 @@ class TestProjectServiceIntegration:
         fetched_project = fxt_project_service.get_project_by_id(UUID(db_project.id))
         assert str(fetched_project.id) == db_project.id
         assert fetched_project.name == db_project.name
+
+    def test_get_trained_model_counts(self, fxt_project_service: ProjectService, db_session: Session):
+        """Test counting successfully trained models per project."""
+        projects = [
+            ProjectDB(id=str(uuid4()), name=f"P{i}", task_type=TaskType.DETECTION, exclusive_labels=True)
+            for i in range(3)
+        ]
+        db_session.add_all(projects)
+        db_session.flush()
+        statuses_per_project = [
+            [TrainingStatus.SUCCESSFUL, TrainingStatus.SUCCESSFUL, TrainingStatus.FAILED],
+            [TrainingStatus.IN_PROGRESS, TrainingStatus.NOT_STARTED],
+            [],
+        ]
+        for project, statuses in zip(projects, statuses_per_project):
+            db_session.add_all(
+                ModelRevisionDB(
+                    id=str(uuid4()),
+                    project_id=project.id,
+                    name="model",
+                    architecture="object-detection-yolox-s",
+                    training_status=training_status,
+                    training_configuration={},
+                    label_schema_revision={},
+                )
+                for training_status in statuses
+            )
+        db_session.flush()
+
+        assert fxt_project_service.get_trained_model_counts() == {UUID(projects[0].id): 2}
+        assert fxt_project_service.get_trained_model_counts([UUID(projects[1].id)]) == {}
 
     def test_get_project_thumbnail(self, fxt_project_service: ProjectService, db_session: Session):
         """Test retrieving a project returns correct thumbnail ID."""

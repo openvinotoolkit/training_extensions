@@ -72,6 +72,22 @@ class TestProjectEndpoints:
         assert response.status_code == status.HTTP_200_OK
         assert len(response.json()) == 2
         fxt_project_service.list_projects.assert_called_once()
+        fxt_project_service.get_trained_model_counts.assert_not_called()
+        assert all(project["model_counts"] is None for project in response.json())
+
+    def test_list_project_with_model_counts(self, fxt_project, fxt_project_service, fxt_client):
+        other_project = fxt_project.model_copy(update={"id": uuid4()})
+        fxt_project_service.list_projects.return_value = [fxt_project, other_project]
+        fxt_project_service.get_trained_model_counts.return_value = {fxt_project.id: 3}
+
+        response = fxt_client.get("/api/projects", params={"include_model_counts": True})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert [project["model_counts"] for project in response.json()] == [
+            {"trained_models": 3},
+            {"trained_models": 0},
+        ]
+        fxt_project_service.get_trained_model_counts.assert_called_once_with()
 
     def test_get_project_success(self, fxt_project, fxt_project_service, fxt_client):
         fxt_project_service.get_project_by_id.return_value = fxt_project
@@ -80,6 +96,18 @@ class TestProjectEndpoints:
 
         assert response.status_code == status.HTTP_200_OK
         fxt_project_service.get_project_by_id.assert_called_once_with(fxt_project.id)
+        fxt_project_service.get_trained_model_counts.assert_not_called()
+        assert response.json()["model_counts"] is None
+
+    def test_get_project_with_model_counts(self, fxt_project, fxt_project_service, fxt_client):
+        fxt_project_service.get_project_by_id.return_value = fxt_project
+        fxt_project_service.get_trained_model_counts.return_value = {fxt_project.id: 2}
+
+        response = fxt_client.get(f"/api/projects/{str(fxt_project.id)}", params={"include_model_counts": True})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["model_counts"] == {"trained_models": 2}
+        fxt_project_service.get_trained_model_counts.assert_called_once_with([fxt_project.id])
 
     @pytest.mark.parametrize("exclude_attrs", [{}, {"id"}])
     def test_create_project_success(self, exclude_attrs, fxt_project, fxt_project_service, fxt_client):
