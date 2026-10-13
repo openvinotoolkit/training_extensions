@@ -5,6 +5,7 @@ import { ReactNode, Suspense, useState } from 'react';
 
 import type { TaskType } from '@/api/types';
 import { GetiLogoLink } from '@/components/geti-logo-link/geti-logo-link.component';
+import { HelpMenu } from '@/components/help-menu/help-menu.component';
 import { LanguagesSelector } from '@/components/languages-selector/languages-selector.component';
 import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Loading, Text, View } from '@geti-ui/ui';
@@ -126,10 +127,11 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
                 <Flex width={'100%'} alignItems={'center'} justifyContent={'space-between'} gap={'size-300'}>
                     {shouldShowFilters && <SortProjects sortBy={sortBy} onSort={setSortBy} />}
 
-                    <Flex marginStart={'auto'} alignItems={'center'} gap={'size-200'}>
+                    <Flex marginStart={'auto'} alignItems={'center'} gap={'size-75'}>
                         {shouldShowFilters && <Text UNSAFE_className={classes.projectMetadata}>{countLabel}</Text>}
                         {jobsButton}
                         <LanguagesSelector />
+                        <HelpMenu />
                     </Flex>
                 </Flex>
 

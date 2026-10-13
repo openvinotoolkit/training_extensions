@@ -104,7 +104,12 @@
         "modelsDescription": "模型頁面，用於瀏覽模型",
         "inference": "推論",
         "inferenceDescription": "推論頁面，用於檢視專案的即時推論效果",
-        "preferences": "偏好設定"
+        "preferences": "偏好設定",
+        "help": {
+            "documentation": "使用者文件",
+            "whatsNew": "新功能",
+            "reportIssue": "回報問題"
+        }
     },
     "dataset": {
         "validation": {
