@@ -73,7 +73,8 @@ class ClassificationSample(BaseSample):
     subset: Subset = subset_field()
 
     image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), channels_first=True)
-    label: torch.Tensor = label_field(pl.UInt8())
+    # UInt16 so that datasets with more than 256 classes (e.g. ImageNet-1k) can be loaded.
+    label: torch.Tensor = label_field(pl.UInt16())
     dm_image_info: DmImageInfo = image_info_field()
 
     def __post_init__(self) -> None:
