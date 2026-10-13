@@ -1,5 +1,5 @@
 id: image-classification-dinov3-convnext-small
-name: DINOv3 ConvNeXt-Small
+name: DINOv3-ConvNeXt-S
 license:
   name: DINOv3 License
   url: https://ai.meta.com/resources/models-and-libraries/dinov3-license
@@ -10,7 +10,7 @@ pretrained_weights:
 description: "DINOv3 ConvNeXt-Small is a convolutional feature model distilled on LVD-1689M with the DINOv3 method."
 stats:
   gigaflops: 17.37
-  trainable_parameters: 50.223688
+  trainable_parameters: 50.2
   benchmark_metrics: {}
 capabilities:
   xai: false

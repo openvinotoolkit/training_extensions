@@ -1,5 +1,5 @@
 id: image-classification-dinov3-convnext-base
-name: DINOv3 ConvNeXt-Base
+name: DINOv3-ConvNeXt-B
 license:
   name: DINOv3 License
   url: https://ai.meta.com/resources/models-and-libraries/dinov3-license
@@ -10,7 +10,7 @@ pretrained_weights:
 description: "DINOv3 ConvNeXt-Base is a convolutional feature model distilled on LVD-1689M with the DINOv3 method."
 stats:
   gigaflops: 30.71
-  trainable_parameters: 88.591464
+  trainable_parameters: 88.6
   benchmark_metrics: {}
 capabilities:
   xai: false
