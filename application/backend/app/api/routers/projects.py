@@ -5,15 +5,16 @@
 
 import secrets
 from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, Query, status
 from fastapi.exceptions import HTTPException
 from fastapi.openapi.models import Example
 from pydantic import ValidationError as PydanticValidationError
 from starlette.responses import FileResponse
 
 from app.api.dependencies import get_data_collector, get_label_service, get_project, get_project_service
-from app.api.schemas import LabelView, PatchLabels, ProjectCreate, ProjectUpdateName, ProjectView
+from app.api.schemas import LabelView, ModelCountsView, PatchLabels, ProjectCreate, ProjectUpdateName, ProjectView
 from app.api.validators import ProjectID
 from app.models import Label, LabelReference, LabelUpdateInfo, Task
 from app.models.project import Project
@@ -27,6 +28,20 @@ router = APIRouter(prefix="/api/projects", tags=["Projects"])
 def _random_color() -> str:
     """Return a random #RRGGBB hex color for label assignment when none is provided."""
     return f"#{secrets.token_hex(3).upper()}"
+
+
+IncludeModelCounts = Annotated[
+    bool, Query(description="Whether to include the `model_counts` field (e.g. number of trained models).")
+]
+
+
+def _to_project_view(project: Project, trained_model_counts: dict[UUID, int] | None) -> ProjectView:
+    view = ProjectView.model_validate(project, from_attributes=True)
+    if trained_model_counts is None:
+        return view
+    return view.model_copy(
+        update={"model_counts": ModelCountsView(trained_models=trained_model_counts.get(view.id, 0))}
+    )
 
 
 CREATE_PROJECT_BODY_DESCRIPTION = """
@@ -115,9 +130,13 @@ def create_project(
         status.HTTP_200_OK: {"description": "List of available projects"},
     },
 )
-def list_projects(project_service: Annotated[ProjectService, Depends(get_project_service)]) -> list[ProjectView]:
+def list_projects(
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    include_model_counts: IncludeModelCounts = False,
+) -> list[ProjectView]:
     """List the available projects"""
-    return [ProjectView.model_validate(proj, from_attributes=True) for proj in project_service.list_projects()]
+    trained_model_counts = project_service.get_trained_model_counts() if include_model_counts else None
+    return [_to_project_view(proj, trained_model_counts) for proj in project_service.list_projects()]
 
 
 @router.get(
@@ -132,10 +151,12 @@ def list_projects(project_service: Annotated[ProjectService, Depends(get_project
 def get_project_by_id(
     project_id: ProjectID,
     project_service: Annotated[ProjectService, Depends(get_project_service)],
+    include_model_counts: IncludeModelCounts = False,
 ) -> ProjectView:
     """Get info about a given project"""
     project = project_service.get_project_by_id(project_id)
-    return ProjectView.model_validate(project, from_attributes=True)
+    trained_model_counts = project_service.get_trained_model_counts([project_id]) if include_model_counts else None
+    return _to_project_view(project, trained_model_counts)
 
 
 @router.patch(

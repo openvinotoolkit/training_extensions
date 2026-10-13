@@ -605,7 +605,9 @@
             "createNewProject": "Crear nuevo proyecto",
             "createProjectFromDataset": "Crear a partir de dataset",
             "card": {
-                "created": "Creado: {{date}}"
+                "created": "Creado: {{date}}",
+                "models_one": "{{count}} modelo",
+                "models_other": "{{count}} modelos"
             },
             "menu": {
                 "enablePipeline": "Activar pipeline",
@@ -620,7 +622,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Buscar proyectos",
-                "taskType": "Filtrar por tipo de tarea"
+                "taskType": "Filtrar por tipo de tarea",
+                "models": "Filtrar por modelos",
+                "withTrainedModels": "Con modelos entrenados"
             },
             "noMatches": {
                 "title": "Ningún proyecto coincide con tus filtros",

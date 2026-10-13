@@ -7,10 +7,10 @@ import { PrepareImportDataset } from '@/components/prepare-import-dataset/prepar
 import { useTranslation } from '@/i18n';
 import { Flex } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
+import { PROJECTS_QUERY_KEY } from 'hooks/api/project.hook';
 import { useImportDatasetAsNewProject } from 'hooks/storage/use-import-dataset-as-new-project.hook';
 import { isEmpty, partition } from 'lodash-es';
 
-import { getQueryKey } from '../../../../query-client/query-client';
 import { ImportDatasetAsNewProjectState } from '../../../../shared/import-dataset-state';
 import { useImportDatasetDialog } from '../../providers/import-dataset-dialog-provider.component';
 
@@ -34,7 +34,7 @@ export const ImportJobsList = () => {
 
     const handleImportSuccess = async () => {
         await queryClient.invalidateQueries({
-            queryKey: getQueryKey(['get', '/api/projects']),
+            queryKey: PROJECTS_QUERY_KEY,
         });
     };
 

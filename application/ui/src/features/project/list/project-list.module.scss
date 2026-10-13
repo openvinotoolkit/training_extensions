@@ -50,6 +50,7 @@ $card-content-height: 68px;
 .cardBadges {
     position: absolute;
     left: var(--spectrum-global-dimension-size-100);
+    right: var(--spectrum-global-dimension-size-100);
     bottom: var(--spectrum-global-dimension-size-100);
 }
 
@@ -95,7 +96,6 @@ $card-content-height: 68px;
 }
 
 .tag {
-    background-color: var(--spectrum-global-color-gray-200);
     color: var(--spectrum-global-color-gray-900);
 }
 

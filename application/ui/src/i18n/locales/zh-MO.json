@@ -607,7 +607,9 @@
             "createNewProject": "新增項目",
             "createProjectFromDataset": "從數據集建立",
             "card": {
-                "created": "建立於：{{date}}"
+                "created": "建立於：{{date}}",
+                "models_one": "{{count}} 個模型",
+                "models_other": "{{count}} 個模型"
             },
             "menu": {
                 "enablePipeline": "啟用管線",
@@ -622,7 +624,9 @@
             },
             "filters": {
                 "searchPlaceholder": "搜尋項目",
-                "taskType": "依工作類型篩選"
+                "taskType": "依工作類型篩選",
+                "models": "依模型篩選",
+                "withTrainedModels": "有已訓練模型"
             },
             "noMatches": {
                 "title": "沒有符合條件的項目",

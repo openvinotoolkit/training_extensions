@@ -12,6 +12,8 @@ interface UseProjectFiltersResult {
     setSearchName: (value: string) => void;
     selectedTaskTypes: TaskType[];
     setSelectedTaskTypes: (taskTypes: TaskType[]) => void;
+    onlyWithTrainedModels: boolean;
+    setOnlyWithTrainedModels: (value: boolean) => void;
     filteredProjects: Project[];
     isFiltering: boolean;
 }
@@ -19,16 +21,19 @@ interface UseProjectFiltersResult {
 export const useProjectFilters = (projects: Project[]): UseProjectFiltersResult => {
     const [searchName, setSearchName] = useState<string>('');
     const [selectedTaskTypes, setSelectedTaskTypes] = useState<TaskType[]>([]);
+    const [onlyWithTrainedModels, setOnlyWithTrainedModels] = useState<boolean>(false);
 
-    const filteredProjects = filterProjects(projects, searchName, selectedTaskTypes);
+    const filteredProjects = filterProjects(projects, searchName, selectedTaskTypes, onlyWithTrainedModels);
 
-    const isFiltering = searchName.trim() !== '' || selectedTaskTypes.length > 0;
+    const isFiltering = searchName.trim() !== '' || selectedTaskTypes.length > 0 || onlyWithTrainedModels;
 
     return {
         searchName,
         setSearchName,
         selectedTaskTypes,
         setSelectedTaskTypes,
+        onlyWithTrainedModels,
+        setOnlyWithTrainedModels,
         filteredProjects,
         isFiltering,
     };
