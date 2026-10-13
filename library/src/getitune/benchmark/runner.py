@@ -12,6 +12,7 @@ import logging
 import multiprocessing as mp
 import os
 import pickle  # nosec B403 - used only for IPC between parent and child benchmark processes we spawn
+import shutil
 import traceback as _traceback
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
@@ -462,8 +463,8 @@ class BenchmarkRunner:
         """Delete training checkpoints and exported models to save disk space.
 
         Keeps only ``metrics.csv`` and ``result.json`` files which contain
-        the extracted metrics.  Skipped when ``RunConfig.keep_checkpoints``
-        is ``True``.
+        the extracted metrics. Also removes Hugging Face ``best_checkpoint/``
+        directories. Skipped when ``RunConfig.keep_checkpoints`` is ``True``.
         """
         output_root = self.config.output_root
         if not output_root.exists():
@@ -472,6 +473,17 @@ class BenchmarkRunner:
         extensions = {".ckpt", ".xml", ".bin", ".onnx"}
         removed = 0
         freed_bytes = 0
+        for checkpoint_dir in output_root.rglob("best_checkpoint"):
+            if not checkpoint_dir.is_dir() or checkpoint_dir.parent.name != "train":
+                continue
+            if self.config.enable_openvino_benchmark and not self._performance_result_complete(checkpoint_dir):
+                continue
+            for path in checkpoint_dir.rglob("*"):
+                if path.is_file():
+                    freed_bytes += path.stat().st_size
+                    removed += 1
+            shutil.rmtree(checkpoint_dir)
+
         for path in output_root.rglob("*"):
             if self.config.enable_openvino_benchmark and not self._performance_result_complete(path):
                 continue

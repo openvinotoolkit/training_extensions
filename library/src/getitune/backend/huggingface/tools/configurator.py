@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import yaml
 from jsonargparse import ArgumentParser, Namespace
 
 from getitune.backend.huggingface.models.base import HFModel
@@ -18,6 +19,7 @@ from getitune.backend.huggingface.tools.utils import (
     SUPPORTED_TASKS,
     TASK_TO_RECIPE_SUBDIR,
     build_subset_config,
+    flatten_overrides,
     load_recipe,
 )
 from getitune.data.module import DataModule
@@ -26,6 +28,8 @@ from getitune.types.label import LabelInfo
 from getitune.types.task import TaskType
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from getitune.backend.huggingface.engine import HFEngine
     from getitune.types import PathLike
 
@@ -135,6 +139,38 @@ class Configurator:
     def task(self) -> str | None:
         """Configured task identifier."""
         return self._task
+
+    def apply_overrides(self, overrides: Mapping[str, Any] | None) -> None:
+        """Apply benchmark dot-path overrides to the loaded recipe sections."""
+        if not overrides:
+            return
+
+        sections = {
+            "model": self._model_config,
+            "training": self._training,
+            "data": self._data_config,
+        }
+        for key, value in flatten_overrides(overrides).items():
+            parts = key.split(".")
+            if len(parts) < 2:
+                msg = f"Override key must be a dot path, got '{key}'"
+                raise ValueError(msg)
+
+            section = sections.get(parts[0])
+            if section is None:
+                msg = f"Cannot set override '{key}': section '{parts[0]}' is not available"
+                raise ValueError(msg)
+
+            resolved_value = yaml.safe_load(value) if isinstance(value, str) else value
+
+            target = section
+            for part in parts[1:-1]:
+                nested = target.setdefault(part, {})
+                if not isinstance(nested, dict):
+                    msg = f"Cannot set override '{key}': '{part}' is not a mapping"
+                    raise TypeError(msg)
+                target = nested
+            target[parts[-1]] = resolved_value
 
     @property
     def training(self) -> dict[str, Any]:
