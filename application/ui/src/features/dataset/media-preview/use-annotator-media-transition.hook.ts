@@ -3,7 +3,7 @@
 
 import type { Media } from '@/api/types';
 
-import { useAnnotationActions } from '../../../modules/annotator/annotation-actions-provider.component';
+import { useAnnotationCommands } from '../../../modules/annotator/annotation-actions-provider.component';
 import { useSelectedAnnotations } from '../../../modules/annotator/select-annotation-provider.component';
 import { useSelectedMediaItem } from '../../../modules/annotator/selected-media-item-provider.component';
 
@@ -13,7 +13,7 @@ type UseAnnotatorMediaTransitionProps = {
 export const useAnnotatorMediaTransition = ({ onSelectedMediaItem }: UseAnnotatorMediaTransitionProps) => {
     const { setMediaItem } = useSelectedMediaItem();
     const { setSelectedAnnotations } = useSelectedAnnotations();
-    const { resetAnnotations } = useAnnotationActions();
+    const { resetAnnotations } = useAnnotationCommands();
 
     return (item: Media) => {
         setSelectedAnnotations(new Set());

@@ -4,11 +4,9 @@
 import { ReactNode } from 'react';
 
 import type { LocalFolderSinkConfig, MqttSinkConfig, WebhookSinkConfig } from '@/api/types';
+import { Folder as FolderIcon, Mqtt as MqttIcon, Webhook as WebhookIcon } from '@/assets/icons';
 import { useTranslation } from '@/i18n';
 
-import { ReactComponent as FolderIcon } from '../../../assets/icons/folder.svg';
-import { ReactComponent as MqttIcon } from '../../../assets/icons/mqtt.svg';
-import { ReactComponent as WebhookIcon } from '../../../assets/icons/webhook.svg';
 import { DisclosureGroup } from '../sources/disclosure-group.component';
 import { AddSink } from './add-sink/add-sink.component';
 import { LocalFolder } from './local-folder/local-folder.component';

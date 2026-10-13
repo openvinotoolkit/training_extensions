@@ -3,7 +3,7 @@
 
 import { isEmpty } from 'lodash-es';
 
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotations } from '../annotation-actions-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { DEFAULT_ANNOTATION_STYLES } from '../utils';
 import { AnnotationShapeRenderer } from './annotation-shape-renderer.component';
@@ -15,7 +15,7 @@ type ReadOnlyAnnotationsProps = {
 };
 
 export const ReadOnlyAnnotations = ({ width, height }: ReadOnlyAnnotationsProps) => {
-    const { annotations } = useAnnotationActions();
+    const { annotations } = useAnnotations();
     const { isFocussed } = useAnnotationVisibility();
 
     return (

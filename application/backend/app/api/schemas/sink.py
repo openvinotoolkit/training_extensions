@@ -169,7 +169,7 @@ SinkViewAdapter: TypeAdapter[SinkView] = TypeAdapter(SinkView)
 
 
 class BaseSinkConfigCreate(BaseIDNameModel):
-    rate_limit: float | None = None
+    rate_limit: float | None = Field(default=None, gt=0)
     output_formats: list[OutputFormat]
 
 
@@ -213,7 +213,7 @@ class WebhookSinkConfigCreate(BaseSinkConfigCreate):
     webhook_url: str
     http_method: HttpMethod
     headers: HttpHeaders | None
-    timeout: int
+    timeout: int = Field(gt=0, strict=True)
 
     @property
     def config_data(self) -> WebhookConfig:

@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 import torch
 from datumaro.experimental.fields import ImageInfo as DmImageInfo
@@ -72,6 +74,25 @@ class TestCachedMosaicInit:
 class TestCachedMosaicForward:
     """Functional tests for CachedMosaic augmentation."""
 
+    def test_oversized_image_is_reduced_before_caching(self):
+        mosaic = CachedMosaic(img_scale=(640, 640), p=0.0)
+        sample = _make_det_sample(h=1200, w=800)
+        original_boxes = sample.bboxes.clone()
+        original_pixels = sample.image.numel()
+
+        mosaic(sample)
+
+        cached = mosaic.results_cache[0]
+        assert cached.image.shape[-2:] == (1024, 683)
+        assert cached.image.numel() < original_pixels
+        assert cached.masks is not None
+        assert cached.masks.shape[-2:] == (1024, 683)
+        assert cached.masks[0, 10, 10] == 1
+        assert cached.masks[0, 50, 50] == 0
+        assert not isinstance(cached.bboxes, tv_tensors.BoundingBoxes)
+        assert torch.allclose(cached.bboxes[:, 0::2], original_boxes[:, 0::2] * (683 / 800))
+        assert torch.allclose(cached.bboxes[:, 1::2], original_boxes[:, 1::2] * (1024 / 1200))
+
     def test_cache_too_small_returns_input(self):
         """With fewer than 4 cached images, forward returns img_scale (non-mosaic path)."""
         mosaic = CachedMosaic(img_scale=(32, 32), p=1.0, max_cached_images=10)
@@ -94,6 +115,27 @@ class TestCachedMosaicForward:
         # Image values should be in [0, 1]
         assert result.image.min() >= 0.0
         assert result.image.max() <= 1.0
+
+    def test_mosaic_assembles_reduced_cached_tiles(self):
+        mosaic = CachedMosaic(img_scale=(640, 640), p=1.0, max_cached_images=4)
+        build_mosaic = mosaic._build_mosaic
+        tile_shapes = []
+
+        def capture_tile_shape(
+            inputs, mix_results, with_mask
+        ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
+            tile_shapes.append(tuple(inputs.image.shape[-2:]))
+            return build_mosaic(inputs, mix_results, with_mask)
+
+        with patch.object(mosaic, "_build_mosaic", side_effect=capture_tile_shape):
+            for _ in range(4):
+                result = mosaic(_make_det_sample(h=1100, w=550, n_boxes=0))
+
+        assert tile_shapes == [(1024, 512)]
+        assert all(cached.image.shape[-2:] == (1024, 512) for cached in mosaic.results_cache)
+        assert result.image.shape[-2:] == (640, 640)
+        assert result.masks is not None
+        assert result.masks.shape[-2:] == (640, 640)
 
     def test_mosaic_with_masks(self):
         """Mosaic should handle instance segmentation masks."""
@@ -196,6 +238,27 @@ class TestCachedMixUpInit:
 class TestCachedMixUpForward:
     """Functional tests for CachedMixUp augmentation."""
 
+    @pytest.mark.parametrize(
+        ("img_scale", "height", "width", "cached_shape"),
+        [
+            ((640, 640), 1200, 800, (1024, 683)),
+            ((1280, 1280), 1200, 800, (1200, 800)),
+            ((1280, 1280), 1400, 700, (1280, 640)),
+        ],
+    )
+    def test_cache_limit_respects_model_resolution(self, img_scale, height, width, cached_shape):
+        mixup = CachedMixUp(img_scale=img_scale, p=0.0)
+        sample = _make_det_sample(h=height, w=width, n_boxes=0)
+
+        result = mixup(sample)
+
+        cached = mixup.results_cache[0]
+        assert cached.image.shape[-2:] == cached_shape
+        assert cached.masks is not None
+        assert cached.masks.shape == (0, *cached_shape)
+        assert cached.bboxes.shape == (0, 4)
+        assert result.image.shape[-2:] == (height, width)
+
     def test_cache_too_small_returns_input(self):
         """With only 1 cached sample, forward returns input unchanged."""
         mixup = CachedMixUp(img_scale=(32, 32), p=1.0, max_cached_images=20)
@@ -218,6 +281,25 @@ class TestCachedMixUpForward:
         assert result.image.shape[-2:] == (32, 32)
         # Combined bboxes: at least original count
         assert result.bboxes.shape[0] >= 2
+
+    @pytest.mark.parametrize(
+        ("img_scale", "height", "width", "cached_shape"),
+        [
+            ((640, 640), 1100, 550, (1024, 512)),
+            ((1280, 1280), 1200, 800, (1200, 800)),
+            ((1280, 1280), 1400, 700, (1280, 640)),
+        ],
+    )
+    def test_mixup_blends_reduced_cached_images(self, img_scale, height, width, cached_shape):
+        mixup = CachedMixUp(img_scale=img_scale, p=1.0)
+        mixup(_make_det_sample(h=height, w=width, n_boxes=1))
+        result = mixup(_make_det_sample(h=height, w=width, n_boxes=1))
+
+        assert result.image.shape[-2:] == cached_shape
+        assert result.bboxes.shape[0] == result.label.shape[0] == 2
+        assert result.masks is not None
+        assert result.masks.shape == (2, *cached_shape)
+        assert all(cached.image.shape[-2:] == cached_shape for cached in mixup.results_cache)
 
     def test_probability_zero_returns_input(self):
         """With probability=0, mixup never applies."""

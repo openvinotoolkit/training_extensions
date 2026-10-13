@@ -23,6 +23,9 @@ class TrainingJobParams(JobParams):
     task: Task
     model_id: UUID = Field(default_factory=uuid4)
     dataset_revision_id: UUID | None = None
+    dataset_view_id: UUID | None = None
+    # Resolved at submission time so the worker does not need to look the view up again.
+    dataset_view_name: str | None = None
     device: DeviceInfo
 
     @computed_field  # type: ignore[prop-decorator]

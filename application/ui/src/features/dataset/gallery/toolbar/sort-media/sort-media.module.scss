@@ -1,0 +1,16 @@
+.sortMedia {
+    & span[class*='spectrum-FieldLabel'] {
+        font-size: var(--spectrum-global-dimension-font-size-100);
+        color: var(--spectrum-global-color-gray-900);
+        font-weight: 500;
+    }
+
+    & button[class*='spectrum-Dropdown-trigger'] {
+        align-items: end;
+        font-weight: 500;
+
+        & svg[class*='spectrum-Icon'] {
+            align-self: center;
+        }
+    }
+}

@@ -231,7 +231,7 @@ class EdgeCrafterMixin:
                 bb, ll = items[0], items[1]
                 mm = items[2] if has_masks else None
 
-                if len(bb) > 0 and getattr(bb, "canvas_size", None) is not None:
+                if bb.numel() > 0 and getattr(bb, "canvas_size", None) is not None:
                     h, w = bb.canvas_size
                     converted = (
                         box_convert(bb, in_fmt="xyxy", out_fmt="cxcywh") if bb.format == BoundingBoxFormat.XYXY else bb

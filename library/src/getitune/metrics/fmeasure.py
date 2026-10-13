@@ -10,6 +10,7 @@ import logging
 from typing import Any, Literal
 
 import numpy as np
+import torch
 from torch import Tensor
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -667,6 +668,10 @@ class FMeasure(Metric):
         self._best_nms_threshold: float | None = None
         self._f_measure = float("-inf")
 
+        self.preds: list[Tensor]
+        self.targets: list[Tensor]
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("targets", default=[], dist_reduce_fx=None)
         self.reset()
 
     def reset(self) -> None:
@@ -675,28 +680,28 @@ class FMeasure(Metric):
         Please be careful that some variables should not be reset for each epoch.
         """
         super().reset()
-        self.preds: list[list[tuple]] = []
-        self.targets: list[list[tuple]] = []
         self._current_confidence_threshold = None
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
-        """Update total predictions and targets from given batch predicitons and targets."""
-        for pred, tget in zip(preds, target):
+        """Keep per-image tensor states for device-native distributed gathering."""
+        for pred, tget in zip(preds, target, strict=True):
+            pred_boxes = pred["boxes"].detach()
+            target_boxes = tget["boxes"].detach()
             self.preds.append(
-                [
-                    (*box, self.classes[label], score)
-                    for box, label, score in zip(
-                        pred["boxes"].tolist(),
-                        pred["labels"].tolist(),
-                        pred["scores"].tolist(),
-                    )
-                ],
+                torch.cat(
+                    (
+                        pred_boxes,
+                        pred["labels"].detach().to(pred_boxes.dtype).unsqueeze(1),
+                        pred["scores"].detach().to(pred_boxes.dtype).unsqueeze(1),
+                    ),
+                    dim=1,
+                )
             )
             self.targets.append(
-                [
-                    (*box, self.classes[label], 0.0)
-                    for box, label in zip(tget["boxes"].tolist(), tget["labels"].tolist())
-                ],
+                torch.cat(
+                    (target_boxes, tget["labels"].detach().to(target_boxes.dtype).unsqueeze(1)),
+                    dim=1,
+                )
             )
 
     def compute(self, best_confidence_threshold: float | None = None) -> dict:
@@ -707,7 +712,15 @@ class FMeasure(Metric):
                 If this value is None, then FMeasure will find best confidence threshold and
                 store it as member variable. Defaults to None.
         """
-        boxes_pair = _FMeasureCalculator(self.targets, self.preds)
+        prediction_boxes_per_image = [
+            [(*row[:4], self.classes[int(row[4])], row[5]) for row in image.detach().cpu().tolist()]
+            for image in self.preds
+        ]
+        ground_truth_boxes_per_image = [
+            [(*row[:4], self.classes[int(row[4])], 0.0) for row in image.detach().cpu().tolist()]
+            for image in self.targets
+        ]
+        boxes_pair = _FMeasureCalculator(ground_truth_boxes_per_image, prediction_boxes_per_image)
         result = boxes_pair.evaluate_detections(
             result_based_nms_threshold=self.vary_nms_threshold,
             classes=self.classes,

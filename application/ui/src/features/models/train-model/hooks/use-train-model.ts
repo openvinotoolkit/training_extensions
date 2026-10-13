@@ -16,13 +16,13 @@ export const useTrainModel = () => {
 
     const {
         selectedTrainingDevice,
-        selectedDatasetRevisionId,
+        selectedDatasetSourceId,
         resolvedModelArchitectureId,
         isAdvancedSettingsMode,
         trainingConfiguration,
         selectedModelRevisionId,
         defaultTrainingConfiguration,
-        datasetRevisions,
+        datasetSources,
         modelRevisions,
     } = useTrainModelState();
 
@@ -45,8 +45,7 @@ export const useTrainModel = () => {
             return;
         }
 
-        const datasetRevisionId =
-            datasetRevisions.find((revision) => revision.id === selectedDatasetRevisionId)?.value ?? null;
+        const datasetSource = datasetSources.find((source) => source.id === selectedDatasetSourceId);
         const parentModelRevisionId =
             modelRevisions.find((revision) => revision.id === selectedModelRevisionId)?.value ?? null;
 
@@ -58,7 +57,8 @@ export const useTrainModel = () => {
                     device: selectedTrainingDevice,
                     model_architecture_id: resolvedModelArchitectureId,
                     parent_model_revision_id: parentModelRevisionId,
-                    dataset_revision_id: datasetRevisionId,
+                    dataset_revision_id: datasetSource?.kind === 'revision' ? datasetSource.value : null,
+                    dataset_view_id: datasetSource?.kind === 'view' ? datasetSource.value : null,
                 },
             },
         } as const;

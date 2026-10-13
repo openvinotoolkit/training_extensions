@@ -1,11 +1,11 @@
-// Copyright (C) 2025 Intel Corporation
+// Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 import { Divider, Flex, View } from '@geti-ui/ui';
 
 import { FEATURE_FLAGS } from '../../../constants/feature-flags';
 import { ModelArchitecturesList } from './model-architectures-list/model-architectures-list.component';
-import { SelectDatasetRevision } from './select-dataset-revision.component';
+import { SelectDatasetSource } from './select-dataset-source.component';
 import { SelectModelRevision } from './select-model-revision.component';
 import { SelectTrainingDevice } from './select-training-device/select-training-device.component';
 import { TimmModelConfiguration } from './timm-model-configuration/timm-model-configuration.component';
@@ -31,7 +31,7 @@ export const BasicTrainModelContent = () => {
 
                     <Flex gap={'size-300'} width={'100%'}>
                         <SelectTrainingDevice />
-                        <SelectDatasetRevision />
+                        <SelectDatasetSource />
                         <SelectModelRevision />
                     </Flex>
                 </Flex>

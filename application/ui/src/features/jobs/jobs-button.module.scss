@@ -1,0 +1,14 @@
+.iconWrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.runningIndicator {
+    position: absolute;
+    top: calc(-1 * var(--spectrum-global-dimension-size-40));
+    right: calc(-1 * var(--spectrum-global-dimension-size-50));
+    width: var(--spectrum-global-dimension-size-100);
+    height: var(--spectrum-global-dimension-size-100);
+    border-radius: 50%;
+    background-color: var(--energy-blue);
+}

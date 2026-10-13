@@ -52,14 +52,14 @@ export const ModelsTableHeader = ({ groupId }: { groupId: string }) => {
                 onSortChange={handleSortChange}
             />
             <ColumnHeader
-                label={groupBy === 'architecture' ? t('common.labels.dataset') : t('models.columns.architecture')}
+                label={groupBy === 'architecture' ? t('common.labels.dataset') : t('common.labels.architecture')}
                 ariaLabel={groupBy === 'architecture' ? 'Dataset' : 'Architecture'}
                 sortKey={groupBy === 'architecture' ? 'dataset' : 'architecture'}
                 sortBy={groupSortBy}
                 onSortChange={handleSortChange}
             />
             <ColumnHeader
-                label={t('models.list.columns.device')}
+                label={t('common.labels.device')}
                 ariaLabel={'Device'}
                 sortKey={'device'}
                 sortBy={groupSortBy}

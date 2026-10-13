@@ -4,7 +4,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import JSON, Boolean, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, BigInteger, Boolean, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -103,6 +103,10 @@ class DatasetRevisionDB(BaseID):
 
     project_id: Mapped[str] = mapped_column(Text, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Dataset view the revision was created from; NULL means the revision covers the entire dataset.
+    # Not a foreign key on purpose: if a view is deleted, the reference can't be removed (set to null) otherwise
+    # it would appear as if the revision was created from the entire dataset.
+    dataset_view_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     files_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
     training_count: Mapped[int] = mapped_column(Integer, default=0)
     validation_count: Mapped[int] = mapped_column(Integer, default=0)
@@ -252,3 +256,21 @@ class MetricScoreDB(BaseID):
     score: Mapped[float] = mapped_column(Float, nullable=False)
 
     evaluation = relationship("EvaluationDB", back_populates="metric_scores")
+
+
+class UploadDB(BaseID):
+    """Resumable (TUS) upload. The bytes live in '<uploads_dir>/<id>.part'; the client filename is never a path."""
+
+    __tablename__ = "uploads"
+    __table_args__ = (
+        Index("idx_uploads_state", "state"),
+        Index("idx_uploads_expires_at", "expires_at"),
+    )
+
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)  # sanitised client-declared name
+    content_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    size: Mapped[int | None] = mapped_column(BigInteger, nullable=True)  # null with Upload-Defer-Length
+    offset: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    state: Mapped[str] = mapped_column(String(20), nullable=False)  # pending|in_progress|completed|consumed
+    checksum: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)

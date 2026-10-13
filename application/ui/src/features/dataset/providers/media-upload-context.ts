@@ -10,6 +10,9 @@ import type { Action, MediaUploadState } from './media-upload-reducer';
 export const MediaUploadStateContext = createContext<MediaUploadState | null>(null);
 export const MediaUploadDispatchContext = createContext<Dispatch<Action> | null>(null);
 export const IsUploadingContext = createContext<boolean | null>(null);
+// One controller per queued or transferring item, so each upload can be cancelled individually.
+// It is a stable mutable registry (not state), hence it never triggers re-renders.
+export const MediaUploadAbortControllersContext = createContext<Map<string, AbortController> | null>(null);
 
 export const useMediaUploadState = (): MediaUploadState => {
     const context = useContext(MediaUploadStateContext);
@@ -36,6 +39,16 @@ export const useIsUploading = (): boolean => {
 
     if (context === null) {
         throw new Error('useIsUploading was used outside of MediaUploadProvider');
+    }
+
+    return context;
+};
+
+export const useMediaUploadAbortControllers = (): Map<string, AbortController> => {
+    const context = useContext(MediaUploadAbortControllersContext);
+
+    if (context === null) {
+        throw new Error('useMediaUploadAbortControllers was used outside of MediaUploadProvider');
     }
 
     return context;

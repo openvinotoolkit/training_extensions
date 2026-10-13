@@ -48,15 +48,21 @@ export const usePolygonConfig = ({
     }, [pointerLine, segments]);
 
     const optimizePolygonOrSegments = async (iPolygon: Polygon): Promise<Polygon> => {
+        // Optimisation is best effort: keep the shape as drawn rather than dropping it.
         if (isNil(worker)) {
-            return Promise.reject(new Error('Intelligent scissors worker not initialized'));
+            return iPolygon;
         }
 
         const lastSegment = differenceWith(iPolygon.points, segments.flat(), isEqual);
         const newSegments = isEmpty(lastSegment) ? [...segments] : [...segments, lastSegment];
 
-        const resultPolygon = await worker.optimizeSegments(newSegments);
-        return convertToolShapeToGetiShape(resultPolygon);
+        try {
+            const resultPolygon = await worker.optimizeSegments(newSegments);
+
+            return convertToolShapeToGetiShape(resultPolygon);
+        } catch {
+            return iPolygon;
+        }
     };
 
     const getPointerRelativePosition = (event: PointerEvent<SVGElement>): Point => {

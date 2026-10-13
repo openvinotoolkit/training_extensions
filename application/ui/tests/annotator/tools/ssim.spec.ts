@@ -5,51 +5,60 @@ import { expect } from '@playwright/test';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 
+import { FEATURE_FLAGS } from '../../../src/constants/feature-flags';
 import { http, test } from '../../fixtures';
 import { candyBinaryHandler, redLabel } from '../annotator-fixtures';
 
-const mockedProject = getMockedProject({
-    id: '123e4567-e89b-12d3-a456-426614174002',
-    task: {
-        exclusive_labels: true,
-        task_type: 'instance_segmentation',
-        labels: [redLabel],
-    },
-});
+const SCENARIOS = [
+    { taskType: 'detection', annotationLabel: 'annotation rect' },
+    { taskType: 'instance_segmentation', annotationLabel: 'annotation polygon' },
+] as const;
 
-// TODO: Re-enable in 3.1 when SSIM tool is restored.
-test.describe.skip('SSIM tool', () => {
-    test.beforeEach(async ({ network }) => {
-        network.use(
-            http.get('/api/projects/{project_id}', () => {
-                return HttpResponse.json(mockedProject);
-            }),
-            candyBinaryHandler
-        );
+for (const { taskType, annotationLabel } of SCENARIOS) {
+    const mockedProject = getMockedProject({
+        id: '123e4567-e89b-12d3-a456-426614174002',
+        task: {
+            exclusive_labels: true,
+            task_type: taskType,
+            labels: [redLabel],
+        },
     });
 
-    test('Draw a template region and adds polygon annotations', async ({ page, ssimTool, annotatorPage }) => {
-        await page.goto(`/projects/${mockedProject.id}/dataset`);
-        await page.getByRole('img', { name: 'item-1.jpg' }).dblclick();
+    test.describe(`SSIM tool (${taskType})`, () => {
+        test.skip(!FEATURE_FLAGS.SSIM_TOOL, 'SSIM tool is behind the SSIM_TOOL feature flag');
 
-        await test.step('Select SSIM tool', async () => {
-            await ssimTool.selectTool();
+        test.beforeEach(async ({ network }) => {
+            network.use(
+                http.get('/api/projects/{project_id}', () => {
+                    return HttpResponse.json(mockedProject);
+                }),
+                candyBinaryHandler
+            );
         });
 
-        await test.step('Wait for SSIM worker to be ready', async () => {
-            await expect(page.getByLabel('ssim preview')).toHaveAttribute('data-loading', 'false', { timeout: 30000 });
-        });
+        test('Draw a template region and adds annotations for it and its matches', async ({
+            page,
+            ssimTool,
+            annotatorPage,
+        }) => {
+            await page.goto(`/projects/${mockedProject.id}/dataset`);
+            await page.getByRole('img', { name: 'item-1.jpg' }).dblclick();
 
-        await test.step('Draw a template region', async () => {
-            await ssimTool.drawTemplate({ x: 100, y: 100, width: 150, height: 150 });
-        });
+            await test.step('Select SSIM tool', async () => {
+                await ssimTool.selectTool();
+            });
 
-        await test.step('Expect at least one polygon annotation', async () => {
-            await expect(async () => {
-                const items = await annotatorPage.getAnnotationsListItems('annotation polygon');
+            await test.step('Draw a template region', async () => {
+                await ssimTool.drawTemplate({ x: 100, y: 100, width: 150, height: 150 });
+            });
 
-                expect(items.length).toBeGreaterThanOrEqual(1);
-            }).toPass({ timeout: 15000 });
+            await test.step('Expect the template and its matches as annotations', async () => {
+                await expect(async () => {
+                    const items = await annotatorPage.getAnnotationsListItems(annotationLabel);
+
+                    expect(items.length).toBeGreaterThanOrEqual(2);
+                }).toPass({ timeout: 15000 });
+            });
         });
     });
-});
+}

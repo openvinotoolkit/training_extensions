@@ -177,7 +177,13 @@ class JobController:
                     job.cancel()
                     break
                 case Failed(details=d):
-                    job.fail(msg=d)
+                    if job.status == JobStatus.CANCELLING:
+                        # The runner was force-terminated (e.g. SIGTERM/SIGKILL) while cancellation
+                        # was in progress, so the failure is expected rather than a genuine error.
+                        logger.info("Job {} force-terminated during cancellation; marking as cancelled", job.id)
+                        job.cancel()
+                    else:
+                        job.fail(msg=d)
                     break
                 case _:
                     logger.warning("Unknown trainer event: {}", evt)

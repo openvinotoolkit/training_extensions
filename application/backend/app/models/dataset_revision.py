@@ -43,6 +43,8 @@ class DatasetRevision(BaseEntity):
         files_deleted: Flag indicating whether the files associated with this dataset revision have been deleted.
         size: Size on disk in bytes
         item_counts: Number of items in the subsets Training, Validation and Testing and total count.
+        dataset_view_id: Identifier of the dataset view the revision was created from, or None if it covers
+            the entire dataset.
     """
 
     id: UUID
@@ -51,6 +53,7 @@ class DatasetRevision(BaseEntity):
     files_deleted: bool
     size: int
     item_counts: DatasetRevisionCounts
+    dataset_view_id: UUID | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -63,5 +66,6 @@ class DatasetRevision(BaseEntity):
                 "files_deleted": data.files_deleted,
                 "size": data.size,
                 "item_counts": DatasetRevisionCounts.model_validate(data),
+                "dataset_view_id": data.dataset_view_id,
             }
         return data

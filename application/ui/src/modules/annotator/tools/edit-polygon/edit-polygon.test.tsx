@@ -36,7 +36,7 @@ vi.mock('../../annotation-actions-provider.component', async (importActual) => {
     const actual = await importActual<typeof import('../../annotation-actions-provider.component')>();
     return {
         ...actual,
-        useAnnotationActions: vi.fn(() => ({
+        useAnnotationCommands: vi.fn(() => ({
             updateAnnotations: mockedUpdateAnnotations,
             deleteAnnotations: mockedDeleteAnnotations,
         })),

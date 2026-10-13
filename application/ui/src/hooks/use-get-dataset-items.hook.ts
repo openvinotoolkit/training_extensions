@@ -23,6 +23,7 @@ type UseGetDatasetItemsOptions = {
     endDate?: string;
     limit?: number;
     datasetViewId?: string;
+    enabled?: boolean;
 };
 
 const getDatasetItemsQueryParameter = ({
@@ -91,6 +92,8 @@ export const useGetDatasetItems = ({
     startDate,
     endDate,
     datasetViewId,
+    limit = DATASET_ITEMS_LIMIT,
+    enabled = true,
 }: UseGetDatasetItemsOptions = {}) => {
     const project_id = useProjectIdentifier();
 
@@ -102,6 +105,7 @@ export const useGetDatasetItems = ({
         startDate,
         endDate,
         datasetViewId,
+        limit,
     });
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = $api.useInfiniteQuery(
@@ -114,6 +118,7 @@ export const useGetDatasetItems = ({
             },
         },
         {
+            enabled,
             pageParamName: 'offset',
             initialPageParam: 0,
             getNextPageParam: ({ pagination }: { pagination: Pagination }) => {
@@ -123,7 +128,7 @@ export const useGetDatasetItems = ({
                     return undefined;
                 }
 
-                return pagination.offset + DATASET_ITEMS_LIMIT;
+                return pagination.offset + limit;
             },
         }
     );

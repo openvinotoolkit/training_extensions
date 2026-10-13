@@ -3,4 +3,5 @@
 
 export { $api, fetchClient, API_BASE_URL } from './client';
 export { connectSSE, type SSEOptions } from './fetch-sse';
-export { uploadDatasetArchive, uploadDatasetMedia, uploadSourceVideo } from './upload-file';
+export { isAbortError, type TransferOptions } from './tus-upload';
+export { deleteSourceVideo, uploadDatasetArchive, uploadDatasetMedia, uploadSourceVideo } from './upload-file';

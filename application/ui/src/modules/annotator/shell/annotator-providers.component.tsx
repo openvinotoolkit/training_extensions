@@ -18,7 +18,6 @@ type AnnotatorProvidersProps = {
     mediaItem: Media;
     initialAnnotationsDTO: AnnotationDTO[];
     initialPredictionsDTO: AnnotationDTO[];
-    isUserReviewed: boolean;
     mode: AnnotatorMode;
     isReadOnly?: boolean;
     children: ReactNode;
@@ -28,7 +27,6 @@ export const AnnotatorProviders = ({
     mediaItem,
     initialAnnotationsDTO,
     initialPredictionsDTO,
-    isUserReviewed,
     mode,
     isReadOnly = false,
     children,
@@ -43,7 +41,6 @@ export const AnnotatorProviders = ({
                                 mediaItem={mediaItem}
                                 initialAnnotationsDTO={initialAnnotationsDTO}
                                 initialPredictionsDTO={initialPredictionsDTO}
-                                isUserReviewed={isUserReviewed}
                                 mode={mode}
                                 isReadOnly={isReadOnly}
                             >

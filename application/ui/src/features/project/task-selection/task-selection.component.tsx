@@ -4,12 +4,10 @@
 import type { Dispatch, SetStateAction } from 'react';
 
 import type { TaskType } from '@/api/types';
+import { Classification, Detection, Segmentation } from '@/assets/tasks';
 import { useTranslation, type TranslateFn } from '@/i18n';
 import { Divider, Flex, Grid, Heading, Image, Radio, RadioGroup, Text, View } from '@geti-ui/ui';
 
-import classificationImageUrl from '../../../assets/classification.webp';
-import detectionImageUrl from '../../../assets/detection.webp';
-import segmentationImageUrl from '../../../assets/segmentation.webp';
 import type { TaskOption } from './interface';
 
 import classes from './task-selection.module.scss';
@@ -23,7 +21,7 @@ export const MAP_TASK_TYPE_TO_VERB_KEY = {
 const getTaskOptions = (t: TranslateFn): TaskOption[] => [
     {
         id: 'detection_task',
-        imageSrc: detectionImageUrl,
+        imageSrc: Detection,
         title: t('project.create.tasks.detection.title'),
         ariaLabel: 'Object Detection',
         description: t('project.create.tasks.detection.description'),
@@ -33,7 +31,7 @@ const getTaskOptions = (t: TranslateFn): TaskOption[] => [
     },
     {
         id: 'segmentation_task',
-        imageSrc: segmentationImageUrl,
+        imageSrc: Segmentation,
         title: t('project.create.tasks.instanceSegmentation.title'),
         ariaLabel: 'Instance Segmentation',
         description: t('project.create.tasks.instanceSegmentation.description'),
@@ -43,7 +41,7 @@ const getTaskOptions = (t: TranslateFn): TaskOption[] => [
     },
     {
         id: 'classification_task',
-        imageSrc: classificationImageUrl,
+        imageSrc: Classification,
         title: t('project.create.tasks.classification.title'),
         ariaLabel: 'Image Classification',
         description: t('project.create.tasks.classification.description'),
@@ -110,6 +108,7 @@ export const TaskSelection = ({ selectedTask, setSelectedTask }: TaskSelectionPr
                     gap={'size-300'}
                     width={'100%'}
                     justifyContent={'center'}
+                    justifyItems={'center'}
                 >
                     {taskOptions.map((taskOption) => (
                         <Option

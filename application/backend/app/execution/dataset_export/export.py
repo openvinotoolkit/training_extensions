@@ -10,12 +10,13 @@ from datumaro.experimental.data_formats.base import DataFormat
 from datumaro.experimental.export_import import export_dataset
 from datumaro.experimental.fields import Subset
 from loguru import logger
+from pathvalidate import sanitize_filename
 from sqlalchemy.orm import Session
 
 from app.datumaro_converter import SampleMode
 from app.execution.base import Execution, step
 from app.models import DatasetFormat, DatasetItemAnnotationStatus, ExportDatasetJobParams
-from app.services import DatasetRevisionService, DatasetService
+from app.services import DatasetRevisionService, DatasetService, ProjectService
 
 
 def get_dm_format(dataset_format: DatasetFormat) -> DataFormat:
@@ -46,12 +47,14 @@ class ExportDataset(Execution[ExportDatasetJobParams]):
         staged_datasets_dir: Path,
         dataset_service: DatasetService,
         dataset_revision_service: DatasetRevisionService,
+        project_service: ProjectService,
         db_session_factory: Callable[[], AbstractContextManager[Session]],
     ):
         super().__init__()
         self._staged_datasets_dir = staged_datasets_dir
         self._dataset_service = dataset_service
         self._dataset_revision_service = dataset_revision_service
+        self._project_service = project_service
         self._db_session_factory = db_session_factory
 
     @step("Prepare dataset for export", 20)
@@ -82,23 +85,34 @@ class ExportDataset(Execution[ExportDatasetJobParams]):
                 )
             return uuid4(), dataset
 
+    def _build_zip_archive_name(self, project_id: UUID, export_format: DatasetFormat) -> str:
+        with self._db_session_factory() as session:
+            self._project_service.set_db_session(session)
+            project = self._project_service.get_project_by_id(project_id)
+            project_name = project.name
+        sanitized_project_name = sanitize_filename(project_name)[:32]
+        return "-".join(filter(None, [sanitized_project_name, f"{export_format}-dataset.zip"]))
+
     @step("Export dataset", 100)
-    def export_dataset(self, dataset_id: UUID, dataset: Dataset, export_format: DatasetFormat) -> Path | None:
+    def export_dataset(
+        self, dataset_id: UUID, dataset: Dataset, export_format: DatasetFormat, project_id: UUID
+    ) -> Path | None:
         target_dir = self._staged_datasets_dir / str(dataset_id)
         logger.info("Exporting dataset {} to {} in {} format", dataset_id, target_dir, export_format)
         target_dir.mkdir(parents=True, exist_ok=True)
+        filename = self._build_zip_archive_name(project_id, export_format)
         match export_format:
             case DatasetFormat.COCO | DatasetFormat.YOLO | DatasetFormat.VOC:
                 export_dataset(
                     dataset=dataset,
                     data_format=get_dm_format(export_format),
-                    output_path=str(target_dir / f"dataset-{export_format}.zip"),
+                    output_path=str(target_dir / filename),
                     as_zip=True,
                 )
             case DatasetFormat.GETI:
                 export_dataset(
                     dataset=dataset,
-                    output_path=str(target_dir / f"dataset-{export_format}.zip"),
+                    output_path=str(target_dir / filename),
                     as_zip=True,
                 )
             case _:
@@ -111,4 +125,4 @@ class ExportDataset(Execution[ExportDatasetJobParams]):
             self.pin_message("Dataset is empty after applying filters. Nothing to export.")
             return
         self.update_metadata({"dataset_id": dataset_id})
-        self.export_dataset(dataset_id, dataset, params.export_format)
+        self.export_dataset(dataset_id, dataset, params.export_format, params.project_id)

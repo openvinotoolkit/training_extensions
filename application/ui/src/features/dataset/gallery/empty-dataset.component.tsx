@@ -3,11 +3,11 @@
 
 import { ReactNode } from 'react';
 
+import { EmptyDataset as EmptyDatasetImage } from '@/assets/illustrations';
 import { useTranslation } from '@/i18n';
 import { Button, Flex, Heading } from '@geti-ui/ui';
 import { ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
 
-import { ReactComponent as EmptyDatasetImage } from '../../../assets/empty-dataset.svg';
 import { useImportDatasetDialogState } from '../providers/export-import-dataset-dialog-provider.component';
 import { MediaUpload } from './toolbar/media-upload.component';
 

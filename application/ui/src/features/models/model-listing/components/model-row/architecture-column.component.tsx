@@ -4,6 +4,7 @@
 import type { ModelArchitectureWithPerformanceCategory } from '@/api/types';
 import { Flex, Text } from '@geti-ui/ui';
 
+import { ModelLicenseLink } from '../../../components/model-license-link.component';
 import { PerformanceCategoryBadge } from './performance-category-badge.component';
 
 import classes from './model-row.module.scss';
@@ -22,7 +23,7 @@ export const ArchitectureColumn = ({ architectureId, architecture }: Architectur
     return (
         <Flex direction={'column'} gap={'size-100'}>
             <Text UNSAFE_className={classes.smallText}>
-                {architecture.name} ({architecture.license.name})
+                {architecture.name} (<ModelLicenseLink license={architecture.license} />)
             </Text>
             {architecture.performanceCategory !== undefined && (
                 <PerformanceCategoryBadge

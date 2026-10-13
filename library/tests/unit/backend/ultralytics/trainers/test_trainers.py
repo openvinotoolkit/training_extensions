@@ -396,7 +396,7 @@ class TestPinMemoryPolicy:
         trainer = object.__new__(trainer_cls)
         trainer._use_getitune_data = True
         trainer.device = torch.device(device_type)
-        trainer.args = SimpleNamespace(workers=0)
+        trainer._datamodule = MagicMock(train_subset=SimpleNamespace(num_workers=0))
 
         with (
             patch.object(trainer_cls, "build_dataset", return_value=MagicMock()),
@@ -406,3 +406,39 @@ class TestPinMemoryPolicy:
 
         _, kwargs = mock_loader_cls.call_args
         assert kwargs["pin_memory"] is expected_pin_memory
+
+
+class TestNumWorkers:
+    """DataLoader num_workers must come from the DataModule subset config."""
+
+    @pytest.mark.parametrize(("trainer_cls", "loader_patch_target"), _TRAINER_CASES)
+    @pytest.mark.parametrize(
+        ("mode", "train_workers", "val_workers", "expected"), [("train", 0, 3, 0), ("val", 5, 2, 2)]
+    )
+    def test_get_dataloader_uses_subset_num_workers(
+        self,
+        mode: str,
+        train_workers: int,
+        val_workers: int,
+        expected: int,
+        trainer_cls: type,
+        loader_patch_target: str,
+    ) -> None:
+        trainer = object.__new__(trainer_cls)
+        trainer._use_getitune_data = True
+        trainer.device = torch.device("cpu")
+        trainer.args = SimpleNamespace(workers=8)
+        trainer._datamodule = MagicMock(
+            train_subset=SimpleNamespace(num_workers=train_workers),
+            val_subset=SimpleNamespace(num_workers=val_workers),
+        )
+
+        with (
+            patch.object(trainer_cls, "build_dataset", return_value=MagicMock()),
+            patch(loader_patch_target) as mock_loader_cls,
+        ):
+            trainer.get_dataloader("unused", batch_size=4, mode=mode)
+
+        _, kwargs = mock_loader_cls.call_args
+        assert kwargs["num_workers"] == expected
+        assert kwargs["persistent_workers"] is (expected > 0)

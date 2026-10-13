@@ -26,7 +26,7 @@ export const useImportJobStatus = ({ jobId, onError, onSuccess }: UseImportJobSt
     const response = $api.useQuery(
         'get',
         '/api/jobs/{job_id}',
-        { params: { path: { job_id: jobId } } },
+        { params: { path: { job_id: jobId ?? '' } } },
         {
             enabled: isNonEmptyString(jobId),
         }

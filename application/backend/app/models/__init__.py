@@ -65,6 +65,7 @@ from .source import (
     VideoFileSourceConfig,
 )
 from .task import Task, TaskType
+from .upload import Upload, UploadState
 
 __all__ = [
     "AnnotationType",
@@ -138,6 +139,8 @@ __all__ = [
     "TrainingJobParams",
     "TrainingStatus",
     "USBCameraSourceConfig",
+    "Upload",
+    "UploadState",
     "Video",
     "VideoFileSourceConfig",
     "VideoFrame",

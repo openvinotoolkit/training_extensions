@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Model } from '@/api/types';
+import { OnnxLogo, OpenVinoLogo, PyTorchLogo } from '@/assets/icons';
 import { useTranslation } from '@/i18n';
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@geti-ui/ui';
 import { isEmpty } from 'lodash-es';
 
-import { ReactComponent as ONNX } from '../../../../assets/icons/onnx-logo.svg';
-import { ReactComponent as OpenVINO } from '../../../../assets/icons/openvino-logo.svg';
-import { ReactComponent as Pytorch } from '../../../../assets/icons/pytorch-logo.svg';
 import { ModelVariantTable } from './model-variant-table.component';
 import { QuantizationRow } from './quantization-row.component';
 
@@ -42,13 +40,13 @@ export const ModelVariantsTabs = ({ model }: ModelVariantsTabsProps) => {
         <Tabs aria-label='Model variants' UNSAFE_className={classes.tabs}>
             <TabList>
                 <Item aria-label='openvino tab' key='openvino' textValue='openvino'>
-                    <OpenVINO />
+                    <OpenVinoLogo />
                 </Item>
                 <Item aria-label='pytorch tab' key='pytorch' textValue='pytorch'>
-                    <Pytorch />
+                    <PyTorchLogo />
                 </Item>
                 <Item aria-label='onnx tab' key='onnx' textValue='onnx'>
-                    <ONNX />
+                    <OnnxLogo />
                 </Item>
             </TabList>
             <TabPanels width={0} minWidth={'100%'} UNSAFE_className={classes.tabPanels}>

@@ -3,49 +3,67 @@
 
 import { useEffect } from 'react';
 
+import { toast } from '@/components/toast/toast.component';
 import { useZoom } from '@/components/zoom/zoom.provider';
+import { useTranslation } from '@/i18n';
+import { useProjectTask } from 'hooks/use-project-task.hook';
 
-import { useAnnotationActions } from '../../annotation-actions-provider.component';
+import { isDetectionTask } from '../../../../shared/task-type-guards';
+import { useAnnotations } from '../../annotation-actions-provider.component';
 import { getFormattedPoints } from '../../annotations/utils';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
 import { Rectangle } from '../../shapes/rectangle.component';
 import { DEFAULT_ANNOTATION_STYLES } from '../../utils';
 import { DrawingBox } from '../drawing-box-tool/drawing-box.component';
+import { ToolLoading } from '../tool-loading.component';
 import { useAddAndSelectAnnotations } from '../use-add-and-select-annotations.hook';
 import { useSSIM } from './use-ssim.hook';
 
 import classes from './ssim-tool.module.scss';
 
 export const SSIMTool = () => {
+    const { t } = useTranslation();
     const { scale: zoom } = useZoom();
     const { roi, image } = useSelectedMediaItem();
-    const { annotations } = useAnnotationActions();
+    const { annotations } = useAnnotations();
     const { selectedLabel } = useAnnotatorLabels();
     const { addAndSelectAnnotations } = useAddAndSelectAnnotations();
-    const { runSSIM, reset, toolState, isProcessing, isLoading } = useSSIM();
+    const { runSSIM, reset, toolState, isProcessing, isLoading, isError, error } = useSSIM();
+    const shapeType = isDetectionTask(useProjectTask()) ? 'rectangle' : 'polygon';
+
+    useEffect(() => {
+        if (!isError) {
+            return;
+        }
+
+        toast({
+            id: 'ssim-tool-error',
+            type: 'error',
+            message: t('annotator.tools.ssim.error', {
+                message: error?.message ?? t('annotator.tools.autoSegmentation.unknownError'),
+            }),
+        });
+    }, [isError, error, t]);
 
     useEffect(() => {
         if (isProcessing || toolState.shapes.length === 0) {
             return;
         }
 
-        const predictedShapes = toolState.shapes.slice(1);
-
-        if (predictedShapes.length === 0) {
-            reset();
-            return;
-        }
-
-        addAndSelectAnnotations(predictedShapes, selectedLabel ? [selectedLabel] : []);
+        // The first shape is the user-drawn template, which is kept as an annotation too.
+        addAndSelectAnnotations(toolState.shapes, selectedLabel ? [selectedLabel] : []);
         reset();
     }, [toolState.shapes, isProcessing, addAndSelectAnnotations, selectedLabel, reset]);
+
+    if (isLoading) {
+        return <ToolLoading message={t('annotator.tools.ssim.loading')} />;
+    }
 
     return (
         <>
             <svg
                 aria-label='ssim preview'
-                data-loading={isLoading}
                 viewBox={`0 0 ${image.width} ${image.height}`}
                 style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}
             >
@@ -92,6 +110,8 @@ export const SSIMTool = () => {
                 image={image}
                 zoom={zoom}
                 selectedLabel={selectedLabel}
+                // A second run would overwrite the in-flight one's results before they are added.
+                isDisabled={isProcessing}
                 onComplete={(shapes) => {
                     const [template] = shapes;
 
@@ -101,11 +121,10 @@ export const SSIMTool = () => {
 
                     runSSIM({
                         imageData: image,
-                        roi,
                         template,
                         existingAnnotations: annotations.map((annotation) => annotation.shape),
                         autoMergeDuplicates: true,
-                        shapeType: 'polygon',
+                        shapeType,
                     });
 
                     return [];

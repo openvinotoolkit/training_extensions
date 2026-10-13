@@ -43,7 +43,7 @@ describe('locale registry', () => {
 
     it('ships English as the default language', () => {
         expect(DEFAULT_LANGUAGE).toBe('en');
-        expect(SUPPORTED_LANGUAGES).toEqual(['en', 'es', 'pt', 'zh-CN']);
+        expect(SUPPORTED_LANGUAGES).toEqual(['en', 'es', 'it', 'pl', 'pt', 'zh-CN', 'zh-HK', 'zh-MO', 'zh-TW']);
         expect(resources.en.translation).toHaveProperty('common.labels.dataset', 'Dataset');
     });
 });
@@ -68,7 +68,7 @@ describe('translation coverage', () => {
                 .filter(
                     (key) =>
                         !references.has(key) &&
-                        !references.has(key.replace(/_(zero|one|two|few|many|other)$/, '')) &&
+                        !references.has(key.replace(/_(zero|one|two|few|many|other|subset)$/, '')) &&
                         ![...dynamicPrefixes].some((prefix) => key.startsWith(prefix))
                 )
         ).toEqual([]);
@@ -84,7 +84,14 @@ describe('translation coverage', () => {
 
     it('has no duplicated English values outside of deliberately context-specific keys', () => {
         // Keys whose English wording collides by accident but may diverge in other locales.
-        const contextualDuplicates = new Set(['models.performance.categories.accuracy']);
+        const contextualDuplicates = new Set([
+            'common.labels.training_subset',
+            'common.labels.validation_subset',
+            'models.performance.categories.accuracy',
+            'jobs.tabs.finished',
+            'jobs.status.pending',
+            'common.upload.queued',
+        ]);
         const keysByValue = new Map<string, string[]>();
 
         translations
@@ -170,7 +177,7 @@ describe('translation coverage', () => {
     });
 
     it('translates visible JSX text and text props', () => {
-        const technicalText = new Set(['Geti™', ').zip', 'v', 'x', 'f', '&nbsp;']);
+        const technicalText = new Set(['Geti™', 'Geti v', ').zip', 'v', 'x', 'f', '&nbsp;']);
         const textProps =
             /^(label|title|placeholder|description|tooltip|errorMessage|alt|primaryActionLabel|secondaryActionLabel|cancelLabel|hotkey|message|bottomIconMessage|summary|emptyMessage)$/;
         const untranslated: string[] = [];

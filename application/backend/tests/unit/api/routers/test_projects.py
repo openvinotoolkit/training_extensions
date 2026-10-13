@@ -382,7 +382,7 @@ class TestCreateProjectInputValidationSecurity:
         assert response.status_code == status.HTTP_204_NO_CONTENT
         fxt_project_service.get_project_thumbnail_path.assert_called_once()
 
-    def test_capture_next_pipeline_frame_invalid_project_id(self, fxt_project_service, fxt_client):
+    def test_capture_next_pipeline_frame_invalid_project_id(self, fxt_project_service, fxt_data_collector, fxt_client):
         """Test capture next pipeline frame with invalid project ID returns 400."""
         response = fxt_client.post("/api/projects/invalid-id/pipeline:capture")
 

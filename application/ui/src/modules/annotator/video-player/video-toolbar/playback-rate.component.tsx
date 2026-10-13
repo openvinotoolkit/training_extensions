@@ -3,10 +3,10 @@
 
 import { useMemo } from 'react';
 
+import { PlayRate } from '@/assets/icons';
 import { useTranslation } from '@/i18n';
 import { ActionButton, DialogTrigger, Flex, Slider, Text, Tooltip, TooltipTrigger, View } from '@geti-ui/ui';
 
-import { ReactComponent as PlayRate } from '../../../../assets/icons/play-rate.svg';
 import { useVideoPlayer } from '../video-player-provider.component';
 
 type PlaybackRate = {

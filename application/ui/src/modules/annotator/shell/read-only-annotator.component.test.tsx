@@ -51,7 +51,6 @@ const renderApp = ({
             mediaItem={mediaItem}
             initialAnnotationsDTO={initialAnnotationsDTO}
             initialPredictionsDTO={initialPredictionsDTO}
-            isUserReviewed={false}
             mode={mode}
         >
             <ReadOnlyAnnotator

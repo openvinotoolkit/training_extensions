@@ -7,11 +7,18 @@ from uuid import uuid4
 import pytest
 from fastapi import status
 
-from app.api.dependencies import get_media_service, get_model_service, get_training_configuration_service
+from app.api.dependencies import (
+    get_inference_server,
+    get_media_service,
+    get_model_service,
+    get_training_configuration_service,
+)
 from app.api.schemas import TrainingConfigurationView
 from app.models import DatasetItemSubset, EvaluationResult, ModelRevision, ModelVariant, TrainingInfo, TrainingStatus
+from app.models.model_manifest import License
 from app.models.model_revision import ModelFormat, ModelPrecision
 from app.services import MediaService, ModelService, ResourceInUseError, ResourceNotFoundError, ResourceType
+from app.services.inference import InferenceServer
 from app.services.training_configuration_service import TrainingConfigurationService
 
 
@@ -108,6 +115,13 @@ def fxt_training_configuration_service(fxt_app) -> MagicMock:
     training_configuration_service = MagicMock(spec=TrainingConfigurationService)
     fxt_app.dependency_overrides[get_training_configuration_service] = lambda: training_configuration_service
     return training_configuration_service
+
+
+@pytest.fixture(autouse=True)
+def fxt_inference_server(fxt_app) -> MagicMock:
+    inference_server = MagicMock(spec=InferenceServer)
+    fxt_app.dependency_overrides[get_inference_server] = lambda: inference_server
+    return inference_server
 
 
 class TestModelEndpoints:
@@ -214,17 +228,27 @@ class TestModelEndpoints:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         fxt_model_service.get_model.assert_called_once_with(project_id=fxt_get_project.id, model_id=model_id)
 
-    def test_delete_model_success(self, fxt_get_project, fxt_model, fxt_model_service, fxt_client):
+    def test_delete_model_success(
+        self, fxt_get_project, fxt_model, fxt_model_service, fxt_inference_server, fxt_client
+    ):
         response = fxt_client.delete(f"/api/projects/{fxt_get_project.id}/models/{fxt_model.id}")
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
         fxt_model_service.delete_model.assert_called_once_with(project_id=fxt_get_project.id, model_id=fxt_model.id)
+        fxt_inference_server.invalidate_model.assert_called_once_with(
+            project_id=fxt_get_project.id, model_id=fxt_model.id
+        )
 
-    def test_delete_model_files_only_success(self, fxt_get_project, fxt_model, fxt_model_service, fxt_client):
+    def test_delete_model_files_only_success(
+        self, fxt_get_project, fxt_model, fxt_model_service, fxt_inference_server, fxt_client
+    ):
         response = fxt_client.delete(f"/api/projects/{fxt_get_project.id}/models/{fxt_model.id}?files_only=true")
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
         fxt_model_service.delete_model_files.assert_called_once_with(
+            project_id=fxt_get_project.id, model_id=fxt_model.id
+        )
+        fxt_inference_server.invalidate_model.assert_called_once_with(
             project_id=fxt_get_project.id, model_id=fxt_model.id
         )
 
@@ -283,6 +307,10 @@ class TestModelEndpoints:
             format=model_format,
             precision=ModelPrecision(model_precision),
         )
+        fxt_model_service.get_model_license.return_value = License(
+            name="AGPL-3.0", url="https://www.ultralytics.com/legal/agpl-3-0-software-license"
+        )
+        fxt_model_service.get_model_attribution.return_value = None
 
         response = fxt_client.get(
             f"/api/projects/{fxt_get_project.id}/models/{fxt_model.id}/variants/{model_variant_id}/binary"
@@ -318,11 +346,17 @@ class TestModelEndpoints:
                 assert "demo_async.py" in namelist
                 assert "pyproject.toml" in namelist
                 assert "README.md" in namelist
+                assert "LICENSE" in namelist
+                assert "## Licensing" in zip_file.read("README.md").decode()
+                fxt_model_service.get_model_attribution.assert_called_once_with(
+                    project_id=fxt_get_project.id, model_id=fxt_model.id
+                )
             else:
                 assert "demo.py" not in namelist
                 assert "demo_async.py" not in namelist
                 assert "pyproject.toml" not in namelist
                 assert "README.md" not in namelist
+                assert "LICENSE" not in namelist
 
         fxt_model_service.get_model_binary_files.assert_called_once_with(
             project_id=fxt_get_project.id,

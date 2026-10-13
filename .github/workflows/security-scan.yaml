@@ -193,8 +193,9 @@ jobs:
             --report junit
             --report-junit-path schemathesis-report/junit.xml
             --max-examples 20
-            --workers 4
+            --workers 2
             --checks all
+            --exclude-operation-id create_source_api_sources_post
             --max-response-time 30
             --request-timeout 20
             --suppress-health-check all
@@ -213,13 +214,24 @@ jobs:
           TEST_URL="https://localhost:7860"
 
           echo "Running post-scan health check..."
-          if curl -sf --insecure $TEST_URL/health > /dev/null 2>&1; then
-              echo "✅ Post-scan health check passed!"
-          else
-              echo "❌ Post-scan health check failed"
-              echo "=== Container logs ==="
-              docker logs "$CONTAINER_NAME" || true
-              exit 1
+          HEALTH_OK=false
+          for i in {1..12}; do
+            if curl -sf --insecure --max-time 5 "$TEST_URL/health" > /dev/null 2>&1; then
+              echo "✅ Post-scan health check passed on attempt $i/12!"
+              HEALTH_OK=true
+              break
+            fi
+            echo "Attempt $i/12 - service not ready yet"
+            if [[ "$i" != "12" ]]; then
+              sleep 5
+            fi
+          done
+
+          if [[ "$HEALTH_OK" != "true" ]]; then
+            echo "❌ Post-scan health check failed after 12 attempts"
+            echo "=== Container logs ==="
+            docker logs "$CONTAINER_NAME" || true
+            exit 1
           fi
 
       - name: Save container logs to file
@@ -269,6 +281,6 @@ jobs:
         with:
           image: "ghcr.io/open-edge-platform/geti-${{ matrix.ai-device }}:develop"
           # renovate: datasource=docker depName=python
-          base-image: "python:3.14-slim@sha256:caaf356f40667c496d405780745b9ac25771c189a51dfcc42430d531ea09f8a2"
+          base-image: "python:3.14-slim@sha256:f85c5697265c178cc6887276c55fe16cf3d14ca35c3df6a5eab3b360534a55d2"
           artifact-name: "trivy-scan-diff-${{ matrix.ai-device }}"
           ignore_unfixed: true

@@ -360,10 +360,21 @@ test.describe('Inference', () => {
                     );
                 }),
                 http.patch('/api/sources/{source_id}', () => {
-                    return HttpResponse.json({});
+                    return HttpResponse.json({
+                        id: 'generated-source-id',
+                        name: 'My Source',
+                        source_type: 'usb_camera',
+                        device_id: 1,
+                    });
                 }),
                 http.patch('/api/sinks/{sink_id}', () => {
-                    return HttpResponse.json({});
+                    return HttpResponse.json({
+                        id: 'generated-sink-id',
+                        name: 'My Sink',
+                        sink_type: 'folder',
+                        folder_path: 'e2e-output',
+                        output_formats: ['predictions'],
+                    });
                 })
             );
             await page.goto('/projects/id-1/inference');

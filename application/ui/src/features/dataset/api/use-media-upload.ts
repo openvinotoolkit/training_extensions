@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { uploadDatasetMedia } from '@/api';
+import { isAbortError, uploadDatasetMedia } from '@/api';
 import type { MediaDTO } from '@/api/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -49,21 +49,53 @@ const getFulfilledValues = <T>(results: PromiseSettledResult<T>[]): T[] =>
 export const useMediaUpload = () => {
     const projectId = useProjectIdentifier();
     const queryClient = useQueryClient();
-    const { startUploadProgress, setItemUploading, setItemUploaded, setItemFailed, finishUploadProgress } =
-        useUploadActions();
+    const {
+        startUploadProgress,
+        setItemUploading,
+        setItemTransferProgress,
+        setItemUploaded,
+        setItemFailed,
+        setItemCancelled,
+        getItemAbortSignal,
+        releaseItem,
+        finishUploadProgress,
+    } = useUploadActions();
 
     const buildUploadTask = (file: File, itemId: string): UploadTask<MediaDTO> => {
         return async () => {
-            setItemUploading(itemId);
+            const signal = getItemAbortSignal(itemId);
 
             try {
-                const result = await uploadDatasetMedia(projectId, file);
+                if (signal?.aborted) {
+                    throw signal.reason;
+                }
+
+                setItemUploading(itemId);
+
+                const result = await uploadDatasetMedia(projectId, file, {
+                    signal,
+                    onProgress: (bytesSent) => {
+                        setItemTransferProgress(itemId, bytesSent);
+
+                        // Now `processing` (not cancellable): a racing "Cancel all" must not abort it.
+                        if (bytesSent >= file.size) {
+                            releaseItem(itemId);
+                        }
+                    },
+                });
                 setItemUploaded(itemId);
 
                 return result;
             } catch (error) {
-                setItemFailed(itemId, getErrorMessage(error));
+                if (isAbortError(error)) {
+                    setItemCancelled(itemId);
+                } else {
+                    setItemFailed(itemId, getErrorMessage(error));
+                }
+
                 throw error;
+            } finally {
+                releaseItem(itemId);
             }
         };
     };

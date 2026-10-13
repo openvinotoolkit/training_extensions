@@ -4,14 +4,7 @@
 import type { DatasetRevision, Model } from '@/api/types';
 import type { TranslateFn } from '@/i18n';
 
-import { formatDateTime } from '../../../../shared/date-utils';
 import type { GroupedModels } from '../types';
-
-const formatDatasetStartTime = (dateString: string | null | undefined, t: TranslateFn): string => {
-    const formatted = formatDateTime(dateString);
-
-    return formatted === '-' ? formatted : t('dataset.revisions.createdOn', { date: formatted });
-};
 
 type GroupModelsByDatasetOptions = {
     datasetRevisions: DatasetRevision[];
@@ -41,10 +34,7 @@ export const groupModelsByDataset = (
                 group: {
                     id: datasetId,
                     name: datasetRevision?.name ?? t('dataset.revisions.unnamedName', { id: datasetId.slice(0, 8) }),
-                    createdAt: formatDatasetStartTime(
-                        datasetRevision ? datasetRevision.created_at : model.training_info.start_time,
-                        t
-                    ),
+                    createdAt: (datasetRevision ? datasetRevision.created_at : model.training_info.start_time) ?? null,
                     labelCount,
                     imageCount: datasetRevision?.item_counts?.total ?? 0,
                     trainingSubsets: {
@@ -70,7 +60,7 @@ export const groupModelsByArchitecture = (models: Model[]): GroupedModels[] => {
     const groups: Record<string, GroupedModels> = {}; // architecture -> models
 
     models.forEach((model) => {
-        const arch = model.architecture ?? 'Unknown';
+        const arch = model.architecture;
 
         if (!groups[arch]) {
             groups[arch] = {

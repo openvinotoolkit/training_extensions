@@ -2,19 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Task, TaskType } from '@/api/types';
-import { i18n, type TranslateFn } from '@/i18n';
+import type { TranslateFn } from '@/i18n';
 
 import { isMultiLabelClassificationTask } from '../../../shared/task-type-guards';
-
-export const formatCreationDate = (creationDate: string, locale = i18n.resolvedLanguage ?? i18n.language): string => {
-    return new Intl.DateTimeFormat(locale, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    }).format(new Date(creationDate));
-};
 
 export const MAP_PROJECT_TYPE_TO_TITLE_KEY = {
     detection: 'project.taskTypes.detection',

@@ -410,7 +410,7 @@ class TestGetiTuneTrainerAssignSubsets:
         getitune_trainer.assign_subsets(training_config=training_config, project_id=project_id)
 
         # Assert
-        fxt_subset_service.get_unassigned_items_with_labels.assert_called_once_with(project_id)
+        fxt_subset_service.get_unassigned_items_with_labels.assert_called_once_with(project_id, dataset_view_id=None)
         fxt_assigner.assign.assert_called_once()
         fxt_subset_service.update_subset_assignments.assert_called_once_with(project_id, expected_assignments)
 
@@ -431,7 +431,7 @@ class TestGetiTuneTrainerAssignSubsets:
         getitune_trainer.assign_subsets(training_config=training_config, project_id=project_id)
 
         # Assert
-        fxt_subset_service.get_unassigned_items_with_labels.assert_called_once_with(project_id)
+        fxt_subset_service.get_unassigned_items_with_labels.assert_called_once_with(project_id, dataset_view_id=None)
         fxt_assigner.assign.assert_not_called()
         fxt_subset_service.update_subset_assignments.assert_not_called()
 
@@ -469,7 +469,7 @@ class TestGetiTuneTrainerAssignSubsets:
         getitune_trainer.assign_subsets(training_config=training_config, project_id=project_id)
 
         # Assert - has_all_subsets_assigned is queried from the service ...
-        fxt_subset_service.has_all_subsets_assigned.assert_called_once_with(project_id)
+        fxt_subset_service.has_all_subsets_assigned.assert_called_once_with(project_id, dataset_view_id=None)
 
         # … and the returned value is forwarded verbatim as the third positional argument
         call_args = fxt_assigner.assign.call_args
@@ -478,21 +478,61 @@ class TestGetiTuneTrainerAssignSubsets:
         )
         assert actual_flag is has_all_subsets_assigned
 
+    def test_assign_subsets_scoped_to_dataset_view(
+        self,
+        fxt_getitune_trainer: Callable[[], GetiTuneTrainer],
+        fxt_subset_service: Mock,
+        fxt_assigner: Mock,
+    ):
+        """Test that subset assignment is restricted to the selected dataset view."""
+        # Arrange
+        getitune_trainer = fxt_getitune_trainer()
+        project_id = uuid4()
+        dataset_view_id = uuid4()
+        unassigned_items = [DatasetItemWithLabels(item_id=uuid4(), labels={uuid4()})]
+        fxt_subset_service.get_unassigned_items_with_labels.return_value = unassigned_items
+        fxt_subset_service.has_all_subsets_assigned.return_value = False
+        fxt_assigner.assign.return_value = [
+            SubsetAssignment(item_id=unassigned_items[0].item_id, subset=DatasetItemSubset.TRAINING)
+        ]
+        training_config = TrainingConfiguration(
+            task_level_parameters=TaskLevelParameters(),
+            algo_level_parameters=MagicMock(spec=AlgoLevelParameters),
+        )
+
+        # Act
+        getitune_trainer.assign_subsets(
+            training_config=training_config, project_id=project_id, dataset_view_id=dataset_view_id
+        )
+
+        # Assert
+        fxt_subset_service.get_unassigned_items_with_labels.assert_called_once_with(
+            project_id, dataset_view_id=dataset_view_id
+        )
+        fxt_subset_service.has_all_subsets_assigned.assert_called_once_with(project_id, dataset_view_id=dataset_view_id)
+
 
 class TestGetiTuneTrainerCreateTrainingDataset:
     """Tests for the GetiTuneTrainer.prepare_training_dataset method."""
 
+    DATASET_VIEW_ID = uuid4()
+    DATASET_VIEW_NAME = "Collection One"
+
     @pytest.mark.parametrize(
-        "dataset_revision_id,uptodate_existing_dataset",
+        "dataset_revision_id,uptodate_existing_dataset,dataset_view_id",
         [
-            (None, False),
-            (None, True),
-            (uuid4(), False),
+            (None, False, None),
+            (None, True, None),
+            (uuid4(), False, None),
+            (None, False, DATASET_VIEW_ID),
+            (None, True, DATASET_VIEW_ID),
         ],
         ids=[
             "with new dataset revision",
             "with up-to-date existing dataset revision",
             "with existing dataset revision",
+            "with new dataset revision from a dataset view",
+            "with up-to-date existing dataset revision from a dataset view",
         ],
     )
     def test_prepare_training_dataset_success(
@@ -502,6 +542,7 @@ class TestGetiTuneTrainerCreateTrainingDataset:
         fxt_dataset_revision_service: Mock,
         dataset_revision_id,
         uptodate_existing_dataset,
+        dataset_view_id,
     ):
         """Test successful creation of training, validation, and testing datasets."""
         # Arrange
@@ -610,14 +651,17 @@ class TestGetiTuneTrainerCreateTrainingDataset:
                     getitune_training_config=getitune_training_config,
                     training_config=training_config,
                     dataset_revision_id=dataset_revision_id,
+                    dataset_view_id=dataset_view_id,
+                    dataset_view_name=self.DATASET_VIEW_NAME if dataset_view_id else None,
                 )
 
         # Assert
+        expected_view_name = self.DATASET_VIEW_NAME if dataset_view_id else None
         # Verify that a dataset revision was created and saved if and only if no revision ID was provided
         if dataset_revision_id is None:
             if uptodate_existing_dataset:
                 fxt_dataset_revision_service.get_latest_uptodate_dataset_revision.assert_called_once_with(
-                    project_id=project_id
+                    project_id=project_id, dataset_view_id=dataset_view_id
                 )
                 fxt_dataset_revision_service.load_revision.assert_called_once_with(
                     project_id=project_id, dataset_revision_id=uptodate_revision.id
@@ -631,10 +675,13 @@ class TestGetiTuneTrainerCreateTrainingDataset:
                     task=task,
                     annotation_status=DatasetItemAnnotationStatus.WITH_ANNOTATIONS,
                     sample_mode=SampleMode.TRAINING,
+                    dataset_view_id=dataset_view_id,
                 )
                 fxt_dataset_revision_service.save_revision.assert_called_once_with(
                     project_id=project_id,
                     dataset=mock_dm_dataset,
+                    dataset_view_id=dataset_view_id,
+                    dataset_view_name=expected_view_name,
                 )
                 fxt_dataset_revision_service.load_revision.assert_not_called()
                 assert dataset_info.revision_id == new_dataset_revision_id
@@ -741,6 +788,7 @@ class TestGetiTuneTrainerPrepareModel:
 class TestGetiTuneTrainerTrainModel:
     """Tests for the GetiTuneTrainer.train_model method."""
 
+    @pytest.mark.parametrize("backend", ["lightning", "huggingface"])
     @pytest.mark.parametrize(
         "geti_device,getitune_device",
         [
@@ -757,6 +805,7 @@ class TestGetiTuneTrainerTrainModel:
         tmp_path: Path,
         geti_device: DeviceInfo,
         getitune_device: str,
+        backend: str,
         add_precision: bool,
     ):
         """Test successful model training."""
@@ -786,6 +835,7 @@ class TestGetiTuneTrainerTrainModel:
 
         # Create training configuration
         training_config: dict[str, Any] = {
+            "backend": backend,
             "model": {
                 "class_path": "getitune.backend.lightning.models.detection.yolox.YOLOXModel",
                 "init_args": {
@@ -876,6 +926,7 @@ class TestGetiTuneTrainerTrainModel:
         assert engine_call_kwargs["data"] == mock_datamodule
         assert engine_call_kwargs["work_dir"] == getitune_trainer._data_dir / f"getitune-workspace-{model_id}"
         assert "checkpoint" not in engine_call_kwargs
+        assert "device_index" not in engine_call_kwargs
 
         # Verify training was started
         mock_getitune_engine.train.assert_called_once()
@@ -885,10 +936,10 @@ class TestGetiTuneTrainerTrainModel:
             assert train_call_kwargs["precision"] == "32"
         else:
             assert "precision" not in train_call_kwargs
-        if geti_device.type == DeviceType.CPU or geti_device.index is None:
-            assert "devices" not in train_call_kwargs
-        else:
+        if geti_device.type is not DeviceType.CPU and geti_device.index is not None:
             assert train_call_kwargs["devices"] == [geti_device.index]
+        else:
+            assert "devices" not in train_call_kwargs
         assert "callbacks" in train_call_kwargs
 
         # Verify return values
@@ -1043,7 +1094,7 @@ class TestGetiTuneTrainerTrainModel:
             assert training_config["model"]["init_args"]["pretrained_weights"] == weights_path
 
         train_kwargs = engine.train.call_args.kwargs
-        assert "devices" not in train_kwargs
+        assert train_kwargs["devices"] == [0]
         assert train_kwargs["batch"] == 2
         assert len(train_kwargs["callbacks"]) == 1
         progress_callback = train_kwargs["callbacks"][0]

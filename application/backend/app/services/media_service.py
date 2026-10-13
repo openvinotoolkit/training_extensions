@@ -3,6 +3,7 @@
 
 import os
 import os.path
+import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from io import BytesIO
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.db.schema import MediaDB
 from app.models import DatasetItem, DatasetItemAnnotationStatus, Media, MediaType, Project, Video, VideoFrame
 from app.models.media import ImageFormat, MediaAdapter, MediaSortBy, SortDirection, VideoFormat
-from app.repositories import MediaRepository
+from app.repositories import DatasetViewRepository, MediaRepository
 from app.services.video import VideoService
 from app.utils.images import convert_to_jpeg_compatible, crop_to_thumbnail
 
@@ -55,7 +56,8 @@ class ImageMetadata:
     project_id: UUID
     name: str
     image_format: ImageFormat
-    data: Image.Image | np.ndarray | BinaryIO | BytesIO
+    # A Path is moved (not copied) into the dataset: use it for files that are no longer needed at their location
+    data: Image.Image | np.ndarray | BinaryIO | BytesIO | Path
     media_type: MediaType = MediaType.IMAGE
     source_id: UUID | None = None
     video_id: UUID | None = None
@@ -112,6 +114,24 @@ class MediaService(BaseSessionManagedService):
             raise InvalidImageError
 
     @staticmethod
+    def _read_image_from_path(path: Path) -> Image.Image:
+        try:
+            with Image.open(path) as image:
+                image.load()
+                # Detach the image from the file, so that the file can be moved (even on Windows)
+                return image.copy()
+        except (UnidentifiedImageError, OSError) as error:
+            raise InvalidImageError from error
+
+    @staticmethod
+    def _discard_binary(binary_path: Path, source_path: Path | None) -> None:
+        """Remove a binary after a failure, or move it back to where it came from if it was moved."""
+        if source_path is not None:
+            shutil.move(binary_path, source_path)
+        else:
+            binary_path.unlink(missing_ok=True)
+
+    @staticmethod
     def _generate_and_save_thumbnail(image: Image.Image, path: Path) -> None:
         try:
             thumbnail_image = crop_to_thumbnail(
@@ -136,11 +156,15 @@ class MediaService(BaseSessionManagedService):
         """Creates a new media (image)"""
         media_id = uuid4()
         original_binary: BinaryIO | BytesIO | None = None
+        source_path: Path | None = None
         match metadata.data:
             case Image.Image():
                 image = metadata.data
             case np.ndarray():
                 image = self._read_image_from_ndarray(metadata.data)
+            case Path():
+                source_path = metadata.data
+                image = self._read_image_from_path(source_path)
             case _:
                 original_binary = metadata.data
                 image = self._read_image_from_binary(metadata.data)
@@ -149,7 +173,9 @@ class MediaService(BaseSessionManagedService):
         dataset_dir.mkdir(parents=True, exist_ok=True)
         binary_path = dataset_dir / f"{media_id}.{metadata.image_format}"
 
-        if original_binary is not None:
+        if source_path is not None:
+            shutil.move(source_path, binary_path)
+        elif original_binary is not None:
             self._copy_binary(original_binary, binary_path)
         else:
             try:
@@ -181,7 +207,7 @@ class MediaService(BaseSessionManagedService):
             repo = MediaRepository(project_id=str(metadata.project_id), db=self.db_session)
             db_media = repo.save(media)
         except Exception as e:
-            binary_path.unlink(missing_ok=True)
+            self._discard_binary(binary_path, source_path)
             raise e
         return MediaAdapter.validate_python(db_media)
 
@@ -190,17 +216,26 @@ class MediaService(BaseSessionManagedService):
         project_id: UUID,
         name: str,
         video_format: VideoFormat,
-        data: BinaryIO,
+        data: BinaryIO | Path,
         source_id: UUID | None = None,
     ) -> Media:
-        """Creates a new media (video)"""
+        """
+        Creates a new media (video).
+
+        If `data` is a Path, the file is moved (not copied) into the dataset; it is moved back on failure.
+        """
         media_id = uuid4()
 
         dataset_dir = self.projects_dir / f"{project_id}/dataset"
         dataset_dir.mkdir(parents=True, exist_ok=True)
         binary_path = dataset_dir / f"{media_id}.{video_format}"
 
-        self._copy_binary(data, binary_path, VIDEO_WRITE_CHUNK_SIZE)
+        source_path: Path | None = None
+        if isinstance(data, Path):
+            source_path = data
+            shutil.move(source_path, binary_path)
+        else:
+            self._copy_binary(data, binary_path, VIDEO_WRITE_CHUNK_SIZE)
 
         try:
             video_metadata = self._get_video_service().get_video_metadata(video_path=binary_path)
@@ -226,7 +261,9 @@ class MediaService(BaseSessionManagedService):
             repo = MediaRepository(project_id=str(project_id), db=self.db_session)
             db_media = repo.save(media)
         except Exception as e:
-            binary_path.unlink(missing_ok=True)
+            # Release any cached handle on the video, otherwise it cannot be moved/deleted on Windows
+            self._get_video_service().release(binary_path)
+            self._discard_binary(binary_path, source_path)
             raise e
         return MediaAdapter.validate_python(db_media)
 
@@ -362,6 +399,8 @@ class MediaService(BaseSessionManagedService):
         repo = MediaRepository(project_id=str(project.id), db=self.db_session)
 
         binary_path = self.get_media_binary_path(project_id=project.id, media=media)
+        if media.type == MediaType.VIDEO:
+            self._get_video_service().release(binary_path)
         try:
             os.remove(binary_path)
         except FileNotFoundError:
@@ -372,6 +411,8 @@ class MediaService(BaseSessionManagedService):
         except FileNotFoundError:
             logger.warning("Media {} thumbnail was not found during deletion", media_id)
 
+        view_repo = DatasetViewRepository(project_id=str(project.id), db=self.db_session)
+        view_repo.touch_views_containing_media(str(media.id))
         repo.delete(obj_id=str(media.id))
 
     def get_frame_binary(self, project_id: UUID, video: Video, frame_index: int) -> Image.Image:

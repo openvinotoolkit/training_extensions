@@ -34,11 +34,11 @@ vi.mock('../annotation-actions-provider.component', async (importActual) => {
 
     return {
         ...actual,
-        useAnnotationActions: () => ({
+        useAnnotationCommands: () => ({
             updateAnnotations: vi.fn(),
             deleteAnnotations: vi.fn(),
-            isReadOnlyMode: false,
         }),
+        useIsAnnotatorReadOnly: () => false,
     };
 });
 

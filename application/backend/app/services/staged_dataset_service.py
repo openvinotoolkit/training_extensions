@@ -191,6 +191,44 @@ class StagedDatasetService:
             size=size,
         )
 
+    async def upload_from_path(self, filename: str, source_path: Path) -> StagedDataset:
+        """
+        Stage a dataset archive that already exists on disk, by moving (not copying) it into the staging directory.
+
+        A new UUID is generated, a subdirectory with that UUID is created under the configured staging root, and the
+        file is moved there with the given filename. The move is offloaded to a worker thread; when the source file is
+        on the same filesystem, it is a cheap rename regardless of the archive size.
+
+        Args:
+            filename: Target filename of the archive within the staged dataset directory.
+            source_path: Path of the archive to move. The file is no longer at this location on success.
+
+        Returns:
+            A `StagedDataset` object containing the dataset identifier and the archive size.
+        """
+        dataset_id = uuid4()
+        target_dir = self._staged_datasets_dir / str(dataset_id)
+        target_path = target_dir / filename
+
+        def _perform_move() -> int:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.move(source_path, target_path)
+            except Exception:
+                shutil.rmtree(target_dir, ignore_errors=True)
+                raise
+            return target_path.stat().st_size
+
+        size = await to_thread.run_sync(_perform_move)
+
+        return StagedDataset(
+            compressed=True,
+            filename=str(target_path),
+            format=DatasetFormat.UNKNOWN,
+            id=dataset_id,
+            size=size,
+        )
+
     def list_all(self) -> list[StagedDataset]:
         """
         List all staged dataset archives in the staging directory.

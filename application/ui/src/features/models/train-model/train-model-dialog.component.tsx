@@ -30,13 +30,17 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
     } = useTrainModelState();
     const projectId = useProjectIdentifier();
     const isModelsPage = useMatch(paths.project.models.pattern);
-    const trainingDisabledReason = useTrainModelDisabledReason().reason;
+    const { reason: trainingDisabledReason, isPending: isDisabledReasonPending } = useTrainModelDisabledReason();
     const isTrainingDisabled = trainingDisabledReason !== undefined;
 
     const { trainModel, isPending } = useTrainModel();
 
     const isStartButtonDisabled =
-        isTrainingDisabled || resolvedModelArchitectureId === null || selectedTrainingDevice === null || isPending;
+        isTrainingDisabled ||
+        isDisabledReasonPending ||
+        resolvedModelArchitectureId === null ||
+        selectedTrainingDevice === null ||
+        isPending;
 
     const isAdvancedSettingsModeDisabled = resolvedModelArchitectureId === null || trainingConfiguration === undefined;
 
@@ -54,7 +58,15 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
                                 <Trans
                                     i18nKey='models.training.setup.toast.trainingStartedWithLink'
                                     components={{
-                                        link: <Link to={paths.project.models({ projectId })} viewTransition />,
+                                        modelsLink: (
+                                            <Link
+                                                to={paths.project.models({ projectId })}
+                                                viewTransition
+                                                style={{
+                                                    textDecoration: 'underline',
+                                                }}
+                                            />
+                                        ),
                                     }}
                                 />
                             </Text>

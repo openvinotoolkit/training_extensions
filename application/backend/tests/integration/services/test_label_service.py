@@ -16,6 +16,7 @@ from app.models.shape import FullImage, Rectangle
 from app.models.task import Task, TaskType
 from app.services import ResourceNotFoundError, ResourceType, ResourceWithIdAlreadyExistsError
 from app.services.dataset_service import DatasetService
+from app.services.event.event_bus import EventType
 from app.services.label_service import DuplicateLabelsError, LabelService
 
 
@@ -186,6 +187,59 @@ class TestLabelServiceIntegration:
         assert added.name == "bird" and added.color == "#0000FF" and added.hotkey == "b"
 
         assert db_session.query(LabelDB).filter(LabelDB.id == str(remove_id)).one_or_none() is None
+
+    def test_update_labels_recolor_notifies_inference(
+        self,
+        fxt_stored_project_with_labels: tuple[ProjectDB, list[LabelDB]],
+        fxt_label_service: LabelService,
+        fxt_event_bus: MagicMock,
+        db_session: Session,
+    ) -> None:
+        """
+        Test that changing a label colour notifies the inference pipeline after the commit.
+
+        Without this notification, the running pipeline keeps rendering predictions with the
+        colours cached when the model was last loaded.
+        """
+        db_project, db_labels = fxt_stored_project_with_labels
+        project = _db_project_to_project(db_project)
+        edit_id = UUID(db_labels[0].id)
+
+        fxt_label_service.update_labels(
+            project=project,
+            labels_to_add=[],
+            labels_to_remove=[],
+            labels_to_edit=[
+                LabelUpdateInfo(id=edit_id, new_name=db_labels[0].name, new_color="#121212", new_hotkey=None)
+            ],
+        )
+
+        fxt_event_bus.emit_event_after_commit.assert_called_once_with(db_session, EventType.INFERENCE_PARAMS_CHANGED)
+
+    def test_update_labels_without_color_change_does_not_notify_inference(
+        self,
+        fxt_stored_project_with_labels: tuple[ProjectDB, list[LabelDB]],
+        fxt_label_service: LabelService,
+        fxt_event_bus: MagicMock,
+    ) -> None:
+        """
+        Test that edits which leave the label colours untouched do not notify the inference pipeline.
+        """
+        db_project, db_labels = fxt_stored_project_with_labels
+        project = _db_project_to_project(db_project)
+        edit_id = UUID(db_labels[0].id)
+        unchanged_color = db_labels[0].color
+
+        fxt_label_service.update_labels(
+            project=project,
+            labels_to_add=[],
+            labels_to_remove=[],
+            labels_to_edit=[
+                LabelUpdateInfo(id=edit_id, new_name="renamed_cat", new_color=unchanged_color, new_hotkey=None)
+            ],
+        )
+
+        fxt_event_bus.emit_event_after_commit.assert_not_called()
 
     def test_update_labels_edit_duplicate_name(
         self,

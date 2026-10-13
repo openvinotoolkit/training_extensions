@@ -4,20 +4,21 @@
 import { useState } from 'react';
 
 import type { Project } from '@/api/types';
+import placeholderThumbnailIconUrl from '@/assets/icons/image-icon.svg?url';
 import { useTranslation } from '@/i18n';
 import { Badge, Flex, Heading, Text, View } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { getProjectQueryOptions } from 'hooks/api/project.hook';
+import { LONG_DATE_TIME_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 import { NavLink } from 'react-router';
 
-import placeholderThumbnailIconUrl from '../../../assets/icons/image-icon.svg?url';
 import { paths } from '../../../constants/paths';
 import { getProjectThumbnailUrl } from '../../../shared/media-url.utils';
 import { ActiveProjectBadge } from './active-project-badge/active-project-badge.component';
 import { MenuActions } from './menu-actions/menu-actions.component';
 import { ProjectLabelsButton } from './project-labels-button/project-labels-button.component';
-import { formatCreationDate, getProjectTypeTitle } from './util';
+import { getProjectTypeTitle } from './util';
 
 import classes from './project-list.module.scss';
 
@@ -63,6 +64,7 @@ type ProjectCardProps = {
 
 export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: ProjectCardProps) => {
     const { t } = useTranslation();
+    const formatDate = useFormatDate(LONG_DATE_TIME_FORMAT);
     const isActive = item.active_pipeline;
     const taskType = getProjectTypeTitle(item.task, t);
     const labels = item.task.labels ?? [];
@@ -73,18 +75,14 @@ export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: Pro
     };
 
     return (
-        <div className={classes.cardWrapper} aria-label={`Project: ${item.name}`}>
+        <div className={clsx(classes.card, { [classes.activeCard]: isActive })} aria-label={`Project: ${item.name}`}>
             <NavLink
                 to={paths.project.dataset.index({ projectId: item.id })}
                 viewTransition
                 onPointerEnter={prefetchProject}
                 onFocus={prefetchProject}
             >
-                <Flex
-                    direction={'column'}
-                    height={'100%'}
-                    UNSAFE_className={clsx({ [classes.card]: true, [classes.activeCard]: isActive })}
-                >
+                <Flex direction={'column'} height={'100%'}>
                     <View position={'relative'} UNSAFE_className={classes.thumbnailContainer}>
                         <ProjectThumbnail project={item} prioritizeImage={prioritizeImage} />
 
@@ -106,7 +104,7 @@ export const ProjectCard = ({ item, prioritizeImage = false, projectNames }: Pro
                             </Heading>
 
                             <Text UNSAFE_className={classes.projectMetadata}>
-                                {t('project.list.card.created', { date: formatCreationDate(item.created_at) })}
+                                {t('project.list.card.created', { date: formatDate(item.created_at) ?? '-' })}
                             </Text>
                         </Flex>
                     </View>

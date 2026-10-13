@@ -7,13 +7,19 @@ import { getMockedAnnotationLabel } from 'mocks/mock-labels';
 import { render } from 'test-utils/render';
 
 import type { Annotation, AnnotationLabel, AnnotationLabelRef } from '../../../shared/types';
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import {
+    useAnnotationCommands,
+    useAnnotations,
+    useIsAnnotatorReadOnly,
+} from '../annotation-actions-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { useCanvasSettings } from '../shell/primary-toolbar/settings/canvas-settings-provider.component';
 import { ReadOnlyAnnotations } from './read-only-annotations.component';
 
 vi.mock('../annotation-actions-provider.component', () => ({
-    useAnnotationActions: vi.fn(),
+    useAnnotations: vi.fn(),
+    useAnnotationCommands: vi.fn(),
+    useIsAnnotatorReadOnly: vi.fn(),
 }));
 
 vi.mock('../annotation-visibility-provider.component', () => ({
@@ -75,12 +81,12 @@ const setupMocks = ({
     isReadOnlyMode = true,
     hideLabels = false,
 }: SetupOptions = {}) => {
-    vi.mocked(useAnnotationActions).mockReturnValue({
-        annotations,
-        isReadOnlyMode,
+    vi.mocked(useAnnotations).mockReturnValue({ annotations, initialAnnotations: [], initialPredictions: [] });
+    vi.mocked(useIsAnnotatorReadOnly).mockReturnValue(isReadOnlyMode);
+    vi.mocked(useAnnotationCommands).mockReturnValue({
         updateAnnotations: vi.fn(),
         deleteAnnotations: vi.fn(),
-    } as unknown as ReturnType<typeof useAnnotationActions>);
+    } as unknown as ReturnType<typeof useAnnotationCommands>);
 
     vi.mocked(useAnnotationVisibility).mockReturnValue({
         isFocussed,

@@ -59,13 +59,13 @@ export const SubsetDistributionStats = ({
             <Flex alignItems={'center'} justifyContent={'space-between'} UNSAFE_className={classes.statsText}>
                 <Flex alignItems={'center'} gap={'size-200'}>
                     <SubsetDistributionStat
-                        title={t('common.labels.training')}
+                        title={t('common.labels.training', { context: 'subset' })}
                         ariaLabel={'Training'}
                         color={LABEL_COLOR_MAPPING.training}
                         size={trainingSize}
                     />
                     <SubsetDistributionStat
-                        title={t('common.labels.validation')}
+                        title={t('common.labels.validation', { context: 'subset' })}
                         ariaLabel={'Validation'}
                         color={LABEL_COLOR_MAPPING.validation}
                         size={validationSize}

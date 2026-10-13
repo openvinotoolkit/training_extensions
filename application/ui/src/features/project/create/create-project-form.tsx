@@ -101,10 +101,10 @@ export const CreateProjectForm = ({ projects }: CreateProjectFormProps) => {
                 minHeight={0}
                 width={'clamp(912px, 60vw, 1560px)'}
                 margin={'0 auto'}
-                gap={'size-500'}
+                gap={'size-350'}
                 direction={'column'}
             >
-                <Flex justifyContent={'center'} marginTop={'size-600'}>
+                <Flex justifyContent={'center'} marginTop={'size-200'}>
                     <TextField
                         aria-label={'Project name input'}
                         maxLength={PROJECT_NAME_MAX_LENGTH}

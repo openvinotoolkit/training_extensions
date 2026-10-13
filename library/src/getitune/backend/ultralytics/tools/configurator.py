@@ -289,6 +289,7 @@ class Configurator:
         - ``weight_decay`` → ``weight_decay``
         - ``max_epochs`` → ``epochs``
         - ``batch_size`` → ``batch``
+        - ``num_workers`` → ``data.*_subset.num_workers``
         - ``input_size_height/width`` → ``imgsz``
         - ``early_stopping`` → ``patience`` (0 = disabled)
         - ``scheduler.warmup`` → ``warmup_epochs``
@@ -311,6 +312,10 @@ class Configurator:
                 for subset in ("train_subset", "val_subset", "test_subset"):
                     if subset in self._data_config:
                         self._data_config[subset]["batch_size"] = int(batch_size)
+        if (num_workers := training.get("num_workers")) is not None and self._data_config is not None:
+            for subset in ("train_subset", "val_subset", "test_subset"):
+                if subset in self._data_config:
+                    self._data_config[subset]["num_workers"] = int(num_workers)
 
         height = training.get("input_size_height")
         width = training.get("input_size_width")

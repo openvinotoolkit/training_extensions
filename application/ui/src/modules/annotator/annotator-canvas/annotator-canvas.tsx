@@ -6,7 +6,7 @@ import { PointerEvent, useEffect, useRef, useState } from 'react';
 import type { Media } from '@/api/types';
 
 import { isVideoFrame } from '../../../shared/media-item-utils';
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotations } from '../annotation-actions-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { Annotations } from '../annotations/annotations.component';
 import { VideoAnnotations, VideoPredictions } from '../annotations/video-annotations.component';
@@ -36,7 +36,7 @@ type ImageAnnotationsProps = {
 
 const ImageAnnotations = ({ mediaItem }: ImageAnnotationsProps) => {
     const { isFocussed } = useAnnotationVisibility();
-    const { annotations } = useAnnotationActions();
+    const { annotations } = useAnnotations();
     const { selectedAnnotations, setSelectedAnnotations } = useSelectedAnnotations();
 
     useSelectNextAnnotation({

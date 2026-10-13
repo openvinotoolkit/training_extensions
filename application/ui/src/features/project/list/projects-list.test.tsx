@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
@@ -9,6 +9,7 @@ import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
+import { i18n } from '../../../i18n';
 import { server } from '../../../msw-node-setup';
 import { ImportDatasetDialogProvider } from '../providers/import-dataset-dialog-provider.component';
 import { ProjectList } from './project-list.component';
@@ -104,6 +105,20 @@ describe('ProjectList', () => {
             expect(headings[0]).toHaveTextContent('Beta Project');
             expect(headings[1]).toHaveTextContent('Zeta Project');
             expect(headings[2]).toHaveTextContent('Alpha Project');
+        });
+
+        it('updates the selected sort option when the language changes', async () => {
+            await act(() => i18n.changeLanguage('pl'));
+            renderProjectList();
+
+            const picker = await screen.findByRole('button', { name: /Sortuj projekty według:/i });
+            expect(picker).toHaveTextContent('Data utworzenia (najnowsze)');
+
+            await act(() => i18n.changeLanguage('en'));
+
+            expect(screen.getByRole('button', { name: /Sort Projects by:/i })).toHaveTextContent(
+                'Created date (newest)'
+            );
         });
 
         it('sorts projects by name ascending when selected', async () => {

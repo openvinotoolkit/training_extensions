@@ -18,10 +18,11 @@ const getOpenApiHttp = (): OpenApiHttpHandlers<paths> => {
         ...http,
         post: (path, ...other) => {
             // @ts-expect-error MSW internal parsing function does not accept paths like
-            // `/api/models/{model_name}:activate`
-            // to get around this we escape the colon character with `\\`
+            // `/api/models/{model_name}:activate` or `/api/staged_datasets:from-upload`
+            // to get around this we escape the colon character with `\\`. OpenAPI paths use
+            // `{param}` placeholders, so every colon is a literal custom-method separator.
             // @see https://github.com/mswjs/msw/discussions/739
-            return http.post(path.replace('}:', '}\\:'), ...other);
+            return http.post(path.replaceAll(':', '\\:'), ...other);
         },
     };
 };

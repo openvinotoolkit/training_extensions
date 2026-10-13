@@ -23,12 +23,12 @@ Feature: Export Dataset
 
     Examples:
       | export format | archive name     | filters                                                    | image count | frame count |
-      | YOLO          | dataset-yolo.zip | { }                                                        | 34          | 0           |
-      | YOLO          | dataset-yolo.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
-      | GETI          | dataset-geti.zip | { }                                                        | 30          | 4           |
-      | GETI          | dataset-geti.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 10          | 4           |
-      | COCO          | dataset-coco.zip | { }                                                        | 34          | 0           |
-      | COCO          | dataset-coco.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
+      | YOLO          | grapes-yolo-dataset.zip | { }                                                        | 34          | 0           |
+      | YOLO          | grapes-yolo-dataset.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
+      | GETI          | grapes-geti-dataset.zip | { }                                                        | 30          | 4           |
+      | GETI          | grapes-geti-dataset.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 10          | 4           |
+      | COCO          | grapes-coco-dataset.zip | { }                                                        | 34          | 0           |
+      | COCO          | grapes-coco-dataset.zip | { "labels": ["Chardonnay"], "include_unannotated": false } | 14          | 0           |
 
   @export @classification
   Scenario Outline: Export classification project dataset
@@ -48,10 +48,10 @@ Feature: Export Dataset
 
     Examples:
       | export format | archive name     | filters                                             | image count | frame count |
-      | GETI          | dataset-geti.zip | { }                                                 | 30          | 10          |
-      | GETI          | dataset-geti.zip | { "labels": ["cat"], "include_unannotated": false } | 15          | 5           |
-      | VOC           | dataset-voc.zip  | { }                                                 | 40          | 0           |
-      | VOC           | dataset-voc.zip  | { "labels": ["cat"], "include_unannotated": false } | 20          | 0           |
+      | GETI          | animals-geti-dataset.zip | { }                                                 | 30          | 10          |
+      | GETI          | animals-geti-dataset.zip | { "labels": ["cat"], "include_unannotated": false } | 15          | 5           |
+      | VOC           | animals-voc-dataset.zip  | { }                                                 | 40          | 0           |
+      | VOC           | animals-voc-dataset.zip  | { "labels": ["cat"], "include_unannotated": false } | 20          | 0           |
 
   @export @segmentation
   Scenario Outline: Export segmentation project dataset
@@ -71,7 +71,7 @@ Feature: Export Dataset
 
     Examples:
       | export format | archive name     | filters                       | image count | frame count |
-      | GETI          | dataset-geti.zip | { }                           | 30           | 6          |
-      | GETI          | dataset-geti.zip | { "labels": ["person"] }      | 30           | 6          |
-      | COCO          | dataset-coco.zip | { }                           | 36           | 0          |
-      | COCO          | dataset-coco.zip | { "labels": ["person"] }      | 36           | 0          |
+      | GETI          | traffic-geti-dataset.zip | { }                           | 30           | 6          |
+      | GETI          | traffic-geti-dataset.zip | { "labels": ["person"] }      | 30           | 6          |
+      | COCO          | traffic-coco-dataset.zip | { }                           | 36           | 0          |
+      | COCO          | traffic-coco-dataset.zip | { "labels": ["person"] }      | 36           | 0          |

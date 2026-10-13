@@ -3,6 +3,7 @@
 
 import { ReactNode } from 'react';
 
+import { getUploadPercentage } from '@/components/upload-progress/upload-progress.component';
 import { useTranslation, type TranslateFn } from '@/i18n';
 import {
     ActionButton,
@@ -18,6 +19,7 @@ import {
     Flex,
     Heading,
     Loading,
+    ProgressBar,
     Row,
     TableBody,
     TableHeader,
@@ -26,11 +28,18 @@ import {
     Tooltip,
     TooltipTrigger,
 } from '@geti-ui/ui';
-import { AcceptCircle, CrossCircle, Pending } from '@geti-ui/ui/icons';
+import { AcceptCircle, CloseSmall, CrossCircle, Pending } from '@geti-ui/ui/icons';
 
 import { formatBytes } from '../../../../shared/util';
+import { useUploadActions } from '../../hooks/use-upload-actions';
 import { useMediaUploadDispatch, useMediaUploadState } from '../../providers/media-upload-context';
-import { computeSummary, type UploadFileItem, type UploadItemStatus } from '../../providers/media-upload-reducer';
+import {
+    computeSummary,
+    formatFinalSummary,
+    isCancellable,
+    type UploadFileItem,
+    type UploadItemStatus,
+} from '../../providers/media-upload-reducer';
 
 import classes from './upload-details-dialog.module.scss';
 
@@ -39,11 +48,14 @@ const StatusIcon = ({ status }: { status: UploadItemStatus }): ReactNode => {
         case 'queued':
             return <Pending aria-label={'Queued'} size={'S'} />;
         case 'uploading':
+        case 'processing':
             return <Loading mode={'inline'} size={'S'} />;
         case 'uploaded':
             return (
                 <AcceptCircle aria-label={'Uploaded'} width={16} height={16} style={{ fill: 'var(--brand-moss)' }} />
             );
+        case 'cancelled':
+            return <CloseSmall aria-label={'Cancelled'} width={16} height={16} />;
         case 'failed':
             return (
                 <CrossCircle
@@ -65,6 +77,25 @@ const StatusCell = ({
     labels: Record<UploadItemStatus, string>;
     t: TranslateFn;
 }) => {
+    if (item.status === 'uploading' && item.bytesSent !== undefined) {
+        return (
+            <Flex alignItems={'center'} gap={'size-100'}>
+                <ProgressBar
+                    aria-label={'Upload progress'}
+                    size={'S'}
+                    width={'size-1200'}
+                    value={getUploadPercentage(item.bytesSent, item.size)}
+                />
+                <Text>
+                    {t('common.labels.bytesTransferred', {
+                        transferred: formatBytes(item.bytesSent),
+                        total: formatBytes(item.size),
+                    })}
+                </Text>
+            </Flex>
+        );
+    }
+
     const statusContent = (
         <Flex alignItems={'center'} gap={'size-100'}>
             <StatusIcon status={item.status} />
@@ -95,11 +126,24 @@ const StatusCell = ({
     return statusContent;
 };
 
+const CancelCell = ({ item, onCancel }: { item: UploadFileItem; onCancel: (itemId: string) => void }) => {
+    if (!isCancellable(item.status)) {
+        return null;
+    }
+
+    return (
+        <ActionButton isQuiet aria-label={`Cancel upload of ${item.name}`} onPress={() => onCancel(item.id)}>
+            <CloseSmall />
+        </ActionButton>
+    );
+};
+
 const buildSubheader = (
     t: TranslateFn,
     total: number,
     succeeded: number,
     failed: number,
+    cancelled: number,
     isUploading: boolean
 ): string => {
     if (isUploading) {
@@ -111,10 +155,7 @@ const buildSubheader = (
         });
     }
 
-    if (failed === 0) return t('dataset.upload.uploadedSummary', { count: succeeded });
-    if (succeeded === 0) return t('dataset.upload.failedSummary', { count: failed });
-
-    return t('dataset.upload.mixedSummary', { count: succeeded, uploaded: succeeded, failed });
+    return formatFinalSummary(t, { succeeded, failed, cancelled });
 };
 
 const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
@@ -122,14 +163,25 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
     const labels: Record<UploadItemStatus, string> = {
         queued: t('dataset.upload.queued'),
         uploading: t('common.status.uploading'),
+        processing: t('dataset.upload.processing'),
         uploaded: t('dataset.upload.uploaded'),
         failed: t('common.status.failed'),
+        cancelled: t('common.status.cancelled'),
     };
     const state = useMediaUploadState();
+    const { cancelItems } = useUploadActions();
     const summary = computeSummary(state.items);
     const items = state.items;
 
-    const subheader = buildSubheader(t, summary.total, summary.succeeded, summary.failed, state.isUploading);
+    const subheader = buildSubheader(
+        t,
+        summary.total,
+        summary.succeeded,
+        summary.failed,
+        summary.cancelled,
+        state.isUploading
+    );
+    const cancellableItemIds = items.filter((item) => isCancellable(item.status)).map((item) => item.id);
 
     return (
         <Dialog size={'L'}>
@@ -147,9 +199,12 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
                     >
                         <TableHeader>
                             <Column isRowHeader>{t('dataset.upload.filename')}</Column>
-                            <Column width={160}>{t('common.labels.statusUppercase')}</Column>
-                            <Column width={120} align={'end'}>
+                            <Column width={260}>{t('common.labels.statusUppercase')}</Column>
+                            <Column width={100} align={'end'}>
                                 {t('common.labels.sizeUppercase')}
+                            </Column>
+                            <Column width={48} align={'end'} hideHeader>
+                                {t('common.actions.cancel')}
                             </Column>
                         </TableHeader>
                         <TableBody items={items}>
@@ -165,6 +220,9 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
                                         <StatusCell item={item} labels={labels} t={t} />
                                     </Cell>
                                     <Cell>{formatBytes(item.size)}</Cell>
+                                    <Cell>
+                                        <CancelCell item={item} onCancel={(itemId) => cancelItems([itemId])} />
+                                    </Cell>
                                 </Row>
                             )}
                         </TableBody>
@@ -172,6 +230,11 @@ const UploadDetailsDialogContent = ({ onClose }: { onClose: () => void }) => {
                 </Flex>
             </Content>
             <ButtonGroup>
+                {cancellableItemIds.length > 0 && (
+                    <Button variant={'secondary'} onPress={() => cancelItems(cancellableItemIds)}>
+                        {t('dataset.upload.cancelAll')}
+                    </Button>
+                )}
                 <Button variant={'primary'} onPress={onClose}>
                     {t('common.actions.close')}
                 </Button>

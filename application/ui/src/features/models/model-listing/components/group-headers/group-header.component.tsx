@@ -23,5 +23,5 @@ export const GroupHeader = ({ data, modelArchitectures }: GroupHeaderProps) => {
     const architecture = data as ArchitectureGroup;
     const modelArchitecture = modelArchitectures.find(({ id }) => id === architecture.id);
 
-    return <ArchitectureGroupHeader architecture={modelArchitecture} />;
+    return <ArchitectureGroupHeader architectureId={architecture.id} architecture={modelArchitecture} />;
 };

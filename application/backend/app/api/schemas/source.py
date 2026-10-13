@@ -3,7 +3,7 @@
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, TypeAdapter, computed_field
+from pydantic import BaseModel, Field, StringConstraints, TypeAdapter, computed_field
 
 from app.core.models import BaseIDNameModel
 from app.models import (
@@ -165,7 +165,7 @@ class BaseSourceConfigCreate(BaseIDNameModel):
 class USBCameraSourceConfigCreate(BaseSourceConfigCreate):
     source_type: Literal[SourceType.USB_CAMERA]
     device_id: int
-    codec: str | None = None
+    codec: Annotated[str | None, StringConstraints(min_length=4, max_length=4, to_upper=True)] = None
 
     @property
     def config_data(self) -> USBCameraConfig:
@@ -224,6 +224,20 @@ class SourceMediaUploadView(BaseModel):
         "json_schema_extra": {
             "example": {
                 "video_path": "/data/source_media/712750b2-5a82-47ee-8fba-f3dc96cb615d/sample.mp4",
+            }
+        }
+    }
+
+
+class SourceMediaDeletionView(BaseModel):
+    """Response returned after deleting an unreferenced uploaded video file by its UUID."""
+
+    deleted_video_path: str
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "deleted_video_path": "/data/source_media/712750b2-5a82-47ee-8fba-f3dc96cb615d/sample.mp4",
             }
         }
     }

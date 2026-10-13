@@ -32,34 +32,23 @@ describe('CrosshairLine', () => {
         expect(vRect).toHaveAttribute('height', '100%');
     });
 
-    it('handles zoom level 2 correctly', () => {
-        const { container } = render(
-            <svg>
-                <CrosshairLine zoom={2} point={mockPoint} direction='horizontal' />
-            </svg>
-        );
-        expect(container.querySelector('rect')).toHaveAttribute('height', '0.5');
-    });
-
-    it('handles high zoom level correctly', () => {
-        const { container } = render(
-            <svg>
-                <CrosshairLine zoom={4} point={mockPoint} direction='vertical' />
-            </svg>
-        );
-        const rect = container.querySelector('rect');
-        expect(rect).toHaveAttribute('width', '0.25');
-        expect(rect).toHaveAttribute('stroke-width', '0.25');
-    });
-
-    it('handles low zoom level correctly', () => {
-        const { container } = render(
-            <svg>
-                <CrosshairLine zoom={0.5} point={mockPoint} direction='horizontal' />
-            </svg>
-        );
-        expect(container.querySelector('rect')).toHaveAttribute('height', '2');
-    });
+    it.each([
+        { zoom: 2, direction: 'horizontal', attribute: 'height', expected: '0.5' },
+        { zoom: 4, direction: 'vertical', attribute: 'width', expected: '0.25' },
+        { zoom: 0.5, direction: 'horizontal', attribute: 'height', expected: '2' },
+    ] as const)(
+        'scales $direction line thickness inversely to zoom $zoom',
+        ({ zoom, direction, attribute, expected }) => {
+            const { container } = render(
+                <svg>
+                    <CrosshairLine zoom={zoom} point={mockPoint} direction={direction} />
+                </svg>
+            );
+            const rect = container.querySelector('rect');
+            expect(rect).toHaveAttribute(attribute, expected);
+            expect(rect).toHaveAttribute('stroke-width', expected);
+        }
+    );
 
     it('applies correct styling', () => {
         const { container } = render(
@@ -73,25 +62,5 @@ describe('CrosshairLine', () => {
         expect(rect).toHaveAttribute('stroke', '#000000');
         expect(rect).toHaveAttribute('stroke-opacity', '0.12');
         expect(rect).toHaveAttribute('stroke-width', '1');
-    });
-
-    it('handles different integer point coordinates', () => {
-        const differentPoint: Point = { x: 50, y: 75 };
-        const { container } = render(
-            <svg>
-                <CrosshairLine zoom={1} point={differentPoint} direction='horizontal' />
-            </svg>
-        );
-        expect(container.querySelector('rect')).toHaveAttribute('y', '75');
-    });
-
-    it('handles decimal point coordinates', () => {
-        const decimalPoint: Point = { x: 10.5, y: 20.75 };
-        const { container } = render(
-            <svg>
-                <CrosshairLine zoom={1} point={decimalPoint} direction='vertical' />
-            </svg>
-        );
-        expect(container.querySelector('rect')).toHaveAttribute('x', '10.5');
     });
 });

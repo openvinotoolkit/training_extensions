@@ -91,6 +91,15 @@ class TestSourceEndpoints:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         fxt_source_update_service.create_source.assert_not_called()
 
+    def test_create_source_rejects_invalid_usb_codec(self, fxt_source_update_service, fxt_client):
+        response = fxt_client.post(
+            "/api/sources",
+            json={"source_type": "usb_camera", "name": "Camera", "device_id": 0, "codec": "RGB"},
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_source_update_service.create_source.assert_not_called()
+
     def test_create_source_exists(self, fxt_usb_camera_source_create, fxt_source_update_service, fxt_client):
         fxt_source_update_service.create_source.side_effect = ResourceWithNameAlreadyExistsError(
             resource_type=ResourceType.SOURCE, resource_name="New Config"
@@ -142,7 +151,7 @@ class TestSourceEndpoints:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         fxt_source_update_service.get_by_id.assert_called_once_with(source_id)
 
-    def test_get_source_invalid_uuid(self, fxt_client):
+    def test_get_source_invalid_uuid(self, fxt_source_update_service, fxt_client):
         response = fxt_client.get("/api/sources/invalid-uuid")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

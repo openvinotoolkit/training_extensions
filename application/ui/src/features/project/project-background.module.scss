@@ -13,3 +13,15 @@
         padding: var(--spectrum-global-dimension-size-300) 0;
     }
 }
+
+@media (max-height: 1200px) {
+    .projectBackground {
+        padding: var(--spectrum-global-dimension-size-250) 0;
+    }
+}
+
+@media (max-height: 1000px) {
+    .projectBackground {
+        padding: var(--spectrum-global-dimension-size-150) 0;
+    }
+}

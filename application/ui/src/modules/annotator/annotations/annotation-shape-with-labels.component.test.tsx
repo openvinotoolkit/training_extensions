@@ -25,11 +25,11 @@ vi.mock('../annotation-visibility-provider.component', () => ({
 }));
 
 vi.mock('../annotation-actions-provider.component', () => ({
-    useAnnotationActions: () => ({
+    useAnnotationCommands: () => ({
         updateAnnotations: mockUpdateAnnotations,
         deleteAnnotations: mockDeleteAnnotations,
-        isReadOnlyMode: false,
     }),
+    useIsAnnotatorReadOnly: () => false,
 }));
 
 vi.mock('../annotator-labels-provider.component', () => ({

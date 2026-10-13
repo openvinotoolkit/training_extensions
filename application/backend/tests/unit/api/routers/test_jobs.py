@@ -12,7 +12,7 @@ import pytest
 from httpx import AsyncClient
 from starlette import status
 
-from app.api.dependencies import get_data_dir, get_job_dir, get_job_queue
+from app.api.dependencies import get_data_dir, get_dataset_view_service, get_job_dir, get_job_queue
 from app.api.schemas.jobs import JobRequestAdapter
 from app.api.schemas.jobs.quantization import QuantizationRequest
 from app.api.schemas.jobs.training import TrainingRequest
@@ -20,7 +20,9 @@ from app.core.jobs import JobQueue
 from app.core.jobs.control_plane import CancellationResult
 from app.core.jobs.models import Job, JobStatus, JobType
 from app.models import Project, Task, TaskType, TrainingJob, TrainingJobParams
+from app.models.dataset_view import DatasetView
 from app.models.system import DeviceInfo, DeviceType
+from app.services import DatasetViewService
 from app.services.base import ResourceNotFoundError, ResourceType
 
 
@@ -39,6 +41,13 @@ def fxt_jobs_queue(fxt_app) -> Mock:
     jobs_queue = Mock(spec=JobQueue)
     fxt_app.dependency_overrides[get_job_queue] = lambda: jobs_queue
     return jobs_queue
+
+
+@pytest.fixture
+def fxt_dataset_view_service(fxt_app) -> Mock:
+    dataset_view_service = Mock(spec=DatasetViewService)
+    fxt_app.dependency_overrides[get_dataset_view_service] = lambda: dataset_view_service
+    return dataset_view_service
 
 
 @pytest.fixture
@@ -109,6 +118,108 @@ class TestJobEndpoints:
             fxt_jobs_queue.submit.assert_called_once()
             assert fxt_jobs_queue.submit.call_args[0][0].params.model_architecture_id == "image-classification-vit-tiny"
             assert fxt_jobs_queue.submit.call_args[0][0].params.task.task_type == TaskType.CLASSIFICATION
+
+    def test_submit_train_job_on_dataset_view(
+        self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue, fxt_project_service, fxt_dataset_view_service
+    ):
+        fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"
+        fxt_app.dependency_overrides[get_data_dir] = lambda: tmp_path / "data"
+        project = Mock(spec=Project)
+        project.id = uuid4()
+        project.task = Mock(spec=Task)
+        project.task.task_type = TaskType.CLASSIFICATION
+        project.task.exclusive_labels = True
+        fxt_project_service.get_project_by_id.return_value = project
+
+        dataset_view_id = uuid4()
+        dataset_view = Mock(spec=DatasetView)
+        dataset_view.id = dataset_view_id
+        dataset_view.name = "Collection One"
+        fxt_dataset_view_service.get_dataset_view_by_id.return_value = dataset_view
+
+        mock_manifest = Mock()
+        mock_manifest.name = "ViT Tiny"
+
+        with patch("app.api.routers.jobs.ModelManifestService.get_model_manifest_by_id", return_value=mock_manifest):
+            response = fxt_client.post(
+                "/api/jobs",
+                json={
+                    "project_id": str(project.id),
+                    "job_type": JobType.TRAIN,
+                    "parameters": {
+                        "device": "cpu",
+                        "model_architecture_id": "image-classification-vit-tiny",
+                        "dataset_view_id": str(dataset_view_id),
+                    },
+                },
+            )
+
+        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.json()["metadata"]["model"]["dataset_view_name"] == "Collection One"
+        fxt_dataset_view_service.get_dataset_view_by_id.assert_called_once_with(
+            project_id=project.id, dataset_view_id=dataset_view_id
+        )
+        submitted_params = fxt_jobs_queue.submit.call_args[0][0].params
+        assert submitted_params.dataset_view_id == dataset_view_id
+        assert submitted_params.dataset_view_name == "Collection One"
+
+    def test_submit_train_job_on_unknown_dataset_view(
+        self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue, fxt_project_service, fxt_dataset_view_service
+    ):
+        fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"
+        fxt_app.dependency_overrides[get_data_dir] = lambda: tmp_path / "data"
+        project = Mock(spec=Project)
+        project.id = uuid4()
+        project.task = Mock(spec=Task)
+        project.task.task_type = TaskType.CLASSIFICATION
+        project.task.exclusive_labels = True
+        fxt_project_service.get_project_by_id.return_value = project
+
+        dataset_view_id = uuid4()
+        fxt_dataset_view_service.get_dataset_view_by_id.side_effect = ResourceNotFoundError(
+            ResourceType.DATASET_VIEW, str(dataset_view_id)
+        )
+
+        mock_manifest = Mock()
+        mock_manifest.name = "ViT Tiny"
+
+        with patch("app.api.routers.jobs.ModelManifestService.get_model_manifest_by_id", return_value=mock_manifest):
+            response = fxt_client.post(
+                "/api/jobs",
+                json={
+                    "project_id": str(project.id),
+                    "job_type": JobType.TRAIN,
+                    "parameters": {
+                        "device": "cpu",
+                        "model_architecture_id": "image-classification-vit-tiny",
+                        "dataset_view_id": str(dataset_view_id),
+                    },
+                },
+            )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        fxt_jobs_queue.submit.assert_not_called()
+
+    def test_submit_train_job_with_both_dataset_revision_and_view(self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue):
+        fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"
+        fxt_app.dependency_overrides[get_data_dir] = lambda: tmp_path / "data"
+
+        response = fxt_client.post(
+            "/api/jobs",
+            json={
+                "project_id": str(uuid4()),
+                "job_type": JobType.TRAIN,
+                "parameters": {
+                    "device": "cpu",
+                    "model_architecture_id": "image-classification-vit-tiny",
+                    "dataset_revision_id": str(uuid4()),
+                    "dataset_view_id": str(uuid4()),
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_jobs_queue.submit.assert_not_called()
 
     def test_submit_quantize_job(self, fxt_app, tmp_path, fxt_client, fxt_jobs_queue, fxt_project_service):
         fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path / "logs" / "jobs"

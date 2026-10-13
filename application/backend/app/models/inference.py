@@ -65,7 +65,7 @@ class InferenceState:
     """
 
     status: InferenceStatus
-    model: InferenceModel | None = None
+    models: tuple[InferenceModel, ...] = ()
 
 
 class InferenceWorkerStatusCode(StrEnum):

@@ -16,10 +16,11 @@ type SortProjectsProps = {
 export { SORT_BY_HANDLERS } from './utils';
 
 export const SortProjects = ({ sortBy, onSort }: SortProjectsProps) => {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     return (
         <Picker
+            key={i18n.resolvedLanguage ?? i18n.language}
             isQuiet
             items={SORT_BY_OPTIONS}
             selectedKey={sortBy}

@@ -45,6 +45,8 @@
             "no": "No",
             "unknown": "Desconocido",
             "name": "Nombre",
+            "architecture": "Arquitectura",
+            "device": "Dispositivo",
             "on": "Activado",
             "off": "Desactivado",
             "noMaximum": "Sin máximo",
@@ -58,7 +60,9 @@
             "statusUppercase": "ESTADO",
             "settings": "Configuración",
             "training": "Entrenamiento",
+            "training_subset": "Entrenamiento",
             "validation": "Validación",
+            "validation_subset": "Validación",
             "testing": "Prueba",
             "unassigned": "Sin asignar",
             "trainingLowercase": "entrenamiento",
@@ -68,7 +72,9 @@
             "seconds": "Segundos",
             "every": "cada",
             "model": "Modelo",
-            "labels": "Etiquetas"
+            "jobs": "Tareas",
+            "labels": "Etiquetas",
+            "bytesTransferred": "{{transferred}} de {{total}}"
         },
         "viewModes": {
             "large": "Miniaturas grandes",
@@ -144,6 +150,7 @@
         },
         "upload": {
             "queued": "En cola",
+            "processing": "Procesando",
             "uploaded": "Cargado",
             "errorTitle": "Error de carga",
             "details": "Detalles de la carga",
@@ -158,13 +165,18 @@
             "failedSummary_other": "No se pudieron cargar {{count}} elementos",
             "mixedSummary_one": "{{uploaded}} elemento cargado, {{failed}} fallido",
             "mixedSummary_other": "{{uploaded}} elementos cargados, {{failed}} fallidos",
+            "mixedCancelledSummary_one": "{{uploaded}} elemento cargado, {{failed}} fallido, {{cancelled}} cancelado",
+            "mixedCancelledSummary_other": "{{uploaded}} elementos cargados, {{failed}} fallidos, {{cancelled}} cancelados",
             "genericError": "No se pudieron cargar los elementos multimedia.",
             "uploadMedia": "Cargar multimedia",
             "showDetails": "Mostrar detalles",
             "inProgressToast_one": "Cargando {{count}} elemento...",
             "inProgressToast_other": "Cargando {{count}} elementos...",
             "inProgressSucceededPart": "{{count}} correctos",
-            "inProgressFailedPart": "{{count}} fallidos"
+            "inProgressFailedPart": "{{count}} fallidos",
+            "cancelAll": "Cancelar todo",
+            "cancelledSummary_one": "Se canceló {{count}} carga",
+            "cancelledSummary_other": "Se cancelaron {{count}} cargas"
         },
         "empty": {
             "noMatches": "Ningún elemento multimedia coincide con tu filtro.",
@@ -218,8 +230,11 @@
             "downloadStarted": "Se ha iniciado la descarga de {{fileName}}"
         },
         "gallery": {
-            "sortOldestFirst": "Más antiguos primero",
-            "sortNewestFirst": "Más recientes primero",
+            "sort": {
+                "label": "Ordenar multimedia por:",
+                "uploadDateDescending": "Fecha de carga (más recientes)",
+                "uploadDateAscending": "Fecha de carga (más antiguos)"
+            },
             "selectedCount": "{{count}} seleccionados",
             "totalMediaCount_one": "{{count}} elemento multimedia",
             "totalMediaCount_other": "{{count}} elementos multimedia",
@@ -302,12 +317,6 @@
             "trigger": "Importar/exportar dataset",
             "exportItem": "Exportar dataset"
         },
-        "jobs": {
-            "cancel": {
-                "title": "Cancelar tarea",
-                "confirmation": "¿Seguro que quieres cancelar la tarea {{jobId}}?"
-            }
-        },
         "revisions": {
             "createdOn": "Creado el {{date}}",
             "unnamedName": "Dataset n.º {{id}}",
@@ -350,6 +359,7 @@
         },
         "sources": {
             "uploadError": "No se pudo cargar el archivo de vídeo.",
+            "deleteVideoError": "No se pudo eliminar el archivo de vídeo cargado.",
             "list": {
                 "addSource": "Añadir nueva fuente"
             },
@@ -783,6 +793,15 @@
                 "label": "Lazo magnético",
                 "description": "Pasa el cursor por el borde de un objeto y haz clic periódicamente para ajustar el contorno a sus bordes.",
                 "error": "No se pudieron seleccionar los límites de la forma. ¿Puedes intentarlo de nuevo?"
+            },
+            "ssim": {
+                "label": "Asistente de detección",
+                "description": "Dibuja un recuadro alrededor de un objeto para encontrar y anotar automáticamente objetos similares en la imagen.",
+                "loading": "Cargando el asistente de detección, espera...",
+                "error": "Error en la herramienta Asistente de detección: {{message}}",
+                "operations": {
+                    "workerBuild": "Compilación del worker del Asistente de detección"
+                }
             }
         },
         "video": {
@@ -808,7 +827,6 @@
     "models": {
         "jobs": {
             "error": "La tarea ha fallado. Consulta los registros para ver los detalles e inténtalo de nuevo.",
-            "heading": "Tareas",
             "pending": "Pendiente...",
             "running": "En ejecución...",
             "stopDialog": {
@@ -910,13 +928,17 @@
                 },
                 "toast": {
                     "trainingStarted": "El entrenamiento del modelo se ha iniciado correctamente.",
-                    "trainingStartedWithLink": "El entrenamiento del modelo se ha iniciado correctamente. <link>Abre la pantalla de modelos para ver el progreso.</link>"
+                    "trainingStartedWithLink": "El entrenamiento del modelo se ha iniciado correctamente. <modelsLink>Abre la pantalla de modelos para ver el progreso.</modelsLink>"
                 },
                 "selectDataset": {
                     "label": "Seleccionar dataset",
-                    "useCurrentDataset": "Usar el dataset actual",
+                    "useEntireDataset": "Usar el dataset completo",
                     "helpTitle": "Selección de un dataset",
-                    "helpDescription": "Elige la versión del dataset que quieres usar para el entrenamiento. Si quieres entrenar el nuevo modelo\n                            con exactamente los mismos datos (multimedia y anotaciones) que otro modelo, selecciona la\n                            revisión del dataset correspondiente. En cambio, si quieres entrenar con la versión más reciente\n                            de los datos (lo que ves en la página \"Dataset\"), selecciona \"Usar\n                            el dataset actual\"."
+                    "helpDescription": "Elige los datos que quieres usar para el entrenamiento. Selecciona \"Usar el dataset completo\" para entrenar con la versión más reciente de todos los datos (lo que ves en la página \"Dataset\"). Selecciona una vista del dataset para entrenar solo con los archivos multimedia asignados a esa vista. Selecciona una revisión del dataset para entrenar con exactamente los mismos datos (multimedia y anotaciones) que otro modelo.",
+                    "sections": {
+                        "views": "Vistas del dataset",
+                        "revisions": "Revisiones del dataset"
+                    }
                 },
                 "selectModel": {
                     "label": "Seleccionar pesos de entrada",
@@ -927,6 +949,7 @@
             },
             "validation": {
                 "notEnoughAnnotations": "Para entrenar un modelo, necesitas anotar al menos 3 elementos de tu dataset, aunque recomendamos anotar varios más para obtener mejores resultados.",
+                "notEnoughAnnotationsInView": "Para entrenar un modelo, necesitas anotar al menos 3 elementos en la vista del dataset seleccionada, aunque recomendamos anotar varios más para obtener mejores resultados.",
                 "emptySubsetsReason": "Para entrenar un modelo, cada subconjunto (entrenamiento, validación, prueba) necesita al menos un elemento. Esta condición no se puede cumplir actualmente porque {{subsetClause}} vacío y {{assignmentDetail}}.",
                 "emptySubsetClause_one": "el subconjunto {{list}} está",
                 "emptySubsetClause_other": "los subconjuntos {{list}} están",
@@ -1007,7 +1030,6 @@
             "fineTunedFrom": "Afinado a partir de",
             "columns": {
                 "trained": "Entrenado",
-                "device": "Dispositivo",
                 "totalSize": "Tamaño total"
             }
         },
@@ -1082,23 +1104,59 @@
             }
         },
         "columns": {
-            "modelName": "Nombre del modelo",
-            "architecture": "Arquitectura"
+            "modelName": "Nombre del modelo"
+        }
+    },
+    "jobs": {
+        "allProjects": "Todos los proyectos",
+        "currentProjectLabel": "{{name}} (actual)",
+        "projectsSection": "Proyectos",
+        "tabs": {
+            "all": "Todas",
+            "finished": "Finalizadas"
+        },
+        "status": {
+            "pending": "En cola",
+            "cancelling": "Cancelando",
+            "done": "Completada"
+        },
+        "type": {
+            "quantize": "Optimización"
+        },
+        "columns": {
+            "type": "Tipo"
+        },
+        "cancel": {
+            "title": "Cancelar tarea",
+            "confirmation": "¿Seguro que quieres cancelar la tarea {{jobId}}?"
+        },
+        "meta": {
+            "started": "Iniciada {{time}}",
+            "elapsed": "Tiempo transcurrido: {{time}}"
+        },
+        "emptyState": {
+            "all": "No hay tareas",
+            "running": "No hay tareas en ejecución",
+            "finished": "No hay tareas finalizadas",
+            "scheduled": "No hay tareas en cola",
+            "cancelled": "No hay tareas canceladas",
+            "failed": "No hay tareas fallidas"
+        },
+        "actions": {
+            "viewLogs": "Ver registros"
         }
     },
     "license": {
         "label": "Licencia: ",
         "agreement": {
-            "title": "Contrato de licencia",
-            "intro": "Al instalar, usar o distribuir esta aplicación, reconoces que:",
-            "termsRead": "Has leído y comprendido los términos de la licencia disponibles en los siguientes enlaces;",
-            "termsGovern": "Has confirmado que los términos indicados rigen los contenidos a los que quieres acceder y utilizar; y",
-            "termsAccepted": "Has aceptado y estás de acuerdo con los términos de la licencia indicados.",
+            "title": "Contratos de licencia",
+            "intro": "Revisa y acepta las siguientes licencias para seguir usando Geti.",
+            "progress": "{{current}} de {{total}}",
+            "required": "Obligatoria",
+            "optional": "Opcional",
+            "fullLicense": "Leer la licencia completa",
+            "previous": "Anterior",
             "accept": "Aceptar y continuar"
-        },
-        "links": {
-            "intelSimplified": "Licencia de software simplificada de Intel",
-            "dinov2": "Licencia de DINOv3"
         }
     },
     "application": {
@@ -1119,7 +1177,8 @@
         },
         "notifications": {
             "unexpectedError": "Se ha producido un error inesperado. Inténtalo de nuevo.",
-            "networkError": "Error de red. Comprueba tu conexión e inténtalo de nuevo."
+            "networkError": "Error de red. Comprueba tu conexión e inténtalo de nuevo.",
+            "uploadTransferError": "La transferencia del archivo ha fallado. Inténtalo de nuevo."
         }
     },
     "downloads": {

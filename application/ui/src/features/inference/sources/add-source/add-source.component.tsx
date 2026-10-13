@@ -8,14 +8,14 @@ import { useTranslation } from '@/i18n';
 import { Button, Flex, Form } from '@geti-ui/ui';
 
 import { useConnectSourceToPipeline } from '../../../../hooks/api/pipeline.hook';
-import { useSourceAction } from '../hooks/use-source-action.hook';
+import { useSourceAction, type PrepareFormData } from '../hooks/use-source-action.hook';
 
 interface AddSourceProps<T> {
     config: Awaited<T>;
     onSaved: () => void;
     componentFields: (state: Awaited<T>) => ReactNode;
     bodyFormatter: (formData: FormData) => T;
-    prepareFormData?: (formData: FormData) => Promise<void>;
+    prepareFormData?: PrepareFormData;
 }
 
 export const AddSource = <T extends SourceConfigPayload>({

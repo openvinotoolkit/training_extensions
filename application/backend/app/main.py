@@ -20,6 +20,7 @@ if getattr(sys, "frozen", False) and __name__ == "__main__":
 
 import asyncio
 import logging
+import re
 import ssl
 from collections.abc import Awaitable, Callable
 from os import getenv
@@ -33,6 +34,7 @@ from hypercorn.asyncio import serve
 from hypercorn.config import Config
 from hypercorn.typing import ASGIFramework
 from loguru import logger
+from starlette.routing import compile_path
 
 from app.api.cache_utils import CachedStaticFiles
 from app.api.routers import (
@@ -51,6 +53,7 @@ from app.api.routers import (
     sources,
     system,
     training_configurations,
+    uploads,
     webrtc,
 )
 from app.api.routers import license as license_api
@@ -58,10 +61,107 @@ from app.core.certs import ensure_certs_exist
 from app.core.logging import InterceptHandler, setup_hypercorn_logging
 from app.lifecycle import lifespan
 from app.services.base import ResourceNotFoundError, ResourceWithNameAlreadyExistsError
+from app.services.upload_service import TUS_VERSION
 from app.settings import get_settings
 
 settings = get_settings()
 logging.basicConfig(handlers=[InterceptHandler()], level=settings.log_level, force=True)
+
+
+def _include_api_routers(app: FastAPI) -> None:
+    """Register application API resources."""
+    app.include_router(dataset_ie.router)
+    app.include_router(dataset_revisions.router)
+    app.include_router(dataset_views.router)
+    app.include_router(datasets.router)
+    app.include_router(jobs.router)
+    app.include_router(license_api.router)
+    app.include_router(media.router)
+    app.include_router(model_architectures.router)
+    app.include_router(models.router)
+    app.include_router(pipelines.router)
+    app.include_router(projects.router)
+    app.include_router(sinks.router)
+    app.include_router(source_media.router)
+    app.include_router(sources.router)
+    app.include_router(system.router)
+    app.include_router(training_configurations.router)
+    app.include_router(uploads.router)
+    app.include_router(webrtc.router)
+
+
+async def _tus_version_middleware(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    """Attach the supported TUS version to every response of the resumable upload API, including errors."""
+    response = await call_next(request)
+    if request.url.path == uploads.router.prefix or request.url.path.startswith(f"{uploads.router.prefix}/"):
+        response.headers.setdefault("Tus-Resumable", TUS_VERSION)
+    return response
+
+
+def _api_fallback_response(app: FastAPI, request: Request) -> JSONResponse:
+    """Return an API 404 or a method-aware 405 for paths not handled by a matching route."""
+    matching_paths: list[tuple[int, set[str]]] = []
+    for path, path_item in app.openapi()["paths"].items():
+        path_regex, _, _ = compile_path(path)
+        if path_regex.fullmatch(request.url.path):
+            matching_paths.append(
+                (
+                    len(re.sub(r"\{[^{}]+\}", "", path)),
+                    {
+                        method.upper()
+                        for method in path_item
+                        if method.upper() in {"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"}
+                    },
+                )
+            )
+
+    if not matching_paths:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not Found"})
+
+    most_specific_path = max(specificity for specificity, _ in matching_paths)
+    allowed_methods = set().union(
+        *(methods for specificity, methods in matching_paths if specificity == most_specific_path)
+    )
+    if "GET" in allowed_methods:
+        allowed_methods.add("HEAD")
+    if not allowed_methods:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not Found"})
+    return JSONResponse(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        content={"detail": "Method Not Allowed"},
+        headers={"Allow": ", ".join(sorted(allowed_methods))},
+    )
+
+
+def _configure_static_routes(app: FastAPI) -> None:
+    static_dir = settings.static_files_dir
+    if static_dir is None or not static_dir.is_dir() or not any(static_dir.iterdir()):
+        return
+
+    asset_prefix = getenv("ASSET_PREFIX", "/html")
+    logger.info("Serving static files from {} by context {}", static_dir, asset_prefix)
+    app.mount(asset_prefix, CachedStaticFiles(directory=static_dir), name="static")
+
+    @app.get("/", include_in_schema=False)
+    @app.api_route(
+        "/{full_path:path}",
+        methods=["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        include_in_schema=False,
+    )
+    async def serve_spa(request: Request) -> Response:
+        """Serve the Single Page Application (SPA) index.html file for any path."""
+        if request.url.path == "/api" or request.url.path.startswith("/api/"):
+            return _api_fallback_response(app, request)
+        if request.method not in {"GET", "HEAD"}:
+            return JSONResponse(
+                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                content={"detail": "Method Not Allowed"},
+                headers={"Allow": "GET, HEAD"},
+            )
+        return FileResponse(cast(Path, static_dir) / "index.html")
 
 
 def create_app() -> FastAPI:
@@ -84,26 +184,22 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        # Browser JS can only read the response headers of the resumable upload (TUS) protocol if exposed
+        expose_headers=[
+            "Location",
+            "Tus-Resumable",
+            "Tus-Version",
+            "Tus-Extension",
+            "Tus-Max-Size",
+            "Tus-Checksum-Algorithm",
+            "Upload-Offset",
+            "Upload-Length",
+            "Upload-Defer-Length",
+            "Upload-Expires",
+        ],
     )
 
-    # Include all API routers from the routers package
-    app.include_router(dataset_ie.router)
-    app.include_router(dataset_revisions.router)
-    app.include_router(dataset_views.router)
-    app.include_router(datasets.router)
-    app.include_router(jobs.router)
-    app.include_router(license_api.router)
-    app.include_router(media.router)
-    app.include_router(model_architectures.router)
-    app.include_router(models.router)
-    app.include_router(pipelines.router)
-    app.include_router(projects.router)
-    app.include_router(sinks.router)
-    app.include_router(source_media.router)
-    app.include_router(sources.router)
-    app.include_router(system.router)
-    app.include_router(training_configurations.router)
-    app.include_router(webrtc.router)
+    _include_api_routers(app)
 
     cur_dir = Path(__file__).parent
 
@@ -133,6 +229,8 @@ def create_app() -> FastAPI:
         response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
         return response
 
+    app.middleware("http")(_tus_version_middleware)
+
     @app.exception_handler(ResourceNotFoundError)
     async def resource_not_found_exception_handler(request: Request, exc: ResourceNotFoundError) -> JSONResponse:  # noqa: ARG001
         """Catch resource not found errors and return 404 response"""
@@ -160,18 +258,7 @@ def create_app() -> FastAPI:
             content={"detail": str(exc) or "This feature is not implemented yet."},
         )
 
-    static_dir = settings.static_files_dir
-    if static_dir is not None and static_dir.is_dir() and any(static_dir.iterdir()):
-        asset_prefix = getenv("ASSET_PREFIX", "/html")
-        logger.info("Serving static files from {} by context {}", static_dir, asset_prefix)
-
-        app.mount(asset_prefix, CachedStaticFiles(directory=static_dir), name="static")
-
-        @app.get("/", include_in_schema=False)
-        @app.get("/{full_path:path}", include_in_schema=False)
-        async def serve_spa() -> FileResponse:
-            """Serve the Single Page Application (SPA) index.html file for any path."""
-            return FileResponse(cast(Path, static_dir) / "index.html")
+    _configure_static_routes(app)
 
     return app
 

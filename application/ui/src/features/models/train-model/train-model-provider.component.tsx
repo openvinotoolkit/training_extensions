@@ -1,17 +1,18 @@
-// Copyright (C) 2025 Intel Corporation
+// Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, Dispatch, ReactNode, SetStateAction, use, useState } from 'react';
+import { createContext, Dispatch, ReactNode, SetStateAction, use, useMemo, useState } from 'react';
 
 import type {
-    DatasetRevision,
     Model,
     ModelArchitectureWithPerformanceCategory,
     TrainingConfiguration,
     TrainingDevice,
 } from '@/api/types';
 import { useTranslation } from '@/i18n';
+import { useDatasetViewsQuery } from 'hooks/api/dataset-views.hook';
 import { useGetSuccessfulModels } from 'hooks/api/use-get-models.hook';
+import { useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
 import { useGetDatasetRevisions } from 'hooks/use-get-dataset-revisions.hook';
 
 import { useGetTaskModelArchitectures } from '../hooks/api/use-get-model-architectures.hook';
@@ -21,7 +22,24 @@ import { useTrainingConfiguration } from './hooks/use-training-configuration';
 import { getDefaultTrainingDevice } from './select-training-device/utils';
 import { isTimmModelArchitecture } from './timm-model-configuration/utils';
 
-type DatasetRevisionWithValue = Pick<DatasetRevision, 'id' | 'name'> & { value: string | null };
+/** Where the training data comes from: the live dataset, one of its views, or a frozen revision. */
+export type DatasetSourceKind = 'current' | 'view' | 'revision';
+
+export type DatasetSource = {
+    /** Unique key of the entry in the dataset picker. */
+    id: string;
+    name: string;
+    kind: DatasetSourceKind;
+    /** Identifier sent to the backend; null when training on the current dataset. */
+    value: string | null;
+};
+
+export const CURRENT_DATASET_SOURCE_ID = 'use-current-dataset';
+
+export const getViewSourceId = (datasetViewId: string) => `view-${datasetViewId}`;
+
+export const getRevisionSourceId = (datasetRevisionId: string) => `revision-${datasetRevisionId}`;
+
 type ModelRevisionWithValue = Pick<Model, 'id' | 'name' | 'architecture'> & { value: string | null };
 
 export type TrainModelContextProps = TimmModelSelection & {
@@ -41,9 +59,9 @@ export type TrainModelContextProps = TimmModelSelection & {
     selectedTrainingDevice: string | null;
     onSelectTrainingDevice: (deviceKey: string | null) => void;
 
-    datasetRevisions: DatasetRevisionWithValue[];
-    selectedDatasetRevisionId: string | null;
-    onSelectDatasetRevisionId: (datasetRevision: string | null) => void;
+    datasetSources: DatasetSource[];
+    selectedDatasetSourceId: string | null;
+    onSelectDatasetSourceId: (datasetSourceId: string | null) => void;
 
     modelRevisions: ModelRevisionWithValue[];
     selectedModelRevisionId: string | null;
@@ -66,20 +84,34 @@ type TrainModelProviderProps = {
     children: ReactNode;
 };
 
-const useDatasetRevisions = () => {
+const useDatasetSources = (): DatasetSource[] => {
     const { t } = useTranslation();
     const { data: datasetRevisions } = useGetDatasetRevisions();
+    const { data: datasetViews } = useDatasetViewsQuery();
 
-    return {
-        datasetRevisions: [
+    return useMemo(
+        () => [
             {
-                id: 'use-current-dataset-revision',
-                name: t('models.training.setup.selectDataset.useCurrentDataset'),
+                id: CURRENT_DATASET_SOURCE_ID,
+                name: t('models.training.setup.selectDataset.useEntireDataset'),
+                kind: 'current' as const,
                 value: null,
             },
-            ...(datasetRevisions?.map(({ id, name }) => ({ id, name, value: String(id) })) ?? []),
+            ...(datasetViews?.map(({ id, name }) => ({
+                id: getViewSourceId(String(id)),
+                name,
+                kind: 'view' as const,
+                value: String(id),
+            })) ?? []),
+            ...(datasetRevisions?.map(({ id, name }) => ({
+                id: getRevisionSourceId(String(id)),
+                name,
+                kind: 'revision' as const,
+                value: String(id),
+            })) ?? []),
         ],
-    };
+        [t, datasetViews, datasetRevisions]
+    );
 };
 
 const DEFAULT_PRE_TRAINED_WEIGHTS = 'default-pre-trained-weights';
@@ -134,8 +166,9 @@ export const createTrainingDeviceKey = (trainingDevice: TrainingDevice): string 
 export const TrainModelProvider = ({ children }: TrainModelProviderProps) => {
     const { modelArchitectures } = useGetTaskModelArchitectures();
     const { data: trainingDevices } = useGetTrainingDevices();
-    const { datasetRevisions } = useDatasetRevisions();
+    const datasetSources = useDatasetSources();
     const { modelRevisions: allModelRevisions } = useModelRevisions();
+    const [datasetViewId] = useDatasetViewId();
 
     const [selectedModelArchitectureId, setSelectedModelArchitectureId] = useState<string | null>(null);
 
@@ -150,9 +183,14 @@ export const TrainModelProvider = ({ children }: TrainModelProviderProps) => {
         const defaultDevice = getDefaultTrainingDevice(trainingDevices);
         return defaultDevice ? createTrainingDeviceKey(defaultDevice) : null;
     });
-    const [selectedDatasetRevisionId, setSelectedDatasetRevisionId] = useState<string | null>(
-        datasetRevisions?.at(0)?.id ?? null
-    );
+    // Training started from the Dataset screen defaults to the view that is currently open there.
+    const [selectedDatasetSourceId, setSelectedDatasetSourceId] = useState<string | null>(() => {
+        const viewSourceId = datasetViewId === null ? null : getViewSourceId(datasetViewId);
+
+        return viewSourceId !== null && datasetSources.some(({ id }) => id === viewSourceId)
+            ? viewSourceId
+            : CURRENT_DATASET_SOURCE_ID;
+    });
     const [modelRevisionId, setModelRevisionId] = useState<string | null>(() =>
         getDefaultModelRevisionIdForArchitecture(allModelRevisions, selectedModelArchitectureId)
     );
@@ -195,9 +233,9 @@ export const TrainModelProvider = ({ children }: TrainModelProviderProps) => {
                 selectedTrainingDevice,
                 onSelectTrainingDevice: setSelectedTrainingDevice,
 
-                datasetRevisions,
-                selectedDatasetRevisionId,
-                onSelectDatasetRevisionId: setSelectedDatasetRevisionId,
+                datasetSources,
+                selectedDatasetSourceId,
+                onSelectDatasetSourceId: setSelectedDatasetSourceId,
 
                 modelRevisions,
                 selectedModelRevisionId,

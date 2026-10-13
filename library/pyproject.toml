@@ -39,13 +39,13 @@ dependencies = [
     "torchmetrics==1.8.2",
     "pytorchcv==0.0.74",
     "timm==1.0.29",
-    "openvino~=2026.3.0",
+    "openvino~=2026.4.0",
     "openvino-model-api==0.4.7",
     "onnx==1.22.0",
     "onnxruntime==1.26.0",
     "onnxslim~=0.1.71",
     "onnxscript==0.6.2",
-    "nncf~=3.0",
+    "nncf~=3.4",
     "numpy>=2.0",
     "pyyaml==6.0.3",
     "tensorboard==2.20.0",
@@ -171,8 +171,6 @@ override-dependencies = [
 ]
 
 [tool.uv.sources]
-# TODO @kprokofi: NNCF bug: https://github.com/openvinotoolkit/nncf/pull/4157, should be reverted after 3.4.0 is released
-nncf = { git = "https://github.com/openvinotoolkit/nncf.git", rev = "ae0908fe75e9cbe31051545b6ef818d084cb2797" }
 torch = [
     # Note: Pytorch indexes only provide pre-built wheels for Linux and Windows.
     # For other platforms (e.g., macOS), Pytorch has to be installed from the default PyPI index.

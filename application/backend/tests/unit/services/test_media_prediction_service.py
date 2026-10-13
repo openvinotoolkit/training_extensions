@@ -64,7 +64,6 @@ class TestMediaPredictionServiceUnit:
                 label_service=fxt_label_service,
                 media_service=fxt_media_service,
                 inference_server=fxt_inference_server,
-                inference_model_ttl=10,
                 inference_keyframe_stride=inference_keyframe_stride,
                 media_numpy_loader=fxt_media_numpy_loader,
                 db_session=db_session,
@@ -336,11 +335,14 @@ class TestMediaPredictionServiceUnit:
         mock_load_media.assert_called_once_with(project=project, request=request)
         mock_convert_to_inference_input.assert_called_once_with(project=project, loaded_media=loaded_media)
         fxt_label_service.list_all.assert_called_once_with(project_id=project.id)
-        fxt_inference_server.set_inference_model.assert_called_once_with(
-            project_id=project.id, model_id=model_id, device=device, ttl=10, model_variant_id=None
-        )
         fxt_inference_server.infer_batch.assert_called_once_with(
-            labels=labels, inputs=inputs, confidence_threshold=None
+            project_id=project.id,
+            model_id=model_id,
+            model_variant_id=None,
+            device=device,
+            labels=labels,
+            inputs=inputs,
+            confidence_threshold=None,
         )
         mock_convert_result.assert_called_once_with(loaded_media=loaded_media, inference_result=infer_batch_result)
         assert result == batch_inference_result

@@ -15,7 +15,7 @@ import { DatasetActions } from './dataset-actions.component';
 const mockDataset: DatasetGroup = {
     id: 'dataset-123',
     name: 'Test Dataset',
-    createdAt: '10 Jan 2025',
+    createdAt: '2025-01-10T00:00:00.000000+00:00',
     labelCount: 5,
     imageCount: 100,
     trainingSubsets: {

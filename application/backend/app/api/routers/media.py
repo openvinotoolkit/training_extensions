@@ -4,9 +4,10 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, BinaryIO
 from uuid import UUID
 
+from anyio import to_thread
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.openapi.models import Example
 from starlette.responses import Response
@@ -22,6 +23,7 @@ from app.api.dependencies import (
     get_project,
     get_project_service,
     get_system_service,
+    get_upload_service,
 )
 from app.api.io_utils import write_bytes_to_response, write_file_to_response, write_image_to_response
 from app.api.schemas.media import (
@@ -35,6 +37,8 @@ from app.api.schemas.media import (
     MediaWithPagination,
     SetMediaAnnotations,
 )
+from app.api.schemas.upload import MediaFromUploadRequest
+from app.api.upload_utils import FROM_UPLOAD_RESPONSES, consume_upload, split_upload_filename
 from app.api.validators import MediaID, ProjectID, normalize_datetime_to_utc
 from app.core.models import Pagination
 from app.models import BatchInferenceResult, DatasetItemAnnotationStatus, DatasetItemSubset, Media, Project, Video
@@ -54,6 +58,7 @@ from app.services import (
     MediaService,
     ProjectService,
     SystemService,
+    UploadService,
 )
 from app.services.base import ResourceNotFoundError, ResourceType
 from app.services.dataset_service import AnnotationValidationError, SubsetAlreadyAssignedError
@@ -195,13 +200,79 @@ def add_media(
 ) -> MediaView:
     """Add a new media to the dataset by uploading an image or a video"""
     name, extension = file_name_and_extension
+    return _create_media(
+        project=project,
+        media_service=media_service,
+        dataset_service=dataset_service,
+        name=name,
+        extension=extension,
+        data=file.file,
+    )
+
+
+@router.post(
+    ":from-upload",
+    status_code=status.HTTP_201_CREATED,
+    response_model=MediaView,
+    responses={
+        **FROM_UPLOAD_RESPONSES,
+        status.HTTP_201_CREATED: {"description": "Media created"},
+        status.HTTP_404_NOT_FOUND: {"description": "Project or upload not found"},
+    },
+)
+async def add_media_from_upload(
+    project: Annotated[Project, Depends(get_project)],
+    media_service: Annotated[MediaService, Depends(get_media_service)],
+    dataset_service: Annotated[DatasetService, Depends(get_dataset_service)],
+    upload_service: Annotated[UploadService, Depends(get_upload_service)],
+    body: MediaFromUploadRequest,
+) -> MediaView:
+    """
+    Add a new media to the dataset from an image or a video previously uploaded with the resumable upload API
+    (`/api/uploads`).
+
+    The upload must be complete; it is consumed by this operation and cannot be used again. The media name defaults
+    to the uploaded filename (without extension), and the media format is inferred from the filename extension.
+    """
+    async with consume_upload(upload_service, body.upload_id) as claimed:
+        name, extension = split_upload_filename(claimed.upload.filename)
+
+        def _create_and_commit() -> MediaView:
+            db_session = media_service.db_session
+            try:
+                media_view = _create_media(
+                    project=project,
+                    media_service=media_service,
+                    dataset_service=dataset_service,
+                    name=body.name if body.name is not None else name,
+                    extension=extension,
+                    data=claimed.path,  # moved into the dataset, not copied
+                )
+                db_session.commit()
+            except BaseException:
+                db_session.rollback()
+                raise
+            return media_view
+
+        return await to_thread.run_sync(_create_and_commit)
+
+
+def _create_media(
+    project: Project,
+    media_service: MediaService,
+    dataset_service: DatasetService,
+    name: str,
+    extension: str,
+    data: BinaryIO | Path,
+) -> MediaView:
+    """Create an image or video media (depending on the extension), from a stream or from a file to be moved."""
     media_format = _parse_media_format(extension)
     try:
         if isinstance(media_format, ImageFormat):
             media = media_service.create_image(
                 ImageMetadata(
                     project_id=project.id,
-                    data=file.file,
+                    data=data,
                     name=name,
                     image_format=media_format,
                 )
@@ -216,7 +287,7 @@ def add_media(
             # Dataset items for videos are created separately after video upload for each frame being annotated
             media = media_service.create_video(
                 project_id=project.id,
-                data=file.file,
+                data=data,
                 name=name,
                 video_format=media_format,
             )

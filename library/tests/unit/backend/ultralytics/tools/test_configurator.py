@@ -454,6 +454,14 @@ class TestApplyHyperParameters:
         assert cfg._data_config["val_subset"]["batch_size"] == 8
         assert cfg._data_config["test_subset"]["batch_size"] == 8
 
+    def test_num_workers_propagates_to_data_config(self) -> None:
+        cfg = self._make_configurator()
+        cfg._data_config = _minimal_data_config()
+        cfg.apply_hyper_parameters({"training": {"num_workers": 0}})
+        assert cfg._data_config["train_subset"]["num_workers"] == 0
+        assert cfg._data_config["val_subset"]["num_workers"] == 0
+        assert cfg._data_config["test_subset"]["num_workers"] == 0
+
 
 class TestToConfigDict:
     def test_model_section_from_path(self) -> None:

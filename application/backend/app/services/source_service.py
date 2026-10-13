@@ -1,6 +1,7 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import time
+from pathlib import Path
 from uuid import UUID, uuid4
 
 from loguru import logger
@@ -115,6 +116,91 @@ class SourceService:
             self._source_media_service.delete_video(video_path)
         except OSError as e:
             logger.warning("Failed to delete video file '{}': {}", video_path, e)
+
+    def delete_unreferenced_media(self, source_media_id: UUID) -> str:
+        """
+        Delete the source-media upload with the given UUID that no source references.
+
+        The upload is removed together with its upload subdirectory. Before deleting,
+        it is quarantined (moved aside atomically) and the reference check is repeated,
+        so a source that starts referencing the media concurrently leaves the endpoint
+        refusing (409) instead of deleting a file a source points at. If any source
+        references the upload, nothing is deleted.
+
+        Args:
+            source_media_id: UUID of the upload to delete (the subdirectory name
+                created on upload).
+
+        Returns:
+            The path of the deleted video file.
+
+        Raises:
+            ResourceNotFoundError: If no stored upload matches the UUID, or the upload
+                disappears between the lookup and the deletion.
+            ResourceInUseError: If a source references the upload.
+        """
+        if self._source_media_service is None:
+            raise ResourceNotFoundError(ResourceType.MEDIA, str(source_media_id))
+
+        upload = self._source_media_service.find_upload_by_id(source_media_id)
+
+        if upload is None:
+            raise ResourceNotFoundError(ResourceType.MEDIA, str(source_media_id))
+
+        if upload in self._referenced_video_paths():
+            raise self._media_in_use_error(str(source_media_id))
+
+        # Claim the upload by moving its subdirectory aside, then revalidate: a source
+        # committed between the first check and this point now points at the
+        # quarantined (moved) location, so the second check catches it and the
+        # quarantined upload is restored instead of deleted.
+        try:
+            quarantined = self._source_media_service.quarantine_upload(upload)
+        except FileNotFoundError:
+            raise ResourceNotFoundError(ResourceType.MEDIA, str(source_media_id)) from None
+
+        if upload in self._referenced_video_paths():
+            self._restore_quarantined([quarantined])
+            raise self._media_in_use_error(str(source_media_id))
+
+        self._source_media_service.delete_quarantined_upload(quarantined)
+        return str(upload)
+
+    def _referenced_video_paths(self) -> set[Path]:
+        """Resolved paths of the videos referenced by video_file sources.
+
+        Paths are compared as resolved `Path` values so that equivalent spellings of
+        the same location (relative paths, '..' segments, platform case differences)
+        cannot bypass the reference check.
+        """
+        return {
+            self._resolve_source_path(source.config_data.video_path)
+            for source in self.list_all()
+            if source.source_type == SourceType.VIDEO_FILE and isinstance(source.config_data, VideoFileConfig)
+        }
+
+    @staticmethod
+    def _resolve_source_path(video_path: str) -> Path:
+        try:
+            return Path(video_path).resolve()
+        except (OSError, ValueError):
+            # Unresolvable spellings fall back to the raw value so they can never
+            # compare equal to a real upload and bypass the reference check.
+            return Path(video_path)
+
+    @staticmethod
+    def _media_in_use_error(source_media_id: str) -> ResourceInUseError:
+        return ResourceInUseError(
+            ResourceType.MEDIA,
+            source_media_id,
+            f"Source media '{source_media_id}' cannot be deleted because it is in use by a video_file source.",
+        )
+
+    def _restore_quarantined(self, quarantined: list[Path]) -> None:
+        if self._source_media_service is None:
+            return
+        for quarantined_path in quarantined:
+            self._source_media_service.restore_quarantined_upload(quarantined_path)
 
 
 class SourceUpdateService(SourceService):

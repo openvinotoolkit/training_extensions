@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import multiprocessing
 from typing import Any, ClassVar
 
 import torch
@@ -43,7 +44,11 @@ class SemanticSegmentationValidator(GetiTuneValidatorMixin, _UltralyticsSemantic
             raise TypeError(msg)
         test_key = self._datamodule.test_subset.subset_name
         val_key = self._datamodule.val_subset.subset_name
-        subset = self._datamodule.subsets.get(test_key) or self._datamodule.subsets[val_key]
+        test_subset = self._datamodule.subsets.get(test_key)
+        subset = test_subset or self._datamodule.subsets[val_key]
+        num_workers = (
+            self._datamodule.test_subset.num_workers if test_subset else self._datamodule.val_subset.num_workers
+        )
         adapter = UltralyticsDatasetAdapter(subset, task_kind="semantic")
         return DataLoader(
             adapter,
@@ -51,4 +56,7 @@ class SemanticSegmentationValidator(GetiTuneValidatorMixin, _UltralyticsSemantic
             shuffle=False,
             collate_fn=semantic_collate_fn,
             pin_memory=self.device.type != "cpu",
+            num_workers=num_workers,
+            persistent_workers=num_workers > 0,
+            multiprocessing_context=multiprocessing.get_context("spawn") if num_workers > 0 else None,
         )

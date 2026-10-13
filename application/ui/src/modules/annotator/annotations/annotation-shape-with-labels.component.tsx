@@ -7,7 +7,7 @@ import polylabel from 'polylabel';
 
 import { EMPTY_LABEL_ID } from '../../../shared/labels';
 import type { Annotation } from '../../../shared/types';
-import { useAnnotationActions } from '../annotation-actions-provider.component';
+import { useAnnotationCommands, useIsAnnotatorReadOnly } from '../annotation-actions-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { useAnnotatorLabels } from '../annotator-labels-provider.component';
 import { AnnotationLabels } from './annotation-labels/annotation-labels.component';
@@ -26,7 +26,8 @@ type ShapeLabelsProps = {
 // Owns the label-editing hooks so they're only subscribed to when labels are actually shown -
 // tools that render shapes with hideLabels (e.g. edit-polygon) don't provide those contexts.
 const ShapeLabels = ({ annotation, useBottomCorners = false }: ShapeLabelsProps) => {
-    const { updateAnnotations, isReadOnlyMode } = useAnnotationActions();
+    const { updateAnnotations } = useAnnotationCommands();
+    const isReadOnlyMode = useIsAnnotatorReadOnly();
     const { selectedLabelId, setSelectedLabelId } = useAnnotatorLabels();
 
     const removeLabels = (labelId: Key | null) => {

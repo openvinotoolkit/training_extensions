@@ -24,7 +24,10 @@ import { isEmpty } from 'lodash-es';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { FEATURE_FLAGS } from '../../../../constants/feature-flags';
-import { useAnnotationActions } from '../../../../modules/annotator/annotation-actions-provider.component';
+import {
+    useAnnotations,
+    useAnnotationSubmission,
+} from '../../../../modules/annotator/annotation-actions-provider.component';
 import type { AnnotatorMode } from '../../../../modules/annotator/annotator-mode';
 import { Labels } from '../../../../modules/annotator/labels/labels.component';
 import { usePredictionSetup } from '../../../../modules/annotator/predictions-setup-provider.component';
@@ -146,8 +149,8 @@ export const SecondaryToolbar = ({
     const { selectableModels } = usePredictionSetup();
     const isPlaying = videoPlayerContext?.videoControls?.isPlaying ?? false;
 
-    const { isSaving, submitAnnotations, submitPredictions, initialAnnotations, initialPredictions } =
-        useAnnotationActions();
+    const { isSaving, submitAnnotations, submitPredictions } = useAnnotationSubmission();
+    const { initialAnnotations, initialPredictions } = useAnnotations();
 
     const handleSubmit = async () => {
         await submitAnnotations(subset);

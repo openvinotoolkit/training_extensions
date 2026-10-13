@@ -3,11 +3,11 @@
 
 import { ReactNode, useState } from 'react';
 
+import { Pipeline } from '@/assets/icons';
 import { useTranslation } from '@/i18n';
 import { Flex, Grid, Heading, ToggleButton, Tooltip, TooltipTrigger, View } from '@geti-ui/ui';
 import { Gear, GraphChart } from '@geti-ui/ui/icons';
 
-import { ReactComponent as PipelineIcon } from '../../../assets/icons/pipeline.svg';
 import { DataCollection } from './data-collection.component';
 import { Graphs } from './graphs.component';
 import { PipelineConfiguration } from './pipeline-configuration.component';
@@ -96,7 +96,7 @@ export const Sidebar = () => {
             id: 'configuration',
             label: t('inference.pipeline.configuration.sidebarLabel'),
             ariaLabel: 'Pipeline configuration',
-            icon: <PipelineIcon />,
+            icon: <Pipeline />,
             content: <PipelineConfiguration />,
         },
         {

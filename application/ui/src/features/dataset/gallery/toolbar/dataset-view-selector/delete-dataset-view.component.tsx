@@ -4,9 +4,9 @@
 import { useTranslation } from '@/i18n';
 import { AlertDialog, Content, Text } from '@geti-ui/ui';
 import { useQueryClient } from '@tanstack/react-query';
+import { datasetViewsQueryOptions } from 'hooks/api/dataset-views.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
-import { datasetViewsQueryOptions } from './api/use-dataset-views';
 import { useDeleteDatasetViewMutation } from './api/use-delete-dataset-view';
 import { DatasetView } from './type';
 

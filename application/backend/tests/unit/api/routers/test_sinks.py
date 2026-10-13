@@ -102,6 +102,27 @@ class TestSinkEndpoints:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         fxt_sink_service.create_sink.assert_not_called()
 
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [("timeout", False), ("timeout", 0), ("timeout", -1), ("rate_limit", 0)],
+    )
+    def test_create_webhook_sink_rejects_invalid_numeric_config(self, field, value, fxt_sink_service, fxt_client):
+        payload = {
+            "sink_type": "webhook",
+            "name": "Webhook",
+            "output_formats": ["predictions"],
+            "webhook_url": "https://example.com/webhook",
+            "http_method": "POST",
+            "headers": None,
+            "timeout": 10,
+        }
+        payload[field] = value
+
+        response = fxt_client.post("/api/sinks", json=payload)
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+        fxt_sink_service.create_sink.assert_not_called()
+
     def test_create_sink_exists(self, fxt_folder_sink_create, fxt_sink_service, fxt_client):
         fxt_sink_service.create_sink.side_effect = ResourceWithNameAlreadyExistsError(
             resource_type=ResourceType.SINK, resource_name="New Config"
@@ -151,7 +172,7 @@ class TestSinkEndpoints:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         fxt_sink_service.get_by_id.assert_called_once_with(sink_id)
 
-    def test_get_sink_invalid_uuid(self, fxt_client):
+    def test_get_sink_invalid_uuid(self, fxt_sink_service, fxt_client):
         response = fxt_client.get("/api/sinks/invalid-uuid")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

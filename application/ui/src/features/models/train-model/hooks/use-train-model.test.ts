@@ -12,7 +12,12 @@ import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { findGroupByKey } from '../../model-listing/model-training-parameters/utils';
 import { deepReplaceParameters } from '../advanced-settings/utils';
-import { TrainModelContextProps } from '../train-model-provider.component';
+import {
+    CURRENT_DATASET_SOURCE_ID,
+    getRevisionSourceId,
+    getViewSourceId,
+    TrainModelContextProps,
+} from '../train-model-provider.component';
 import { mockedTrainingConfiguration } from './mocks';
 import { useTrainModel } from './use-train-model';
 import { getTrainingConfigurationUpdatePayload } from './utils';
@@ -21,12 +26,12 @@ const DEFAULT_STATE: Partial<TrainModelContextProps> = {
     selectedModelArchitectureId: 'arch-1',
     resolvedModelArchitectureId: 'arch-1',
     selectedTrainingDevice: 'cpu',
-    selectedDatasetRevisionId: 'use-current-dataset-revision',
+    selectedDatasetSourceId: CURRENT_DATASET_SOURCE_ID,
     selectedModelRevisionId: 'default-pre-trained-weights',
     isAdvancedSettingsMode: false,
     trainingConfiguration: mockedTrainingConfiguration,
     defaultTrainingConfiguration: mockedTrainingConfiguration,
-    datasetRevisions: [{ id: 'use-current-dataset-revision', name: 'Use current dataset', value: null }],
+    datasetSources: [{ id: CURRENT_DATASET_SOURCE_ID, name: 'Use entire dataset', kind: 'current', value: null }],
     modelRevisions: [
         { id: 'default-pre-trained-weights', name: 'Default pre-trained weights', architecture: '', value: null },
     ],
@@ -165,11 +170,16 @@ describe('useTrainModel', () => {
 
             mockTrainModelState.mockReturnValue({
                 ...DEFAULT_STATE,
-                selectedDatasetRevisionId: 'ds-entry-1',
+                selectedDatasetSourceId: getRevisionSourceId(datasetRevisionId),
                 selectedModelRevisionId: 'model-entry-1',
-                datasetRevisions: [
-                    { id: 'use-current-dataset-revision', name: 'Use current dataset', value: null },
-                    { id: 'ds-entry-1', name: 'Rev 1', value: datasetRevisionId },
+                datasetSources: [
+                    { id: CURRENT_DATASET_SOURCE_ID, name: 'Use entire dataset', kind: 'current', value: null },
+                    {
+                        id: getRevisionSourceId(datasetRevisionId),
+                        name: 'Rev 1',
+                        kind: 'revision',
+                        value: datasetRevisionId,
+                    },
                 ],
                 modelRevisions: [
                     {
@@ -206,6 +216,48 @@ describe('useTrainModel', () => {
                     model_architecture_id: 'arch-1',
                     parent_model_revision_id: modelRevisionId,
                     dataset_revision_id: datasetRevisionId,
+                    dataset_view_id: null,
+                },
+            });
+        });
+
+        it('sends the dataset view id when a dataset view is selected', async () => {
+            const datasetViewId = 'dataset-view-1';
+
+            mockTrainModelState.mockReturnValue({
+                ...DEFAULT_STATE,
+                selectedDatasetSourceId: getViewSourceId(datasetViewId),
+                datasetSources: [
+                    { id: CURRENT_DATASET_SOURCE_ID, name: 'Use entire dataset', kind: 'current', value: null },
+                    {
+                        id: getViewSourceId(datasetViewId),
+                        name: 'Collection One',
+                        kind: 'view',
+                        value: datasetViewId,
+                    },
+                ],
+            });
+
+            let capturedBody: unknown;
+            server.use(
+                http.post('/api/jobs', async ({ request }) => {
+                    capturedBody = await request.json();
+                    return HttpResponse.json(mockedJob, { status: 201 });
+                })
+            );
+
+            const { result } = renderHook(() => useTrainModel());
+
+            act(() => {
+                result.current.trainModel({ onSuccess: vi.fn() });
+            });
+
+            await waitFor(() => expect(capturedBody).toBeDefined());
+
+            expect(capturedBody).toMatchObject({
+                parameters: {
+                    dataset_revision_id: null,
+                    dataset_view_id: datasetViewId,
                 },
             });
         });

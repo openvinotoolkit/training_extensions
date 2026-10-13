@@ -12,6 +12,7 @@ class RunnableBehaviour(StrEnum):
     FAILURE = "failure"
     SLOW = "slow"
     INSTANT = "instant"
+    FAILURE_WHILE_CANCELLING = "failure_while_cancelling"
 
 
 class MockRunnable(Runnable):
@@ -23,6 +24,8 @@ class MockRunnable(Runnable):
     - FAILURE: Simulates job failure by raising ValueError after initial progress
     - SLOW: Extended execution with many small progress increments for cancellation testing
     - INSTANT: Very fast execution with minimal progress steps
+    - FAILURE_WHILE_CANCELLING: Ignores cancellation and raises ValueError regardless, simulating a runner
+      being force-terminated (e.g. SIGTERM/SIGKILL) instead of reacting to the cancellation request
     """
 
     def __init__(
@@ -59,6 +62,11 @@ class MockRunnable(Runnable):
                 # Very fast execution
                 for progress in [50.0, 100.0]:
                     ctx.report("", progress, None)
+
+            case RunnableBehaviour.FAILURE_WHILE_CANCELLING:
+                # Never checks for cancellation, so it fails instead of reacting to the cancel signal
+                time.sleep(self.execution_time)
+                raise ValueError("Mock failure while cancelling")
 
             case _:
                 raise ValueError(f"Unknown behavior: {self.behavior}")

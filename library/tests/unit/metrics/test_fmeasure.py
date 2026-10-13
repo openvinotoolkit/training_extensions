@@ -45,6 +45,9 @@ class TestFMeasure:
         """Check whether f1 score is same with getitune 1.x version."""
         metric = FMeasure(label_info=LabelInfo.from_num_classes(1))
         metric.update(fxt_preds, fxt_targets)
+        assert isinstance(metric.preds[0], torch.Tensor)
+        assert isinstance(metric.targets[0], torch.Tensor)
+        assert metric.preds[0].device == fxt_preds[0]["boxes"].device
         result = metric.compute()
         assert result["f1-score"] == 0.5
         best_confidence_threshold = metric.best_confidence_threshold

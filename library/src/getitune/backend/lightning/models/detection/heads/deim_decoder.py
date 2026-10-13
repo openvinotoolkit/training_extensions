@@ -97,48 +97,37 @@ class TransformerDecoderLayer(nn.Module):
         """Add positional embedding to tensor if provided."""
         return tensor if pos is None else tensor + pos
 
-    def _self_attention(
-        self,
-        q: Tensor,
-        k: Tensor,
-        v: Tensor,
-        attn_mask: Tensor | None = None,
-    ) -> Tensor:
-        """Memory-efficient self-attention using scaled_dot_product_attention.
+    def _self_attention(self, qk: Tensor, v: Tensor, attn_mask: Tensor | None = None) -> Tensor:
+        """Self-attention with fused Q/K projection and a separate V projection.
 
-        Uses Flash Attention when available (PyTorch 2.0+, CUDA, no mask or causal mask).
+        Q and K are projected together from the position-embedded queries, while V is
+        projected from the raw target (matching ``nn.MultiheadAttention(q, k, value=tgt)``
+        semantics used by upstream DEIMv2).
 
         Args:
-            q: Query tensor of shape (B, N, C).
-            k: Key tensor of shape (B, N, C).
-            v: Value tensor of shape (B, N, C).
+            qk: Position-embedded query features used for both Q and K, shape (B, N, C).
+            v: Raw target features used for V (no positional embedding), shape (B, N, C).
             attn_mask: Optional attention mask of shape (N, N) or (B, N, N).
 
         Returns:
             Attention output of shape (B, N, C).
         """
-        B, N, C = q.shape  # noqa: N806
+        B, N, C = qk.shape  # noqa: N806
+        weight, bias = self.qkv_proj.weight, self.qkv_proj.bias
 
-        # Project Q, K, V together for efficiency
-        qkv = self.qkv_proj(q)
-        qkv = qkv.reshape(B, N, 3, self.n_head, self.head_dim).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv.unbind(0)  # Each: (B, n_head, N, head_dim)
+        # Fused Q/K projection (one matmul), separate V projection from the raw target.
+        qk_proj = f.linear(qk, weight[: 2 * C], bias[: 2 * C])
+        q, k = qk_proj.reshape(B, N, 2, self.n_head, self.head_dim).permute(2, 0, 3, 1, 4).unbind(0)
+        v = f.linear(v, weight[2 * C :], bias[2 * C :]).reshape(B, N, self.n_head, self.head_dim).transpose(1, 2)
 
-        # Convert boolean mask to float mask for scaled_dot_product_attention
-        # True means "mask out" (don't attend), so we use -inf for those positions
         if attn_mask is not None:
             if attn_mask.dtype == torch.bool:
                 attn_mask = attn_mask.float().masked_fill(attn_mask, float("-inf"))
-            # Expand mask for multi-head attention: (N, N) -> (1, 1, N, N)
             if attn_mask.dim() == 2:
                 attn_mask = attn_mask.unsqueeze(0).unsqueeze(0)
 
-        # Use scaled_dot_product_attention - automatically uses Flash Attention when possible
         out = f.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, dropout_p=0.0)
-
-        # Reshape back: (B, n_head, N, head_dim) -> (B, N, C)
-        out = out.transpose(1, 2).reshape(B, N, C)
-        return self.out_proj(out)
+        return self.out_proj(out.transpose(1, 2).reshape(B, N, C))
 
     def forward(
         self,
@@ -162,10 +151,9 @@ class TransformerDecoderLayer(nn.Module):
         Returns:
             Updated query features of shape (B, N, C).
         """
-        # self attention using memory-efficient scaled_dot_product_attention
-        q = k = self.with_pos_embed(target, query_pos_embed)
-
-        target2 = self._self_attention(q, k, target, attn_mask=attn_mask)
+        # self attention: Q/K use position-embedded queries, V uses the raw target
+        qk = self.with_pos_embed(target, query_pos_embed)
+        target2 = self._self_attention(qk, target, attn_mask=attn_mask)
         target = target + self.dropout1(target2)
         target = self.norm1(target)
 

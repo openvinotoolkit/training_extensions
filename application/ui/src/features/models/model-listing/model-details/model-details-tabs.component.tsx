@@ -3,11 +3,8 @@
 
 import { useTranslation } from '@/i18n';
 import { Flex, Item, Loading, TabList, TabPanels, Tabs, Text } from '@geti-ui/ui';
-import { Info } from '@geti-ui/ui/icons';
 
 import { useGetDatasetRevisions } from '../../../../hooks/use-get-dataset-revisions.hook';
-import { ModelLicenseLink } from '../../components/model-license-link.component';
-import { useGetTaskModelArchitectures } from '../../hooks/api/use-get-model-architectures.hook';
 import { useGetModel } from '../../hooks/api/use-get-model.hook';
 import { getModelEvaluations } from '../components/model-row/utils';
 import { ModelMetrics } from '../model-metrics/model-metrics.component';
@@ -23,7 +20,6 @@ export const ModelDetailsTabs = ({ modelId }: ModelDetailsTabsProps) => {
     const { t } = useTranslation();
     const { isPending, isError, data: model } = useGetModel(modelId);
     const { data: datasetRevisions = [] } = useGetDatasetRevisions();
-    const { modelArchitectures } = useGetTaskModelArchitectures();
 
     if (isPending) {
         return (
@@ -49,62 +45,51 @@ export const ModelDetailsTabs = ({ modelId }: ModelDetailsTabsProps) => {
         (datasetRevision) => datasetRevision.id === currentDatasetRevisionId
     );
 
-    const modelArchitecture = modelArchitectures.find(({ id }) => id === model.architecture);
-
     return (
-        <Flex direction={'column'} gap={'size-100'}>
-            {modelArchitecture !== undefined && (
-                <Flex gap={'size-50'} alignItems={'center'}>
-                    <Info />
-                    <Text>{t('license.label')}</Text>
-                    <ModelLicenseLink license={modelArchitecture.license} />
-                </Flex>
-            )}
-            <Tabs
-                flex={1}
-                minHeight={0}
-                aria-label={'Model details'}
-                UNSAFE_style={{
-                    backgroundColor: 'var(--spectrum-global-color-gray-75)',
-                    padding: 'var(--spectrum-global-dimension-size-400)',
-                    borderRadius: 'var(--spectrum-global-dimension-size-50)',
-                    border: 'var(--spectrum-global-dimension-size-10) solid var(--spectrum-global-color-gray-200)',
-                    '--spectrum-tabs-selection-indicator-color': 'var(--energy-blue)',
-                }}
-            >
-                <TabList marginBottom={'size-300'}>
-                    <Item key='variants'>
-                        <Text>{t('models.detail.tabs.variants')}</Text>
-                    </Item>
-                    <Item key='metrics'>
-                        <Text>{t('models.detail.tabs.metrics')}</Text>
-                    </Item>
-                    <Item key='parameters'>
-                        <Text>{t('models.detail.tabs.parameters')}</Text>
-                    </Item>
-                    <Item key='datasets'>
-                        <Text>{t('models.detail.tabs.datasets')}</Text>
-                    </Item>
-                </TabList>
-                <TabPanels>
-                    <Item key='variants'>
-                        <ModelVariantsTabs model={model} />
-                    </Item>
-                    <Item key='metrics'>
-                        <ModelMetrics
-                            modelId={model.id}
-                            evaluations={getModelEvaluations(model)}
-                            filesDeleted={model.files_deleted}
-                        />
-                    </Item>
-                    <Item key='parameters'>
-                        <ModelTrainingParameters modelId={model.id} />
-                    </Item>
-                    <Item key='datasets'>
-                        <ModelTrainingDatasets datasetRevision={currentDatasetRevision} model={model} />
-                    </Item>
-                </TabPanels>
-            </Tabs>
-        </Flex>
+        <Tabs
+            flex={1}
+            minHeight={0}
+            aria-label={'Model details'}
+            UNSAFE_style={{
+                backgroundColor: 'var(--spectrum-global-color-gray-75)',
+                padding: 'var(--spectrum-global-dimension-size-400)',
+                borderRadius: 'var(--spectrum-global-dimension-size-50)',
+                border: 'var(--spectrum-global-dimension-size-10) solid var(--spectrum-global-color-gray-200)',
+                '--spectrum-tabs-selection-indicator-color': 'var(--energy-blue)',
+            }}
+        >
+            <TabList marginBottom={'size-300'}>
+                <Item key='variants'>
+                    <Text>{t('models.detail.tabs.variants')}</Text>
+                </Item>
+                <Item key='metrics'>
+                    <Text>{t('models.detail.tabs.metrics')}</Text>
+                </Item>
+                <Item key='parameters'>
+                    <Text>{t('models.detail.tabs.parameters')}</Text>
+                </Item>
+                <Item key='datasets'>
+                    <Text>{t('models.detail.tabs.datasets')}</Text>
+                </Item>
+            </TabList>
+            <TabPanels>
+                <Item key='variants'>
+                    <ModelVariantsTabs model={model} />
+                </Item>
+                <Item key='metrics'>
+                    <ModelMetrics
+                        modelId={model.id}
+                        evaluations={getModelEvaluations(model)}
+                        filesDeleted={model.files_deleted}
+                    />
+                </Item>
+                <Item key='parameters'>
+                    <ModelTrainingParameters modelId={model.id} />
+                </Item>
+                <Item key='datasets'>
+                    <ModelTrainingDatasets datasetRevision={currentDatasetRevision} model={model} />
+                </Item>
+            </TabPanels>
+        </Tabs>
     );
 };

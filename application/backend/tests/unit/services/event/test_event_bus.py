@@ -128,6 +128,21 @@ class TestEventBus:
         handler.assert_called_once_with()
         assert model_reload_event.is_set()
 
+    def test_inference_params_refresh_without_model_reload(self) -> None:
+        """Inference params (including label colors) refresh the worker without reloading the model."""
+        handler = MagicMock(spec=Callable)
+        model_reload_event = mp.Event()
+        inference_params_event = mp.Event()
+        event_bus = EventBus(model_reload_event=model_reload_event, inference_params_event=inference_params_event)
+        event_bus.subscribe(event_types=[EventType.INFERENCE_PARAMS_CHANGED], handler=handler)
+
+        event_bus.emit_event(EventType.INFERENCE_PARAMS_CHANGED)
+
+        handler.assert_called_once_with()
+        assert inference_params_event.is_set()
+        # Refreshing the cached inference params (incl. label colors) must not reload the model.
+        assert not model_reload_event.is_set()
+
     def test_emit_event_survives_failing_handler(self, fxt_event_bus: EventBusFactory) -> None:
         """A failing subscriber must not stop other subscribers or the condition notification."""
         failing_handler = MagicMock(spec=Callable, side_effect=RuntimeError("boom"))

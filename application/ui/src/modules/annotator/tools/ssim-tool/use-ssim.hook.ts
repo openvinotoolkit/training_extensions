@@ -3,32 +3,30 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import type { RunSSIMProps as ToolRunSSIMProps, SSIMMatch as ToolSSIMMatch } from '@geti-ui/smart-tools';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { i18n } from '@/i18n';
+import { roiFromImage } from '@geti-ui/smart-tools/utils';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Remote, wrap } from 'comlink';
 
-import type { Rect, RegionOfInterest, Shape } from '../../../../shared/types';
+import type { Shape } from '../../../../shared/types';
 import type { SSIMWorkerApi, SSIMWorkerInstance } from '../../webworkers/ssim-worker.interface';
+import { executeWithTimeout } from '../execute-with-timeout';
 import {
-    convertToolShapeToGetiShape,
-    getBoundingRectFromShape,
-    intersectionOverUnion,
-    isRectWithinRoi,
-} from '../utils';
+    convertRectToShape,
+    convertToolMatchesToGetiMatches,
+    filterSSIMResults,
+    getExistingRects,
+    guessNumberOfItemsThreshold,
+    toToolRunSSIMProps,
+    type RunSSIMProps,
+    type SSIMMatch,
+    type SSIMShapeType,
+} from './utils';
 
-const MAX_NUMBER_ITEMS = 500;
-
-type SSIMMatch = Omit<ToolSSIMMatch, 'shape'> & {
-    shape: Rect;
-};
-
-type SSIMShapeType = Extract<Shape['type'], 'rectangle' | 'polygon'>;
-
-type RunSSIMProps = Omit<ToolRunSSIMProps, 'template' | 'existingAnnotations' | 'shapeType'> & {
-    template: Rect;
-    existingAnnotations: Shape[];
-    shapeType: SSIMShapeType;
-};
+// Building the worker downloads and compiles the OpenCV wasm, which can be slow on a cold cache.
+const SSIM_WORKER_BUILD_TIMEOUT_MS = 30_000;
+const SSIM_EXECUTE_TIMEOUT_MS = 10_000;
+const SSIM_WORKER_QUERY_KEY = ['workers', 'SSIM'];
 
 type SSIMState = {
     shapes: Shape[];
@@ -43,8 +41,8 @@ const INITIAL_SSIM_STATE: SSIMState = {
 };
 
 export const useSSIMWorker = (enabled = true) => {
-    const { data, isLoading, isError } = useQuery<{ worker: Worker; instance: Remote<SSIMWorkerInstance> }>({
-        queryKey: ['workers', 'SSIM'],
+    const { data, isLoading, isError, error } = useQuery<{ worker: Worker; instance: Remote<SSIMWorkerInstance> }>({
+        queryKey: SSIM_WORKER_QUERY_KEY,
         queryFn: async ({ signal }) => {
             const worker = new Worker(new URL('../../webworkers/ssim-worker', import.meta.url), {
                 type: 'module',
@@ -54,118 +52,42 @@ export const useSSIMWorker = (enabled = true) => {
             signal.addEventListener('abort', () => worker.terminate(), { once: true });
 
             try {
-                const instance = await wrap<SSIMWorkerApi>(worker).build();
+                const instance = await executeWithTimeout(
+                    wrap<SSIMWorkerApi>(worker).build(),
+                    i18n.t('annotator.tools.ssim.operations.workerBuild'),
+                    SSIM_WORKER_BUILD_TIMEOUT_MS
+                );
 
                 if (signal.aborted) {
                     throw signal.reason;
                 }
 
                 return { worker, instance };
-            } catch (error) {
+            } catch (buildError) {
                 worker.terminate();
 
-                throw error;
+                throw buildError;
             }
         },
         staleTime: Infinity,
+        // Tanstack doesn't abort on gc, so evicting the entry would leak the worker; it is
+        // terminated by `useTerminateAnnotatorWorkersOnUnmount` instead.
+        gcTime: Infinity,
         enabled,
     });
 
-    return { worker: data?.instance, isLoading, isError };
-};
-
-const toToolRect = (rect: Rect): ToolRunSSIMProps['template'] => {
-    const { x, y, width, height } = rect;
-
-    return {
-        x,
-        y,
-        width,
-        height,
-        shapeType: 'rect',
-    };
-};
-
-const toToolRunSSIMProps = ({
-    imageData,
-    roi,
-    template,
-    existingAnnotations,
-    autoMergeDuplicates,
-}: RunSSIMProps): ToolRunSSIMProps => {
-    return {
-        imageData,
-        roi,
-        template: toToolRect(template),
-        existingAnnotations: existingAnnotations
-            .map(getBoundingRectFromShape)
-            .filter((shape): shape is Rect => shape !== null)
-            .map(toToolRect),
-        autoMergeDuplicates,
-        shapeType: 'rect',
-    };
-};
-
-const convertToolMatchesToGetiMatches = (matches: ToolSSIMMatch[]): SSIMMatch[] => {
-    return matches.map((match) => ({
-        ...match,
-        shape: convertToolShapeToGetiShape(match.shape),
-    }));
-};
-
-const filterSSIMResults = (
-    roi: RegionOfInterest,
-    items: SSIMMatch[],
-    template: Rect,
-    filter: Rect[],
-    maxItems = MAX_NUMBER_ITEMS,
-    overlapThreshold = 0.2
-): SSIMMatch[] => {
-    const collector: SSIMMatch[] = [{ shape: template, confidence: 1 }];
-    const filterAsMatches = filter.map((shape) => ({ shape, confidence: 1 }));
-    const filteredItems = items.filter(({ shape }) => isRectWithinRoi(roi, shape));
-
-    for (const value of filteredItems) {
-        const overlapsWithExisting = [...filterAsMatches, ...collector].some(
-            (otherMatch) => intersectionOverUnion(otherMatch.shape, value.shape) > overlapThreshold
-        );
-
-        if (!overlapsWithExisting) {
-            collector.push(value);
-        }
-
-        if (collector.length === maxItems) {
-            return collector;
-        }
-    }
-
-    return collector;
-};
-
-const guessNumberOfItemsThreshold = (matches: SSIMMatch[], confidenceThreshold = 0.9): number => {
-    const guess = matches.findIndex(({ confidence }) => confidence < confidenceThreshold);
-
-    return guess === -1 ? matches.length : guess;
-};
-
-const convertRectToShape = (rectangle: Rect, shapeType: SSIMShapeType): Shape => {
-    if (shapeType === 'rectangle') {
-        return rectangle;
-    }
-
-    return {
-        type: 'polygon',
-        points: [
-            { x: rectangle.x, y: rectangle.y },
-            { x: rectangle.x + rectangle.width, y: rectangle.y },
-            { x: rectangle.x + rectangle.width, y: rectangle.y + rectangle.height },
-            { x: rectangle.x, y: rectangle.y + rectangle.height },
-        ],
-    };
+    return { worker: data?.instance, rawWorker: data?.worker, isLoading, isError, error };
 };
 
 export const useSSIM = (enabled = true) => {
-    const { worker: ssim, isLoading: isLoadingWorker, isError: isWorkerError } = useSSIMWorker(enabled);
+    const queryClient = useQueryClient();
+    const {
+        worker: ssim,
+        rawWorker,
+        isLoading: isLoadingWorker,
+        isError: isWorkerError,
+        error: workerError,
+    } = useSSIMWorker(enabled);
 
     const [toolState, setToolState] = useState<SSIMState>(INITIAL_SSIM_STATE);
     const [previewThreshold, setPreviewThreshold] = useState<number | null>(null);
@@ -195,21 +117,32 @@ export const useSSIM = (enabled = true) => {
         mutate,
         reset: resetMutation,
         isPending,
-        error,
+        error: executionError,
     } = useMutation({
         mutationFn: async (runSSIMProps: RunSSIMProps) => {
-            if (ssim === undefined) {
-                throw new Error('SSIM worker is not initialized yet');
-            }
+            try {
+                if (ssim === undefined) {
+                    throw new Error('SSIM worker is not initialized yet');
+                }
 
-            return ssim.executeSSIM(toToolRunSSIMProps(runSSIMProps));
+                return await executeWithTimeout(
+                    ssim.executeSSIM(toToolRunSSIMProps(runSSIMProps)),
+                    i18n.t('annotator.tools.ssim.label'),
+                    SSIM_EXECUTE_TIMEOUT_MS
+                );
+            } catch (executeError) {
+                // Comlink calls can't be cancelled and the worker runs them serially, so a stuck (or
+                // never built) worker would block every later run: replace it instead.
+                rawWorker?.terminate();
+                void queryClient.resetQueries({ queryKey: SSIM_WORKER_QUERY_KEY });
+
+                throw executeError;
+            }
         },
-        onSuccess: (matches, { existingAnnotations, autoMergeDuplicates, template, roi, shapeType = 'rectangle' }) => {
+        onSuccess: (matches, { imageData, existingAnnotations, autoMergeDuplicates, template, shapeType }) => {
             const ssimMatches = convertToolMatchesToGetiMatches(matches);
-            const existingRects: Rect[] = autoMergeDuplicates
-                ? existingAnnotations.map(getBoundingRectFromShape).filter((shape): shape is Rect => shape !== null)
-                : [];
-            const filteredMatches = filterSSIMResults(roi, ssimMatches, template, existingRects);
+            const existingRects = autoMergeDuplicates ? getExistingRects(existingAnnotations) : [];
+            const filteredMatches = filterSSIMResults(roiFromImage(imageData), ssimMatches, template, existingRects);
             const threshold = guessNumberOfItemsThreshold(filteredMatches);
 
             updateToolState(
@@ -219,6 +152,9 @@ export const useSSIM = (enabled = true) => {
                 },
                 shapeType
             );
+        },
+        onError: (_error, { template, shapeType }) => {
+            updateToolState({ matches: [{ shape: template, confidence: 1 }], threshold: 1 }, shapeType);
         },
     });
 
@@ -246,6 +182,8 @@ export const useSSIM = (enabled = true) => {
         resetMutation();
     }, [resetMutation]);
 
+    const error = workerError ?? executionError;
+
     return useMemo(
         () => ({
             runSSIM,
@@ -257,7 +195,8 @@ export const useSSIM = (enabled = true) => {
             setPreviewThreshold,
             isLoading: isLoadingWorker,
             isProcessing: isPending,
-            isError: isWorkerError || error !== null,
+            isError: isWorkerError || executionError !== null,
+            error,
             worker: ssim as Remote<SSIMWorkerInstance> | undefined,
         }),
         [
@@ -270,6 +209,7 @@ export const useSSIM = (enabled = true) => {
             isLoadingWorker,
             isPending,
             isWorkerError,
+            executionError,
             error,
             ssim,
         ]

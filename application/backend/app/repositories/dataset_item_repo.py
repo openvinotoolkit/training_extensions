@@ -209,16 +209,36 @@ class DatasetItemRepository:
         )
         self.db.execute(stmt)
 
-    def list_unassigned_items(self) -> list[DatasetItemLabelDB]:
+    def list_unassigned_items(self) -> list[tuple[DatasetItemLabelDB, str | None]]:
+        """List label rows of unassigned dataset items, each paired with the parent
+        video id of the underlying media (None for images and standalone media)."""
         stmt = (
-            select(DatasetItemLabelDB)
-            .join(DatasetItemDB)
+            select(DatasetItemLabelDB, MediaDB.video_id)
+            .join(DatasetItemDB, DatasetItemLabelDB.dataset_item_id == DatasetItemDB.id)
+            .join(MediaDB, MediaDB.id == DatasetItemDB.id)
             .where(
                 DatasetItemDB.project_id == self.project_id,
                 DatasetItemDB.subset == DatasetItemSubset.UNASSIGNED,
             )
         )
-        return list(self.db.scalars(stmt).all())
+        return [(row[0], row[1]) for row in self.db.execute(stmt).all()]
+
+    def list_assigned_group_subsets(self) -> list[tuple[str, str, int]]:
+        """List (video_id, subset, item_count) for already-assigned video frames of the project.
+
+        Used to keep newly annotated frames of a video in the same subset as the
+        video's previously assigned frames."""
+        stmt = (
+            select(MediaDB.video_id, DatasetItemDB.subset, func.count(DatasetItemDB.id))
+            .join(DatasetItemDB, DatasetItemDB.id == MediaDB.id)
+            .where(
+                DatasetItemDB.project_id == self.project_id,
+                DatasetItemDB.subset != DatasetItemSubset.UNASSIGNED,
+                MediaDB.video_id.is_not(None),
+            )
+            .group_by(MediaDB.video_id, DatasetItemDB.subset)
+        )
+        return [(row[0], row[1], row[2]) for row in self.db.execute(stmt).all()]
 
     def has_all_subsets_assigned(self) -> bool:
         """Return True if there is at least one dataset item for each of TRAINING, VALIDATION, and TESTING subsets."""

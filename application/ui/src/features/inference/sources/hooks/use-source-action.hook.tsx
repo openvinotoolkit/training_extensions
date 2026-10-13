@@ -3,6 +3,7 @@
 
 import { useActionState } from 'react';
 
+import { isAbortError } from '@/api';
 import type { SourceConfigPayload } from '@/api/types';
 import { toast } from '@/components/toast/toast.component';
 import { useTranslation } from '@/i18n';
@@ -11,12 +12,15 @@ import { isFunction } from 'lodash-es';
 import { getErrorMessage } from '../../../../query-client/query-client';
 import { useSourceMutation } from './use-source-mutation.hook';
 
+// Optionally returns a rollback that undoes its side effects (e.g. an upload) if the source is not saved.
+export type PrepareFormData = (formData: FormData) => Promise<(() => Promise<void>) | undefined>;
+
 interface useSourceActionProps<T> {
     config: Awaited<T>;
     isNewSource: boolean;
     onSaved?: (source_id: string) => void;
     bodyFormatter: (formData: FormData) => T;
-    prepareFormData?: (formData: FormData) => Promise<void>;
+    prepareFormData?: PrepareFormData;
 }
 
 export const useSourceAction = <T extends SourceConfigPayload>({
@@ -31,10 +35,14 @@ export const useSourceAction = <T extends SourceConfigPayload>({
 
     return useActionState<T, FormData>(async (prevState: T, formData: FormData) => {
         try {
-            await prepareFormData?.(formData);
+            const rollback = await prepareFormData?.(formData);
 
             const body = bodyFormatter(formData);
-            const source_id = await addOrUpdateSource(body);
+            const source_id = await addOrUpdateSource(body).catch((error: unknown) => {
+                // Best effort: a failed rollback must not mask the original save error.
+                void rollback?.().catch(() => undefined);
+                throw error;
+            });
 
             toast({
                 type: 'success',
@@ -46,6 +54,11 @@ export const useSourceAction = <T extends SourceConfigPayload>({
             isFunction(onSaved) && onSaved(source_id);
             return { ...body, id: source_id };
         } catch (error: unknown) {
+            // The user cancelled the file transfer: keep the form as it is, without an error.
+            if (isAbortError(error)) {
+                return prevState;
+            }
+
             const details = getErrorMessage(error);
 
             toast({

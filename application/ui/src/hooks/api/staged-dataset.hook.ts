@@ -18,13 +18,13 @@ export const useStagedDataset = (stagedDatasetId: string | null | undefined) => 
         'get',
         '/api/staged_datasets/{staged_dataset_id}',
         {
-            params: { path: { staged_dataset_id: stagedDatasetId } },
+            params: { path: { staged_dataset_id: stagedDatasetId ?? '' } },
         },
         { enabled: isNonEmptyString(stagedDatasetId) }
     );
 };
 
-export const useStagedDatasetSuspense = (stagedDatasetId: string | null | undefined) => {
+export const useStagedDatasetSuspense = (stagedDatasetId: string) => {
     return $api.useSuspenseQuery('get', '/api/staged_datasets/{staged_dataset_id}', {
         params: { path: { staged_dataset_id: stagedDatasetId } },
     });
@@ -36,7 +36,8 @@ export const useDeleteStagedDataset = ({
     onSuccess,
     deleteEntry,
 }: useDeleteStagedDatasetProps) => {
-    const params = { params: { path: { staged_dataset_id: stagedDatasetId } } };
+    const params = { params: { path: { staged_dataset_id: stagedDatasetId ?? '' } } };
+    const hasStagedDatasetId = isNonEmptyString(stagedDatasetId);
 
     const deleteMutation = $api.useMutation('delete', '/api/staged_datasets/{staged_dataset_id}', {
         meta: { error: { notify: (error: unknown) => !isInvalidStagedFile(error) } },
@@ -52,7 +53,11 @@ export const useDeleteStagedDataset = ({
 
     return {
         ...deleteMutation,
-        mutate: () => deleteMutation.mutate(params),
-        mutateAsync: () => deleteMutation.mutateAsync(params),
+        mutate: () => {
+            if (hasStagedDatasetId) {
+                deleteMutation.mutate(params);
+            }
+        },
+        mutateAsync: () => (hasStagedDatasetId ? deleteMutation.mutateAsync(params) : Promise.resolve(undefined)),
     };
 };

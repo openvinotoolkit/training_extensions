@@ -16,7 +16,7 @@ export const useGetModelTrainingConfiguration = (modelId: string | null) => {
         'get',
         '/api/projects/{project_id}/models/{model_id}/training_configuration',
         {
-            params: { path: { project_id: projectId, model_id: modelId } },
+            params: { path: { project_id: projectId, model_id: modelId ?? '' } },
         },
         {
             enabled: modelId !== null,

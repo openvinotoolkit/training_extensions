@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Polygon } from '../../../../shared/types';
-import { getFormattedPoints, ShapeStyle } from './utils';
+import { getFormattedPoints } from '../../annotations/utils';
+import { ShapeStyle } from './utils';
 
 type PolygonDrawProps = ShapeStyle<SVGPolygonElement> & {
     shape: Polygon;

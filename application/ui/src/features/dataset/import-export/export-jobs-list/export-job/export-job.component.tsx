@@ -26,7 +26,7 @@ export const ExportJob = ({ jobId, datasetId }: ExportJobProps) => {
     const { data: datasetDetails } = $api.useQuery(
         'get',
         '/api/projects/{project_id}/dataset_revisions/{dataset_revision_id}',
-        { params: { path: { project_id: projectId, dataset_revision_id: datasetId } } },
+        { params: { path: { project_id: projectId, dataset_revision_id: datasetId ?? '' } } },
         { enabled: isString(datasetId) }
     );
 

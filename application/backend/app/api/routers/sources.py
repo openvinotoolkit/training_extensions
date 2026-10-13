@@ -102,6 +102,7 @@ UPDATE_SOURCE_BODY_EXAMPLES = {
         status.HTTP_201_CREATED: {"description": "Source created"},
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid source ID or request body"},
         status.HTTP_409_CONFLICT: {"description": "Source already exists"},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"description": "Source validation failed"},
     },
 )
 def create_source(
@@ -132,7 +133,7 @@ def create_source(
 @router.get(
     "",
     responses={
-        status.HTTP_200_OK: {"description": "List of available source configurations", "model": list[SourceView]},
+        status.HTTP_200_OK: {"description": "List of available source configurations"},
     },
 )
 def list_sources(
@@ -146,7 +147,7 @@ def list_sources(
 @router.get(
     "/{source_id}",
     responses={
-        status.HTTP_200_OK: {"description": "Source found", "model": SourceView},
+        status.HTTP_200_OK: {"description": "Source found"},
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid source ID"},
         status.HTTP_404_NOT_FOUND: {"description": "Source not found"},
     },
@@ -163,6 +164,7 @@ def get_source_view(source: Annotated[Source, Depends(get_source)]) -> SourceVie
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid source ID or request body"},
         status.HTTP_404_NOT_FOUND: {"description": "Source not found"},
         status.HTTP_409_CONFLICT: {"description": "Source already exists"},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"description": "Source validation failed"},
     },
 )
 def update_source(

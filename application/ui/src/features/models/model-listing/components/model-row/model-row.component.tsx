@@ -4,8 +4,8 @@
 import type { DatasetRevision, Model, ModelArchitectureWithPerformanceCategory } from '@/api/types';
 import { useTranslation } from '@/i18n';
 import { Badge, Flex, Grid, Text } from '@geti-ui/ui';
+import { DATE_FORMAT, TIME_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 
-import { formatTrainingDateTime } from '../../../../../shared/date-utils';
 import { isFailedModel } from '../../../../../shared/model-status';
 import { formatBytes } from '../../../../../shared/util';
 import { GRID_COLUMNS } from '../../constants';
@@ -18,9 +18,6 @@ import { DatasetColumn } from './dataset-revision-column.component';
 import { getTestingMetric } from './utils';
 
 import classes from './model-row.module.scss';
-
-// Copyright (C) 2025-2026 Intel Corporation
-// SPDX-License-Identifier: Apache-2.0
 
 type ModelRowProps = {
     model: Model;
@@ -60,8 +57,12 @@ export const ModelRow = ({
     datasetRevision,
     modelArchitecture,
 }: ModelRowProps) => {
-    const { i18n } = useTranslation();
     const trainingEndTime = model.training_info.end_time;
+    const formatDate = useFormatDate(DATE_FORMAT);
+    const formatTime = useFormatDate(TIME_FORMAT);
+    const trainingDate = formatDate(trainingEndTime);
+    const trainingTime = formatTime(trainingEndTime);
+    const trainingEndTimeLabel = trainingDate && trainingTime ? `${trainingDate}\n${trainingTime}` : '-';
     const totalSize = model.size;
     const device = model.training_info.device;
     const labelSchemaRevision = model.training_info.label_schema_revision ?? {};
@@ -95,9 +96,7 @@ export const ModelRow = ({
                 </Text>
             </Flex>
 
-            <Text UNSAFE_className={classes.dateText}>
-                {formatTrainingDateTime(trainingEndTime, i18n.resolvedLanguage ?? i18n.language)}
-            </Text>
+            <Text UNSAFE_className={classes.dateText}>{trainingEndTimeLabel}</Text>
 
             {groupBy === 'architecture' ? (
                 <DatasetColumn datasetRevision={datasetRevision} labelsCount={labelsCount} />

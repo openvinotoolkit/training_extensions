@@ -1,10 +1,10 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { EmptyDataset } from '@/assets/illustrations';
 import { useTranslation } from '@/i18n';
 import { ActionButton, Divider, Flex, Text, View } from '@geti-ui/ui';
 
-import { ReactComponent as EmptyDatasetImage } from '../../../../assets/empty-dataset.svg';
 import {
     ActiveFiltersList,
     useClearAllFilters,
@@ -25,7 +25,7 @@ const NoMediaItemsMessage = () => {
         >
             <Flex direction={'column'} alignItems={'center'} gap={'size-50'}>
                 <View width={'size-1250'} height={'size-1250'}>
-                    <EmptyDatasetImage height={'100%'} width={'100%'} />
+                    <EmptyDataset height={'100%'} width={'100%'} />
                 </View>
                 <Text UNSAFE_style={{ textAlign: 'center' }}>
                     {t('dataset.empty.noMatches')} {t('dataset.empty.changeFilter')}

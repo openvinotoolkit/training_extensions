@@ -11,7 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useConnectSourceToPipeline } from 'hooks/api/pipeline.hook';
 
 import { testSourceQueryOptions } from '../api/use-test-source';
-import { useSourceAction } from '../hooks/use-source-action.hook';
+import { useSourceAction, type PrepareFormData } from '../hooks/use-source-action.hook';
 
 import classes from './edit-source.module.scss';
 
@@ -21,7 +21,7 @@ interface EditSourceProps<T> {
     onBackToList: () => void;
     componentFields: (state: Awaited<T>) => ReactNode;
     bodyFormatter: (formData: FormData) => T;
-    prepareFormData?: (formData: FormData) => Promise<void>;
+    prepareFormData?: PrepareFormData;
     isConnected: boolean;
 }
 

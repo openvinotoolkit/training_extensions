@@ -46,6 +46,7 @@
 .selectedProjectButton {
     display: flex;
     justify-content: flex-start;
+    padding-inline: var(--spectrum-global-dimension-size-100);
 
     &::after {
         display: none;

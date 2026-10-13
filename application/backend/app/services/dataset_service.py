@@ -170,15 +170,16 @@ class DatasetService(BaseSessionManagedService):
         self,
         project_id: UUID,
         filters: DatasetItemFilters | None = None,
+        dataset_view_id: UUID | None = None,
     ) -> list[tuple[DatasetItem, Media]]:
         """Get information about available dataset items with corresponding media info"""
         if filters is None:
             filters = DatasetItemFilters()
-        repo = DatasetItemRepository(project_id=str(project_id), db=self.db_session)
         label_ids_str = [str(label_id) for label_id in filters.label_ids] if filters.label_ids else None
-        return [
-            (DatasetItem.model_validate(db_dataset_item), MediaAdapter.validate_python(db_media))
-            for db_dataset_item, db_media in repo.list_items_with_media(
+        if dataset_view_id is not None:
+            view_repo = DatasetViewRepository(project_id=str(project_id), db=self.db_session)
+            db_items_with_media = view_repo.list_items_with_media(
+                dataset_view_id=str(dataset_view_id),
                 limit=filters.limit,
                 offset=filters.offset,
                 start_date=filters.start_date,
@@ -187,6 +188,20 @@ class DatasetService(BaseSessionManagedService):
                 label_ids=label_ids_str,
                 subsets=filters.subsets,
             )
+        else:
+            repo = DatasetItemRepository(project_id=str(project_id), db=self.db_session)
+            db_items_with_media = repo.list_items_with_media(
+                limit=filters.limit,
+                offset=filters.offset,
+                start_date=filters.start_date,
+                end_date=filters.end_date,
+                annotation_status=filters.annotation_status,
+                label_ids=label_ids_str,
+                subsets=filters.subsets,
+            )
+        return [
+            (DatasetItem.model_validate(db_dataset_item), MediaAdapter.validate_python(db_media))
+            for db_dataset_item, db_media in db_items_with_media
         ]
 
     def get_dataset_item_by_id(self, project_id: UUID, dataset_item_id: UUID) -> DatasetItem:
@@ -360,24 +375,17 @@ class DatasetService(BaseSessionManagedService):
     ) -> Dataset:
         from app.datumaro_converter import SampleMode, convert_dataset
 
-        view_repo = DatasetViewRepository(project_id=str(project_id), db=self.db_session)
-        if dataset_view_id is not None and view_repo.get_by_id(str(dataset_view_id)) is None:
-            raise ResourceNotFoundError(ResourceType.DATASET_VIEW, str(dataset_view_id))
+        if dataset_view_id is not None:
+            # The view may have been deleted between the moment the caller resolved it and now.
+            view_repo = DatasetViewRepository(project_id=str(project_id), db=self.db_session)
+            if view_repo.get_by_id(str(dataset_view_id)) is None:
+                raise ResourceNotFoundError(ResourceType.DATASET_VIEW, str(dataset_view_id))
 
         def get_dataset_items_and_media(offset: int, limit: int) -> list[tuple[DatasetItem, Media]]:
-            if dataset_view_id is not None:
-                return [
-                    (DatasetItem.model_validate(db_dataset_item), MediaAdapter.validate_python(db_media))
-                    for db_dataset_item, db_media in view_repo.list_items_with_media(
-                        dataset_view_id=str(dataset_view_id),
-                        limit=limit,
-                        offset=offset,
-                        annotation_status=annotation_status,
-                    )
-                ]
             return self.list_dataset_items_with_media(
                 project_id=project_id,
                 filters=DatasetItemFilters(limit=limit, offset=offset, annotation_status=annotation_status),
+                dataset_view_id=dataset_view_id,
             )
 
         def _get_media_path(media: Media) -> str:

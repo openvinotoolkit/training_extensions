@@ -122,6 +122,9 @@ table(dataset_view_items) {
 table(dataset_revisions) {
   fk(project_id) : UUID NOT NULL
   --
+  ' Dataset view the revision was created from, if any
+  fk(dataset_view_id) : UUID
+  --
   ' Status of binary files
   files_deleted : BOOLEAN NOT NULL
 }

@@ -1,71 +1,76 @@
-// Copyright (C) 2025 Intel Corporation
+// Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 import { useTranslation } from '@/i18n';
-import { Button, Content, Divider, Flex, Heading, Text, View } from '@geti-ui/ui';
+import { Flex, Grid, Text, View } from '@geti-ui/ui';
 
-import { Link } from '../../platform/components/link.component';
 import { useAcceptLicense } from './api/use-accept-license.hook';
+import { LicenseDetails } from './license-details.component';
+import { LicenseFooter } from './license-footer.component';
+import { LicenseSteps } from './license-steps.component';
+import { LICENSES } from './licenses';
+import { useLicenseSteps } from './use-license-steps.hook';
 
 import styles from './license.module.scss';
 
-const LICENSE_LINKS = {
-    intelSimplified: {
-        // eslint-disable-next-line max-len
-        href: 'https://www.intel.com/content/www/us/en/content-details/749362/intel-simplified-software-license-version-october-2022.html',
-    },
-
-    dinov2: {
-        href: 'https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md',
-    },
-};
-
 export const License = () => {
     const { t } = useTranslation();
+    const steps = useLicenseSteps(LICENSES);
     const { mutate: acceptLicense, isPending: isAccepting } = useAcceptLicense();
 
     return (
-        <View UNSAFE_className={styles.licenseBackground} height={'100vh'}>
+        <View height={'100vh'} padding={'size-300'} UNSAFE_className={styles.licenseBackground}>
             <Flex justifyContent={'center'} alignItems={'center'} height={'100%'}>
                 <View
                     backgroundColor={'gray-50'}
-                    padding={'size-400'}
-                    borderRadius={'regular'}
-                    maxWidth={'size-6000'}
+                    borderRadius={'medium'}
+                    overflow={'hidden'}
                     width={'100%'}
+                    maxWidth={'1000px'}
+                    height={'100%'}
+                    maxHeight={'660px'}
+                    UNSAFE_className={styles.dialog}
                 >
-                    <Heading level={2}>{t('license.agreement.title')}</Heading>
-                    <Divider marginY={'size-200'} size={'S'} />
-                    <Content>
-                        <Text>{t('license.agreement.intro')}</Text>
-                        <ul className={styles.list}>
-                            <li>{t('license.agreement.termsRead')}</li>
-                            <li>{t('license.agreement.termsGovern')}</li>
-                            <li>{t('license.agreement.termsAccepted')}</li>
-                        </ul>
-                        <Flex direction={'column'} marginTop={'size-200'}>
-                            <Link
-                                href={LICENSE_LINKS.intelSimplified.href}
-                                target={'_blank'}
-                                rel={'noopener noreferrer'}
-                            >
-                                {t('license.links.intelSimplified')}
-                            </Link>
-                            <Link href={LICENSE_LINKS.dinov2.href} target={'_blank'} rel={'noopener noreferrer'}>
-                                {t('license.links.dinov2')}
-                            </Link>
+                    <Grid columns={['minmax(240px, 30%)', '1fr']} height={'100%'}>
+                        <LicenseSteps
+                            licenses={LICENSES}
+                            currentIndex={steps.currentIndex}
+                            agreedIds={steps.agreedIds}
+                            lastReachableIndex={steps.lastReachableIndex}
+                            onSelect={steps.goTo}
+                        />
+
+                        <Flex direction={'column'} minWidth={0} minHeight={0}>
+                            <View flex padding={'size-300'} overflow={'auto'} minHeight={0}>
+                                <Flex direction={'column'} gap={'size-200'} height={'100%'}>
+                                    {LICENSES.length > 1 && (
+                                        <Text>
+                                            {t('license.agreement.progress', {
+                                                current: steps.currentIndex + 1,
+                                                total: LICENSES.length,
+                                            })}
+                                        </Text>
+                                    )}
+                                    <LicenseDetails
+                                        license={steps.current}
+                                        isAgreed={steps.isCurrentAgreed}
+                                        onAgreedChange={steps.setCurrentAgreed}
+                                    />
+                                </Flex>
+                            </View>
+
+                            <LicenseFooter
+                                isFirst={steps.isFirst}
+                                isLast={steps.isLast}
+                                canProceed={steps.canProceed}
+                                canAccept={steps.areAllRequiredAgreed}
+                                isAccepting={isAccepting}
+                                onPrevious={steps.goToPrevious}
+                                onNext={steps.goToNext}
+                                onAccept={() => acceptLicense(undefined)}
+                            />
                         </Flex>
-                    </Content>
-                    <Flex justifyContent={'end'} marginTop={'size-300'}>
-                        <Button
-                            variant={'accent'}
-                            onPress={() => acceptLicense(undefined)}
-                            isPending={isAccepting}
-                            isDisabled={isAccepting}
-                        >
-                            {t('license.agreement.accept')}
-                        </Button>
-                    </Flex>
+                    </Grid>
                 </View>
             </Flex>
         </View>

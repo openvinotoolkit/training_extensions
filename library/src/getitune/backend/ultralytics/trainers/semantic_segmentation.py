@@ -89,7 +89,7 @@ class SemanticSegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ul
             return super().get_dataloader(dataset_path, batch_size, rank, mode)  # type: ignore[misc]
 
         dataset = self.build_dataset(dataset_path, mode, batch_size)
-        nw: int = self.args.workers  # type: ignore[attr-defined]
+        nw = self._num_workers(mode)
         shuffle = mode == "train"
         return InfiniteDataLoader(
             dataset,

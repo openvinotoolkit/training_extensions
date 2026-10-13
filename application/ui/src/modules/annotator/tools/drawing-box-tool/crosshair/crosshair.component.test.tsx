@@ -42,28 +42,6 @@ describe('Crosshair', () => {
         expect(vertical).toHaveAttribute('height', '100%');
     });
 
-    it('handles zoom levels correctly', () => {
-        const { container } = render(
-            <svg>
-                <Crosshair location={mockLocation} zoom={2} />
-            </svg>
-        );
-
-        container.querySelectorAll('rect').forEach((rect) => {
-            expect(rect.getAttribute('stroke-width')).toBe('0.5');
-        });
-
-        const { container: container2 } = render(
-            <svg>
-                <Crosshair location={mockLocation} zoom={4} />
-            </svg>
-        );
-
-        container2.querySelectorAll('rect').forEach((rect) => {
-            expect(rect.getAttribute('stroke-width')).toBe('0.25');
-        });
-    });
-
     it('updates when location changes', () => {
         const { container, rerender } = render(
             <svg>

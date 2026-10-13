@@ -10,7 +10,8 @@ import { IpCamera } from './ip-camera/ip-camera.component';
 import { ipCameraBodyFormatter } from './ip-camera/utils';
 import { UsbCamera } from './usb-camera/usb-camera-fields.component';
 import { usbCameraBodyFormatter } from './usb-camera/utils';
-import { prepareVideoFileFormData, videoFileBodyFormatter } from './video-file/utils';
+import { useVideoFileUpload } from './video-file/use-video-file-upload.hook';
+import { videoFileBodyFormatter } from './video-file/utils';
 import { VideoFile } from './video-file/video-file.component';
 
 interface EditSourceFormProps {
@@ -21,6 +22,8 @@ interface EditSourceFormProps {
 }
 
 export const EditSourceForm = ({ config, connectedSourceId, onSaved, onBackToList }: EditSourceFormProps) => {
+    const videoFileUpload = useVideoFileUpload();
+
     if (config.source_type === 'usb_camera') {
         return (
             <EditSource
@@ -53,9 +56,15 @@ export const EditSourceForm = ({ config, connectedSourceId, onSaved, onBackToLis
                 onSaved={onSaved}
                 config={config}
                 onBackToList={onBackToList}
-                componentFields={(state: VideoFileSourceConfig) => <VideoFile defaultState={state} />}
+                componentFields={(state: VideoFileSourceConfig) => (
+                    <VideoFile
+                        defaultState={state}
+                        uploadProgress={videoFileUpload.progress}
+                        onCancelUpload={videoFileUpload.cancel}
+                    />
+                )}
                 bodyFormatter={videoFileBodyFormatter}
-                prepareFormData={prepareVideoFileFormData}
+                prepareFormData={videoFileUpload.prepareFormData}
                 isConnected={connectedSourceId === config.id}
             />
         );

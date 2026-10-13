@@ -4,7 +4,8 @@ from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
+from pydantic import BeforeValidator
 from starlette import status
 
 
@@ -52,24 +53,21 @@ def normalize_datetime_to_utc(value: datetime | None) -> datetime | None:
     return value.astimezone(UTC)
 
 
-JobID = Annotated[UUID, Depends(lambda job_id: validate_uuid_param(job_id, "job_id"))]
-SourceID = Annotated[UUID, Depends(lambda source_id: validate_uuid_param(source_id, "source_id"))]
-SinkID = Annotated[UUID, Depends(lambda sink_id: validate_uuid_param(sink_id, "sink_id"))]
-ProjectID = Annotated[UUID, Depends(lambda project_id: validate_uuid_param(project_id, "project_id"))]
-MediaID = Annotated[UUID, Depends(lambda media_id: validate_uuid_param(media_id, "media_id"))]
-ModelID = Annotated[UUID, Depends(lambda model_id: validate_uuid_param(model_id, "model_id"))]
-ModelVariantID = Annotated[
-    UUID, Depends(lambda model_variant_id: validate_uuid_param(model_variant_id, "model_variant_id"))
-]
-DatasetItemID = Annotated[
-    UUID, Depends(lambda dataset_item_id: validate_uuid_param(dataset_item_id, "dataset_item_id"))
-]
-DatasetRevisionID = Annotated[
-    UUID, Depends(lambda dataset_revision_id: validate_uuid_param(dataset_revision_id, "dataset_revision_id"))
-]
-DatasetViewID = Annotated[
-    UUID, Depends(lambda dataset_view_id: validate_uuid_param(dataset_view_id, "dataset_view_id"))
-]
-StagedDatasetID = Annotated[
-    UUID, Depends(lambda staged_dataset_id: validate_uuid_param(staged_dataset_id, "staged_dataset_id"))
-]
+def _uuid_path_validator(param_name: str) -> BeforeValidator:
+    def validate(value: str) -> UUID:
+        return validate_uuid_param(value, param_name)
+
+    return BeforeValidator(validate)
+
+
+JobID = Annotated[UUID, _uuid_path_validator("job_id")]
+SourceID = Annotated[UUID, _uuid_path_validator("source_id")]
+SinkID = Annotated[UUID, _uuid_path_validator("sink_id")]
+ProjectID = Annotated[UUID, _uuid_path_validator("project_id")]
+MediaID = Annotated[UUID, _uuid_path_validator("media_id")]
+ModelID = Annotated[UUID, _uuid_path_validator("model_id")]
+ModelVariantID = Annotated[UUID, _uuid_path_validator("model_variant_id")]
+DatasetItemID = Annotated[UUID, _uuid_path_validator("dataset_item_id")]
+DatasetRevisionID = Annotated[UUID, _uuid_path_validator("dataset_revision_id")]
+DatasetViewID = Annotated[UUID, _uuid_path_validator("dataset_view_id")]
+StagedDatasetID = Annotated[UUID, _uuid_path_validator("staged_dataset_id")]

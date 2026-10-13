@@ -5,7 +5,10 @@ import { useTranslation } from '@/i18n';
 import { ActionButton, Icon, Text } from '@geti-ui/ui';
 import { Checkmark, Edit } from '@geti-ui/ui/icons';
 
-import { useAnnotationActions } from '../../../../modules/annotator/annotation-actions-provider.component';
+import {
+    useAnnotationCommands,
+    useAnnotations,
+} from '../../../../modules/annotator/annotation-actions-provider.component';
 import { convertPredictionToAnnotation } from '../../../../modules/annotator/annotations/utils';
 import type { AnnotatorMode } from '../../../../modules/annotator/annotator-mode';
 
@@ -35,7 +38,8 @@ type PredictionButtonsProps = {
 
 export const PredictionButtons = ({ onSubmit, onModeChange, isDisabled }: PredictionButtonsProps) => {
     const { t } = useTranslation();
-    const { replaceAnnotations, annotations } = useAnnotationActions();
+    const { replaceAnnotations } = useAnnotationCommands();
+    const { annotations } = useAnnotations();
 
     const handleEditPrediction = () => {
         onModeChange('annotation');

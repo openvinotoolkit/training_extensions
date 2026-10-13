@@ -80,6 +80,15 @@ const apiBarrelRestrictedImportPattern = {
     message: 'Do not import the `@/api` barrel from within `src/api/`. Use a direct relative import instead.',
 };
 
+// Containment rule for `src/assets/`. Assets are reached through the `@/assets/*` alias, and
+// SVG components only through the `@/assets/icons` / `@/assets/illustrations` barrels, so moving
+// or renaming a file is a one-line change in the barrel. `?url` imports don't end in `.svg`, so
+// they stay allowed.
+const assetsRestrictedImportPatterns = {
+    regex: '^\\.\\.?/(\\.\\./)*assets/',
+    message: 'Do not import `src/assets/` with a relative path. Use the `@/assets/*` alias instead.',
+};
+
 // Containment rule for the translation engine. Only src/i18n/** may name
 // `i18next` / `react-i18next`; everywhere else goes through the `@/i18n`
 // barrel, so swapping or removing the engine stays a single-folder change.
@@ -106,6 +115,20 @@ const isTauriRestrictedSyntax = {
         'Do not branch on `isTauri()` at runtime. Add or split a capability module via a `.tauri.{ts,tsx}` twin instead.',
 };
 
+// Forbid building dates/numbers straight from Intl or Date.prototype.toLocale*. These bypass the
+// ThemeProvider locale (useFormatDate / useNumberFormatter), so the formatted text drifts from the
+// rest of the app whenever the user switches language. The hook itself and tests are allow-listed.
+const noDirectIntlFormattingRestrictedSyntax = [
+    {
+        selector: "NewExpression[callee.object.name='Intl'][callee.property.name=/^(DateTimeFormat|NumberFormat)$/]",
+        message: 'Use useFormatDate / useNumberFormatter so the ThemeProvider locale applies.',
+    },
+    {
+        selector: 'CallExpression[callee.property.name=/^(toLocaleDateString|toLocaleTimeString|toLocaleString)$/]',
+        message: 'Use useFormatDate / useNumberFormatter so the ThemeProvider locale applies.',
+    },
+];
+
 // Containment rule for the shared `src/components/` folder: it must be reached
 // through the `@/components/*` alias. A relative `../components/` specifier is
 // ambiguous on its own, so the trees that own a local `components/` folder are
@@ -124,6 +147,7 @@ const sharedComponentsAliasConfig = {
                 message:
                     'Do not import `src/components/` with a relative path. Use the `@/components/*` alias instead.',
             },
+            ...noDirectIntlFormattingRestrictedSyntax,
         ],
     },
 };
@@ -214,7 +238,7 @@ export default [
                     ' SPDX-License-Identifier: Apache-2.0',
                 ],
             ],
-            'no-restricted-syntax': ['error', isTauriRestrictedSyntax],
+            'no-restricted-syntax': ['error', isTauriRestrictedSyntax, ...noDirectIntlFormattingRestrictedSyntax],
         },
     },
     sharedComponentsAliasConfig,
@@ -236,6 +260,7 @@ export default [
                     paths: restrictedImportPaths,
                     patterns: [
                         ...restrictedImportPatterns,
+                        assetsRestrictedImportPatterns,
                         tauriRestrictedImportPattern,
                         i18nEngineRestrictedImportPattern,
                     ],
@@ -253,6 +278,7 @@ export default [
                     paths: restrictedImportPaths,
                     patterns: [
                         ...restrictedImportPatterns,
+                        assetsRestrictedImportPatterns,
                         tauriRestrictedImportPattern,
                         openapiSpecRestrictedImportPattern,
                         apiBarrelRestrictedImportPattern,
@@ -274,6 +300,7 @@ export default [
                     paths: restrictedImportPaths,
                     patterns: [
                         ...restrictedImportPatterns,
+                        assetsRestrictedImportPatterns,
                         tauriRestrictedImportPattern,
                         openapiSpecRestrictedImportPattern,
                         apiBarrelRestrictedImportPattern,
@@ -293,6 +320,7 @@ export default [
                     paths: restrictedImportPaths,
                     patterns: [
                         ...restrictedImportPatterns,
+                        assetsRestrictedImportPatterns,
                         openapiSpecRestrictedImportPattern,
                         apiBarrelRestrictedImportPattern,
                         sharedTypesRestrictedImportPattern,
@@ -314,6 +342,7 @@ export default [
                     paths: [...restrictedImportPaths, apiBarrelRestrictedImportPath],
                     patterns: [
                         ...restrictedImportPatterns,
+                        assetsRestrictedImportPatterns,
                         tauriRestrictedImportPattern,
                         i18nEngineRestrictedImportPattern,
                     ],

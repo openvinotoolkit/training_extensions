@@ -35,6 +35,7 @@ describe('useUploadActions', () => {
             total: 3,
             succeeded: 0,
             failed: 0,
+            cancelled: 0,
         });
         expect(result.current.isUploading).toBe(true);
     });
@@ -122,6 +123,7 @@ describe('useUploadActions', () => {
             total: 2,
             succeeded: 2,
             failed: 0,
+            cancelled: 0,
         });
         expect(result.current.isUploading).toBe(false);
         await waitFor(() => expect(screen.getByText('Uploaded 2 items')).toBeVisible());

@@ -3,6 +3,7 @@
 
 from uuid import UUID
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.db.schema import LabelDB
@@ -16,6 +17,7 @@ from app.utils.color import random_color
 
 from . import BaseSessionManagedService
 from .base import ResourceNotFoundError, ResourceType, ResourceWithIdAlreadyExistsError
+from .event.event_bus import EventBus, EventType
 
 
 class DuplicateLabelsError(Exception):
@@ -26,8 +28,9 @@ class DuplicateLabelsError(Exception):
 
 
 class LabelService(BaseSessionManagedService):
-    def __init__(self, db_session: Session | None = None):
+    def __init__(self, db_session: Session | None = None, event_bus: EventBus | None = None):
         super().__init__(db_session)
+        self._event_bus: EventBus | None = event_bus
 
     def create_label(
         self, project_id: UUID, name: str, color: str | None, hotkey: str | None, label_id: UUID | None = None
@@ -74,6 +77,10 @@ class LabelService(BaseSessionManagedService):
         requires at least one label). Also validates that labels to remove or edit exist
         in the project before applying changes.
 
+        If any label colour is effectively changed, an ``INFERENCE_PARAMS_CHANGED`` event is emitted once the
+        transaction commits, so that a running inference pipeline refreshes the colours it uses to
+        render predictions without having to reload the model.
+
         Args:
             project (Project): The project whose labels to update.
             labels_to_add (list[Label]): Labels to be added to the project.
@@ -91,7 +98,8 @@ class LabelService(BaseSessionManagedService):
         """
 
         # Validate minimal number of labels satisfies project task constraints
-        existing_ids = self.list_ids(project_id=project.id)
+        existing_labels = {label.id: label for label in self.list_all(project_id=project.id)}
+        existing_ids = list(existing_labels)
         new_number_of_labels = len(existing_ids) - len(labels_to_remove) + len(labels_to_add)
         if (
             project.task.task_type is TaskType.CLASSIFICATION
@@ -140,7 +148,26 @@ class LabelService(BaseSessionManagedService):
                 color=label_to_add.color,
                 hotkey=label_to_add.hotkey,
             )
+
+        if any(
+            label_to_edit.new_color is not None and existing_labels[label_to_edit.id].color != label_to_edit.new_color
+            for label_to_edit in labels_to_edit
+        ):
+            self._notify_label_colors_changed(project_id=project.id)
+
         return self.list_all(project_id=project.id)
+
+    def _notify_label_colors_changed(self, project_id: UUID) -> None:
+        """Signal, after the transaction commits, that the label colours of a project changed.
+
+        The inference worker caches the label colours used to render predictions; without this
+        notification the overlay would keep the previous colours until the model or the pipeline is
+        reloaded for some other reason.
+        """
+        if self._event_bus is None:
+            return
+        logger.debug("Label colors changed for project '{}'; notifying inference pipeline", project_id)
+        self._event_bus.emit_event_after_commit(self.db_session, EventType.INFERENCE_PARAMS_CHANGED)
 
     def _update_label(
         self, project_id: UUID, label_id: UUID, new_name: str | None, new_color: str | None, new_hotkey: str | None

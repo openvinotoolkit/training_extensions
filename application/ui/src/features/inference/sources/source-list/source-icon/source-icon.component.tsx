@@ -1,11 +1,13 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { ReactComponent as GenICamIcon } from '../../../../../assets/icons/genicam.svg';
-import { ReactComponent as ImageFolderIcon } from '../../../../../assets/icons/images-folder.svg';
-import { ReactComponent as IpCameraIcon } from '../../../../../assets/icons/ip-camera.svg';
-import { ReactComponent as VideoFileIcon } from '../../../../../assets/icons/video-file.svg';
-import { ReactComponent as WebcamIcon } from '../../../../../assets/icons/webcam.svg';
+import {
+    GenICam as GenICamIcon,
+    ImagesFolder as ImagesFolderIcon,
+    IpCamera as IpCameraIcon,
+    VideoFile as VideoFileIcon,
+    Webcam as WebcamIcon,
+} from '@/assets/icons';
 
 type SourceIconProps = {
     type: string;
@@ -28,5 +30,5 @@ export const SourceIcon = ({ type }: SourceIconProps) => {
         return <GenICamIcon />;
     }
 
-    return <ImageFolderIcon />;
+    return <ImagesFolderIcon />;
 };

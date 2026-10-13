@@ -91,7 +91,14 @@ class SubsetAssignment:
 
 @dataclass(frozen=True)
 class DatasetItemWithLabels:
-    """Representation of a dataset item with its associated labels for assignment processing."""
+    """Representation of a dataset item with its associated labels for assignment processing.
+
+    ``group_id`` identifies the media group the item belongs to (e.g. the parent video
+    of an annotated video frame). Items sharing a group are near-duplicates for
+    evaluation purposes and should not be split across subsets. ``None`` means the
+    item is its own group (e.g. an image).
+    """
 
     item_id: UUID
     labels: set[UUID]
+    group_id: UUID | None = None

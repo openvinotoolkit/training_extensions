@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import typing
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 import kornia.augmentation as K  # noqa: N812
 import torch
@@ -20,9 +20,6 @@ from getitune.data.augmentation.kernels import (
     _resized_crop_image_info,
 )
 from getitune.data.entity.sample import BaseSample
-
-if TYPE_CHECKING:
-    from getitune.data.entity.sample import DetectionSample, InstanceSegmentationSample
 
 
 class Resize(tvt_v2.Transform):
@@ -397,7 +394,7 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
 
     def _build_mosaic(
         self,
-        inputs: DetectionSample | InstanceSegmentationSample,
+        inputs: _CachedSample,
         mix_results: list[_CachedSample],
         with_mask: bool,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
@@ -452,7 +449,7 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
             if bboxes_i.numel() > 0:
                 bboxes_i = bboxes_i + bboxes_i.new_tensor([pad_w, pad_h, pad_w, pad_h])
             all_bboxes.append(bboxes_i)
-            all_labels.append(cast("torch.Tensor", sample.label))
+            all_labels.append(sample.label)
 
             if with_mask:
                 masks_i = getattr(sample, "masks", None)
@@ -680,7 +677,8 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
         inputs = _inputs[0]
 
         # Cache management (lightweight clone instead of deepcopy)
-        self._update_cache(_clone_for_cache(inputs))
+        cached_input = _clone_for_cache(inputs, max(1024, *self.img_scale))
+        self._update_cache(cached_input)
 
         target_h, target_w = self.img_scale
         with_mask = hasattr(inputs, "masks") and inputs.masks is not None
@@ -690,7 +688,7 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
             indices = self.get_indexes(self.results_cache)
             mix_results = [self.results_cache[i] for i in indices]
             mosaic_img, mosaic_bboxes, mosaic_labels, mosaic_masks = self._build_mosaic(
-                inputs,
+                cached_input,
                 mix_results,
                 with_mask,
             )
@@ -874,7 +872,8 @@ class CachedMixUp(CacheableMixin, tvt_v2.Transform):
         inputs = _inputs[0]
 
         # Cache management (lightweight clone instead of deepcopy)
-        self._update_cache(_clone_for_cache(inputs))
+        cached_input = _clone_for_cache(inputs, max(1024, *self.img_scale))
+        self._update_cache(cached_input)
 
         # Early returns
         if len(self.results_cache) <= 1:
@@ -890,6 +889,9 @@ class CachedMixUp(CacheableMixin, tvt_v2.Transform):
 
         if cached.bboxes.shape[0] == 0:
             return inputs
+
+        if inputs.image.shape[-2:] != cached_input.image.shape[-2:]:
+            Resize(size=cached_input.image.shape[-2:])(inputs)
 
         ori_img = inputs.image  # (C, H, W)  float [0,1]
         _, target_h, target_w = ori_img.shape

@@ -52,9 +52,9 @@ def fxt_pipeline_service(
 
 
 @pytest.fixture
-def fxt_label_service(db_session: Session) -> LabelService:
+def fxt_label_service(db_session: Session, fxt_event_bus: EventBus) -> LabelService:
     """Fixture to create a LabelService instance."""
-    return LabelService(db_session=db_session)
+    return LabelService(db_session=db_session, event_bus=fxt_event_bus)
 
 
 @pytest.fixture

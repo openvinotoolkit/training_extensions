@@ -51,7 +51,6 @@ class MediaPredictionService(BaseSessionManagedService):
         label_service: LabelService,
         media_service: MediaService,
         inference_server: InferenceServer,
-        inference_model_ttl: int,
         inference_keyframe_stride: int,
         media_numpy_loader: MediaNumpyLoader,
         db_session: Session | None = None,
@@ -60,7 +59,6 @@ class MediaPredictionService(BaseSessionManagedService):
         self._label_service = label_service
         self._media_service = media_service
         self._inference_server = inference_server
-        self._inference_model_ttl = inference_model_ttl
         self._inference_keyframe_stride = inference_keyframe_stride
         self._media_numpy_loader = media_numpy_loader
 
@@ -223,14 +221,13 @@ class MediaPredictionService(BaseSessionManagedService):
 
         labels = self._label_service.list_all(project_id=project.id)
 
-        self._inference_server.set_inference_model(
+        result = self._inference_server.infer_batch(
             project_id=project.id,
             model_id=request.model_id,
-            device=device,
-            ttl=self._inference_model_ttl,
             model_variant_id=request.model_variant_id,
-        )
-        result = self._inference_server.infer_batch(
-            labels=labels, inputs=inputs, confidence_threshold=request.confidence_threshold
+            device=device,
+            labels=labels,
+            inputs=inputs,
+            confidence_threshold=request.confidence_threshold,
         )
         return self._convert_result(loaded_media=loaded_media, inference_result=result)
