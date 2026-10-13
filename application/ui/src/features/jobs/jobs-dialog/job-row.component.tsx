@@ -54,7 +54,6 @@ export const JobRow = ({ job, showStatusBadge, projectName, architectureName, on
                     {job.progress === 0 && <Loading size={'S'} mode={'inline'} />}
                 </div>
                 {job.message && <Text UNSAFE_className={classes.messageText}>{job.message}</Text>}
-                {job.error && <Text UNSAFE_className={classes.errorText}>{job.error}</Text>}
             </Flex>
             <Text>{t(JOB_TYPE_KEY[job.job_type])}</Text>
             <Text>{architectureName}</Text>
