@@ -270,8 +270,7 @@ class LightningInstanceSegModel(PretrainedWeightsMixin, LightningModel):
         # Instance segmentation needs to add empty label to satisfy MAPI wrapper requirements
         modified_label_info.label_names.insert(0, "getitune_empty_lbl")
         modified_label_info.label_ids.insert(0, "None")
-        if modified_label_info.label_groups[0] is not modified_label_info.label_names:
-            modified_label_info.label_groups[0].insert(0, "getitune_empty_lbl")
+        modified_label_info.label_groups[0].insert(0, "getitune_empty_lbl")
 
         return super()._export_parameters.wrap(
             model_type="MaskRCNN",

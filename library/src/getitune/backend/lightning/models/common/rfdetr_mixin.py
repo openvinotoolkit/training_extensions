@@ -393,6 +393,7 @@ class RFDETRMixin:
         """Load pretrained weights into the model.
 
         Load & align pretrained weights (handles head resize internally).
+        Reinit classification biases to zero (sigmoid=0.5 neutral prior).
 
         Args:
             weights (PathLike | None): Path to the pretrained weights file. If None, uses default weights.
@@ -417,3 +418,8 @@ class RFDETRMixin:
 
         lwdetr = self.model.lwdetr  # pyrefly: ignore[missing-attribute]
         load_pretrain_weights(lwdetr, self._model_config)
+
+        torch.nn.init.zeros_(lwdetr.class_embed.bias)
+        if lwdetr.two_stage:
+            for enc_cls_embed in lwdetr.transformer.enc_out_class_embed:
+                torch.nn.init.zeros_(enc_cls_embed.bias)

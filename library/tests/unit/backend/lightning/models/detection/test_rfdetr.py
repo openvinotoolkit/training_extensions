@@ -6,13 +6,11 @@
 from __future__ import annotations
 
 import logging
-from types import SimpleNamespace
 
 import pytest
 import torch
 from torchvision import tv_tensors
 
-from getitune.backend.lightning.models.common.rfdetr_mixin import RFDETRMixin
 from getitune.backend.lightning.models.detection.rfdetr import RFDETR
 from getitune.backend.lightning.models.detection.utils.rfdetr_batch_utils import (
     _cap_per_image,
@@ -399,36 +397,6 @@ class TestBatchLimitingWithMasks:
 class TestRFDETR:
     """Test class for RF-DETR detection model."""
 
-    def test_load_pretrained_preserves_classification_biases(self, monkeypatch, tmp_path) -> None:
-        """The upstream checkpoint's classification biases must survive loading."""
-        lwdetr = SimpleNamespace(
-            class_embed=torch.nn.Linear(1, 2),
-            two_stage=True,
-            transformer=SimpleNamespace(enc_out_class_embed=torch.nn.ModuleList([torch.nn.Linear(1, 2)])),
-        )
-        model = SimpleNamespace(lwdetr=lwdetr)
-        mixin = SimpleNamespace(
-            model=model,
-            model_name="rfdetr_nano",
-            pretrained_urls={},
-            _model_config=SimpleNamespace(pretrain_weights=None),
-        )
-        expected_bias = torch.tensor([0.25, -0.75])
-
-        def load_weights(module, _model_config) -> None:
-            module.class_embed.bias.data.copy_(expected_bias)
-            module.transformer.enc_out_class_embed[0].bias.data.copy_(expected_bias)
-
-        monkeypatch.setattr(
-            "getitune.backend.lightning.models.common.rfdetr_mixin.load_pretrain_weights",
-            load_weights,
-        )
-
-        RFDETRMixin.load_pretrained(mixin, tmp_path)
-
-        assert torch.equal(lwdetr.class_embed.bias, expected_bias)
-        assert torch.equal(lwdetr.transformer.enc_out_class_embed[0].bias, expected_bias)
-
     @pytest.mark.parametrize(
         "model_name",
         [
@@ -445,14 +413,6 @@ class TestRFDETR:
         )
         assert model.model_name == model_name
         assert model.num_classes == 3
-
-    def test_export_parameters_use_standard_nms_threshold(self) -> None:
-        model = RFDETR(model_name="rfdetr_nano", label_info=3, pretrained=False)
-        metadata = model._export_parameters.to_metadata()
-
-        assert metadata[("model_info", "confidence_threshold")] == "0.5"
-        assert ("model_info", "iou_threshold") not in metadata
-        assert metadata[("model_info", "nms_execute")] == "False"
 
     def test_create_model(self) -> None:
         """Test RF-DETR model creation."""

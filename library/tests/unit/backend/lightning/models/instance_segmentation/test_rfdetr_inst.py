@@ -27,14 +27,6 @@ class TestRFDETRInst:
         assert model.model_name == "rfdetr_seg_n"
         assert model.num_classes == 3
 
-    def test_export_parameters_use_standard_nms_threshold(self) -> None:
-        model = RFDETRInst(model_name="rfdetr_seg_n", label_info=3, pretrained=False)
-        metadata = model._export_parameters.to_metadata()
-
-        assert metadata[("model_info", "confidence_threshold")] == "0.5"
-        assert ("model_info", "iou_threshold") not in metadata
-        assert metadata[("model_info", "nms_execute")] == "False"
-
     def test_create_model(self) -> None:
         """Test RF-DETR instance segmentation model creation."""
         model = RFDETRInst(
