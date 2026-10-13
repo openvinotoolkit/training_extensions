@@ -21,7 +21,6 @@ export type SSIMShapeType = Extract<Shape['type'], 'rectangle' | 'polygon'>;
 export type RunSSIMProps = Omit<ToolRunSSIMProps, 'roi' | 'template' | 'existingAnnotations' | 'shapeType'> & {
     template: Rect;
     existingAnnotations: Shape[];
-    shapeType: SSIMShapeType;
 };
 
 const toToolRect = (rect: Rect): ToolRunSSIMProps['template'] => {

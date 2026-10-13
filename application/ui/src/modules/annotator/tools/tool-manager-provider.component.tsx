@@ -1,10 +1,11 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 
 import { useAvailableTools } from './annotator-tools/use-available-tools';
 import { PolygonStateProvider } from './polygon-tool/polygon-state-provider.component';
+import { SSIMStateProvider } from './ssim-tool/ssim-state-provider.component';
 
 /**
  * Composes per-tool state providers that need to sit above both the primary
@@ -21,10 +22,17 @@ export const ToolManagerProvider = ({ children }: PropsWithChildren) => {
     const hasPolygonDrawingTools = availableTools.some(
         (tool) => tool.type === 'polygon' || tool.type === 'magnetic-lasso'
     );
+    const hasSSIMTool = availableTools.some((tool) => tool.type === 'ssim');
 
-    if (hasPolygonDrawingTools) {
-        return <PolygonStateProvider>{children}</PolygonStateProvider>;
+    let content: ReactNode = children;
+
+    if (hasSSIMTool) {
+        content = <SSIMStateProvider>{content}</SSIMStateProvider>;
     }
 
-    return <>{children}</>;
+    if (hasPolygonDrawingTools) {
+        content = <PolygonStateProvider>{content}</PolygonStateProvider>;
+    }
+
+    return <>{content}</>;
 };
