@@ -33,6 +33,8 @@ from .tools.configurator import Configurator
 from .trainers import GetiTuneHFTrainer, write_metrics_csv
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from lightning_fabric.plugins.precision.precision import _PRECISION_INPUT
 
     from getitune.metrics import MetricCallable
@@ -555,6 +557,7 @@ class HFEngine(Engine):
         task: str | None = None,
         pretrained: bool | None = None,
         input_size: tuple[int, int] | None = None,
+        overrides: Mapping[str, Any] | None = None,
         **kwargs,
     ) -> HFEngine:
         """Build an engine from a Hugging Face recipe.
@@ -570,6 +573,8 @@ class HFEngine(Engine):
             input_size: Override the recipe's model input size.
             task: Task type for disambiguation. Read from the recipe's
                 top-level ``task`` field if not given here.
+            overrides: Recipe section overrides using dot paths, applied before
+                creating the DataModule, model, and training defaults.
             **kwargs: Backend-specific keyword arguments forwarded to
                 :class:`HFEngine`.
 
@@ -584,6 +589,7 @@ class HFEngine(Engine):
             raise ValueError(msg)
 
         configurator = Configurator(data=data, model=Path(str(config_path)), task=task)
+        configurator.apply_overrides(overrides)
 
         datamodule = configurator.build_datamodule(input_size=input_size)
         label_info = datamodule.label_info

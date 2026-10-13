@@ -201,7 +201,7 @@ def test_optimizer_step_updates_fp32_ema_from_bf16_model() -> None:
     trainer.scaler = MagicMock()
     trainer.optimizer = MagicMock()
 
-    ema_before = ema.ema.weight.detach().clone()
+    ema_before = ema.ema.state_dict()["weight"].clone()
     decay = ema.decay(1)
     expected = ema_before.lerp_(model.weight.float(), 1 - decay)
 
@@ -209,7 +209,7 @@ def test_optimizer_step_updates_fp32_ema_from_bf16_model() -> None:
 
     assert ema.updates == 1
     assert ema.ema.weight.dtype == torch.float32
-    assert torch.allclose(ema.ema.weight, expected)
+    assert torch.allclose(ema.ema.state_dict()["weight"], expected)
 
 
 class TestClearMemory:

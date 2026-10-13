@@ -57,7 +57,7 @@ class GetiTuneBaseTrainer:
     batch_size: int
     device: torch.device
     epochs: int
-    model: torch.nn.Module
+    model: Any
     optimizer: torch.optim.Optimizer
     scaler: Any
     ema: Any

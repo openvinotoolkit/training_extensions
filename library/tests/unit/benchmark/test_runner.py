@@ -426,6 +426,54 @@ class TestPerformanceCleanup:
 
         assert BenchmarkRunner._performance_result_complete(seed_dir / "export" / "exported_model.xml") is True
 
+    def test_cleanup_removes_huggingface_checkpoint_directory(self, tmp_path: Path) -> None:
+        output_root = tmp_path / "results"
+        seed_dir = output_root / "instance_segmentation" / "mask2former_swin_t" / "wgisd" / "0"
+        checkpoint = seed_dir / "train" / "best_checkpoint"
+        checkpoint.mkdir(parents=True)
+        (checkpoint / "model.safetensors").write_text("weights")
+        metrics = seed_dir / "train" / "metrics.csv"
+        metrics.write_text("epoch,loss\n1,0.5\n")
+
+        runner = BenchmarkRunner(
+            RunConfig(
+                manifest_path=tmp_path / "manifest.yaml",
+                catalog_path=tmp_path / "catalog.yaml",
+                data_root=tmp_path / "data",
+                output_root=output_root,
+                enable_openvino_benchmark=False,
+            )
+        )
+        runner._cleanup_checkpoints()
+
+        assert not checkpoint.exists()
+        assert metrics.exists()
+
+    def test_cleanup_keeps_huggingface_checkpoint_until_performance_is_complete(self, tmp_path: Path) -> None:
+        output_root = tmp_path / "results"
+        seed_dir = output_root / "instance_segmentation" / "mask2former_swin_t" / "wgisd" / "0"
+        checkpoint = seed_dir / "train" / "best_checkpoint"
+        checkpoint.mkdir(parents=True)
+        (checkpoint / "model.safetensors").write_text("weights")
+        result = seed_dir / "performance_result.json"
+        result.write_text(json.dumps({"fp16": {}}))
+        runner = BenchmarkRunner(
+            RunConfig(
+                manifest_path=tmp_path / "manifest.yaml",
+                catalog_path=tmp_path / "catalog.yaml",
+                data_root=tmp_path / "data",
+                output_root=output_root,
+                enable_openvino_benchmark=True,
+            )
+        )
+
+        runner._cleanup_checkpoints()
+        assert checkpoint.exists()
+
+        result.write_text(json.dumps({"fp16": {}, "int8": {}}))
+        runner._cleanup_checkpoints()
+        assert not checkpoint.exists()
+
 
 # ---------------------------------------------------------------------------
 # Runner — eval_upto gating

@@ -723,13 +723,12 @@ class ExperimentExecutor:
         if self._backend == "huggingface":
             from getitune.backend.huggingface.engine import HFEngine
 
-            overrides = resolve_overrides(self.scenario_overrides)
             return HFEngine.from_config(
                 config_path=self.recipe_path,
                 data=self.data_path,
                 work_dir=work_dir,
                 device=self.accelerator,
-                **overrides,
+                overrides=self.scenario_overrides,
             )
 
         from getitune.backend.lightning.engine import LightningEngine

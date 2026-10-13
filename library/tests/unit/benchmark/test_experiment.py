@@ -865,6 +865,7 @@ class TestExecutorBackendDispatch:
             data_path=tmp_path / "data",
             work_dir=tmp_path / "work",
             accelerator="cpu",
+            scenario_overrides={"training.batch": "4"},
         )
         hf_from_config = MagicMock(return_value=object())
         lightning_from_config = MagicMock()
@@ -879,6 +880,7 @@ class TestExecutorBackendDispatch:
             data=tmp_path / "data",
             work_dir=tmp_path / "work" / "train",
             device="cpu",
+            overrides={"training.batch": "4"},
         )
         lightning_from_config.assert_not_called()
 
