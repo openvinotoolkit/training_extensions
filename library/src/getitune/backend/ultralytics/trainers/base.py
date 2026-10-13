@@ -10,14 +10,18 @@ import logging
 import multiprocessing
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol
 
 import numpy as np
 import torch
 from ultralytics.data.build import InfiniteDataLoader, seed_worker
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from torch.utils.data import DataLoader
+    from ultralytics.utils import IterableSimpleNamespace
+    from ultralytics.utils.torch_utils import ModelEMA
 
 from getitune.backend.ultralytics.data.adapter import UltralyticsDatasetAdapter
 from getitune.backend.ultralytics.data.collate import detection_collate_fn
@@ -50,20 +54,30 @@ _EXTERNAL_LOGGER_CALLBACK_MODULES = frozenset(
 )
 
 
+class _TrainerScaler(Protocol):
+    """Scaler operations used by the Ultralytics trainer."""
+
+    def unscale_(self, optimizer: torch.optim.Optimizer) -> None: ...
+
+    def step(self, optimizer: torch.optim.Optimizer) -> object: ...
+
+    def update(self) -> None: ...
+
+
 class GetiTuneBaseTrainer:
     """Shared DataModule bridge logic for Ultralytics trainers."""
 
-    args: Any
+    args: IterableSimpleNamespace
     batch_size: int
     device: torch.device
     epochs: int
-    model: Any
+    model: torch.nn.Module
     optimizer: torch.optim.Optimizer
-    scaler: Any
-    ema: Any
+    scaler: _TrainerScaler
+    ema: ModelEMA | None
     train_loader: DataLoader
-    add_callback: Any
-    _get_memory: Any
+    add_callback: Callable[[str, Callable[..., object]], None]
+    _get_memory: Callable[..., float]
 
     _datamodule: DataModule | None = None
     _use_getitune_data: bool = False
