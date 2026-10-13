@@ -602,7 +602,9 @@
             "createNewProject": "新建项目",
             "createProjectFromDataset": "从数据集创建",
             "card": {
-                "created": "创建于：{{date}}"
+                "created": "创建于：{{date}}",
+                "models_one": "{{count}} 个模型",
+                "models_other": "{{count}} 个模型"
             },
             "menu": {
                 "enablePipeline": "启用流水线",

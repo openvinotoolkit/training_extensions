@@ -604,7 +604,9 @@
             "createNewProject": "新增項目",
             "createProjectFromDataset": "從數據集建立",
             "card": {
-                "created": "建立於：{{date}}"
+                "created": "建立於：{{date}}",
+                "models_one": "{{count}} 個模型",
+                "models_other": "{{count}} 個模型"
             },
             "menu": {
                 "enablePipeline": "啟用管線",

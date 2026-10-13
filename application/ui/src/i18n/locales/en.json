@@ -602,7 +602,9 @@
             "createNewProject": "Create new project",
             "createProjectFromDataset": "Create from dataset",
             "card": {
-                "created": "Created: {{date}}"
+                "created": "Created: {{date}}",
+                "models_one": "{{count}} model",
+                "models_other": "{{count}} models"
             },
             "menu": {
                 "enablePipeline": "Enable pipeline",
