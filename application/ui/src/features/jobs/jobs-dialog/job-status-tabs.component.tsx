@@ -7,8 +7,6 @@ import { Flex, Item, TabList, Tabs, Text } from '@geti-ui/ui';
 import type { StatusGroup } from '../utils';
 import { STATUS_BADGE, TONE, ToneBadge } from './job-status-badge.component';
 
-import classes from './jobs-dialog.module.scss';
-
 type JobStatusTabsProps = {
     counts: Record<StatusGroup, number>;
     selected: StatusGroup;
