@@ -34,7 +34,7 @@ export const useTool = (): ToolContextValue => {
     return context;
 };
 
-const getDefaultTool = (taskType: TaskType | null): ToolType | null => {
+export const getDefaultTool = (taskType: TaskType | null): ToolType | null => {
     if (isClassificationTask(taskType)) {
         return null;
     }
