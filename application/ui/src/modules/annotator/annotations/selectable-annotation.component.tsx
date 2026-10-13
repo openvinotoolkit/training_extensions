@@ -7,7 +7,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import { HOTKEYS } from '../../../shared/hotkeys-definition';
 import { useLabelResolver } from '../../../shared/labels';
-import { useAnnotationCommands } from '../annotation-actions-provider.component';
+import { useAnnotationCommands } from '../annotation-document-provider.component';
 import { useAnnotatorLabels } from '../annotator-labels-provider.component';
 import { useSelectedAnnotations } from '../select-annotation-provider.component';
 import { drawingStyles } from '../tools/polygon-tool/utils';

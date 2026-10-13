@@ -24,10 +24,7 @@ import { isEmpty } from 'lodash-es';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { FEATURE_FLAGS } from '../../../../constants/feature-flags';
-import {
-    useAnnotations,
-    useAnnotationSubmission,
-} from '../../../../modules/annotator/annotation-actions-provider.component';
+import { useAnnotations } from '../../../../modules/annotator/annotation-document-provider.component';
 import type { AnnotatorMode } from '../../../../modules/annotator/annotator-mode';
 import { Labels } from '../../../../modules/annotator/labels/labels.component';
 import { usePredictionSetup } from '../../../../modules/annotator/predictions-setup-provider.component';
@@ -39,11 +36,12 @@ import { HOTKEYS } from '../../../../shared/hotkeys-definition';
 import { isImage, isVideoFrame } from '../../../../shared/media-item-utils';
 import { isClassificationTask, isMultiLabelClassificationTask } from '../../../../shared/task-type-guards';
 import { DeleteMediaItem } from '../../gallery/delete-media-item/delete-media-item.component';
+import { useSubmitAnnotations } from '../api/use-submit-annotations';
+import { getIsSubmitDisabled } from './is-submit-disabled';
 import { PredictionConfidenceThreshold } from './prediction-confidence-threshold/prediction-confidence-threshold.component';
 import { PredictionInferenceDevices } from './prediction-inference-devices/prediction-inference-devices.component';
 import { PredictionModelSelector } from './prediction-model-selector/prediction-model-selector.component';
 import { PredictionButtons } from './predictions-buttons.component';
-import { useIsSubmitDisabled } from './use-is-submit-disabled.hook';
 
 import classes from './secondary-toolbar.module.scss';
 
@@ -149,16 +147,11 @@ export const SecondaryToolbar = ({
     const { selectableModels } = usePredictionSetup();
     const isPlaying = videoPlayerContext?.videoControls?.isPlaying ?? false;
 
-    const { isSaving, submitAnnotations, submitPredictions } = useAnnotationSubmission();
+    const { isSaving, submit, canSubmit } = useSubmitAnnotations({ mediaItem, hasSubsetChanged });
     const { initialAnnotations, initialPredictions } = useAnnotations();
 
     const handleSubmit = async () => {
-        await submitAnnotations(subset);
-        onSelectNextMediaItem();
-    };
-
-    const handleSubmitPredictions = async () => {
-        await submitPredictions(subset);
+        await submit(subset);
         onSelectNextMediaItem();
     };
 
@@ -176,25 +169,17 @@ export const SecondaryToolbar = ({
     const isAnnotationMode = mode === 'annotation';
     const showPredictionActions = isPredictionMode && !isEmpty(selectableModels);
 
-    const isSubmitDisabled = useIsSubmitDisabled({
-        mode,
-        hasSubsetChanged,
-        isLoadingPredictions,
-    });
+    const isSubmitDisabled = getIsSubmitDisabled({ isLoadingPredictions, canSubmit, isSaving });
 
     useHotkeys(
         [HOTKEYS.submit, HOTKEYS.submitAlternative],
         (event) => {
             event.preventDefault();
 
-            if (isPredictionMode) {
-                handleSubmitPredictions();
-            } else {
-                handleSubmit();
-            }
+            handleSubmit();
         },
         { enabled: !isSubmitDisabled },
-        [isSubmitDisabled, isPredictionMode, handleSubmitPredictions, handleSubmit]
+        [isSubmitDisabled, handleSubmit]
     );
 
     return (
@@ -229,7 +214,7 @@ export const SecondaryToolbar = ({
                             <PredictionButtons
                                 onModeChange={onModeChange}
                                 isDisabled={isSubmitDisabled}
-                                onSubmit={handleSubmitPredictions}
+                                onSubmit={handleSubmit}
                             />
                         )}
                         {isAnnotationMode && isImage(mediaItem) && (

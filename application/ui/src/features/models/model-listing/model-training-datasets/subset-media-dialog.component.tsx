@@ -81,7 +81,6 @@ const SubsetMediaDialogContent = ({
     return (
         <ReadOnlyAnnotatorProviders
             key={mediaItem.id}
-            mediaItem={mediaItem}
             initialAnnotationsDTO={getInitialAnnotations(isUserReviewed, annotationsDTO)}
             initialPredictionsDTO={initialPredictionsDTO}
             mode={mode}

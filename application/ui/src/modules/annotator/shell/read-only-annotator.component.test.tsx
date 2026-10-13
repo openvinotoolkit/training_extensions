@@ -48,7 +48,6 @@ const renderApp = ({
 } = {}) => {
     return render(
         <ReadOnlyAnnotatorProviders
-            mediaItem={mediaItem}
             initialAnnotationsDTO={initialAnnotationsDTO}
             initialPredictionsDTO={initialPredictionsDTO}
             mode={mode}
