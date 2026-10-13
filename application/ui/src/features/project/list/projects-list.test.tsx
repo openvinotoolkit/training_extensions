@@ -463,6 +463,20 @@ describe('ProjectList', () => {
             expect(screen.queryByRole('button', { name: /sort/i })).not.toBeInTheDocument();
         });
 
+        it('shows the language selector and help menu but not the jobs button', async () => {
+            render(
+                <ImportDatasetDialogProvider>
+                    <ProjectList jobsButton={<button>Jobs</button>} />
+                </ImportDatasetDialogProvider>,
+                { route: '/projects', path: '/projects' }
+            );
+
+            expect(await screen.findByLabelText('empty list')).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
+            expect(screen.getByRole('button', { name: 'Help' })).toBeVisible();
+            expect(screen.queryByRole('button', { name: 'Jobs' })).not.toBeInTheDocument();
+        });
+
         it('shows the Geti intro and the workflow steps', async () => {
             renderProjectList();
 

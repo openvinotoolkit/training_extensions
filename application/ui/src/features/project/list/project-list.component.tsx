@@ -75,6 +75,16 @@ const ProjectSidebar = ({
     );
 };
 
+const ProjectListActions = ({ jobsButton }: { jobsButton?: ReactNode }) => {
+    return (
+        <>
+            {jobsButton}
+            <LanguagesSelector />
+            <HelpMenu />
+        </>
+    );
+};
+
 const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
     const { t } = useTranslation();
     const projectsQuery = useProjects();
@@ -102,7 +112,21 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
     const projectNames = projects.map((project) => project.name);
 
     if (!hasProjects) {
-        return <EmptyProjectList />;
+        return (
+            <Flex direction={'column'} height={'100%'}>
+                <Flex
+                    justifyContent={'end'}
+                    alignItems={'center'}
+                    gap={'size-75'}
+                    UNSAFE_className={classes.emptyToolbar}
+                >
+                    <ProjectListActions />
+                </Flex>
+                <View flex={1} minHeight={0}>
+                    <EmptyProjectList />
+                </View>
+            </Flex>
+        );
     }
 
     const totalCount = projectsWithoutActivePipeline.length;
@@ -129,9 +153,7 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
 
                     <Flex marginStart={'auto'} alignItems={'center'} gap={'size-75'}>
                         {shouldShowFilters && <Text UNSAFE_className={classes.projectMetadata}>{countLabel}</Text>}
-                        {jobsButton}
-                        <LanguagesSelector />
-                        <HelpMenu />
+                        <ProjectListActions jobsButton={jobsButton} />
                     </Flex>
                 </Flex>
 
