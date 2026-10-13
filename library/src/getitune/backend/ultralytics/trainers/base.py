@@ -394,6 +394,11 @@ class GetiTuneBaseTrainer:
         self.scaler.step(self.optimizer)
         self.scaler.update()
         self.optimizer.zero_grad()
+
+        self._update_ema()
+
+    def _update_ema(self) -> None:
+        """Update EMA, using per-tensor operations when model dtypes differ."""
         if not self.ema:
             return
         if self.ema.enabled and next(self.model.parameters()).dtype != next(self.ema.ema.parameters()).dtype:
