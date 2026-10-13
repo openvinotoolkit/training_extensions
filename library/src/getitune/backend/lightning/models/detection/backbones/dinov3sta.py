@@ -203,6 +203,8 @@ class DINOv3STAsModule(nn.Module):
         # Extract semantic features from backbone
         if isinstance(self.dinov3, DinoVisionTransformer):
             sem_feats = list(self.dinov3(pixel_values=x).feature_maps)
+            if len(sem_feats) == 1:
+                sem_feats *= 3
         else:
             all_layers = list(self.dinov3(x))
             if len(all_layers) == 1:
