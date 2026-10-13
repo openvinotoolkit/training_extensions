@@ -7,7 +7,7 @@ pretrained_weights:
 description: "RT-DETRv2-R101 is a high-capacity real-time end-to-end detector with selective multi-scale feature extraction and improved training strategies."
 stats:
   gigaflops: 259
-  trainable_parameters: 76.556268
+  trainable_parameters: 76.6
   benchmark_metrics:
     coco_map_50_95: 54.3
     coco_map_50: 72.8
