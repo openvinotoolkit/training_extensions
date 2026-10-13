@@ -221,8 +221,7 @@ class TestGetModelArchitectureById:
         family = families[0]
         variant = fxt_client.get(f"/api/model_architectures/timm/families/{family}/variants").json()[0]
         pretrained_tag = (
-            fxt_client.get(f"/api/model_architectures/timm/families/{family}/variants/{variant}/pretrained-tags")
-            .json()
+            fxt_client.get(f"/api/model_architectures/timm/families/{family}/variants/{variant}/pretrained-tags").json()
         )[0]
         model_name = TimmCatalog.get_model_name(family, variant, pretrained_tag)
         architecture_id = model_name_to_id(model_name)

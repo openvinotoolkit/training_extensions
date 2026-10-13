@@ -73,9 +73,7 @@ describe('useResolvedModelArchitectures', () => {
 
     it('leaves unknown architecture IDs unresolved when the by-ID lookup fails', async () => {
         server.use(
-            http.get('/api/model_architectures/{architecture_id}', () =>
-                HttpResponse.json({ detail: 'not found' }, { status: 404 })
-            )
+            http.get('/api/model_architectures/{architecture_id}', () => new HttpResponse(null, { status: 404 }))
         );
 
         const { result } = renderResolvedArchitectures([
