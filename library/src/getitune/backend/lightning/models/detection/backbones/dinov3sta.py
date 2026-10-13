@@ -141,7 +141,7 @@ class DINOv3STAsModule(nn.Module):
 
         self.dinov3: DinoVisionTransformer | VisionTransformer
         if "dinov3" in name:
-            self.dinov3 = DinoVisionTransformer(name=name)
+            self.dinov3 = DinoVisionTransformer(name=name, interaction_indexes=interaction_indexes)
         else:
             self.dinov3 = VisionTransformer(
                 embed_dim=embed_dim,
@@ -197,30 +197,26 @@ class DINOv3STAsModule(nn.Module):
                 - c3: Features at 1/16 scale, shape (B, hidden_dim, H/16, W/16)
                 - c4: Features at 1/32 scale, shape (B, hidden_dim, H/32, W/32)
         """
-        h_c, w_c = x.shape[2] // 16, x.shape[3] // 16
+        h_c, w_c = x.shape[2] // self.patch_size, x.shape[3] // self.patch_size
         bs = x.shape[0]
 
         # Extract semantic features from backbone
-        all_layers: list[tuple[Tensor, Tensor]]
-        if len(self.interaction_indexes) > 0 and not isinstance(self.dinov3, VisionTransformer):
-            result = self.dinov3.get_intermediate_layers(x, n=self.interaction_indexes, return_class_token=True)
-            all_layers = [(out, cls) for out, cls in result]  # type: ignore[misc]
+        if isinstance(self.dinov3, DinoVisionTransformer):
+            sem_feats = list(self.dinov3(pixel_values=x).feature_maps)
         else:
             all_layers = list(self.dinov3(x))
+            if len(all_layers) == 1:
+                all_layers = [all_layers[0], all_layers[0], all_layers[0]]
+            sem_feats = []
+            for layer_output in all_layers:
+                feat, _ = layer_output
+                sem_feats.append(feat.transpose(1, 2).view(bs, -1, h_c, w_c).contiguous())
 
-        # Repeat single layer for all three scales if needed
-        if len(all_layers) == 1:
-            all_layers = [all_layers[0], all_layers[0], all_layers[0]]
-
-        # Process semantic features at multiple scales
-        sem_feats: list[Tensor] = []
-        num_scales = len(all_layers) - 2
-        for i, layer_output in enumerate(all_layers):
-            feat, _ = layer_output
-            sem_feat = feat.transpose(1, 2).view(bs, -1, h_c, w_c).contiguous()  # [B, D, H, W]
+        # Resize semantic features to the three DEIMv2 pyramid scales.
+        num_scales = len(sem_feats) - 2
+        for i, sem_feat in enumerate(sem_feats):
             resize_h, resize_w = int(h_c * 2 ** (num_scales - i)), int(w_c * 2 ** (num_scales - i))
-            sem_feat = f.interpolate(sem_feat, size=[resize_h, resize_w], mode="bilinear", align_corners=False)
-            sem_feats.append(sem_feat)
+            sem_feats[i] = f.interpolate(sem_feat, size=[resize_h, resize_w], mode="bilinear", align_corners=False)
 
         # Fuse semantic and spatial features
         fused_feats: list[Tensor]
