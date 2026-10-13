@@ -109,7 +109,7 @@
         "eslint-plugin-jsx-a11y": "~6.10.2",
         "eslint-plugin-playwright": "~2.12.1",
         "eslint-plugin-react": "~7.37.5",
-        "eslint-plugin-react-hooks": "~6.0.0-rc.2",
+        "eslint-plugin-react-hooks": "~6.1.1",
         "globals": "~17.13.0",
         "jsdom": "~26.1.0",
         "msw": "~2.12.14",

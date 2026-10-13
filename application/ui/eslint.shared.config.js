@@ -61,13 +61,13 @@ export default [
         files: ['src/**/*.tsx', 'src/**/*.ts'],
         ...reactPlugin.configs.flat.recommended,
     },
+    ...reactHooks.configs.recommended.map((config) => ({
+        ...config,
+        files: ['src/**/*.tsx', 'src/**/*.ts'],
+    })),
     {
         files: ['src/**/*.tsx', 'src/**/*.ts'],
-        plugins: {
-            'react-hooks': fixupPluginRules(reactHooks),
-        },
         rules: {
-            ...reactHooks.configs.recommended.rules,
             'react/jsx-props-no-spreading': ['off'],
             'react/no-unknown-property': [
                 'error',
@@ -77,7 +77,6 @@ export default [
             ],
 
             'react/jsx-indent-props': ['error', 4],
-            'react-hooks/rules-of-hooks': 'error',
             'react/require-default-props': 'off',
             'react/prop-types': 'off',
             'react/display-name': 'off',
