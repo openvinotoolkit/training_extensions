@@ -177,7 +177,7 @@ describe('JobsDialog', () => {
         expect(document.body.querySelector('[style*="background-color: var(--energy-blue)"]')).not.toBeInTheDocument();
     });
 
-    it('shows the error message in red below the meta line for a failed job', async () => {
+    it('does not show the error for a failed job', async () => {
         mockJobs([
             trainJob({
                 job_id: 'failed',
@@ -190,7 +190,8 @@ describe('JobsDialog', () => {
 
         renderDialog();
 
-        expect(await screen.findByText('CUDA out of memory')).toBeInTheDocument();
+        expect(await screen.findByText('failed model')).toBeInTheDocument();
+        expect(screen.queryByText('CUDA out of memory')).not.toBeInTheDocument();
     });
 
     it('shows "Cancel" only for pending and running jobs, not for cancelling/done/failed/cancelled', async () => {
