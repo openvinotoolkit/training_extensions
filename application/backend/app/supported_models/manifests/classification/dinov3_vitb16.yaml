@@ -1,5 +1,5 @@
 id: image-classification-dinov3-vitb16
-name: DINOv3 ViT-B/16
+name: DINOv3-ViT-B/16
 license:
   name: DINOv3 License
   url: https://ai.meta.com/resources/models-and-libraries/dinov3-license
@@ -10,7 +10,7 @@ pretrained_weights:
 description: "DINOv3 ViT-B/16 is a self-supervised vision transformer distilled on LVD-1689M for transferable visual representations."
 stats:
   gigaflops: 47.15
-  trainable_parameters: 86.410216
+  trainable_parameters: 86.4
   benchmark_metrics:
     imagenet_top1_accuracy: 85.0
 capabilities:
