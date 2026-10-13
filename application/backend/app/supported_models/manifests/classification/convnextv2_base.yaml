@@ -1,5 +1,5 @@
 id: image-classification-convnextv2-base
-name: ConvNeXt V2-Base
+name: ConvNeXt-V2-B
 license:
   name: CC BY-NC 4.0
   url: https://spdx.org/licenses/CC-BY-NC-4.0
@@ -10,7 +10,7 @@ pretrained_weights:
 description: "ConvNeXt V2-Base is a convolutional model pretrained with FCMAE and fine-tuned on ImageNet-1K."
 stats:
   gigaflops: 30.71
-  trainable_parameters: 88.7178
+  trainable_parameters: 88.7
   benchmark_metrics:
     imagenet_top1_accuracy: 84.9
 capabilities:
