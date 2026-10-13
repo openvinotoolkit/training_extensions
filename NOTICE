@@ -1,3 +1,9 @@
 This repository is under the Apache License Version 2.0 license.
 
 The optional `ultralytics` extra installs the Ultralytics YOLO package at runtime; it is not redistributed as part of this repository. The Ultralytics YOLO package and YOLO26 model weights are distributed under the AGPL-3.0 license. For commercial use and alternative licensing terms, see https://www.ultralytics.com/license.
+
+Certain components in the `getitune` package are derived from or include code covered by the DINOv3 License.
+The full license text is included in `THIRD_PARTY_NOTICES.md`.
+
+- DINOv3 License applies to the following files:
+  - `library/src/getitune/backend/lightning/models/common/backbones/dinov3.py`
