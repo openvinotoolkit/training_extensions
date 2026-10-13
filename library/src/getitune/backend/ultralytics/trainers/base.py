@@ -53,6 +53,18 @@ _EXTERNAL_LOGGER_CALLBACK_MODULES = frozenset(
 class GetiTuneBaseTrainer:
     """Shared DataModule bridge logic for Ultralytics trainers."""
 
+    args: Any
+    batch_size: int
+    device: torch.device
+    epochs: int
+    model: torch.nn.Module
+    optimizer: torch.optim.Optimizer
+    scaler: Any
+    ema: Any
+    train_loader: DataLoader
+    add_callback: Any
+    _get_memory: Any
+
     _datamodule: DataModule | None = None
     _use_getitune_data: bool = False
     _task_kind: ClassVar[str] = "detect"
@@ -196,11 +208,11 @@ class GetiTuneBaseTrainer:
 
         self._register_progress_callback()
 
-        if self.args.warmup_epochs <= 0:  # type: ignore[attr-defined]
+        if self.args.warmup_epochs <= 0:
             return
 
-        nb = len(self.train_loader)  # type: ignore[attr-defined]
-        natural_nw = round(self.args.warmup_epochs * nb)  # type: ignore[attr-defined]
+        nb = len(self.train_loader)
+        natural_nw = round(self.args.warmup_epochs * nb)
         if natural_nw < 100:
             logger.info(
                 f"Bypassing Ultralytics 100-iteration warmup minimum. "
@@ -208,11 +220,11 @@ class GetiTuneBaseTrainer:
                 f"{natural_nw} iterations ({self.args.warmup_epochs} epochs)."
             )
 
-            warmup_bias_lr = self.args.warmup_bias_lr  # type: ignore[attr-defined]
-            warmup_momentum = self.args.warmup_momentum  # type: ignore[attr-defined]
-            nbs = self.args.nbs  # type: ignore[attr-defined]
-            batch_size = self.batch_size  # type: ignore[attr-defined]
-            self.args.warmup_epochs = 0  # type: ignore[attr-defined]
+            warmup_bias_lr = self.args.warmup_bias_lr
+            warmup_momentum = self.args.warmup_momentum
+            nbs = self.args.nbs
+            batch_size = self.batch_size
+            self.args.warmup_epochs = 0
 
             counter = {"ni": 0}
 
@@ -235,7 +247,7 @@ class GetiTuneBaseTrainer:
                             pg["momentum"] = np.interp(ni, xi, [warmup_momentum, trainer.args.momentum])
                 counter["ni"] += 1
 
-            self.add_callback("on_train_batch_start", _warmup_callback)  # type: ignore[attr-defined]
+            self.add_callback("on_train_batch_start", _warmup_callback)
 
     def _register_iteration_timer(self) -> None:
         """Record per-batch train time and persist epoch means for benchmarking."""
@@ -290,10 +302,10 @@ class GetiTuneBaseTrainer:
             with results_csv.open("w", newline="", encoding="utf-8") as stream:
                 csv.writer(stream).writerows(rows)
 
-        self.add_callback("on_train_epoch_start", on_epoch_start)  # type: ignore[attr-defined]
-        self.add_callback("on_train_batch_start", on_batch_start)  # type: ignore[attr-defined]
-        self.add_callback("on_train_batch_end", on_batch_end)  # type: ignore[attr-defined]
-        self.add_callback("on_train_end", on_train_end)  # type: ignore[attr-defined]
+        self.add_callback("on_train_epoch_start", on_epoch_start)
+        self.add_callback("on_train_batch_start", on_batch_start)
+        self.add_callback("on_train_batch_end", on_batch_end)
+        self.add_callback("on_train_end", on_train_end)
 
     def _register_progress_callback(self) -> None:
         """Register a progress-reporting callback for the training loop.
@@ -309,8 +321,8 @@ class GetiTuneBaseTrainer:
         progress_fn = self._progress_fn
         min_p = self._progress_min
         max_p = self._progress_max
-        nb = len(self.train_loader)  # type: ignore[attr-defined]
-        total_steps = max(1, self.epochs * nb)  # type: ignore[attr-defined]
+        nb = len(self.train_loader)
+        total_steps = max(1, self.epochs * nb)
         step_counter = {"step": 0}
 
         def _progress_callback(_trainer: Any) -> None:  # noqa: ANN401
@@ -319,7 +331,7 @@ class GetiTuneBaseTrainer:
             progress = min_p + ratio * (max_p - min_p)
             progress_fn(progress)
 
-        self.add_callback("on_train_batch_end", _progress_callback)  # type: ignore[attr-defined]
+        self.add_callback("on_train_batch_end", _progress_callback)
         logger.info(f"Registered progress callback: {total_steps} total steps, range [{min_p}, {max_p}]")
 
     def _clear_memory(self, threshold: float | None = None) -> None:
@@ -337,15 +349,15 @@ class GetiTuneBaseTrainer:
         if not self._use_getitune_data:
             return super()._clear_memory(threshold)  # type: ignore[misc]
 
-        if self.device.type == "cpu":  # type: ignore[attr-defined]
+        if self.device.type == "cpu":
             return None
 
-        if threshold is not None and self._get_memory(fraction=True) <= threshold:  # type: ignore[attr-defined]
+        if threshold is not None and self._get_memory(fraction=True) <= threshold:
             return None
 
-        if self.device.type == "mps":  # type: ignore[attr-defined]
+        if self.device.type == "mps":
             torch.mps.empty_cache()
-        elif self.device.type == "xpu":  # type: ignore[attr-defined]
+        elif self.device.type == "xpu":
             torch.xpu.empty_cache()
         else:
             torch.cuda.empty_cache()
@@ -375,31 +387,25 @@ class GetiTuneBaseTrainer:
         """
         max_norm = getattr(self, "_max_grad_norm", None)
         if max_norm is None:
-            max_norm = getattr(self.args, "max_grad_norm", 10.0)  # type: ignore[attr-defined]
-        self.scaler.unscale_(self.optimizer)  # type: ignore[attr-defined]
+            max_norm = getattr(self.args, "max_grad_norm", 10.0)
+        self.scaler.unscale_(self.optimizer)
         if max_norm and max_norm > 0:
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=max_norm)  # type: ignore[attr-defined]
-        self.scaler.step(self.optimizer)  # type: ignore[attr-defined]
-        self.scaler.update()  # type: ignore[attr-defined]
-        self.optimizer.zero_grad()  # type: ignore[attr-defined]
-        if self.ema:  # type: ignore[attr-defined]
-            model_parameter = next(self.model.parameters(), None)  # type: ignore[attr-defined]
-            ema_parameter = next(self.ema.ema.parameters(), None)  # type: ignore[attr-defined]
-            if (
-                self.ema.enabled  # type: ignore[attr-defined]
-                and model_parameter is not None
-                and ema_parameter is not None
-                and model_parameter.dtype != ema_parameter.dtype
-            ):
-                self.ema.updates += 1  # type: ignore[attr-defined]
-                decay = self.ema.decay(self.ema.updates)  # type: ignore[attr-defined]
-                model_state = self.model.state_dict()  # type: ignore[attr-defined]
-                with torch.no_grad():
-                    for key, ema_value in self.ema.ema.state_dict().items():  # type: ignore[attr-defined]
-                        if ema_value.dtype.is_floating_point:
-                            ema_value.mul_(decay).add_(model_state[key].detach(), alpha=1 - decay)
-            else:
-                self.ema.update(self.model)  # type: ignore[attr-defined]
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=max_norm)
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+        self.optimizer.zero_grad()
+        if not self.ema:
+            return
+        if self.ema.enabled and next(self.model.parameters()).dtype != next(self.ema.ema.parameters()).dtype:
+            self.ema.updates += 1
+            decay = self.ema.decay(self.ema.updates)
+            model_state = self.model.state_dict()
+            with torch.no_grad():
+                for key, ema_value in self.ema.ema.state_dict().items():
+                    if ema_value.dtype.is_floating_point:
+                        ema_value.mul_(decay).add_(model_state[key].detach(), alpha=1 - decay)
+        else:
+            self.ema.update(self.model)
 
     def plot_training_labels(self) -> None:
         """Skip label plotting (adapter has no ``labels`` attr)."""
@@ -410,7 +416,7 @@ class GetiTuneBaseTrainer:
     def auto_batch(self) -> int:
         """Skip auto-batch when using DataModule."""
         if self._use_getitune_data:
-            return self.batch_size  # type: ignore[attr-defined]
+            return self.batch_size
         return super().auto_batch()  # type: ignore[misc]
 
     def _disable_ultralytics_augmentations(self) -> None:
@@ -437,5 +443,5 @@ class GetiTuneBaseTrainer:
             "perspective",
             "close_mosaic",
         ):
-            if hasattr(self.args, attr):  # type: ignore[attr-defined]
-                setattr(self.args, attr, 0.0 if attr != "close_mosaic" else 0)  # type: ignore[attr-defined]
+            if hasattr(self.args, attr):
+                setattr(self.args, attr, 0.0 if attr != "close_mosaic" else 0)
