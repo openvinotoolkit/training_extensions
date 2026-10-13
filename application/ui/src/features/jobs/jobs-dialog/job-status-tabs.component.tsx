@@ -33,7 +33,6 @@ export const JobStatusTabs = ({ counts, selected, onChange }: JobStatusTabsProps
             selectedKey={selected}
             onSelectionChange={(key) => onChange(key as StatusGroup)}
             UNSAFE_style={{ '--spectrum-tabs-selection-indicator-color': 'var(--energy-blue)' }}
-            UNSAFE_className={classes.statusTabs}
         >
             <TabList>
                 {TABS.map(({ group, labelKey, tone }) => {
