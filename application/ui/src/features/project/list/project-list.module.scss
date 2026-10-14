@@ -17,6 +17,10 @@ $card-content-height: 68px;
     background-color: var(--spectrum-global-color-gray-50);
 }
 
+.emptyToolbar {
+    padding: var(--spectrum-global-dimension-size-200) var(--spectrum-global-dimension-size-300) 0;
+}
+
 .projectGrid {
     align-content: start;
     overflow-y: auto;

@@ -7,8 +7,6 @@ import { Flex, Item, TabList, Tabs, Text } from '@geti-ui/ui';
 import type { StatusGroup } from '../utils';
 import { STATUS_BADGE, TONE, ToneBadge } from './job-status-badge.component';
 
-import classes from './jobs-dialog.module.scss';
-
 type JobStatusTabsProps = {
     counts: Record<StatusGroup, number>;
     selected: StatusGroup;
@@ -33,7 +31,6 @@ export const JobStatusTabs = ({ counts, selected, onChange }: JobStatusTabsProps
             selectedKey={selected}
             onSelectionChange={(key) => onChange(key as StatusGroup)}
             UNSAFE_style={{ '--spectrum-tabs-selection-indicator-color': 'var(--energy-blue)' }}
-            UNSAFE_className={classes.statusTabs}
         >
             <TabList>
                 {TABS.map(({ group, labelKey, tone }) => {

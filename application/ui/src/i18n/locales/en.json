@@ -102,7 +102,12 @@
         "models": "Models",
         "modelsDescription": "Models page to visualise your models",
         "inference": "Inference",
-        "inferenceDescription": "Inference page showing live inference on your project"
+        "inferenceDescription": "Inference page showing live inference on your project",
+        "help": {
+            "documentation": "User documentation",
+            "whatsNew": "What's new",
+            "reportIssue": "Report an issue"
+        }
     },
     "dataset": {
         "validation": {

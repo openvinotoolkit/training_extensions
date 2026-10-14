@@ -102,7 +102,12 @@
         "models": "Modelos",
         "modelsDescription": "Página de modelos para visualizar os seus modelos",
         "inference": "Inferência",
-        "inferenceDescription": "Página de inferência que mostra a inferência em tempo real no seu projeto"
+        "inferenceDescription": "Página de inferência que mostra a inferência em tempo real no seu projeto",
+        "help": {
+            "documentation": "Documentação do utilizador",
+            "whatsNew": "Novidades",
+            "reportIssue": "Reportar um problema"
+        }
     },
     "dataset": {
         "validation": {

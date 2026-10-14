@@ -102,7 +102,12 @@
         "models": "Modele",
         "modelsDescription": "Strona modeli do wizualizacji Twoich modeli",
         "inference": "Wnioskowanie",
-        "inferenceDescription": "Strona wnioskowania pokazująca wnioskowanie na żywo w Twoim projekcie"
+        "inferenceDescription": "Strona wnioskowania pokazująca wnioskowanie na żywo w Twoim projekcie",
+        "help": {
+            "documentation": "Dokumentacja użytkownika",
+            "whatsNew": "Co nowego",
+            "reportIssue": "Zgłoś problem"
+        }
     },
     "dataset": {
         "validation": {
