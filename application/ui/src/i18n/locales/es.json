@@ -1132,7 +1132,11 @@
         },
         "meta": {
             "started": "Iniciada {{time}}",
-            "elapsed": "Tiempo transcurrido: {{time}}"
+            "elapsed": "Tiempo transcurrido: {{time}}",
+            "duration": "Duración {{time}}",
+            "finished": "Finalizada {{time}}",
+            "failed": "Fallida {{time}}",
+            "cancelled": "Cancelada {{time}}"
         },
         "emptyState": {
             "all": "No hay tareas",

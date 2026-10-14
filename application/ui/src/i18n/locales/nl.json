@@ -1141,7 +1141,11 @@
         },
         "meta": {
             "started": "Gestart op {{time}}",
-            "elapsed": "Verstreken tijd: {{time}}"
+            "elapsed": "Verstreken tijd: {{time}}",
+            "duration": "Duur: {{time}}",
+            "finished": "Voltooid op {{time}}",
+            "failed": "Mislukt op {{time}}",
+            "cancelled": "Geannuleerd op {{time}}"
         },
         "emptyState": {
             "all": "Geen taken",
