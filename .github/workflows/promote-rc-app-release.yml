@@ -305,7 +305,7 @@ jobs:
     needs: [validate, promote-docker]
     if: inputs.dry_run == false && inputs.delete_rc_images
     name: Delete promoted version's RC images from GHCR
-    uses: ./.github/workflows/remove-rc-app-images.yml
+    uses: $/.github/workflows/remove-rc-app-images.yml
     with:
       version: ${{ needs.validate.outputs.docker_patch_tag }}
       dry_run: false
