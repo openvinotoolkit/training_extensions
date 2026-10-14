@@ -1,7 +1,22 @@
 name: Remove Application RC Container Images
 
+# Can be run manually (workflow_dispatch) or invoked automatically as a reusable
+# workflow (workflow_call) right after a stable version is promoted, e.g. from
+# promote-rc-app-release.yml once its RC images have been published as release images.
+
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Released version whose RC images should be removed, e.g. 3.0.0"
+        required: true
+        type: string
+      dry_run:
+        description: "Preview deletions without removing image versions"
+        required: false
+        type: boolean
+        default: true
+  workflow_call:
     inputs:
       version:
         description: "Released version whose RC images should be removed, e.g. 3.0.0"
