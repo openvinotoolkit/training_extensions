@@ -6,6 +6,7 @@ import type { Resource } from 'i18next';
 import en from './locales/en.json';
 import es from './locales/es.json';
 import it from './locales/it.json';
+import nl from './locales/nl.json';
 import pl from './locales/pl.json';
 import pt from './locales/pt.json';
 import zhCN from './locales/zh-CN.json';
@@ -20,6 +21,7 @@ export const resources: Resource = {
     [DEFAULT_LANGUAGE]: { translation: en },
     es: { translation: es satisfies Catalog },
     it: { translation: it satisfies Catalog },
+    nl: { translation: nl satisfies Catalog },
     pl: { translation: pl satisfies Catalog },
     pt: { translation: pt satisfies Catalog },
     'zh-CN': { translation: zhCN satisfies Catalog },
