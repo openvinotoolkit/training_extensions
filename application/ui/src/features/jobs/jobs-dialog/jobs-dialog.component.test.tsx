@@ -54,6 +54,12 @@ const mockJobs = (jobs: ModelJob[]) => {
 const renderDialog = (props: Partial<Parameters<typeof JobsDialog>[0]> = {}) =>
     render(<JobsDialog initialProjectId={ALL_PROJECTS} onClose={vi.fn()} {...props} />);
 
+const openJobActions = async (modelName: string) =>
+    userEvent.click(await screen.findByRole('button', { name: `Job actions for ${modelName}` }));
+
+const getJobProgressBar = () => screen.queryByRole('progressbar', { name: 'Job progress' });
+const getLoadingSpinner = () => screen.queryByRole('progressbar', { name: 'Loading...' });
+
 describe('JobsDialog', () => {
     beforeEach(() => {
         mockProjectsAndArchitectures();
@@ -122,7 +128,147 @@ describe('JobsDialog', () => {
         expect(screen.queryByText('in-b model')).not.toBeInTheDocument();
     });
 
-    it('shows the row status badge only on the All tab', async () => {
+    it('shows queued-job waiting state, spinner, and cancel action only', async () => {
+        mockJobs([trainJob({ job_id: 'pending', status: 'PENDING', started_at: null, message: null })]);
+
+        renderDialog({ initialProjectId: ALL_PROJECTS });
+
+        expect(await screen.findByText('Alpha · Waiting to start...')).toBeInTheDocument();
+        expect(getLoadingSpinner()).toBeInTheDocument();
+        expect(getJobProgressBar()).not.toBeInTheDocument();
+        await openJobActions('pending model');
+        expect(screen.getByRole('menuitem', { name: 'Cancel' })).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', { name: 'View logs' })).not.toBeInTheDocument();
+    });
+
+    it('does not render a job progress bar for queued job', async () => {
+        mockJobs([trainJob({ job_id: 'pending', status: 'PENDING', started_at: null })]);
+
+        renderDialog();
+
+        await screen.findByText('pending model');
+        expect(getJobProgressBar()).not.toBeInTheDocument();
+    });
+
+    it('shows running-job spinner and 0% progress bar', async () => {
+        mockJobs([
+            trainJob({
+                job_id: 'running-zero',
+                status: 'RUNNING',
+                progress: 0,
+                started_at: '2026-01-01T00:00:00Z',
+            }),
+        ]);
+
+        renderDialog();
+
+        await screen.findByText('running-zero model');
+        expect(getLoadingSpinner()).toBeInTheDocument();
+        expect(screen.queryByText(/\d+%/)).not.toBeInTheDocument();
+        expect(getJobProgressBar()).toHaveAttribute('aria-valuenow', '0');
+        await openJobActions('running-zero model');
+        expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: 'Cancel' })).toBeInTheDocument();
+    });
+
+    it('shows running-job percentage and progress bar above 0%', async () => {
+        mockJobs([
+            trainJob({ job_id: 'running', status: 'RUNNING', progress: 42, started_at: '2026-01-01T00:00:00Z' }),
+        ]);
+
+        renderDialog();
+
+        await screen.findByText('running model');
+        expect(screen.getByText(/42%/)).toBeInTheDocument();
+        expect(getLoadingSpinner()).not.toBeInTheDocument();
+        expect(getJobProgressBar()).toHaveAttribute('aria-valuenow', '42');
+        await openJobActions('running model');
+        expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: 'Cancel' })).toBeInTheDocument();
+    });
+
+    it('shows cancelling-job running metadata and View logs only', async () => {
+        mockJobs([
+            trainJob({
+                job_id: 'job',
+                status: 'CANCELLING',
+                progress: 25,
+                started_at: '2026-01-01T00:00:00Z',
+                finished_at: null,
+            }),
+        ]);
+
+        renderDialog();
+
+        await screen.findByText('job model');
+        expect(screen.getByText(/Started.*Elapsed/)).toBeInTheDocument();
+        expect(getJobProgressBar()).toHaveAttribute('aria-valuenow', '25');
+        await openJobActions('job model');
+        expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', { name: 'Cancel' })).not.toBeInTheDocument();
+    });
+
+    it('confirms and cancels a running job through the actions menu', async () => {
+        const cancelSpy = vi.fn();
+        mockJobs([trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' })]);
+        server.use(
+            http.post('/api/jobs/{job_id}:cancel', () => {
+                cancelSpy();
+                return HttpResponse.json(null, { status: 204 });
+            })
+        );
+
+        renderDialog();
+
+        await openJobActions('running model');
+        await userEvent.click(screen.getByRole('menuitem', { name: 'Cancel' }));
+
+        expect(await screen.findByRole('alertdialog', { name: 'Cancel job' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel job' }));
+        await vi.waitFor(() => expect(cancelSpy).toHaveBeenCalled());
+    });
+
+    it('opens running-job logs and returns to the jobs dialog on close, tab unchanged', async () => {
+        mockJobs([trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' })]);
+        renderDialog();
+
+        await screen.findByText('running model');
+        await userEvent.click(screen.getByRole('tab', { name: /^Running\b/ }));
+        await openJobActions('running model');
+        await userEvent.click(screen.getByRole('menuitem', { name: 'View logs' }));
+
+        expect(await screen.findByText('Training Logs')).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+        await waitFor(() => expect(screen.queryByText('Training Logs')).not.toBeInTheDocument());
+        expect(screen.getByRole('button', { name: /Filter jobs by project/ })).toHaveTextContent('All projects');
+        expect(screen.getByRole('tab', { name: /^Running\b/, selected: true })).toBeInTheDocument();
+    });
+
+    it('shows finished-job metadata and view logs only', async () => {
+        mockJobs([
+            trainJob({
+                job_id: 'done',
+                status: 'DONE',
+                progress: 100,
+                started_at: '2026-01-01T00:00:00Z',
+                finished_at: '2026-01-01T01:00:00Z',
+                message: 'Completed cleanly',
+            }),
+        ]);
+
+        renderDialog();
+
+        await screen.findByText('done model');
+        expect(screen.getByText(/Duration 1h 0m 0s.*Finished/)).toBeInTheDocument();
+        expect(screen.getByText('Completed cleanly')).toBeInTheDocument();
+        expect(getLoadingSpinner()).not.toBeInTheDocument();
+        expect(getJobProgressBar()).not.toBeInTheDocument();
+        await openJobActions('done model');
+        expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', { name: 'Cancel' })).not.toBeInTheDocument();
+    });
+
+    it('shows the row status badge only on the All tab for finished jobs', async () => {
         mockJobs([
             trainJob({
                 job_id: 'done',
@@ -136,48 +282,12 @@ describe('JobsDialog', () => {
 
         await screen.findByText('done model');
         expect(screen.getByText('Completed')).toBeInTheDocument();
-
         await userEvent.click(screen.getByRole('tab', { name: /^Finished\b/ }));
-
         expect(screen.getByText('done model')).toBeInTheDocument();
         expect(screen.queryByText('Completed')).not.toBeInTheDocument();
     });
 
-    it('shows the project name in the meta line only in All projects scope, and "Waiting to start" for scheduled jobs', async () => {
-        mockJobs([trainJob({ job_id: 'pending', status: 'PENDING', started_at: null })]);
-
-        const { unmount } = renderDialog({ initialProjectId: ALL_PROJECTS });
-
-        expect(await screen.findByText('Alpha · Waiting to start...')).toBeInTheDocument();
-        unmount();
-
-        renderDialog({ initialProjectId: 'project-a', currentProjectId: 'project-a' });
-
-        expect(await screen.findByText('Waiting to start...')).toBeInTheDocument();
-    });
-
-    it('shows the running percentage in the meta line and a bottom progress bar, only for running jobs', async () => {
-        mockJobs([
-            trainJob({ job_id: 'running', status: 'RUNNING', progress: 42, started_at: '2026-01-01T00:00:00Z' }),
-        ]);
-
-        renderDialog();
-
-        await screen.findByText('running model');
-        expect(screen.getByText(/42%/)).toBeInTheDocument();
-        expect(document.body.querySelector('[style*="background-color: var(--energy-blue)"]')).toBeInTheDocument();
-    });
-
-    it('does not render a progress bar for a non-running job', async () => {
-        mockJobs([trainJob({ job_id: 'pending', status: 'PENDING', started_at: null })]);
-
-        renderDialog();
-
-        await screen.findByText('pending model');
-        expect(document.body.querySelector('[style*="background-color: var(--energy-blue)"]')).not.toBeInTheDocument();
-    });
-
-    it('does not show the error for a failed job', async () => {
+    it('shows failed-job metadata and view logs only', async () => {
         mockJobs([
             trainJob({
                 job_id: 'failed',
@@ -185,75 +295,64 @@ describe('JobsDialog', () => {
                 started_at: '2026-01-01T00:00:00Z',
                 finished_at: '2026-01-01T00:05:00Z',
                 error: 'CUDA out of memory',
+                message: 'Training stopped',
             }),
         ]);
 
         renderDialog();
 
         expect(await screen.findByText('failed model')).toBeInTheDocument();
+        expect(screen.getByText(/^Alpha · Failed .+/)).toBeInTheDocument();
+        expect(screen.getByText('Training stopped')).toBeInTheDocument();
+        expect(getLoadingSpinner()).not.toBeInTheDocument();
+        expect(getJobProgressBar()).not.toBeInTheDocument();
         expect(screen.queryByText('CUDA out of memory')).not.toBeInTheDocument();
-    });
-
-    it('shows "Cancel" only for pending and running jobs, not for cancelling/done/failed/cancelled', async () => {
-        mockJobs([trainJob({ job_id: 'pending', status: 'PENDING', started_at: null })]);
-        renderDialog();
-        await userEvent.click(await screen.findByRole('button', { name: 'Job actions for pending model' }));
-        expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
-        expect(screen.getByRole('menuitem', { name: 'Cancel' })).toBeInTheDocument();
-    });
-
-    it.each(['CANCELLING', 'DONE', 'FAILED', 'CANCELLED'])('hides "Cancel" for a %s job', async (status) => {
-        mockJobs([
-            trainJob({
-                job_id: 'job',
-                status,
-                started_at: '2026-01-01T00:00:00Z',
-                finished_at: status === 'CANCELLING' ? null : '2026-01-01T00:05:00Z',
-            }),
-        ]);
-        renderDialog();
-        await userEvent.click(await screen.findByRole('button', { name: 'Job actions for job model' }));
+        await openJobActions('failed model');
         expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
         expect(screen.queryByRole('menuitem', { name: 'Cancel' })).not.toBeInTheDocument();
     });
 
-    it('confirms and cancels a job through the actions menu', async () => {
-        const cancelSpy = vi.fn();
-        mockJobs([trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' })]);
-        server.use(
-            http.post('/api/jobs/{job_id}:cancel', () => {
-                cancelSpy();
-                return HttpResponse.json(null, { status: 204 });
-            })
-        );
+    it('shows no waiting state, spinner, progress bar, or actions for a cancelled job that never started', async () => {
+        mockJobs([
+            trainJob({
+                job_id: 'cancelled-before-start',
+                status: 'CANCELLED',
+                progress: 0,
+                started_at: null,
+            }),
+        ]);
 
         renderDialog();
 
-        await userEvent.click(await screen.findByRole('button', { name: 'Job actions for running model' }));
-        await userEvent.click(screen.getByRole('menuitem', { name: 'Cancel' }));
-
-        expect(await screen.findByRole('alertdialog', { name: 'Cancel job' })).toBeInTheDocument();
-
-        await userEvent.click(screen.getByRole('button', { name: 'Cancel job' }));
-
-        await vi.waitFor(() => expect(cancelSpy).toHaveBeenCalled());
+        await screen.findByText('cancelled-before-start model');
+        expect(screen.queryByText(/Waiting to start/)).not.toBeInTheDocument();
+        expect(getLoadingSpinner()).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Job actions for cancelled-before-start model' })
+        ).not.toBeInTheDocument();
+        expect(getJobProgressBar()).not.toBeInTheDocument();
     });
 
-    it('opens the full-screen logs dialog on "View logs" and returns to the jobs dialog on close, tab unchanged', async () => {
-        mockJobs([trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' })]);
+    it('shows cancelled-job date and view logs only when the job started', async () => {
+        mockJobs([
+            trainJob({
+                job_id: 'cancelled',
+                status: 'CANCELLED',
+                progress: 0,
+                started_at: '2026-01-01T00:00:00Z',
+                finished_at: '2026-01-01T00:05:00Z',
+            }),
+        ]);
+
         renderDialog();
 
-        await userEvent.click(await screen.findByRole('tab', { name: /^Running\b/ }));
-        await userEvent.click(screen.getByRole('button', { name: 'Job actions for running model' }));
-        await userEvent.click(screen.getByRole('menuitem', { name: 'View logs' }));
-
-        expect(await screen.findByText('Training Logs')).toBeInTheDocument();
-
-        await userEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
-
-        await waitFor(() => expect(screen.queryByText('Training Logs')).not.toBeInTheDocument());
-        expect(screen.getByRole('button', { name: /Filter jobs by project/ })).toHaveTextContent('All projects');
-        expect(screen.getByRole('tab', { name: /^Running\b/, selected: true })).toBeInTheDocument();
+        await screen.findByText('cancelled model');
+        expect(screen.getByText(/^Alpha · Cancelled .+/)).toBeInTheDocument();
+        expect(getLoadingSpinner()).not.toBeInTheDocument();
+        expect(getJobProgressBar()).not.toBeInTheDocument();
+        await openJobActions('cancelled model');
+        expect(screen.getByRole('menuitem', { name: 'View logs' })).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', { name: 'Cancel' })).not.toBeInTheDocument();
     });
 
     it('shows the empty state illustrated message and hides the table header when a tab has no jobs', async () => {

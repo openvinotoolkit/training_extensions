@@ -1147,7 +1147,11 @@
         },
         "meta": {
             "started": "Rozpoczęto {{time}}",
-            "elapsed": "Czas trwania: {{time}}"
+            "elapsed": "Czas trwania: {{time}}",
+            "duration": "Czas trwania {{time}}",
+            "finished": "Zakończono {{time}}",
+            "failed": "Niepowodzenie {{time}}",
+            "cancelled": "Anulowano {{time}}"
         },
         "emptyState": {
             "all": "Brak zadań",
