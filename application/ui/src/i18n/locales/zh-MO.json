@@ -1143,7 +1143,11 @@
         },
         "meta": {
             "started": "開始於 {{time}}",
-            "elapsed": "已用時間 {{time}}"
+            "elapsed": "已用時間 {{time}}",
+            "duration": "持續時間 {{time}}",
+            "finished": "完成於 {{time}}",
+            "failed": "失敗於 {{time}}",
+            "cancelled": "取消於 {{time}}"
         },
         "emptyState": {
             "all": "此類別中沒有工作",
