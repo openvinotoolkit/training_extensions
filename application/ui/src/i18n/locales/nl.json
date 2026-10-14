@@ -1,0 +1,1202 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "Annuleren",
+            "close": "Sluiten",
+            "delete": "Verwijderen",
+            "goBack": "Teruggaan",
+            "rename": "Naam wijzigen",
+            "save": "Opslaan",
+            "assign": "Toewijzen",
+            "back": "Terug",
+            "clear": "Wissen",
+            "clearAll": "Alles wissen",
+            "confirm": "Bevestigen",
+            "connect": "Verbinden",
+            "continue": "Doorgaan",
+            "create": "Aanmaken",
+            "disconnect": "Verbinding verbreken",
+            "dismiss": "Negeren",
+            "download": "Downloaden",
+            "edit": "Bewerken",
+            "export": "Exporteren",
+            "hide": "Verbergen",
+            "next": "Volgende",
+            "refresh": "Vernieuwen",
+            "remove": "Verwijderen",
+            "selectAll": "Alles selecteren",
+            "showLess": "Minder weergeven",
+            "showMore": "Meer weergeven",
+            "skip": "Overslaan",
+            "start": "Starten",
+            "submit": "Indienen",
+            "train": "Trainen",
+            "upload": "Uploaden",
+            "undo": "Ongedaan maken",
+            "redo": "Opnieuw uitvoeren",
+            "annotate": "Annoteren",
+            "addAndUse": "Toevoegen en gebruiken",
+            "saveAndConnect": "Opslaan en verbinden",
+            "testConnection": "Verbinding testen"
+        },
+        "labels": {
+            "allUppercase": "ALLE",
+            "yes": "Ja",
+            "no": "Nee",
+            "unknown": "Onbekend",
+            "name": "Naam",
+            "architecture": "Architectuur",
+            "device": "Apparaat",
+            "on": "Aan",
+            "off": "Uit",
+            "noMaximum": "Geen maximum",
+            "active": "Actief",
+            "dataset": "Dataset",
+            "filters": "Filters",
+            "images": "Afbeeldingen",
+            "videos": "Video's",
+            "size": "Grootte",
+            "sizeUppercase": "GROOTTE",
+            "statusUppercase": "STATUS",
+            "settings": "Instellingen",
+            "training": "Training",
+            "training_subset": "Training",
+            "validation": "Validatie",
+            "validation_subset": "Validatie",
+            "testing": "Test",
+            "unassigned": "Niet toegewezen",
+            "trainingLowercase": "training",
+            "validationLowercase": "validatie",
+            "testingLowercase": "test",
+            "frames": "Frames",
+            "seconds": "Seconden",
+            "every": "elke",
+            "model": "Model",
+            "jobs": "Taken",
+            "labels": "Labels",
+            "bytesTransferred": "{{transferred}} van {{total}}"
+        },
+        "viewModes": {
+            "large": "Grote miniaturen",
+            "medium": "Middelgrote miniaturen",
+            "small": "Kleine miniaturen"
+        },
+        "status": {
+            "pending": "In afwachting",
+            "running": "Bezig",
+            "done": "Voltooid",
+            "cancelled": "Geannuleerd",
+            "uploading": "Bezig met uploaden",
+            "failed": "Mislukt",
+            "error": "Fout",
+            "disconnected": "Verbinding verbroken"
+        },
+        "errors": {
+            "unknown": "Er is een onbekende fout opgetreden",
+            "unknownDetail": "Onbekende fout"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Geti-logo",
+        "datasetDescription": "Pagina voor gegevensverzameling om je media-items te bekijken",
+        "models": "Modellen",
+        "modelsDescription": "Modellenpagina om je modellen te bekijken",
+        "inference": "Inferentie",
+        "inferenceDescription": "Inferentiepagina met live inferentie op je project",
+        "help": {
+            "documentation": "Gebruikersdocumentatie",
+            "whatsNew": "Wat is er nieuw",
+            "reportIssue": "Een probleem melden"
+        }
+    },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "Er bestaat al een weergave met deze naam.",
+            "invalidDateRange": "De einddatum moet later zijn dan de begindatum"
+        },
+        "views": {
+            "deleted": "Verwijderde weergave",
+            "title": "Weergaven",
+            "entireDataset": "Volledige dataset",
+            "assignToExistingView": "Toewijzen aan bestaande weergave",
+            "assignTo": "Toewijzen aan",
+            "selectView": "Selecteer een weergave",
+            "assignmentNote": "Deze bewerking heeft geen invloed op andere media die al aan deze weergave zijn toegewezen.",
+            "mediaAssigned_one": "{{count}} media-item succesvol toegewezen.",
+            "mediaAssigned_other": "{{count}} media-items succesvol toegewezen.",
+            "openView": "{{viewName}} openen",
+            "saveView": "Weergave opslaan",
+            "viewNameLabel": "Naam van weergave",
+            "renameTitle": "Naam van datasetweergave wijzigen",
+            "deleteTitle": "Verwijderen bevestigen",
+            "deleteConfirmation": "Weet je zeker dat je de datasetweergave \"{{viewName}}\" wilt verwijderen?",
+            "deleteSuccess": "Datasetweergave \"{{viewName}}\" is succesvol verwijderd.",
+            "unassignFromView": "Toewijzing aan deze weergave opheffen",
+            "selectedMediaCount_one": "{{count}} media-item geselecteerd",
+            "selectedMediaCount_other": "{{count}} media-items geselecteerd"
+        },
+        "filters": {
+            "allMedia": "Alle media",
+            "withAnnotations": "Media met annotaties",
+            "missingAnnotations": "Media met ontbrekende annotaties",
+            "subset": "Filteren op subset",
+            "searchLabels": "Labels zoeken",
+            "labelsSelected_one": "{{count}} label geselecteerd",
+            "labelsSelected_other": "{{count}} labels geselecteerd",
+            "toggleAll": "Alles in-/uitschakelen",
+            "more": "Meer filters",
+            "dateRange": {
+                "heading": "Filteren op uploaddatum",
+                "startDateLabel": "Begindatum",
+                "endDateLabel": "Einddatum",
+                "from": "Vanaf {{date}}",
+                "to": "Tot {{date}}"
+            }
+        },
+        "upload": {
+            "queued": "In wachtrij",
+            "processing": "Verwerken",
+            "uploaded": "Geüpload",
+            "errorTitle": "Uploadfout",
+            "details": "Uploaddetails",
+            "filename": "BESTANDSNAAM",
+            "uploadingSummary_one": "Bezig met uploaden van {{total}} item - {{uploaded}} geüpload",
+            "uploadingSummary_other": "Bezig met uploaden van {{total}} items - {{uploaded}} geüpload",
+            "uploadingFailedSummary_one": "Bezig met uploaden van {{total}} item - {{uploaded}} geüpload, {{failed}} mislukt",
+            "uploadingFailedSummary_other": "Bezig met uploaden van {{total}} items - {{uploaded}} geüpload, {{failed}} mislukt",
+            "uploadedSummary_one": "{{count}} item geüpload",
+            "uploadedSummary_other": "{{count}} items geüpload",
+            "failedSummary_one": "Uploaden van {{count}} item mislukt",
+            "failedSummary_other": "Uploaden van {{count}} items mislukt",
+            "mixedSummary_one": "{{uploaded}} item geüpload, {{failed}} mislukt",
+            "mixedSummary_other": "{{uploaded}} items geüpload, {{failed}} mislukt",
+            "mixedCancelledSummary_one": "{{uploaded}} item geüpload, {{failed}} mislukt, {{cancelled}} geannuleerd",
+            "mixedCancelledSummary_other": "{{uploaded}} items geüpload, {{failed}} mislukt, {{cancelled}} geannuleerd",
+            "genericError": "Uploaden van media mislukt.",
+            "uploadMedia": "Media uploaden",
+            "showDetails": "Details weergeven",
+            "inProgressToast_one": "Bezig met uploaden van {{count}} item...",
+            "inProgressToast_other": "Bezig met uploaden van {{count}} items...",
+            "inProgressSucceededPart": "{{count}} geslaagd",
+            "inProgressFailedPart": "{{count}} mislukt",
+            "cancelAll": "Alles annuleren",
+            "cancelledSummary_one": "{{count}} upload geannuleerd",
+            "cancelledSummary_other": "{{count}} uploads geannuleerd"
+        },
+        "empty": {
+            "noMatches": "Er zijn geen media-items die aan je filter voldoen.",
+            "changeFilter": "Verwijder het filter of selecteer een nieuw filter.",
+            "viewEmpty": "Deze weergave bevat geen media-items.",
+            "assignOrBack": "Wijs er media-items aan toe of ga terug naar de volledige dataset.",
+            "goToEntireDataset": "Naar {{datasetName}} gaan",
+            "datasetEmpty": "Je dataset is leeg.",
+            "uploadToStart": "Upload je eerste media-item om aan de slag te gaan."
+        },
+        "review": {
+            "reviewed": "Beoordeeld",
+            "forReview": "Te beoordelen",
+            "selectSubsetPlaceholder": "Subset selecteren"
+        },
+        "statistics": {
+            "label": "Datasetstatistieken",
+            "title": "Datasetstatistieken",
+            "numberOfMedia": "Aantal media",
+            "annotatedImages": "Geannoteerde afbeeldingen",
+            "annotatedVideosFrames": "Geannoteerde video's / frames",
+            "numberOfObjectsPerLabel": "Aantal objecten per label",
+            "unannotated": "Niet geannoteerd",
+            "annotated": "Geannoteerd",
+            "annotationsChartTooltip": "Annotaties"
+        },
+        "delete": {
+            "title": "Items verwijderen",
+            "mediaItem": "Media-item verwijderen",
+            "confirmation_one": "Weet je zeker dat je {{count}} item wilt verwijderen?",
+            "confirmation_other": "Weet je zeker dat je {{count}} items wilt verwijderen?",
+            "deletingItems": "Items worden verwijderd...",
+            "deleteError": "Verwijderen mislukt, {{detail}}",
+            "deletedSuccess_one": "{{count}} item succesvol verwijderd",
+            "deletedSuccess_other": "{{count}} items succesvol verwijderd"
+        },
+        "bulkLabels": {
+            "title": "Labeltoewijzing",
+            "uploadInstructions": "Kies de label(s) die je aan de geüploade afbeeldingen wilt toewijzen en klik daarna op 'Doorgaan'. Wil je de afbeeldingen liever later annoteren, kies dan 'Overslaan'.",
+            "selectedInstructions": "Kies de label(s) die je aan de geselecteerde afbeeldingen wilt toewijzen en klik daarna op 'Toewijzen'.",
+            "imageOnlyNote": "De geselecteerde labels gelden alleen voor afbeeldingen; video's (indien aanwezig) worden zonder annotaties geüpload.",
+            "selectedImagesNote": "De geselecteerde labels gelden alleen voor afbeeldingen; video's (indien aanwezig) blijven ongewijzigd.",
+            "noResults": "Geen resultaten gevonden. Probeer met andere woorden te zoeken.",
+            "cancelUpload": "Upload annuleren",
+            "assignLabelTooltip": "Label toewijzen",
+            "assignAllSuccess": "Label(s) succesvol toegewezen aan alle {{count}} afbeelding(en)",
+            "assignAllFailure": "Toewijzen van label(s) aan alle {{count}} afbeelding(en) mislukt",
+            "assignPartialSuccess": "Label(s) toegewezen aan {{succeeded}} van {{total}} afbeelding(en) ({{failed}} mislukt)"
+        },
+        "mediaActions": {
+            "downloadStarted": "Download van {{fileName}} is gestart"
+        },
+        "gallery": {
+            "sort": {
+                "label": "Media sorteren op:",
+                "uploadDateDescending": "Uploaddatum (nieuwste)",
+                "uploadDateAscending": "Uploaddatum (oudste)"
+            },
+            "selectedCount": "{{count}} geselecteerd",
+            "totalMediaCount_one": "{{count}} media-item",
+            "totalMediaCount_other": "{{count}} media-items",
+            "dropZone": {
+                "title": "Zet mediabestanden hier neer",
+                "description": "Afbeeldingen en video's worden naar deze dataset geüpload."
+            },
+            "mediaInfo": {
+                "annotatedFrames": "Aantal geannoteerde frames: {{count}}",
+                "totalFrames": "Totaal aantal frames: {{count}}"
+            }
+        },
+        "import": {
+            "jobTitle": "Dataset importeren - {{fileName}} - {{size}}",
+            "processingMessage": "Bestand {{fileName}} wordt verwerkt voor import",
+            "technicalDetails": "Technische details",
+            "preparingJob": "Voorbereiden",
+            "stagedFileReadError": "Er is een fout opgetreden bij het lezen van het klaargezette bestand",
+            "prepareError": "Er is een fout opgetreden bij het voorbereiden van de import.",
+            "genericError": "Er is een fout opgetreden tijdens het importeren.",
+            "importedSuccess": "Dataset {{fileName}} {{size}} succesvol geïmporteerd.",
+            "multipleFilesError": "Het toevoegen van mappen of meerdere bestanden is niet toegestaan. Laad één bestand.",
+            "unsupportedFormatError": "Niet-ondersteunde bestandsindeling. Upload een geldig .zip-bestand.",
+            "datasetBeingUploaded": "Dataset wordt geüpload",
+            "dropZipHere": "Zet het .zip-bestand van de dataset hier neer",
+            "learnMoreFormats": "Meer informatie over de verschillende indelingen",
+            "dialogHeading": "Dataset importeren",
+            "scanningMessage": "Het te importeren datasetarchief wordt gescand en geanalyseerd...",
+            "mapLabelsMessage": "Labels koppelen voor de geüploade dataset",
+            "deleteStagedFile": {
+                "title": "Klaargezet bestand verwijderen",
+                "confirmation": "Weet je zeker dat je het datasetbestand \"{{stagedDatasetId}}\" wilt verwijderen?"
+            },
+            "formatWarning": {
+                "boundingBoxToPolygon": "De geïmporteerde dataset gebruikt annotaties met begrenzingskaders, maar de dataset van je project gebruikt polygonen. Annotaties worden automatisch omgezet naar polygonen om alles compatibel te houden.",
+                "polygonToBoundingBox": "De geïmporteerde dataset gebruikt polygoonannotaties, maar de dataset van je project gebruikt begrenzingskaders. Annotaties worden automatisch omgezet naar begrenzingskaders om alles compatibel te houden."
+            },
+            "labelMapping": {
+                "statisticsHeading": "Statistieken van geïmporteerde dataset",
+                "heading": "Labelkoppeling - optioneel",
+                "unmappedNote": "Niet-gekoppelde items worden zonder label geïmporteerd",
+                "datasetLabelsColumn": "Datasetlabels",
+                "projectLabelsColumn": "Projectlabels",
+                "selectLabelPlaceholder": "Label selecteren",
+                "imagesLabel": "afbeeldingen",
+                "framesLabel": "frames"
+            }
+        },
+        "export": {
+            "heading": "{{name}} exporteren",
+            "headingDatasetView": "Datasetweergave exporteren",
+            "datasetView": "Weergave: {{name}}",
+            "statisticsHeading": "Statistieken van geëxporteerde dataset",
+            "settingsHeading": "Exportinstellingen",
+            "filterByLabel": "Annotaties filteren op label",
+            "selectFormat": "Exportindeling voor dataset selecteren",
+            "learnMoreFormats": "Meer informatie over exportindelingen",
+            "processing": "Dataset wordt verwerkt voor export",
+            "readyForDownload": "Dataset is klaar om te downloaden",
+            "downloadStarted": "Download van dataset gestart",
+            "error": "Fout: {{error}}",
+            "itemsLabel": "items",
+            "details": {
+                "defaultName": "dataset",
+                "format": "Indeling:",
+                "media": "Media:",
+                "onlyAnnotated": "Alleen media met annotaties",
+                "labels": "Labels:"
+            },
+            "warnings": {
+                "videos": "Het exporteren van video's wordt niet ondersteund door deze datasetindeling. Alle geannoteerde frames uit video's worden als afbeeldingen geëxporteerd.",
+                "emptyLabel": "De geselecteerde indeling ondersteunt geen lege labels (bijv. \"{{emptyLabelName}}\"). Afbeeldingen en frames die deze bevatten, worden als niet-geannoteerd geëxporteerd.",
+                "unsupportedItemsEmptyLabels": "lege labels",
+                "unsupportedItemsVideos": "video's",
+                "unsupportedItems": "Gebruik de Geti-exportindeling om {{items}} te behouden.",
+                "subsetNotIncluded": "De geëxporteerde dataset bevat geen informatie over de subset die aan elk media-item is toegewezen."
+            }
+        },
+        "importExport": {
+            "trigger": "Dataset importeren/exporteren",
+            "exportItem": "Dataset exporteren"
+        },
+        "revisions": {
+            "createdOn": "Aangemaakt op {{date}}",
+            "unnamedName": "Dataset #{{id}}",
+            "notFoundForModel": "Geen datasetrevisie gevonden voor dit model",
+            "filesDeleted": "De bestanden van deze datasetrevisie zijn verwijderd.",
+            "noItemsInSubset": "Geen items in deze subset",
+            "itemAlt": "{{subset}}-item",
+            "trainingSubsets": {
+                "test": "Test"
+            },
+            "rename": {
+                "title": "Naam van datasetrevisie wijzigen",
+                "nameLabel": "Naam van datasetrevisie"
+            },
+            "delete": {
+                "title": "Datasetrevisie verwijderen",
+                "description": "Weet je zeker dat je datasetrevisie \"{{name}}\" wilt verwijderen? Je kunt de modelstatistieken nog steeds bekijken, maar je hebt geen toegang meer tot de bestanden van de trainingsdataset."
+            }
+        },
+        "includeUnannotated": "Media zonder annotaties opnemen"
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "Sleutel mag niet leeg zijn",
+            "valueEmpty": "Waarde mag niet leeg zijn"
+        },
+        "connection": {
+            "testing": "Verbinding wordt getest...",
+            "inUse": "In gebruik",
+            "unreachable": "Onbereikbaar",
+            "ready": "Gereed",
+            "saveErrorFallback": "probeer het opnieuw",
+            "removeSuccess": "{{name}} is succesvol verwijderd!"
+        },
+        "confidenceThreshold": {
+            "label": "Betrouwbaarheidsdrempel"
+        },
+        "devices": {
+            "label": "Inferentieapparaat"
+        },
+        "sources": {
+            "uploadError": "Uploaden van videobestand mislukt.",
+            "deleteVideoError": "Verwijderen van geüpload videobestand mislukt.",
+            "list": {
+                "addSource": "Nieuwe bron toevoegen"
+            },
+            "types": {
+                "usbCamera": "usb-camera",
+                "ipCamera": "ip-camera",
+                "videoFile": "videobestand",
+                "imagesFolder": "afbeeldingenmap",
+                "disconnected": "verbinding verbroken"
+            },
+            "options": {
+                "usbCamera": "USB-camera",
+                "ipCamera": "IP-camera",
+                "videoFile": "Videobestand"
+            },
+            "add": {
+                "title": "Nieuwe invoerbron toevoegen"
+            },
+            "edit": {
+                "title": "Invoerbron bewerken"
+            },
+            "form": {
+                "createSuccess": "Bronconfiguratie succesvol aangemaakt.",
+                "updateSuccess": "Bronconfiguratie succesvol bijgewerkt.",
+                "saveError": "Opslaan van bronconfiguratie mislukt, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Succesvol verbonden met \"{{name}}\".",
+                "disconnectSuccess": "Verbinding met \"{{name}}\" succesvol verbroken.",
+                "disablePipelineAndDisconnectSuccess": "Pipeline succesvol uitgeschakeld en verbinding met \"{{name}}\" verbroken.",
+                "disconnectDialog": {
+                    "title": "Verbinding met {{name}} verbreken",
+                    "message": "Als je de verbinding met deze bron verbreekt, wordt ook de inferentiepipeline uitgeschakeld. Wil je doorgaan?"
+                }
+            },
+            "settings": {
+                "loading": "Laden...",
+                "device": "Apparaat: {{name}}",
+                "unknownDevice": "Onbekend apparaat (id: {{deviceId}})",
+                "ignoreExistingImages": "Bestaande afbeeldingen negeren: {{value}}",
+                "streamUrl": "Stream-URL: {{url}}",
+                "videoPath": "Videopad: {{path}}"
+            },
+            "fields": {
+                "imagesFolderPath": "Pad naar afbeeldingenmap",
+                "ignoreExistingImages": "Bestaande afbeeldingen negeren",
+                "streamUrl": "Stream-URL:",
+                "requireAuthentication": "Verificatie vereisen",
+                "camera": "Camera",
+                "videoFilePath": "Pad naar videobestand",
+                "selectedFile": "Geselecteerd: {{fileName}}",
+                "loopVideo": "Video herhalen"
+            },
+            "defaultNames": {
+                "usbCamera": "USB-camerabron",
+                "ipCamera": "IP-camerabron",
+                "videoFile": "Videobestandsbron"
+            }
+        },
+        "sinks": {
+            "types": {
+                "folder": "map",
+                "mqtt": "mqtt",
+                "webhook": "webhook",
+                "ros": "ros"
+            },
+            "options": {
+                "folder": "Map",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "Nieuwe uitvoer toevoegen"
+            },
+            "edit": {
+                "title": "Uitvoer bewerken"
+            },
+            "form": {
+                "createSuccess": "Uitvoerconfiguratie succesvol aangemaakt.",
+                "updateSuccess": "Uitvoerconfiguratie succesvol bijgewerkt.",
+                "saveError": "Opslaan van uitvoerconfiguratie mislukt, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Succesvol verbonden met \"{{name}}\"",
+                "disconnectSuccess": "Verbinding met \"{{name}}\" succesvol verbroken"
+            },
+            "settings": {
+                "rateLimit": "Snelheidslimiet: {{value}}",
+                "httpMethod": "HTTP-methode: {{value}}",
+                "timeout": "Time-out: {{value}}",
+                "webhookUrl": "Webhook-URL: {{value}}",
+                "topic": "Onderwerp: {{value}}",
+                "brokerHost": "Brokerhost: {{value}}",
+                "brokerPort": "Brokerpoort: {{value}}",
+                "outputFormats": "Uitvoerindelingen: ",
+                "outputFormatTypes": {
+                    "imageOriginal": "originele afbeelding",
+                    "imageWithPredictions": "afbeelding met voorspellingen",
+                    "predictions": "voorspellingen"
+                }
+            },
+            "rateLimit": {
+                "notSet": "Niet ingesteld",
+                "samplesPerSecond_one": "{{count}} sample elke seconde",
+                "samplesPerSecond_other": "{{count}} samples elke seconde",
+                "oneSamplePerSeconds_one": "1 sample elke {{count}} seconde",
+                "oneSamplePerSeconds_other": "1 sample elke {{count}} seconden"
+            },
+            "fields": {
+                "samples": "Samples",
+                "outputFormatsLabel": "Uitvoerindelingen",
+                "outputFormatPredictions": "Voorspellingen",
+                "outputFormatImageOriginal": "Originele afbeelding",
+                "outputFormatImageWithPredictions": "Afbeelding met voorspellingen",
+                "folderPath": "Mappad",
+                "httpMethod": "HTTP-methode",
+                "timeout": "Time-out",
+                "webhookUrl": "Webhook-URL",
+                "headers": "Headers",
+                "topic": "Onderwerp",
+                "brokerHost": "Brokerhost",
+                "brokerPort": "Brokerpoort",
+                "authRequired": "Verificatie vereist"
+            },
+            "webhook": {
+                "headersHelp": "Voeg zoveel sleutel-waardeparen toe als nodig. Elk paar wordt opgenomen in het object '{{title}}'.",
+                "keyPlaceholder": "sleutel",
+                "valuePlaceholder": "waarde"
+            },
+            "defaultNames": {
+                "localFolder": "Uitvoer naar lokale map",
+                "webhook": "Webhook-uitvoer",
+                "mqtt": "MQTT-uitvoer"
+            }
+        },
+        "pipeline": {
+            "activeModel": {
+                "loading": "Model: ..."
+            },
+            "toggle": {
+                "enabledLabel": "Pipeline ingeschakeld",
+                "disabledLabel": "Pipeline uitgeschakeld",
+                "enabledSuccess": "Pipeline succesvol ingeschakeld",
+                "disabledSuccess": "Pipeline succesvol uitgeschakeld"
+            },
+            "configuration": {
+                "sidebarLabel": "Pipelineconfiguratie",
+                "sourcesTab": "Invoer",
+                "sinksTab": "Uitvoer"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "Beleid voor gegevensverzameling",
+            "maxDatasetSize": {
+                "title": "Maximale datasetgrootte",
+                "description": "Maximaal aantal te verzamelen items"
+            },
+            "captureRate": {
+                "title": "Vastlegfrequentie",
+                "description": "Frames vastleggen terwijl de stream actief is",
+                "toggleLabel": "Automatisch vastleggen in-/uitschakelen"
+            },
+            "confidenceThreshold": {
+                "description": "Frames vastleggen wanneer de betrouwbaarheid onder de drempel ligt",
+                "sliderLabel": "Drempel"
+            }
+        },
+        "metrics": {
+            "time": "tijd",
+            "sidebarLabel": "Pipelinemetrieken",
+            "empty": {
+                "title": "Geen statistieken beschikbaar",
+                "description": "Pipelinemetrieken worden hier weergegeven zodra de pipeline actief is en gegevens verwerkt."
+            },
+            "throughput": {
+                "title": "Doorvoer",
+                "axisLabel": "verzoeken/sec"
+            },
+            "latency": {
+                "title": "Latentie",
+                "axisLabel": "ms"
+            }
+        },
+        "health": {
+            "overall": {
+                "idle": "Inactief",
+                "problemsDetected": "Problemen gedetecteerd"
+            },
+            "component": {
+                "healthy": "In orde",
+                "finished": "Afgerond",
+                "unavailable": "Niet beschikbaar"
+            },
+            "componentLabels": {
+                "source": "Bron",
+                "sink": "Uitvoer"
+            }
+        },
+        "stream": {
+            "start": "Stream starten",
+            "enablePipelineToStart": "Schakel de pipeline in om de stream te starten",
+            "connectError": "Verbinden met de stream mislukt",
+            "captureFrame": "Frame vastleggen",
+            "captureSuccess": "Frame vastgelegd en toegevoegd aan de dataset."
+        },
+        "settings": {
+            "folderPath": "Mappad: {{path}}",
+            "authRequired": "Verificatie vereist: {{value}}"
+        }
+    },
+    "project": {
+        "delete": {
+            "confirmation": "Weet je zeker dat je project \"{{projectName}}\" wilt verwijderen?",
+            "success": "Project succesvol verwijderd"
+        },
+        "rename": {
+            "title": "Projectnaam bewerken",
+            "success": "Project succesvol bijgewerkt"
+        },
+        "validation": {
+            "nameEmpty": "Projectnaam mag niet leeg zijn",
+            "nameExists": "Die projectnaam bestaat al"
+        },
+        "panel": {
+            "manageProjects": "Projecten beheren",
+            "enablePipelineBlocked": {
+                "title": "Kan pipeline niet inschakelen",
+                "message": "Zorg dat je een model en een bron hebt geselecteerd voordat je de pipeline inschakelt."
+            }
+        },
+        "taskTypes": {
+            "detection": "Objectdetectie",
+            "classification": "Classificatie",
+            "instanceSegmentation": "Instantiesegmentatie",
+            "multiLabelClassification": "Classificatie met meerdere labels",
+            "recommended": "{{taskType}} (aanbevolen)"
+        },
+        "list": {
+            "count_one": "{{count}} project",
+            "count_other": "{{count}} projecten",
+            "countFiltered_one": "{{filtered}} van {{count}} project",
+            "countFiltered_other": "{{filtered}} van {{count}} projecten",
+            "createNewProject": "Nieuw project aanmaken",
+            "createProjectFromDataset": "Aanmaken vanuit dataset",
+            "card": {
+                "created": "Aangemaakt: {{date}}",
+                "models_one": "{{count}} model",
+                "models_other": "{{count}} modellen"
+            },
+            "menu": {
+                "enablePipeline": "Pipeline inschakelen",
+                "disablePipeline": "Pipeline uitschakelen"
+            },
+            "sort": {
+                "label": "Projecten sorteren op:",
+                "nameAscending": "Naam (A-Z)",
+                "nameDescending": "Naam (Z-A)",
+                "createdAtDescending": "Aanmaakdatum (nieuwste)",
+                "createdAtAscending": "Aanmaakdatum (oudste)"
+            },
+            "filters": {
+                "searchPlaceholder": "Projecten zoeken",
+                "taskType": "Filteren op taaktype",
+                "models": "Filteren op modellen",
+                "withTrainedModels": "Met getrainde modellen"
+            },
+            "noMatches": {
+                "title": "Geen projecten die aan je filters voldoen",
+                "description": "Pas je zoekopdracht of taaktypefilters aan om te vinden wat je zoekt."
+            },
+            "empty": {
+                "intro": "Welkom bij <name>Geti</name>, een vision-AI-platform dat je door de <highlight>volledige levenscyclus van een model</highlight> leidt, van datasetvoorbereiding tot training, optimalisatie en implementatie."
+            },
+            "workflow": {
+                "addData": "Gegevens toevoegen",
+                "optimize": "Optimaliseren",
+                "runInference": "Inferentie uitvoeren",
+                "loop": "Bewaak voorspellingen en verzamel meer gegevens om je model iteratief te verfijnen"
+            }
+        },
+        "create": {
+            "taskQuestion": "Welk type taak moet het model uitvoeren?",
+            "labelsQuestion": "Welke objecten moet het model leren {{verb}}?",
+            "submit": "Project aanmaken",
+            "tasks": {
+                "detection": {
+                    "title": "Objectdetectie",
+                    "description": "Objecten in je afbeeldingen identificeren en lokaliseren",
+                    "advice": "Ideaal voor: tellen, volgen",
+                    "verb": "detecteren"
+                },
+                "instanceSegmentation": {
+                    "title": "Instantiesegmentatie",
+                    "description": "Specifieke gebieden of vormen detecteren en omlijnen",
+                    "advice": "Ideaal voor: metingen, onregelmatige vormen",
+                    "verb": "segmenteren"
+                },
+                "classification": {
+                    "title": "Afbeeldingsclassificatie",
+                    "description": "Volledige afbeeldingen categoriseren op basis van hun inhoud",
+                    "advice": "Ideaal voor: filteren, contentmoderatie",
+                    "verb": "classificeren"
+                }
+            },
+            "classificationType": {
+                "title": "Welk classificatietype moet het model gebruiken?",
+                "singleLabel": {
+                    "label": "Eén label",
+                    "description": "Eén label toewijzen uit labels die elkaar uitsluiten",
+                    "warning": "Vereist minimaal 2 labels"
+                },
+                "multiLabel": {
+                    "label": "Meerdere labels",
+                    "description": "Eén of meer labels toewijzen uit labels die elkaar niet uitsluiten"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "Er is minimaal één object vereist"
+            },
+            "defaultName": "Project #{{number}}"
+        },
+        "import": {
+            "title": "Project aanmaken vanuit een dataset - Importeren",
+            "labelMapping": {
+                "title": "Labelkoppeling"
+            },
+            "preparingMessage": "Datasetimport als nieuw project voorbereiden",
+            "taskSelection": {
+                "projectName": "Projectnaam",
+                "selectTaskPlaceholder": "Taak selecteren",
+                "recommendationHint": "De aanbevolen keuze is gebaseerd op het type annotaties dat in de dataset is gedetecteerd. Als je een ander type kiest, worden de annotaties tijdens het importeren automatisch omgezet naar het geselecteerde type."
+            },
+            "jobsList": {
+                "selectTaskType": "Taaktype selecteren",
+                "mapLabelsButton": "Labels koppelen"
+            }
+        },
+        "taskType": "Taaktype"
+    },
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "Sneltoets",
+            "nameExists": "Die labelnaam bestaat al",
+            "hotkeyExists": "Die sneltoets is al in gebruik"
+        },
+        "editor": {
+            "namePlaceholder": "Labelnaam",
+            "pin": "Label vastmaken",
+            "unpin": "Label losmaken",
+            "editTrigger": "Labels bewerken",
+            "createTrigger": "Label aanmaken",
+            "delete": {
+                "title": "Label verwijderen",
+                "message": "Als je het label {{labelName}} verwijdert, worden alle annotaties in je dataset met dit label verwijderd. Dit heeft echter geen invloed op modellen die je eerder hebt getraind."
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "Sneltoets: {{hotkey}}",
+            "overflowCount": "+ {{count}} meer"
+        },
+        "empty": {
+            "noLabel": "Geen label",
+            "noObject": "Geen object"
+        }
+    },
+    "annotator": {
+        "canvas": {
+            "hideLabels": "Labels verbergen",
+            "pixelView": "Pixelweergave",
+            "annotationFillOpacity": "Dekking van annotatievulling",
+            "annotationBorderOpacity": "Dekking van annotatierand",
+            "imageBrightness": "Helderheid van afbeelding",
+            "imageContrast": "Contrast van afbeelding",
+            "imageSaturation": "Verzadiging van afbeelding"
+        },
+        "actions": {
+            "zoomIn": "Inzoomen",
+            "zoomOut": "Uitzoomen",
+            "fitToScreen": "Aanpassen aan scherm ({{hotkey}})",
+            "undo": "Ongedaan maken ({{hotkey}})",
+            "redo": "Opnieuw uitvoeren ({{hotkeys}})",
+            "toggleFocus": "Focus in-/uitschakelen",
+            "showAnnotations": "Annotaties weergeven ({{hotkey}})",
+            "hideAnnotations": "Annotaties verbergen ({{hotkey}})"
+        },
+        "modes": {
+            "annotation": "Annotatie",
+            "prediction": "Voorspelling"
+        },
+        "predictions": {
+            "settingsTitle": "Voorspellingsinstellingen",
+            "confirm": "Voorspelling bevestigen"
+        },
+        "hotkeys": {
+            "alternatives": "{{primary}} of {{alternative}}",
+            "title": "Sneltoetsen",
+            "submitAnnotationsPredictions": "Annotaties/voorspellingen indienen",
+            "previousMedia": "Vorig media-item",
+            "nextMedia": "Volgend media-item",
+            "deleteSelectedAnnotation": "Geselecteerde annotatie verwijderen",
+            "toggleAnnotationsVisibility": "Alle annotaties weergeven of verbergen",
+            "selectAllAnnotations": "Alle annotaties selecteren",
+            "deselectAllAnnotations": "Selectie van alle annotaties opheffen",
+            "selectNextAnnotation": "Volgende annotatie selecteren",
+            "resetZoom": "Zoom herstellen"
+        },
+        "tools": {
+            "selection": {
+                "label": "Selectie"
+            },
+            "boundingBox": {
+                "label": "Begrenzingskader",
+                "description": "Teken een rechthoek of vierkant rond een object in een afbeelding."
+            },
+            "autoSegmentation": {
+                "label": "Automatische segmentatie",
+                "detectionDescription": "Beweeg je cursor over een object om een voorgestelde rechthoek te bekijken en klik vervolgens om de annotatie te maken.",
+                "segmentationDescription": "Beweeg je cursor over een object om een voorgestelde polygoon te bekijken en klik vervolgens om de annotatie te maken.",
+                "loading": "Afbeelding wordt verwerkt, even geduld...",
+                "error": "Fout in de Segment Anything-tool: {{message}}",
+                "unknownError": "Onbekende fout, probeer de pagina te vernieuwen.",
+                "timeoutError": "{{operation}}: time-out na {{timeoutMs}} ms. Probeer de pagina te vernieuwen.",
+                "embeddingError": "Kan de afbeeldingsembedding niet ophalen ({{status}}{{statusText}}).",
+                "operations": {
+                    "workerBuild": "Bouwen van SAM-worker",
+                    "workerInit": "Initialiseren van SAM-worker",
+                    "decoder": "SAM-decoder"
+                }
+            },
+            "polygon": {
+                "label": "Polygoon",
+                "description": "Klik om punten één voor één te plaatsen, of houd ingedrukt en sleep om uit de vrije hand te tekenen. Ideaal voor onregelmatige vormen die pixelprecisie vereisen."
+            },
+            "magneticLasso": {
+                "label": "Magnetische lasso",
+                "description": "Beweeg langs de rand van een object en klik regelmatig om de omtrek tegen de randen te laten uitlijnen.",
+                "error": "Selecteren van de vormgrenzen mislukt. Wil je het opnieuw proberen?"
+            },
+            "ssim": {
+                "label": "Detectieassistent",
+                "description": "Teken een kader rond een object om automatisch vergelijkbare objecten in de afbeelding te vinden en te annoteren.",
+                "loading": "Detectieassistent wordt geladen, even geduld...",
+                "error": "Fout in de tool Detectieassistent: {{message}}",
+                "operations": {
+                    "workerBuild": "Bouwen van worker voor detectieassistent"
+                }
+            }
+        },
+        "video": {
+            "playback": {
+                "slower": "Langzamer",
+                "slow": "Langzaam",
+                "normal": "Normaal",
+                "speed": "Afspeelsnelheid",
+                "showAllFrames": "Alle frames weergeven",
+                "showOneFramePerSecond": "1 frame per seconde weergeven"
+            },
+            "frames": {
+                "currentTotal": "Huidig frame: {{currentFrame}} / Totaal aantal frames: {{totalFrames}}",
+                "thumbnailAlt": "Miniatuur voor frame {{frameNumber}}"
+            },
+            "errors": {
+                "network": "Kan de video niet afspelen vanwege een netwerkfout. Vernieuw de pagina en probeer het opnieuw.",
+                "unableToPlay": "Kan de video niet afspelen. Probeer het opnieuw.",
+                "unsupportedFormat": "Kan de video niet afspelen. Probeer een andere video-indeling (mp4/webm)."
+            }
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "Taak mislukt. Controleer de logboeken voor details en probeer het opnieuw.",
+            "pending": "In afwachting...",
+            "running": "Bezig...",
+            "stopDialog": {
+                "title": "Taak stoppen",
+                "confirmation": "Weet je zeker dat je deze taak wilt stoppen?"
+            },
+            "logs": "Logboeken",
+            "startedAt": "Gestart: {{time}}",
+            "waitingToStart": "Wachten op start...",
+            "device": "Apparaat: {{device}}"
+        },
+        "detail": {
+            "loadError": "Laden van modeldetails mislukt",
+            "tabs": {
+                "variants": "Modelvarianten",
+                "metrics": "Modelmetrieken",
+                "parameters": "Trainingsparameters",
+                "datasets": "Trainingsdatasets"
+            }
+        },
+        "metrics": {
+            "noMetrics": "Geen metrieken beschikbaar",
+            "loadError": "Laden van trainingsmetrieken mislukt",
+            "evaluationsTitle": "Evaluaties",
+            "noEvaluations": "Evaluatiemetrieken voor testen zijn niet beschikbaar"
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "Succesvol gekopieerd",
+                "copyError": "Kopiëren mislukt",
+                "copyPathTooltip": "Klik om het pad te kopiëren",
+                "showTraceback": "Traceback weergeven",
+                "levelLabel": "Niveau",
+                "levelHelpTitle": "Minimaal logniveau",
+                "levelHelpDescription": "Toont logboekvermeldingen op het geselecteerde niveau en hoger. Als je bijvoorbeeld WARNING selecteert, worden vermeldingen van WARNING, ERROR en CRITICAL weergegeven en worden DEBUG en INFO verborgen.",
+                "searchPlaceholder": "Logboeken doorzoeken...",
+                "connectionStatus": {
+                    "connecting": "Verbinden...",
+                    "connected": "Live",
+                    "error": "Verbindingsfout"
+                },
+                "entriesCount": "{{filtered}} / {{total}} vermeldingen",
+                "noEntries": "Geen logboekvermeldingen",
+                "noMatchingEntries": "Geen overeenkomende logboekvermeldingen",
+                "scrollToBottom": "Naar beneden scrollen",
+                "dialogTitle": "Trainingslogboeken",
+                "loadError": "Laden van logboeken mislukt: {{message}}",
+                "noJobOrModel": "Geen taak of model opgegeven",
+                "fetchError": "Ophalen van modellogboeken mislukt: {{status}} {{statusText}}",
+                "downloadStarted": "Download van trainingslogboeken gestart"
+            },
+            "parameters": {
+                "noParameters": "Geen parameters.",
+                "learningParameters": "LEERPARAMETERS",
+                "filters": "FILTERS",
+                "augmentations": "AUGMENTATIES",
+                "intensityMapping": "INTENSITEITSTOEWIJZING"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "Top-1-nauwkeurigheid op ImageNet",
+                    "mapOnCoco": "mAP op COCO",
+                    "map50OnCoco": "mAP50 op COCO"
+                },
+                "card": {
+                    "numberOfParameters": "Aantal parameters: {{count}} miljoen",
+                    "gigaflops": "Gigaflops: {{value}}"
+                },
+                "sort": {
+                    "label": "Modellen sorteren op:",
+                    "nameAsc": "Naam (A tot Z)",
+                    "nameDesc": "Naam (Z tot A)",
+                    "speedAsc": "Snelheid (snelste eerst)",
+                    "speedDesc": "Snelheid (langzaamste eerst)",
+                    "accuracyAsc": "Nauwkeurigheid (laagste eerst)",
+                    "accuracyDesc": "Nauwkeurigheid (hoogste eerst)"
+                },
+                "timm": {
+                    "heading": "TIMM-modelconfiguratie",
+                    "architectureFamilyLabel": "Architectuurfamilie",
+                    "selectArchitecturePlaceholder": "Architectuur selecteren",
+                    "modelVariantLabel": "Modelvariant",
+                    "selectVariantPlaceholder": "Variant selecteren",
+                    "pretrainedWeightsLabel": "Vooraf getrainde gewichten",
+                    "selectWeightsPlaceholder": "Gewichten selecteren",
+                    "parameters": "Parameters: {{count}} miljoen",
+                    "gigaflops": "GigaFlops: {{value}}"
+                }
+            },
+            "devices": {
+                "selectLabel": "Trainingsapparaat selecteren"
+            },
+            "setup": {
+                "trigger": "Model trainen",
+                "dialog": {
+                    "title": "Selecteer een model om te trainen",
+                    "disabledReasonTitle": "Waarom kan ik de training niet starten?",
+                    "advancedSettings": "Geavanceerde instellingen"
+                },
+                "toast": {
+                    "trainingStarted": "Modeltraining succesvol gestart.",
+                    "trainingStartedWithLink": "Modeltraining succesvol gestart. <modelsLink>Open het modellenscherm om de voortgang te bekijken.</modelsLink>"
+                },
+                "selectDataset": {
+                    "label": "Dataset selecteren",
+                    "useEntireDataset": "Volledige dataset gebruiken",
+                    "helpTitle": "Een dataset selecteren",
+                    "helpDescription": "Kies de gegevens die je voor de training wilt gebruiken. Selecteer \"Volledige dataset gebruiken\" om te trainen op de meest recente versie van alle gegevens (wat je ziet op de pagina \"Dataset\"). Selecteer een datasetweergave om alleen te trainen op de media die aan die weergave zijn toegewezen. Selecteer een datasetrevisie om te trainen op exact dezelfde gegevens (media en annotaties) als een ander model.",
+                    "sections": {
+                        "views": "Datasetweergaven",
+                        "revisions": "Datasetrevisies"
+                    }
+                },
+                "selectModel": {
+                    "label": "Invoergewichten selecteren",
+                    "defaultPretrainedWeights": "Standaard vooraf getrainde gewichten",
+                    "helpTitle": "Invoergewichten kiezen",
+                    "helpDescription": "Kies een bestaand model om verder te verfijnen, of selecteer \"Standaard vooraf getrainde gewichten\" om een nieuw model te verfijnen op basis van openbaar beschikbare gewichten die vooraf zijn getraind op grote openbare datasets."
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "Om een model te trainen, moet je minimaal 3 items in je dataset annoteren, al raden we aan er meer te annoteren voor betere resultaten.",
+                "notEnoughAnnotationsInView": "Om een model te trainen, moet je minimaal 3 items in de geselecteerde datasetweergave annoteren, al raden we aan er meer te annoteren voor betere resultaten.",
+                "emptySubsetsReason": "Om een model te trainen, heeft elke subset (training, validatie, test) minimaal één item nodig. Op dit moment kan niet aan deze voorwaarde worden voldaan, omdat {{subsetClause}} en {{assignmentDetail}}.",
+                "emptySubsetClause_one": "de subset {{list}} leeg is",
+                "emptySubsetClause_other": "de subsets {{list}} leeg zijn",
+                "reviewedOnly_one": "er nog {{count}} beoordeeld item is om toe te wijzen",
+                "reviewedOnly_other": "er nog {{count}} beoordeelde items zijn om toe te wijzen",
+                "unannotatedOnly_one": "er {{count}} item is dat nog geannoteerd moet worden voordat het kan worden toegewezen",
+                "unannotatedOnly_other": "er {{count}} items zijn die nog geannoteerd moeten worden voordat ze kunnen worden toegewezen",
+                "mixedReviewedClause_one": "er {{count}} beoordeeld item klaar is om toe te wijzen",
+                "mixedReviewedClause_other": "er {{count}} beoordeelde items klaar zijn om toe te wijzen",
+                "mixedUnannotatedClause_one": "{{count}} item dat nog geannoteerd moet worden voordat het kan worden toegewezen",
+                "mixedUnannotatedClause_other": "{{count}} items die nog geannoteerd moeten worden voordat ze kunnen worden toegewezen",
+                "mixedAssignmentDetail": "{{reviewedClause}}, naast {{unannotatedClause}}",
+                "noUnassignedItems": "er geen niet-toegewezen items beschikbaar zijn om te herverdelen"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "Gegevensbeheer"
+                },
+                "notAvailable": "Trainingsconfiguratie is niet beschikbaar."
+            },
+            "learning": {
+                "title": "Leerparameters",
+                "tagDefault": "Standaard",
+                "tagModified": "Gewijzigd",
+                "inputSize": "Invoergrootte"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "Trainingssubsets",
+                    "description": "Geef de verdeling op van geannoteerde samples die NOG NIET aan een subset zijn toegewezen. Samples die in eerdere trainingsrondes zijn gebruikt, hebben al een subset die ongewijzigd blijft, om datacontaminatie en evaluatiebias te voorkomen.",
+                    "unavailableTitle": "Ongeldige configuratie van trainingssubsets",
+                    "unavailableDescription": "De trainingssubsets bevatten niet genoeg media-items voor een configureerbare verdeling over trainings-, validatie- en testsubsets.",
+                    "unavailableHint": "Voeg meer media-items toe zodat elke subset minimaal één item bevat.",
+                    "datasetSamples": "Dataset: {{count}} samples",
+                    "assignedSamples": "Toegewezen: {{count}}",
+                    "unassignedSamples": "Niet toegewezen: {{count}}",
+                    "distributionLabel": "Verdeling voor nieuwe samples",
+                    "resultingDistribution": "Resulterende datasetverdeling:",
+                    "totalLabel": "Totaal:",
+                    "mediaItemsLabel": "media-items"
+                },
+                "filters": {
+                    "noMinimum": "Geen minimum",
+                    "unlimited": "Onbeperkt"
+                },
+                "augmentation": {
+                    "title": "Data-augmentatie"
+                },
+                "tiling": {
+                    "title": "Tiling",
+                    "description": "Tiling is een techniek die afbeeldingen met een hoge resolutie opdeelt in kleinere tegels en kan helpen om de nauwkeurigheid te verhogen bij het detecteren van kleine objecten.",
+                    "modeLabel": "Tilingmodus",
+                    "modes": {
+                        "automatic": "Automatisch",
+                        "custom": "Aangepast"
+                    },
+                    "offDescription": "Het model verwerkt de volledige afbeelding als één geheel zonder deze op te delen in kleinere tegels. Deze aanpak is eenvoudig, maar kan moeite hebben met het detecteren van kleine objecten in afbeeldingen met een hoge resolutie, omdat het model fijnere details kan missen",
+                    "automaticDescription": "Dit betekent dat het systeem de parameters automatisch instelt op basis van de afbeeldingsresolutie en de grootte van de annotaties."
+                },
+                "intensityMapping": {
+                    "title": "Intensiteitstoewijzing"
+                }
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "Groeperen op",
+            "groupByDataset": "Groeperen op: dataset",
+            "groupByArchitecture": "Groeperen op: architectuur",
+            "hideFailedModels": "Mislukte modellen verbergen",
+            "showFailedModels": "Mislukte modellen weergeven",
+            "searchPlaceholder": "Modellen zoeken...",
+            "noModelsFound": "Geen modellen gevonden",
+            "empty": {
+                "title": "Nog geen modellen.",
+                "description": "Train je eerste model om aan de slag te gaan."
+            },
+            "deletedWeightsBadge": "Gewichten verwijderd",
+            "fineTunedFrom": "Verfijnd vanuit",
+            "columns": {
+                "trained": "Getraind",
+                "totalSize": "Totale grootte"
+            }
+        },
+        "performance": {
+            "metrics": {
+                "accuracy": "Nauwkeurigheid",
+                "precision": "Precisie",
+                "recall": "Recall",
+                "fMeasure": "F-maat"
+            },
+            "categories": {
+                "balance": "Balans",
+                "speed": "Snelheid",
+                "accuracy": "Nauwkeurigheid"
+            }
+        },
+        "variants": {
+            "empty": "Geen modelvarianten beschikbaar.",
+            "columns": {
+                "precision": "PRECISIE"
+            },
+            "quantizedInfo": {
+                "title": "Gekwantiseerd met NNCF PTQ",
+                "maxAccuracyDrop": "Maximale nauwkeurigheidsdaling: {{value}}",
+                "calibrationDatasetSize": "Grootte van kalibratiedataset: {{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "Download van model gestart"
+        },
+        "optimize": {
+            "description": "Optimaliseer het FP16-model met OpenVINO NNCF (via INT8-kwantisatie)",
+            "contextualHelp": "OpenVINO NNCF (Neural Network Compression Framework) verkleint via INT8-kwantisatie de modelgrootte en versnelt inferentie met minimale impact op de nauwkeurigheid",
+            "start": "Kwantisatie starten",
+            "dialogTitle": "Kwantisatie",
+            "subheading": "Model kwantiseren naar INT8",
+            "jobStarted": "Kwantisatietaak gestart.",
+            "recommendedCalibrationSize": "Aanbevolen grootte van kalibratiedataset: tussen 200 en 500 media-items",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "Maximale nauwkeurigheidsdaling (%)",
+                    "help": {
+                        "paragraph1": "Maximaal toegestane daling van de validatienauwkeurigheid.",
+                        "paragraph2": "Houd er rekening mee dat nauwkeurigheidsbewuste kwantisatie lang kan duren wanneer de maximaal toegestane daling klein is.",
+                        "paragraph3": "Houd er ook rekening mee dat de uiteindelijke testnauwkeurigheid lager kan zijn dan de opgegeven drempel voor validatienauwkeurigheid, vooral bij relatief kleine datasets."
+                    }
+                },
+                "maxIterations": {
+                    "label": "Maximaal aantal iteraties",
+                    "help": {
+                        "paragraph1": "Maximaal aantal iteraties van nauwkeurigheidsbewuste kwantisatie.",
+                        "paragraph2": "Nauwkeurigheidsbewuste kwantisatie verwijdert iteratief modellagen uit het kwantisatiebereik totdat aan het criterium voor de maximale nauwkeurigheidsdaling is voldaan. Door het aantal iteraties te beperken, kan de tijd die nodig is om modellen met veel lagen te kwantiseren aanzienlijk worden verkort.",
+                        "paragraph3": "Deze parameter wordt alleen gebruikt wanneer een maximale nauwkeurigheidsdaling is ingesteld."
+                    }
+                },
+                "calibrationSize": {
+                    "label": "Maximale kalibratiegrootte",
+                    "help": "Kalibratiesamples worden willekeurig uit de dataset geselecteerd",
+                    "useFullDataset": "Volledige dataset gebruiken"
+                }
+            }
+        },
+        "actions": {
+            "deleteWeights": "Gewichten verwijderen",
+            "deleteModel": "Model verwijderen",
+            "viewLogs": "Trainingslogboeken bekijken",
+            "deleteWeightsDescription": "Weet je zeker dat je de gewichten van model \"{{modelName}}\" wilt verwijderen?",
+            "deleteModelDescription": "Weet je zeker dat je model \"{{modelName}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+            "renameDialog": {
+                "title": "Naam van model wijzigen",
+                "nameLabel": "Modelnaam"
+            }
+        },
+        "columns": {
+            "modelName": "Modelnaam"
+        }
+    },
+    "jobs": {
+        "allProjects": "Alle projecten",
+        "currentProjectLabel": "{{name}} (huidig)",
+        "projectsSection": "Projecten",
+        "tabs": {
+            "all": "Alle",
+            "finished": "Afgerond"
+        },
+        "status": {
+            "pending": "In wachtrij",
+            "cancelling": "Bezig met annuleren",
+            "done": "Voltooid"
+        },
+        "type": {
+            "quantize": "Optimalisatie"
+        },
+        "columns": {
+            "type": "Type"
+        },
+        "cancel": {
+            "title": "Taak annuleren",
+            "confirmation": "Weet je zeker dat je taak {{jobId}} wilt annuleren?"
+        },
+        "meta": {
+            "started": "Gestart op {{time}}",
+            "elapsed": "Verstreken tijd: {{time}}"
+        },
+        "emptyState": {
+            "all": "Geen taken",
+            "running": "Geen actieve taken",
+            "finished": "Geen afgeronde taken",
+            "scheduled": "Geen taken in wachtrij",
+            "cancelled": "Geen geannuleerde taken",
+            "failed": "Geen mislukte taken"
+        },
+        "actions": {
+            "viewLogs": "Logboeken bekijken"
+        }
+    },
+    "license": {
+        "label": "Licentie: ",
+        "agreement": {
+            "title": "Licentieovereenkomsten",
+            "intro": "Lees en accepteer de volgende licenties om Geti te blijven gebruiken.",
+            "progress": "{{current}} van {{total}}",
+            "required": "Vereist",
+            "optional": "Optioneel",
+            "fullLicense": "De volledige licentie lezen",
+            "previous": "Vorige",
+            "accept": "Accepteren en doorgaan"
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "Laden... Even geduld."
+        },
+        "serverError": {
+            "heading": "Serverfout"
+        },
+        "errorPage": {
+            "badRequest": "De server kan of wil het huidige verzoek niet verwerken.",
+            "forbidden": "Je hebt geen toestemming om deze pagina te openen.",
+            "notFound": "Deze pagina bestaat niet!",
+            "unauthorized": "Je bent niet gemachtigd om dit te bekijken",
+            "serverError": "Er is een fout opgetreden op de server en je verzoek kon niet worden voltooid.",
+            "serviceUnavailable": "Het lijkt erop dat onze API niet beschikbaar is",
+            "goHome": "Terug naar de startpagina"
+        },
+        "notifications": {
+            "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw.",
+            "networkError": "Netwerkfout. Controleer je verbinding en probeer het opnieuw.",
+            "uploadTransferError": "De bestandsoverdracht is mislukt. Probeer het opnieuw."
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "Downloaden van bestand mislukt"
+        },
+        "saveDialog": {
+            "allFiles": "Alle bestanden",
+            "fileTypeFilter": "{{extension}}-bestand"
+        }
+    }
+}
