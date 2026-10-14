@@ -49,7 +49,6 @@ describe('SSIM utils', () => {
                     template: rect(5, 5, 20, 20),
                     existingAnnotations: [rect(100, 100), { type: 'full_image' }],
                     autoMergeDuplicates: true,
-                    shapeType: 'polygon',
                 })
             ).toEqual({
                 imageData,
