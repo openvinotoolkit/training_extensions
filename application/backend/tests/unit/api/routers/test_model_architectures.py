@@ -6,7 +6,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from app.supported_models.timm import TimmCatalog
+from app.supported_models.timm import TimmCatalog, TimmManifestProvider, model_name_to_id
 
 
 class TestModelArchitecturesEndpoint:
@@ -199,3 +199,58 @@ class TestModelArchitecturesEndpoint:
 
         response = fxt_client.get("/api/model_architectures/timm/manifest", params=params)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+
+class TestGetModelArchitectureById:
+    """Test cases for resolving a single architecture ID, static or timm-derived."""
+
+    def test_resolves_static_architecture_id(self, fxt_client: TestClient):
+        """A static manifest ID resolves to its full architecture view, license included."""
+        response = fxt_client.get("/api/model_architectures/object-detection-atss-mobilenet-v2")
+        assert response.status_code == status.HTTP_200_OK
+
+        data = response.json()
+        assert data["id"] == "object-detection-atss-mobilenet-v2"
+        assert data["name"] == "ATSS-MobileNet-V2"
+        assert data["task"] == "detection"
+        assert data["license"]["name"]
+
+    def test_resolves_concrete_timm_backbone_id(self, fxt_client: TestClient):
+        """A concrete timm backbone ID (as stored on trained models) resolves with its per-model license."""
+        families = fxt_client.get("/api/model_architectures/timm/families").json()
+        family = families[0]
+        variant = fxt_client.get(f"/api/model_architectures/timm/families/{family}/variants").json()[0]
+        pretrained_tag = (
+            fxt_client.get(f"/api/model_architectures/timm/families/{family}/variants/{variant}/pretrained-tags").json()
+        )[0]
+        model_name = TimmCatalog.get_model_name(family, variant, pretrained_tag)
+        assert model_name is not None
+        architecture_id = model_name_to_id(model_name)
+
+        response = fxt_client.get(f"/api/model_architectures/{architecture_id}")
+        assert response.status_code == status.HTTP_200_OK
+
+        data = response.json()
+        expected = TimmManifestProvider.build_manifest(model_name)
+        assert data["id"] == architecture_id
+        assert data["task"] == "classification"
+        assert data["timm_metadata"] is not None
+        assert data["license"]["name"] == expected.license.name
+        assert data["license"]["url"] == expected.license.url
+
+    def test_unknown_id_returns_404(self, fxt_client: TestClient):
+        """An unknown architecture ID returns 404 with a descriptive detail."""
+        response = fxt_client.get("/api/model_architectures/not-a-real-architecture")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "not-a-real-architecture" in response.json()["detail"]
+
+    def test_unknown_timm_backbone_id_returns_404(self, fxt_client: TestClient):
+        """A well-formed but nonexistent timm backbone ID returns 404, not a 500."""
+        response = fxt_client.get("/api/model_architectures/image-classification-timm-not-a-real-backbone")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "image-classification-timm-not-a-real-backbone" in response.json()["detail"]
+
+    def test_synthetic_timm_card_id_is_not_resolvable(self, fxt_client: TestClient):
+        """The synthetic selector card ID stays unresolvable by design (it selects no concrete backbone)."""
+        response = fxt_client.get("/api/model_architectures/image-classification-timm")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
