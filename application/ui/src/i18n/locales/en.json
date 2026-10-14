@@ -1141,7 +1141,11 @@
         },
         "meta": {
             "started": "Started {{time}}",
-            "elapsed": "Elapsed {{time}}"
+            "elapsed": "Elapsed {{time}}",
+            "duration": "Duration {{time}}",
+            "finished": "Finished {{time}}",
+            "failed": "Failed {{time}}",
+            "cancelled": "Cancelled {{time}}"
         },
         "emptyState": {
             "all": "No jobs",

@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { Badge } from '@geti-ui/ui';
 
-import classes from './jobs-dialog.module.scss';
+import classes from '../jobs-dialog.module.scss';
 
 export type BadgeTone = {
     variant: 'positive' | 'negative' | 'neutral' | 'yellow' | 'purple';
