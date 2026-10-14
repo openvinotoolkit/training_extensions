@@ -29,8 +29,8 @@ vi.mock('../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({ roi: mockROI, image: { width: mockROI.width, height: mockROI.height } }),
 }));
 
-vi.mock('../annotation-actions-provider.component', async (importActual) => {
-    const actual = await importActual<typeof import('../annotation-actions-provider.component')>();
+vi.mock('../annotation-document-provider.component', async (importActual) => {
+    const actual = await importActual<typeof import('../annotation-document-provider.component')>();
 
     return {
         ...actual,

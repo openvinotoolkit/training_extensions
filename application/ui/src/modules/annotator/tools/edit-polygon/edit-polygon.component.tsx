@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { isPolygonValid } from '@geti-ui/smart-tools/utils';
 
 import { Annotation, Polygon } from '../../../../shared/types';
-import { useAnnotationCommands } from '../../annotation-actions-provider.component';
+import { useAnnotationCommands } from '../../annotation-document-provider.component';
 import { AnnotationShapeRenderer } from '../../annotations/annotation-shape-renderer.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
 import { TranslateShape } from '../edit-bounding-box/translate-shape.component';

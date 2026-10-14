@@ -532,7 +532,7 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
             "max_epochs": training_config["max_epochs"],
             "callbacks": callbacks_list,
         }
-        if not is_huggingface and device.type is not DeviceType.CPU and device.index is not None:
+        if device.type is not DeviceType.CPU and device.index is not None:
             train_kwargs["devices"] = [device.index]
         if "precision" in training_config:
             train_kwargs["precision"] = training_config["precision"]

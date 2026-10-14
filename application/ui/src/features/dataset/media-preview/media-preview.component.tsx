@@ -161,7 +161,6 @@ const MediaPreviewContent = ({
     return (
         <ToolProvider>
             <AnnotatorProviders
-                mediaItem={mediaItem}
                 initialAnnotationsDTO={initialAnnotations}
                 initialPredictionsDTO={initialPredictions}
                 mode={mode}

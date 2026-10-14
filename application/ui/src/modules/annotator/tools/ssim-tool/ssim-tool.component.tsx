@@ -9,7 +9,7 @@ import { useTranslation } from '@/i18n';
 import { useProjectTask } from 'hooks/use-project-task.hook';
 
 import { isDetectionTask } from '../../../../shared/task-type-guards';
-import { useAnnotations } from '../../annotation-actions-provider.component';
+import { useAnnotations } from '../../annotation-document-provider.component';
 import { getFormattedPoints } from '../../annotations/utils';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';

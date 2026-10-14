@@ -10,7 +10,7 @@ pretrained_weights:
 description: "RT-DETRv2-R18 is the most lightweight member of the RT-DETRv2 family: a real-time end-to-end detector with selective multi-scale feature extraction and improved training strategies."
 stats:
   gigaflops: 60.0
-  trainable_parameters: 20.174608
+  trainable_parameters: 20.2
   benchmark_metrics:
     coco_map_50_95: 47.9
     coco_map_50: 66.6

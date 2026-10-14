@@ -605,7 +605,9 @@
             "createNewProject": "Create new project",
             "createProjectFromDataset": "Create from dataset",
             "card": {
-                "created": "Created: {{date}}"
+                "created": "Created: {{date}}",
+                "models_one": "{{count}} model",
+                "models_other": "{{count}} models"
             },
             "menu": {
                 "enablePipeline": "Enable pipeline",
@@ -620,7 +622,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Search projects",
-                "taskType": "Filter by task type"
+                "taskType": "Filter by task type",
+                "models": "Filter by models",
+                "withTrainedModels": "With trained models"
             },
             "noMatches": {
                 "title": "No projects match your filters",

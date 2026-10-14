@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { UndoRedoControls } from './undo-redo-actions.interface';
 
@@ -31,12 +31,15 @@ export const UndoRedoProvider = ({ baseHistory, children }: UndoRedoProviderProp
     const canToolUndo = toolHistory?.canUndo ?? false;
     const canToolRedo = toolHistory?.canRedo ?? false;
 
-    const controls: UndoRedoControls = {
-        canUndo: canToolUndo || baseHistory.canUndo,
-        canRedo: canToolRedo || baseHistory.canRedo,
-        undo: () => (canToolUndo ? toolHistory?.undo() : baseHistory.undo()),
-        redo: () => (canToolRedo ? toolHistory?.redo() : baseHistory.redo()),
-    };
+    const controls = useMemo<UndoRedoControls>(
+        () => ({
+            canUndo: canToolUndo || baseHistory.canUndo,
+            canRedo: canToolRedo || baseHistory.canRedo,
+            undo: () => (canToolUndo ? toolHistory?.undo() : baseHistory.undo()),
+            redo: () => (canToolRedo ? toolHistory?.redo() : baseHistory.redo()),
+        }),
+        [canToolUndo, canToolRedo, toolHistory, baseHistory]
+    );
 
     return (
         <RegisterToolHistoryContext value={registerToolHistory}>
@@ -59,11 +62,9 @@ export const useUndoRedo = (): UndoRedoControls => {
 export const useRegisterToolHistory = (history: UndoRedoControls): void => {
     const register = useContext(RegisterToolHistoryContext);
 
-    useEffect(() => {
-        if (register === undefined) {
-            return;
-        }
+    if (register === undefined) {
+        throw new Error('useRegisterToolHistory must be used within an UndoRedoProvider');
+    }
 
-        return register(history);
-    }, [register, history]);
+    useEffect(() => register(history), [register, history]);
 };

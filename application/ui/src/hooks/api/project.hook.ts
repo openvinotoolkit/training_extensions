@@ -5,8 +5,15 @@ import { $api } from '@/api';
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
+import { getQueryKey } from '../../query-client/query-client';
+
+// Partial key: matches the projects list query regardless of its query params.
+export const PROJECTS_QUERY_KEY = getQueryKey(['get', '/api/projects', { params: {} }]);
+
 export const useProjects = () => {
-    return $api.useSuspenseQuery('get', '/api/projects');
+    return $api.useSuspenseQuery('get', '/api/projects', {
+        params: { query: { include_model_counts: true } },
+    });
 };
 
 export const getProjectQueryOptions = (projectId: string) => {
@@ -23,13 +30,13 @@ export const useProject = () => {
 
 export const useCreateProject = () => {
     return $api.useMutation('post', '/api/projects', {
-        meta: { invalidateQueries: [['get', '/api/projects']] },
+        meta: { invalidateQueries: [PROJECTS_QUERY_KEY] },
     });
 };
 
 export const usePatchProject = () => {
     return $api.useMutation('patch', '/api/projects/{project_id}', {
-        meta: { invalidateQueries: [['get', '/api/projects']] },
+        meta: { invalidateQueries: [PROJECTS_QUERY_KEY] },
     });
 };
 
@@ -37,7 +44,7 @@ export const useDeleteProject = () => {
     const queryClient = useQueryClient();
 
     return $api.useMutation('delete', '/api/projects/{project_id}', {
-        meta: { invalidateQueries: [['get', '/api/projects']] },
+        meta: { invalidateQueries: [PROJECTS_QUERY_KEY] },
         onSuccess: async (
             _,
             {

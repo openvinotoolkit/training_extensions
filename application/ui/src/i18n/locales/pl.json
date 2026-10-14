@@ -609,7 +609,11 @@
             "createNewProject": "Utwórz nowy projekt",
             "createProjectFromDataset": "Utwórz z datasetu",
             "card": {
-                "created": "Utworzono: {{date}}"
+                "created": "Utworzono: {{date}}",
+                "models_one": "{{count}} model",
+                "models_few": "{{count}} modele",
+                "models_many": "{{count}} modeli",
+                "models_other": "{{count}} modeli"
             },
             "menu": {
                 "enablePipeline": "Włącz pipeline",
@@ -624,7 +628,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Szukaj projektów",
-                "taskType": "Filtruj według typu zadania"
+                "taskType": "Filtruj według typu zadania",
+                "models": "Filtruj według modeli",
+                "withTrainedModels": "Z wytrenowanymi modelami"
             },
             "noMatches": {
                 "title": "Żaden projekt nie pasuje do Twoich filtrów",

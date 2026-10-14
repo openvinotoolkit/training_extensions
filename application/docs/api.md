@@ -44,6 +44,10 @@
 | `GET`    | `/api/projects/<id>/training_configuration` | -                  | training config  | Get the training configuration    |
 | `PATCH`  | `/api/projects/<id>/training_configuration` | training config    | -                | Update the training configuration |
 
+> `GET /api/projects` and `GET /api/projects/<id>` accept an optional `include_model_counts` query parameter:
+> when `true`, each project includes a `model_counts` object with the number of successfully trained models
+> (`trained_models`); otherwise `model_counts` is `null`.
+
 ### Pipelines
 
 | Method  | Path                                  | Payload                    | Return        | Description                           |

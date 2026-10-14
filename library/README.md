@@ -241,6 +241,26 @@ engine.test()
 > If a model name matches recipes under multiple tasks, pass `task=` to disambiguate (e.g., `task="DETECTION"`).
 > If you want to use an Ultralytics YOLO model, you can pass a YAML file in [Ultralytics format](https://docs.ultralytics.com/datasets/) as `data=`.
 
+Hugging Face recipes use one GPU by default, even when multiple GPUs are visible. For multi-GPU training, set `num_devices` to the process count and launch the script with `torchrun`:
+
+```python
+# train_hf.py
+from getitune.engine import create_engine
+
+engine = create_engine(
+    model="rtdetrv2_r18",
+    data="/path/to/dataset",
+    num_devices=2,
+)
+engine.train(max_epochs=50)
+```
+
+```bash
+torchrun --standalone --nproc_per_node=2 train_hf.py
+```
+
+The configured device count must match the `torchrun` process count. Each process receives a separate batch shard; a multi-GPU request without a matching distributed launch fails instead of falling back to `DataParallel`.
+
 ---
 
 ### Export

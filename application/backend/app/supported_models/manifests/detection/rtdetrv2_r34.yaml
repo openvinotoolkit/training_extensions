@@ -7,7 +7,7 @@ pretrained_weights:
 description: "RT-DETRv2-R34 is a real-time end-to-end detector with selective multi-scale feature extraction and improved training strategies."
 stats:
   gigaflops: 92
-  trainable_parameters: 31.424388
+  trainable_parameters: 31.4
   benchmark_metrics:
     coco_map_50_95: 49.9
     coco_map_50: 67.5
