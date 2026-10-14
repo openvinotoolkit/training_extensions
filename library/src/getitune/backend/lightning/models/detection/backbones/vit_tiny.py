@@ -4,8 +4,10 @@
 """Vision Transformer (ViT) Tiny implementation for object detection.
 
 Modified from DEIMv2 (https://github.com/Intellindust-AI-Lab/DEIMv2)
-Modified from DINOv3 (https://github.com/facebookresearch/dinov3)
 Modified from https://huggingface.co/spaces/Hila/RobustViT/blob/main/ViT/ViT_new.py
+
+This implementation is licensed under Apache-2.0. Pretrained ViT-Tiny weights
+are distilled from DINOv3 and are subject to the DINOv3 license.
 """
 
 from __future__ import annotations
