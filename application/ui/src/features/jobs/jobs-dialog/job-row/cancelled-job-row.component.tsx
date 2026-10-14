@@ -11,14 +11,13 @@ export const CancelledJobRow = ({ job, showStatusBadge, projectName, architectur
     const { t } = useTranslation();
     const formatDateTime = useFormatDate(DATE_TIME_FORMAT);
     const cancelledAt = formatDateTime(job.finished_at);
-    const meta = [projectName, cancelledAt && t('jobs.meta.cancelled', { time: cancelledAt })]
-        .filter(Boolean)
-        .join(' · ');
+    const meta = [cancelledAt && t('jobs.meta.cancelled', { time: cancelledAt })].filter(Boolean).join(' · ');
 
     return (
         <JobRowLayout
             job={job}
             showStatusBadge={showStatusBadge}
+            projectName={projectName}
             architectureName={architectureName}
             meta={meta}
             actions={

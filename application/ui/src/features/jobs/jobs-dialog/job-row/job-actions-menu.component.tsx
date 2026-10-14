@@ -8,7 +8,7 @@ import { ActionButton, AlertDialog, DialogContainer, Item, Menu, MenuTrigger, ty
 import { MoreMenu } from '@geti-ui/ui/icons';
 import { useCancelJob } from 'hooks/api/jobs/jobs.hook';
 
-import type { ModelJob } from '../utils';
+import type { ModelJob } from '../../utils';
 
 const ACTIONS = {
     LOGS: 'logs',

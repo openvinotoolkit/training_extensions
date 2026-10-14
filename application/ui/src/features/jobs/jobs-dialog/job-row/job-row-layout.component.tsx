@@ -5,11 +5,14 @@ import type { ReactNode } from 'react';
 
 import { useTranslation } from '@/i18n';
 import { Flex, Grid, Text, View } from '@geti-ui/ui';
+import { Link } from 'react-router';
 
-import { type ModelJob } from '../utils';
+import { paths } from '../../../../constants/paths';
+import { type ModelJob } from '../../utils';
 import { JobStatusBadge } from './job-status-badge.component';
 
-import classes from './jobs-dialog.module.scss';
+import dialogClasses from '../jobs-dialog.module.scss';
+import classes from './job-row.module.scss';
 
 export const JOB_GRID_COLUMNS = ['minmax(0, 1fr)', 'size-1600', 'size-2400', 'size-2000', 'size-500'];
 
@@ -26,24 +29,46 @@ export type JobRowProps = {
     onViewLogs: () => void;
 };
 
-type JobRowLayoutProps = Pick<JobRowProps, 'job' | 'showStatusBadge' | 'architectureName'> & {
+type JobRowLayoutProps = Pick<JobRowProps, 'job' | 'showStatusBadge' | 'projectName' | 'architectureName'> & {
     meta: ReactNode;
     spinner?: ReactNode;
     actions?: ReactNode;
 };
 
-export const JobRowLayout = ({ job, showStatusBadge, architectureName, meta, spinner, actions }: JobRowLayoutProps) => {
+export const JobRowLayout = ({
+    job,
+    showStatusBadge,
+    projectName,
+    architectureName,
+    meta,
+    spinner,
+    actions,
+}: JobRowLayoutProps) => {
     const { t } = useTranslation();
     const device = 'device' in job.metadata ? job.metadata.device.name : '—';
 
     return (
-        <Grid columns={JOB_GRID_COLUMNS} columnGap={'size-200'} alignItems={'center'} UNSAFE_className={classes.grid}>
+        <Grid
+            columns={JOB_GRID_COLUMNS}
+            columnGap={'size-200'}
+            alignItems={'center'}
+            UNSAFE_className={dialogClasses.grid}
+        >
             <Flex direction={'column'} gap={'size-50'} minWidth={0}>
                 <Flex gap={'size-100'} alignItems={'center'} wrap height={'size-600'}>
                     <Text UNSAFE_className={classes.modelName}>{job.metadata.model.name}</Text>
                     {showStatusBadge && <JobStatusBadge status={job.status} />}
                 </Flex>
                 <View UNSAFE_className={classes.metaRow}>
+                    {projectName && (
+                        <Link
+                            to={paths.project.models({ projectId: job.metadata.project.id })}
+                            className={classes.projectLink}
+                        >
+                            {projectName}
+                        </Link>
+                    )}
+                    {projectName && ' · '}
                     <Text UNSAFE_className={classes.metaText}>{meta}</Text>
                     {spinner}
                 </View>

@@ -14,8 +14,9 @@ export const QueuedJobRow = ({ job, showStatusBadge, projectName, architectureNa
         <JobRowLayout
             job={job}
             showStatusBadge={showStatusBadge}
+            projectName={projectName}
             architectureName={architectureName}
-            meta={[projectName, t('models.jobs.waitingToStart')].filter(Boolean).join(' · ')}
+            meta={t('models.jobs.waitingToStart')}
             spinner={<Loading size={'S'} mode={'inline'} />}
             actions={<JobActionsMenu job={job} canCancel />}
         />

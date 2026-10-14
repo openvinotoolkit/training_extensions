@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { getStatusGroup } from '../utils';
+import { getStatusGroup } from '../../utils';
 import { CancelledJobRow } from './cancelled-job-row.component';
 import { FailedJobRow } from './failed-job-row.component';
 import { FinishedJobRow } from './finished-job-row.component';

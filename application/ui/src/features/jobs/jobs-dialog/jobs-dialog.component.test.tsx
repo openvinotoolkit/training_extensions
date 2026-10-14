@@ -11,6 +11,7 @@ import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
+import { paths } from '../../../constants/paths';
 import { server } from '../../../msw-node-setup';
 import { ALL_PROJECTS, type ModelJob } from '../utils';
 import { JobsDialog } from './jobs-dialog.component';
@@ -133,12 +134,33 @@ describe('JobsDialog', () => {
 
         renderDialog({ initialProjectId: ALL_PROJECTS });
 
-        expect(await screen.findByText('Alpha · Waiting to start...')).toBeInTheDocument();
+        expect(await screen.findByRole('link', { name: 'Alpha' })).toBeInTheDocument();
+        expect(screen.getByText('Waiting to start...')).toBeInTheDocument();
         expect(getLoadingSpinner()).toBeInTheDocument();
         expect(getJobProgressBar()).not.toBeInTheDocument();
         await openJobActions('pending model');
         expect(screen.getByRole('menuitem', { name: 'Cancel' })).toBeInTheDocument();
         expect(screen.queryByRole('menuitem', { name: 'View logs' })).not.toBeInTheDocument();
+    });
+
+    it('links every job project name to its models page', async () => {
+        const jobs = [
+            trainJob({ job_id: 'pending', status: 'PENDING', started_at: null }),
+            trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' }),
+            trainJob({ job_id: 'cancelling', status: 'CANCELLING', started_at: '2026-01-01T00:00:00Z' }),
+            trainJob({ job_id: 'done', status: 'DONE', started_at: '2026-01-01T00:00:00Z' }),
+            trainJob({ job_id: 'failed', status: 'FAILED', started_at: '2026-01-01T00:00:00Z' }),
+            trainJob({ job_id: 'cancelled', status: 'CANCELLED', started_at: '2026-01-01T00:00:00Z' }),
+        ];
+        mockJobs(jobs);
+        renderDialog({ initialProjectId: ALL_PROJECTS });
+
+        const projectLinks = await screen.findAllByRole('link', { name: 'Alpha' });
+
+        expect(projectLinks).toHaveLength(jobs.length);
+        projectLinks.forEach((link) =>
+            expect(link).toHaveAttribute('href', paths.project.models({ projectId: 'project-a' }))
+        );
     });
 
     it('does not render a job progress bar for queued job', async () => {
@@ -302,7 +324,7 @@ describe('JobsDialog', () => {
         renderDialog();
 
         expect(await screen.findByText('failed model')).toBeInTheDocument();
-        expect(screen.getByText(/^Alpha · Failed .+/)).toBeInTheDocument();
+        expect(screen.getByText(/^Failed .+/)).toBeInTheDocument();
         expect(screen.getByText('Training stopped')).toBeInTheDocument();
         expect(getLoadingSpinner()).not.toBeInTheDocument();
         expect(getJobProgressBar()).not.toBeInTheDocument();
@@ -347,7 +369,7 @@ describe('JobsDialog', () => {
         renderDialog();
 
         await screen.findByText('cancelled model');
-        expect(screen.getByText(/^Alpha · Cancelled .+/)).toBeInTheDocument();
+        expect(screen.getByText(/^Cancelled .+/)).toBeInTheDocument();
         expect(getLoadingSpinner()).not.toBeInTheDocument();
         expect(getJobProgressBar()).not.toBeInTheDocument();
         await openJobActions('cancelled model');

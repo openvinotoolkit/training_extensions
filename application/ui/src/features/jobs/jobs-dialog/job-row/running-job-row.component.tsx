@@ -6,7 +6,7 @@ import { useTranslation } from '@/i18n';
 import { Loading } from '@geti-ui/ui';
 import { DATE_TIME_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 
-import { formatElapsed } from '../utils';
+import { formatElapsed } from '../../utils';
 import { JobActionsMenu } from './job-actions-menu.component';
 import { JobRowLayout, type JobRowProps } from './job-row-layout.component';
 
@@ -15,7 +15,6 @@ export const RunningJobRow = ({ job, showStatusBadge, projectName, architectureN
     const formatDateTime = useFormatDate(DATE_TIME_FORMAT);
     const startedAt = formatDateTime(job.started_at);
     const meta = [
-        projectName,
         startedAt && t('jobs.meta.started', { time: startedAt }),
         t('jobs.meta.elapsed', { time: formatElapsed(job) }),
         job.progress > 0 && `${Math.round(job.progress)}%`,
@@ -28,6 +27,7 @@ export const RunningJobRow = ({ job, showStatusBadge, projectName, architectureN
             <JobRowLayout
                 job={job}
                 showStatusBadge={showStatusBadge}
+                projectName={projectName}
                 architectureName={architectureName}
                 meta={meta}
                 spinner={job.progress === 0 ? <Loading size={'S'} mode={'inline'} /> : undefined}
