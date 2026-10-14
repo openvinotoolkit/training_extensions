@@ -24,5 +24,7 @@ export const JobRow = (props: JobRowProps) => {
             return <FailedJobRow {...props} />;
         case 'cancelled':
             return <CancelledJobRow {...props} />;
+        default:
+            return null;
     }
 };
