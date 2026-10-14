@@ -1,17 +1,26 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Media } from '@/api/types';
-import { render, screen } from '@testing-library/react';
+import type { Label, Media } from '@/api/types';
+import { fireEvent, render, screen } from '@testing-library/react';
 
+import type { Shape } from '../../../../shared/types';
+import type { AnnotatorMode } from '../../annotator-mode';
 import type { ToolType } from '../../tool-type';
 import { SSIMStateProvider, useSSIMState } from './ssim-state-provider.component';
 import { useSSIM } from './use-ssim.hook';
 
+const template: Shape = { type: 'rectangle', x: 0, y: 0, width: 10, height: 10 };
+const match: Shape = { type: 'rectangle', x: 50, y: 50, width: 10, height: 10 };
+const label = { id: 'label-1', name: 'Red' } as Label;
+
 let mockActiveTool: ToolType | null = 'ssim';
 let mockMediaItem = { id: 'media-1' } as Media;
 let mockTaskType = 'detection';
+let mockMode: AnnotatorMode = 'annotation';
+let mockShapes: Shape[] = [];
 const mockReset = vi.fn();
+const mockAddAndSelectAnnotations = vi.fn();
 
 vi.mock('../../tool-provider.component', () => ({
     useTool: () => ({ activeTool: mockActiveTool, setActiveTool: vi.fn() }),
@@ -21,18 +30,36 @@ vi.mock('../../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({ mediaItem: mockMediaItem }),
 }));
 
+vi.mock('../../annotation-document-provider.component', () => ({
+    useAnnotations: () => ({ mode: mockMode }),
+}));
+
+vi.mock('../../annotator-labels-provider.component', () => ({
+    useAnnotatorLabels: () => ({ selectedLabel: label }),
+}));
+
+vi.mock('../use-add-and-select-annotations.hook', () => ({
+    useAddAndSelectAnnotations: () => ({ addAndSelectAnnotations: mockAddAndSelectAnnotations }),
+}));
+
 vi.mock('hooks/use-project-task.hook', () => ({
     useProjectTask: () => mockTaskType,
 }));
 
 vi.mock('./use-ssim.hook', () => ({
-    useSSIM: vi.fn(() => ({ reset: mockReset })),
+    useSSIM: vi.fn(() => ({ reset: mockReset, toolState: { shapes: mockShapes } })),
 }));
 
 const Consumer = () => {
-    useSSIMState();
+    const { hasPreview, accept, reject } = useSSIMState();
 
-    return <span>consumer</span>;
+    return (
+        <>
+            <span>{hasPreview ? 'has preview' : 'no preview'}</span>
+            <button onClick={accept}>Accept</button>
+            <button onClick={reject}>Reject</button>
+        </>
+    );
 };
 
 const renderTree = () => (
@@ -47,6 +74,8 @@ describe('SSIMStateProvider', () => {
         mockActiveTool = 'ssim';
         mockMediaItem = { id: 'media-1' } as Media;
         mockTaskType = 'detection';
+        mockMode = 'annotation';
+        mockShapes = [];
     });
 
     it.each([
@@ -57,7 +86,7 @@ describe('SSIMStateProvider', () => {
 
         render(renderTree());
 
-        expect(screen.getByText('consumer')).toBeInTheDocument();
+        expect(screen.getByText('no preview')).toBeInTheDocument();
         expect(useSSIM).toHaveBeenCalledWith(shapeType);
     });
 
@@ -88,5 +117,39 @@ describe('SSIMStateProvider', () => {
         rerender(renderTree());
 
         expect(mockReset).not.toHaveBeenCalled();
+    });
+
+    it('resets the state when the annotator mode changes', () => {
+        const { rerender } = render(renderTree());
+        mockReset.mockClear();
+
+        mockMode = 'prediction';
+        rerender(renderTree());
+
+        expect(mockReset).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds the previewed shapes with the selected label and resets on accept', () => {
+        mockShapes = [template, match];
+        render(renderTree());
+        mockReset.mockClear();
+
+        expect(screen.getByText('has preview')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+
+        expect(mockAddAndSelectAnnotations).toHaveBeenCalledWith([template, match], [label]);
+        expect(mockReset).toHaveBeenCalledTimes(1);
+    });
+
+    it('discards the preview without adding annotations on reject', () => {
+        mockShapes = [template, match];
+        render(renderTree());
+        mockReset.mockClear();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Reject' }));
+
+        expect(mockAddAndSelectAnnotations).not.toHaveBeenCalled();
+        expect(mockReset).toHaveBeenCalledTimes(1);
     });
 });

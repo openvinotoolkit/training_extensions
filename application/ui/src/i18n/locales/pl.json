@@ -816,6 +816,10 @@
                 "error": "Błąd narzędzia asystenta wykrywania: {{message}}",
                 "operations": {
                     "workerBuild": "Kompilacja workera asystenta wykrywania"
+                },
+                "options": {
+                    "accept": "Akceptuj",
+                    "reject": "Odrzuć"
                 }
             }
         },

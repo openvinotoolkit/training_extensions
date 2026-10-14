@@ -812,6 +812,10 @@
                 "error": "偵測助手工具發生錯誤：{{message}}",
                 "operations": {
                     "workerBuild": "偵測助手工作進程建置"
+                },
+                "options": {
+                    "accept": "接受",
+                    "reject": "拒絕"
                 }
             }
         },

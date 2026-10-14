@@ -15,7 +15,6 @@ import { Rectangle } from '../../shapes/rectangle.component';
 import { DEFAULT_ANNOTATION_STYLES } from '../../utils';
 import { DrawingBox } from '../drawing-box-tool/drawing-box.component';
 import { ToolLoading } from '../tool-loading.component';
-import { useAddAndSelectAnnotations } from '../use-add-and-select-annotations.hook';
 import { useSSIMState } from './ssim-state-provider.component';
 
 import classes from './ssim-tool.module.scss';
@@ -26,8 +25,7 @@ export const SSIMTool = () => {
     const { roi, image } = useSelectedMediaItem();
     const { annotations } = useAnnotations();
     const { selectedLabel } = useAnnotatorLabels();
-    const { addAndSelectAnnotations } = useAddAndSelectAnnotations();
-    const { runSSIM, reset, toolState, isProcessing, isLoading, isError, error } = useSSIMState();
+    const { runSSIM, toolState, isProcessing, isLoading, isError, error } = useSSIMState();
 
     useEffect(() => {
         if (!isError) {
@@ -42,16 +40,6 @@ export const SSIMTool = () => {
             }),
         });
     }, [isError, error, t]);
-
-    useEffect(() => {
-        if (isProcessing || toolState.shapes.length === 0) {
-            return;
-        }
-
-        // The first shape is the user-drawn template, which is kept as an annotation too.
-        addAndSelectAnnotations(toolState.shapes, selectedLabel ? [selectedLabel] : []);
-        reset();
-    }, [toolState.shapes, isProcessing, addAndSelectAnnotations, selectedLabel, reset]);
 
     if (isLoading) {
         return <ToolLoading message={t('annotator.tools.ssim.loading')} />;
