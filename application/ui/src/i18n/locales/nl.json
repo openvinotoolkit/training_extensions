@@ -102,7 +102,12 @@
         "models": "Modellen",
         "modelsDescription": "Modellenpagina om je modellen te bekijken",
         "inference": "Inferentie",
-        "inferenceDescription": "Inferentiepagina met live inferentie op je project"
+        "inferenceDescription": "Inferentiepagina met live inferentie op je project",
+        "help": {
+            "documentation": "Gebruikersdocumentatie",
+            "whatsNew": "Wat is er nieuw",
+            "reportIssue": "Een probleem melden"
+        }
     },
     "dataset": {
         "validation": {
