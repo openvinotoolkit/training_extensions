@@ -1,0 +1,1230 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "Annuler",
+            "close": "Fermer",
+            "delete": "Supprimer",
+            "goBack": "Revenir en arrière",
+            "rename": "Renommer",
+            "save": "Enregistrer",
+            "assign": "Attribuer",
+            "back": "Retour",
+            "clear": "Effacer",
+            "clearAll": "Tout effacer",
+            "confirm": "Confirmer",
+            "connect": "Connecter",
+            "continue": "Continuer",
+            "create": "Créer",
+            "disconnect": "Déconnecter",
+            "dismiss": "Ignorer",
+            "download": "Télécharger",
+            "edit": "Modifier",
+            "export": "Exporter",
+            "hide": "Masquer",
+            "next": "Suivant",
+            "refresh": "Actualiser",
+            "remove": "Retirer",
+            "selectAll": "Tout sélectionner",
+            "showLess": "Afficher moins",
+            "showMore": "Afficher plus",
+            "skip": "Passer",
+            "start": "Démarrer",
+            "submit": "Soumettre",
+            "train": "Entraîner",
+            "upload": "Téléverser",
+            "undo": "Annuler",
+            "redo": "Rétablir",
+            "annotate": "Annoter",
+            "addAndUse": "Ajouter et utiliser",
+            "saveAndConnect": "Enregistrer et connecter",
+            "testConnection": "Tester la connexion"
+        },
+        "labels": {
+            "allUppercase": "TOUS",
+            "yes": "Oui",
+            "no": "Non",
+            "unknown": "Inconnu",
+            "name": "Nom",
+            "architecture": "Architecture",
+            "device": "Périphérique",
+            "on": "Activé",
+            "off": "Désactivé",
+            "noMaximum": "Aucun maximum",
+            "active": "Actif",
+            "dataset": "Jeu de données",
+            "filters": "Filtres",
+            "images": "Images",
+            "videos": "Vidéos",
+            "size": "Taille",
+            "sizeUppercase": "TAILLE",
+            "statusUppercase": "STATUT",
+            "settings": "Paramètres",
+            "training": "Entraînement",
+            "training_subset": "Entraînement",
+            "validation": "Validation",
+            "validation_subset": "Validation",
+            "testing": "Test",
+            "unassigned": "Non attribué",
+            "trainingLowercase": "entraînement",
+            "validationLowercase": "validation",
+            "testingLowercase": "test",
+            "frames": "Trames",
+            "seconds": "Secondes",
+            "every": "toutes les",
+            "model": "Modèle",
+            "jobs": "Tâches",
+            "labels": "Étiquettes",
+            "bytesTransferred": "{{transferred}} sur {{total}}"
+        },
+        "viewModes": {
+            "large": "Grandes miniatures",
+            "medium": "Miniatures moyennes",
+            "small": "Petites miniatures"
+        },
+        "status": {
+            "pending": "En attente",
+            "running": "En cours",
+            "done": "Terminé",
+            "cancelled": "Annulé",
+            "uploading": "Téléversement en cours",
+            "failed": "Échec",
+            "error": "Erreur",
+            "disconnected": "Déconnecté"
+        },
+        "errors": {
+            "unknown": "Une erreur inconnue s’est produite",
+            "unknownDetail": "Erreur inconnue"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Logo Geti",
+        "datasetDescription": "Page de collecte de données pour visualiser vos éléments multimédias",
+        "models": "Modèles",
+        "modelsDescription": "Page des modèles pour visualiser vos modèles",
+        "inference": "Inférence",
+        "inferenceDescription": "Page d’inférence affichant l’inférence en direct sur votre projet",
+        "help": {
+            "documentation": "Documentation utilisateur",
+            "whatsNew": "Nouveautés",
+            "reportIssue": "Signaler un problème"
+        }
+    },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "Une vue portant ce nom existe déjà.",
+            "invalidDateRange": "La date de fin doit être postérieure à la date de début"
+        },
+        "views": {
+            "deleted": "Vue supprimée",
+            "title": "Vues",
+            "entireDataset": "Jeu de données complet",
+            "assignToExistingView": "Attribuer à une vue existante",
+            "assignTo": "Attribuer à",
+            "selectView": "Sélectionner une vue",
+            "assignmentNote": "Cette opération n’affectera pas les autres médias déjà attribués à cette vue.",
+            "mediaAssigned_one": "{{count}} élément multimédia attribué avec succès.",
+            "mediaAssigned_other": "{{count}} éléments multimédias attribués avec succès.",
+            "mediaAssigned_many": "{{count}} éléments multimédias attribués avec succès.",
+            "openView": "Ouvrir {{viewName}}",
+            "saveView": "Enregistrer la vue",
+            "viewNameLabel": "Nom de la vue",
+            "renameTitle": "Renommer la vue du jeu de données",
+            "deleteTitle": "Confirmation de suppression",
+            "deleteConfirmation": "Voulez-vous vraiment supprimer la vue « {{viewName}} » du jeu de données ?",
+            "deleteSuccess": "La vue « {{viewName}} » du jeu de données a bien été supprimée.",
+            "unassignFromView": "Retirer de cette vue",
+            "selectedMediaCount_one": "{{count}} élément multimédia sélectionné",
+            "selectedMediaCount_other": "{{count}} éléments multimédias sélectionnés",
+            "selectedMediaCount_many": "{{count}} éléments multimédias sélectionnés"
+        },
+        "filters": {
+            "allMedia": "Tous les médias",
+            "withAnnotations": "Médias avec annotations",
+            "missingAnnotations": "Médias avec annotations manquantes",
+            "subset": "Filtrer par sous-ensemble",
+            "searchLabels": "Rechercher des étiquettes",
+            "labelsSelected_one": "{{count}} étiquette sélectionnée",
+            "labelsSelected_other": "{{count}} étiquettes sélectionnées",
+            "labelsSelected_many": "{{count}} étiquettes sélectionnées",
+            "toggleAll": "Tout activer/désactiver",
+            "more": "Plus de filtres",
+            "dateRange": {
+                "heading": "Filtrer par date de téléversement",
+                "startDateLabel": "Date de début",
+                "endDateLabel": "Date de fin",
+                "from": "À partir du {{date}}",
+                "to": "Jusqu’au {{date}}"
+            }
+        },
+        "upload": {
+            "queued": "En file d’attente",
+            "processing": "Traitement en cours",
+            "uploaded": "Téléversé",
+            "errorTitle": "Erreur de téléversement",
+            "details": "Détails du téléversement",
+            "filename": "NOM DU FICHIER",
+            "uploadingSummary_one": "Téléversement de {{total}} élément - {{uploaded}} téléversé(s)",
+            "uploadingSummary_other": "Téléversement de {{total}} éléments - {{uploaded}} téléversé(s)",
+            "uploadingSummary_many": "Téléversement de {{total}} éléments - {{uploaded}} téléversé(s)",
+            "uploadingFailedSummary_one": "Téléversement de {{total}} élément - {{uploaded}} téléversé(s), {{failed}} en échec",
+            "uploadingFailedSummary_other": "Téléversement de {{total}} éléments - {{uploaded}} téléversé(s), {{failed}} en échec",
+            "uploadingFailedSummary_many": "Téléversement de {{total}} éléments - {{uploaded}} téléversé(s), {{failed}} en échec",
+            "uploadedSummary_one": "{{count}} élément téléversé",
+            "uploadedSummary_other": "{{count}} éléments téléversés",
+            "uploadedSummary_many": "{{count}} éléments téléversés",
+            "failedSummary_one": "Échec du téléversement de {{count}} élément",
+            "failedSummary_other": "Échec du téléversement de {{count}} éléments",
+            "failedSummary_many": "Échec du téléversement de {{count}} éléments",
+            "mixedSummary_one": "{{uploaded}} élément téléversé, {{failed}} en échec",
+            "mixedSummary_other": "{{uploaded}} éléments téléversés, {{failed}} en échec",
+            "mixedSummary_many": "{{uploaded}} éléments téléversés, {{failed}} en échec",
+            "mixedCancelledSummary_one": "{{uploaded}} élément téléversé, {{failed}} en échec, {{cancelled}} annulé(s)",
+            "mixedCancelledSummary_other": "{{uploaded}} éléments téléversés, {{failed}} en échec, {{cancelled}} annulé(s)",
+            "mixedCancelledSummary_many": "{{uploaded}} éléments téléversés, {{failed}} en échec, {{cancelled}} annulé(s)",
+            "genericError": "Échec du téléversement des médias.",
+            "uploadMedia": "Téléverser des médias",
+            "showDetails": "Afficher les détails",
+            "inProgressToast_one": "Téléversement de {{count}} élément...",
+            "inProgressToast_other": "Téléversement de {{count}} éléments...",
+            "inProgressToast_many": "Téléversement de {{count}} éléments...",
+            "inProgressSucceededPart": "{{count}} réussi(s)",
+            "inProgressFailedPart": "{{count}} en échec",
+            "cancelAll": "Tout annuler",
+            "cancelledSummary_one": "{{count}} téléversement annulé",
+            "cancelledSummary_other": "{{count}} téléversements annulés",
+            "cancelledSummary_many": "{{count}} téléversements annulés"
+        },
+        "empty": {
+            "noMatches": "Aucun élément multimédia ne correspond à votre filtre.",
+            "changeFilter": "Supprimez le filtre ou sélectionnez-en un nouveau.",
+            "viewEmpty": "Cette vue ne contient aucun élément multimédia.",
+            "assignOrBack": "Attribuez-lui des éléments multimédias ou revenez au jeu de données complet.",
+            "goToEntireDataset": "Aller à {{datasetName}}",
+            "datasetEmpty": "Votre jeu de données est vide.",
+            "uploadToStart": "Téléversez votre premier élément multimédia pour commencer."
+        },
+        "review": {
+            "reviewed": "Vérifié",
+            "forReview": "À vérifier",
+            "selectSubsetPlaceholder": "Sélectionner un sous-ensemble"
+        },
+        "statistics": {
+            "label": "Statistiques du jeu de données",
+            "title": "Statistiques du jeu de données",
+            "numberOfMedia": "Nombre de médias",
+            "annotatedImages": "Images annotées",
+            "annotatedVideosFrames": "Vidéos / trames annotées",
+            "numberOfObjectsPerLabel": "Nombre d’objets par étiquette",
+            "unannotated": "Non annoté",
+            "annotated": "Annoté",
+            "annotationsChartTooltip": "Annotations"
+        },
+        "delete": {
+            "title": "Supprimer des éléments",
+            "mediaItem": "Supprimer l’élément multimédia",
+            "confirmation_one": "Voulez-vous vraiment supprimer {{count}} élément ?",
+            "confirmation_other": "Voulez-vous vraiment supprimer {{count}} éléments ?",
+            "confirmation_many": "Voulez-vous vraiment supprimer {{count}} éléments ?",
+            "deletingItems": "Suppression des éléments...",
+            "deleteError": "Échec de la suppression, {{detail}}",
+            "deletedSuccess_one": "{{count}} élément supprimé avec succès",
+            "deletedSuccess_other": "{{count}} éléments supprimés avec succès",
+            "deletedSuccess_many": "{{count}} éléments supprimés avec succès"
+        },
+        "bulkLabels": {
+            "title": "Attribution d’étiquettes",
+            "uploadInstructions": "Choisissez la ou les étiquettes à attribuer aux images téléversées, puis cliquez sur « Continuer ». Si vous préférez annoter les images plus tard, choisissez « Passer ».",
+            "selectedInstructions": "Choisissez la ou les étiquettes à attribuer aux images sélectionnées, puis cliquez sur « Attribuer ».",
+            "imageOnlyNote": "Les étiquettes sélectionnées s’appliquent uniquement aux images ; les vidéos (le cas échéant) seront téléversées sans annotations.",
+            "selectedImagesNote": "Les étiquettes sélectionnées s’appliquent uniquement aux images ; les vidéos (le cas échéant) restent inchangées.",
+            "noResults": "Aucun résultat. Essayez une recherche avec d’autres mots.",
+            "cancelUpload": "Annuler le téléversement",
+            "assignLabelTooltip": "Attribuer une étiquette",
+            "assignAllSuccess": "Étiquette(s) attribuée(s) avec succès aux {{count}} image(s)",
+            "assignAllFailure": "Échec de l’attribution des étiquettes aux {{count}} image(s)",
+            "assignPartialSuccess": "Étiquette(s) attribuée(s) à {{succeeded}} image(s) sur {{total}} ({{failed}} en échec)"
+        },
+        "mediaActions": {
+            "downloadStarted": "Le téléchargement de {{fileName}} a commencé"
+        },
+        "gallery": {
+            "sort": {
+                "label": "Trier les médias par :",
+                "uploadDateDescending": "Date de téléversement (plus récent)",
+                "uploadDateAscending": "Date de téléversement (plus ancien)"
+            },
+            "selectedCount": "{{count}} sélectionné(s)",
+            "totalMediaCount_one": "{{count}} élément multimédia",
+            "totalMediaCount_other": "{{count}} éléments multimédias",
+            "totalMediaCount_many": "{{count}} éléments multimédias",
+            "dropZone": {
+                "title": "Déposez les fichiers multimédias ici",
+                "description": "Les images et vidéos seront téléversées dans ce jeu de données."
+            },
+            "mediaInfo": {
+                "annotatedFrames": "Nombre de trames annotées : {{count}}",
+                "totalFrames": "Nombre total de trames : {{count}}"
+            }
+        },
+        "import": {
+            "jobTitle": "Importer le jeu de données - {{fileName}} - {{size}}",
+            "processingMessage": "Le fichier {{fileName}} est en cours de traitement pour l’importation",
+            "technicalDetails": "Détails techniques",
+            "preparingJob": "Préparation",
+            "stagedFileReadError": "Une erreur s’est produite lors de la lecture du fichier préparé",
+            "prepareError": "Une erreur s’est produite lors de la préparation de l’importation.",
+            "genericError": "Une erreur s’est produite lors de l’importation.",
+            "importedSuccess": "Le jeu de données {{fileName}} {{size}} a été importé avec succès.",
+            "multipleFilesError": "L’ajout de dossiers ou de plusieurs fichiers n’est pas autorisé. Veuillez charger un seul fichier.",
+            "unsupportedFormatError": "Format de fichier non pris en charge. Veuillez téléverser un fichier .zip valide.",
+            "datasetBeingUploaded": "Téléversement du jeu de données en cours",
+            "dropZipHere": "Déposez ici le fichier .zip du jeu de données",
+            "learnMoreFormats": "En savoir plus sur les différents formats",
+            "dialogHeading": "Importer un jeu de données",
+            "scanningMessage": "Analyse de l’archive du jeu de données à importer...",
+            "mapLabelsMessage": "Associer les étiquettes du jeu de données téléversé",
+            "deleteStagedFile": {
+                "title": "Supprimer le fichier préparé",
+                "confirmation": "Voulez-vous vraiment supprimer le fichier de jeu de données « {{stagedDatasetId}} » ?"
+            },
+            "formatWarning": {
+                "boundingBoxToPolygon": "Le jeu de données importé utilise des annotations par cadres de délimitation, mais le jeu de données de votre projet utilise des polygones. Les annotations seront automatiquement converties en polygones pour garantir la compatibilité.",
+                "polygonToBoundingBox": "Le jeu de données importé utilise des annotations par polygones, mais le jeu de données de votre projet utilise des cadres de délimitation. Les annotations seront automatiquement converties en cadres de délimitation pour garantir la compatibilité."
+            },
+            "labelMapping": {
+                "statisticsHeading": "Statistiques du jeu de données importé",
+                "heading": "Association des étiquettes - facultatif",
+                "unmappedNote": "Les éléments non associés seront importés sans étiquette",
+                "datasetLabelsColumn": "Étiquettes du jeu de données",
+                "projectLabelsColumn": "Étiquettes du projet",
+                "selectLabelPlaceholder": "Sélectionner une étiquette",
+                "imagesLabel": "images",
+                "framesLabel": "trames"
+            }
+        },
+        "export": {
+            "heading": "Exporter {{name}}",
+            "headingDatasetView": "Exporter la vue du jeu de données",
+            "datasetView": "Vue : {{name}}",
+            "statisticsHeading": "Statistiques du jeu de données exporté",
+            "settingsHeading": "Paramètres d’exportation",
+            "filterByLabel": "Filtrer les annotations par étiquette",
+            "selectFormat": "Sélectionner le format d’exportation du jeu de données",
+            "learnMoreFormats": "En savoir plus sur les formats d’exportation",
+            "processing": "Préparation du jeu de données pour l’exportation",
+            "readyForDownload": "Le jeu de données est prêt à être téléchargé",
+            "downloadStarted": "Le téléchargement du jeu de données a commencé",
+            "error": "Erreur : {{error}}",
+            "itemsLabel": "éléments",
+            "details": {
+                "defaultName": "jeu de données",
+                "format": "Format :",
+                "media": "Médias :",
+                "onlyAnnotated": "Uniquement les médias avec annotations",
+                "labels": "Étiquettes :"
+            },
+            "warnings": {
+                "videos": "L’exportation de vidéos n’est pas prise en charge par ce format de jeu de données. Toutes les trames annotées des vidéos seront exportées sous forme d’images.",
+                "emptyLabel": "Le format sélectionné ne prend pas en charge les étiquettes vides (par ex. « {{emptyLabelName}} »). Les images et trames qui en contiennent seront exportées comme non annotées.",
+                "unsupportedItemsEmptyLabels": "les étiquettes vides",
+                "unsupportedItemsVideos": "les vidéos",
+                "unsupportedItems": "Pour conserver {{items}}, veuillez utiliser le format d’exportation Geti.",
+                "subsetNotIncluded": "Le jeu de données exporté n’inclura aucune information sur le sous-ensemble attribué à chaque média."
+            }
+        },
+        "importExport": {
+            "trigger": "Importer/exporter le jeu de données",
+            "exportItem": "Exporter le jeu de données"
+        },
+        "revisions": {
+            "createdOn": "Créé le {{date}}",
+            "unnamedName": "Jeu de données n° {{id}}",
+            "notFoundForModel": "Aucune révision du jeu de données trouvée pour ce modèle",
+            "filesDeleted": "Les fichiers de cette révision du jeu de données ont été supprimés.",
+            "noItemsInSubset": "Aucun élément dans ce sous-ensemble",
+            "itemAlt": "Élément ({{subset}})",
+            "trainingSubsets": {
+                "test": "Test"
+            },
+            "rename": {
+                "title": "Renommer la révision du jeu de données",
+                "nameLabel": "Nom de la révision du jeu de données"
+            },
+            "delete": {
+                "title": "Supprimer la révision du jeu de données",
+                "description": "Voulez-vous vraiment supprimer la révision « {{name}} » du jeu de données ? Vous pourrez toujours consulter les statistiques du modèle, mais vous ne pourrez plus accéder aux fichiers du jeu de données d’entraînement."
+            }
+        },
+        "includeUnannotated": "Inclure les médias sans annotations"
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "La clé ne peut pas être vide",
+            "valueEmpty": "La valeur ne peut pas être vide"
+        },
+        "connection": {
+            "testing": "Test de la connexion...",
+            "inUse": "En cours d’utilisation",
+            "unreachable": "Inaccessible",
+            "ready": "Prêt",
+            "saveErrorFallback": "veuillez réessayer",
+            "removeSuccess": "{{name}} a été supprimé avec succès !"
+        },
+        "confidenceThreshold": {
+            "label": "Seuil de confiance"
+        },
+        "devices": {
+            "label": "Périphérique d’inférence"
+        },
+        "sources": {
+            "uploadError": "Échec du téléversement du fichier vidéo.",
+            "deleteVideoError": "Échec de la suppression du fichier vidéo téléversé.",
+            "list": {
+                "addSource": "Ajouter une nouvelle source"
+            },
+            "types": {
+                "usbCamera": "caméra usb",
+                "ipCamera": "caméra ip",
+                "videoFile": "fichier vidéo",
+                "imagesFolder": "dossier d’images",
+                "disconnected": "déconnecté"
+            },
+            "options": {
+                "usbCamera": "Caméra USB",
+                "ipCamera": "Caméra IP",
+                "videoFile": "Fichier vidéo"
+            },
+            "add": {
+                "title": "Ajouter une nouvelle source d’entrée"
+            },
+            "edit": {
+                "title": "Modifier la source d’entrée"
+            },
+            "form": {
+                "createSuccess": "Configuration de la source créée avec succès.",
+                "updateSuccess": "Configuration de la source mise à jour avec succès.",
+                "saveError": "Échec de l’enregistrement de la configuration de la source, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Connexion à « {{name}} » réussie.",
+                "disconnectSuccess": "Déconnexion de « {{name}} » réussie.",
+                "disablePipelineAndDisconnectSuccess": "Pipeline désactivé et déconnexion de « {{name}} » réussie.",
+                "disconnectDialog": {
+                    "title": "Déconnecter {{name}}",
+                    "message": "La déconnexion de cette source désactivera également le pipeline d’inférence. Voulez-vous continuer ?"
+                }
+            },
+            "settings": {
+                "loading": "Chargement...",
+                "device": "Périphérique : {{name}}",
+                "unknownDevice": "Périphérique inconnu (id : {{deviceId}})",
+                "ignoreExistingImages": "Ignorer les images existantes : {{value}}",
+                "streamUrl": "URL du flux : {{url}}",
+                "videoPath": "Chemin de la vidéo : {{path}}"
+            },
+            "fields": {
+                "imagesFolderPath": "Chemin du dossier d’images",
+                "ignoreExistingImages": "Ignorer les images existantes",
+                "streamUrl": "URL du flux :",
+                "requireAuthentication": "Exiger une authentification",
+                "camera": "Caméra",
+                "videoFilePath": "Chemin du fichier vidéo",
+                "selectedFile": "Sélectionné : {{fileName}}",
+                "loopVideo": "Lire la vidéo en boucle"
+            },
+            "defaultNames": {
+                "usbCamera": "Source caméra USB",
+                "ipCamera": "Source caméra IP",
+                "videoFile": "Source fichier vidéo"
+            }
+        },
+        "sinks": {
+            "types": {
+                "folder": "dossier",
+                "mqtt": "mqtt",
+                "webhook": "webhook",
+                "ros": "ros"
+            },
+            "options": {
+                "folder": "Dossier",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "Ajouter une nouvelle destination"
+            },
+            "edit": {
+                "title": "Modifier la destination"
+            },
+            "form": {
+                "createSuccess": "Configuration de la destination créée avec succès.",
+                "updateSuccess": "Configuration de la destination mise à jour avec succès.",
+                "saveError": "Échec de l’enregistrement de la configuration de la destination, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Connexion à « {{name}} » réussie",
+                "disconnectSuccess": "Déconnexion de « {{name}} » réussie"
+            },
+            "settings": {
+                "rateLimit": "Limite de débit : {{value}}",
+                "httpMethod": "Méthode HTTP : {{value}}",
+                "timeout": "Délai d’expiration : {{value}}",
+                "webhookUrl": "URL du webhook : {{value}}",
+                "topic": "Sujet : {{value}}",
+                "brokerHost": "Hôte du broker : {{value}}",
+                "brokerPort": "Port du broker : {{value}}",
+                "outputFormats": "Formats de sortie : ",
+                "outputFormatTypes": {
+                    "imageOriginal": "image originale",
+                    "imageWithPredictions": "image avec prédictions",
+                    "predictions": "prédictions"
+                }
+            },
+            "rateLimit": {
+                "notSet": "Non défini",
+                "samplesPerSecond_one": "{{count}} échantillon par seconde",
+                "samplesPerSecond_other": "{{count}} échantillons par seconde",
+                "samplesPerSecond_many": "{{count}} échantillons par seconde",
+                "oneSamplePerSeconds_one": "1 échantillon par intervalle de {{count}} seconde",
+                "oneSamplePerSeconds_other": "1 échantillon toutes les {{count}} secondes",
+                "oneSamplePerSeconds_many": "1 échantillon toutes les {{count}} secondes"
+            },
+            "fields": {
+                "samples": "Échantillons",
+                "outputFormatsLabel": "Formats de sortie",
+                "outputFormatPredictions": "Prédictions",
+                "outputFormatImageOriginal": "Image originale",
+                "outputFormatImageWithPredictions": "Image avec prédictions",
+                "folderPath": "Chemin du dossier",
+                "httpMethod": "Méthode HTTP",
+                "timeout": "Délai d’expiration",
+                "webhookUrl": "URL du webhook",
+                "headers": "En-têtes",
+                "topic": "Sujet",
+                "brokerHost": "Hôte du broker",
+                "brokerPort": "Port du broker",
+                "authRequired": "Authentification requise"
+            },
+            "webhook": {
+                "headersHelp": "Ajoutez autant de paires clé-valeur que nécessaire. Chaque paire sera incluse dans l’objet « {{title}} ».",
+                "keyPlaceholder": "clé",
+                "valuePlaceholder": "valeur"
+            },
+            "defaultNames": {
+                "localFolder": "Destination dossier local",
+                "webhook": "Destination webhook",
+                "mqtt": "Destination MQTT"
+            }
+        },
+        "pipeline": {
+            "activeModel": {
+                "loading": "Modèle : ..."
+            },
+            "toggle": {
+                "enabledLabel": "Pipeline activé",
+                "disabledLabel": "Pipeline désactivé",
+                "enabledSuccess": "Pipeline activé avec succès",
+                "disabledSuccess": "Pipeline désactivé avec succès"
+            },
+            "configuration": {
+                "sidebarLabel": "Configuration du pipeline",
+                "sourcesTab": "Entrée",
+                "sinksTab": "Sortie"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "Politique de collecte de données",
+            "maxDatasetSize": {
+                "title": "Taille maximale du jeu de données",
+                "description": "Nombre maximal d’éléments à collecter"
+            },
+            "captureRate": {
+                "title": "Fréquence de capture",
+                "description": "Capturer des trames pendant l’exécution du flux",
+                "toggleLabel": "Activer/désactiver la capture automatique"
+            },
+            "confidenceThreshold": {
+                "description": "Capturer des trames lorsque la confiance est inférieure au seuil",
+                "sliderLabel": "Seuil"
+            }
+        },
+        "metrics": {
+            "time": "temps",
+            "sidebarLabel": "Métriques du pipeline",
+            "empty": {
+                "title": "Aucune statistique disponible",
+                "description": "Les métriques du pipeline s’afficheront ici dès que le pipeline commencera à traiter des données."
+            },
+            "throughput": {
+                "title": "Débit",
+                "axisLabel": "requêtes/s"
+            },
+            "latency": {
+                "title": "Latence",
+                "axisLabel": "ms"
+            }
+        },
+        "health": {
+            "overall": {
+                "idle": "Inactif",
+                "problemsDetected": "Problèmes détectés"
+            },
+            "component": {
+                "healthy": "Opérationnel",
+                "finished": "Terminé",
+                "unavailable": "Indisponible"
+            },
+            "componentLabels": {
+                "source": "Source",
+                "sink": "Destination"
+            }
+        },
+        "stream": {
+            "start": "Démarrer le flux",
+            "enablePipelineToStart": "Activez le pipeline pour démarrer le flux",
+            "connectError": "Échec de la connexion au flux",
+            "captureFrame": "Capturer une trame",
+            "captureSuccess": "Trame capturée et ajoutée au jeu de données."
+        },
+        "settings": {
+            "folderPath": "Chemin du dossier : {{path}}",
+            "authRequired": "Authentification requise : {{value}}"
+        }
+    },
+    "project": {
+        "delete": {
+            "confirmation": "Voulez-vous vraiment supprimer le projet « {{projectName}} » ?",
+            "success": "Projet supprimé avec succès"
+        },
+        "rename": {
+            "title": "Modifier le nom du projet",
+            "success": "Projet mis à jour avec succès"
+        },
+        "validation": {
+            "nameEmpty": "Le nom du projet ne peut pas être vide",
+            "nameExists": "Ce nom de projet existe déjà"
+        },
+        "panel": {
+            "manageProjects": "Gérer les projets",
+            "enablePipelineBlocked": {
+                "title": "Impossible d’activer le pipeline",
+                "message": "Assurez-vous d’avoir sélectionné un modèle et une source avant d’activer le pipeline."
+            }
+        },
+        "taskTypes": {
+            "detection": "Détection d’objets",
+            "classification": "Classification",
+            "instanceSegmentation": "Segmentation d’instances",
+            "multiLabelClassification": "Classification multi-étiquettes",
+            "recommended": "{{taskType}} (recommandé)"
+        },
+        "list": {
+            "count_one": "{{count}} projet",
+            "count_other": "{{count}} projets",
+            "count_many": "{{count}} projets",
+            "countFiltered_one": "{{filtered}} sur {{count}} projet",
+            "countFiltered_other": "{{filtered}} sur {{count}} projets",
+            "countFiltered_many": "{{filtered}} sur {{count}} projets",
+            "createNewProject": "Créer un projet",
+            "createProjectFromDataset": "Créer à partir d’un jeu de données",
+            "card": {
+                "created": "Créé le {{date}}",
+                "models_one": "{{count}} modèle",
+                "models_other": "{{count}} modèles",
+                "models_many": "{{count}} modèles"
+            },
+            "menu": {
+                "enablePipeline": "Activer le pipeline",
+                "disablePipeline": "Désactiver le pipeline"
+            },
+            "sort": {
+                "label": "Trier les projets par :",
+                "nameAscending": "Nom (A-Z)",
+                "nameDescending": "Nom (Z-A)",
+                "createdAtDescending": "Date de création (plus récent)",
+                "createdAtAscending": "Date de création (plus ancien)"
+            },
+            "filters": {
+                "searchPlaceholder": "Rechercher des projets",
+                "taskType": "Filtrer par type de tâche",
+                "models": "Filtrer par modèles",
+                "withTrainedModels": "Avec des modèles entraînés"
+            },
+            "noMatches": {
+                "title": "Aucun projet ne correspond à vos filtres",
+                "description": "Essayez d’ajuster votre recherche ou vos filtres de type de tâche pour trouver ce que vous cherchez."
+            },
+            "empty": {
+                "intro": "Bienvenue dans <name>Geti</name>, une plateforme d’IA de vision qui vous accompagne tout au long du <highlight>cycle de vie complet du modèle</highlight>, de la préparation du jeu de données à l’entraînement, l’optimisation et le déploiement."
+            },
+            "workflow": {
+                "addData": "Ajouter des données",
+                "optimize": "Optimiser",
+                "runInference": "Exécuter l’inférence",
+                "loop": "Surveillez les prédictions et collectez davantage de données pour affiner votre modèle de manière itérative"
+            }
+        },
+        "create": {
+            "taskQuestion": "Quel type de tâche souhaitez-vous que le modèle effectue ?",
+            "labelsQuestion": "Quels objets le modèle doit-il apprendre à {{verb}} ?",
+            "submit": "Créer le projet",
+            "tasks": {
+                "detection": {
+                    "title": "Détection d’objets",
+                    "description": "Identifier et localiser des objets dans vos images",
+                    "advice": "Idéal pour : comptage, suivi",
+                    "verb": "détecter"
+                },
+                "instanceSegmentation": {
+                    "title": "Segmentation d’instances",
+                    "description": "Détecter et délimiter des régions ou des formes spécifiques",
+                    "advice": "Idéal pour : mesures, formes irrégulières",
+                    "verb": "segmenter"
+                },
+                "classification": {
+                    "title": "Classification d’images",
+                    "description": "Catégoriser des images entières en fonction de leur contenu",
+                    "advice": "Idéal pour : filtrage, modération de contenu",
+                    "verb": "classifier"
+                }
+            },
+            "classificationType": {
+                "title": "Quel type de classification le modèle doit-il utiliser ?",
+                "singleLabel": {
+                    "label": "Étiquette unique",
+                    "description": "Attribuer une étiquette parmi des étiquettes mutuellement exclusives",
+                    "warning": "Nécessite au moins 2 étiquettes"
+                },
+                "multiLabel": {
+                    "label": "Multi-étiquettes",
+                    "description": "Attribuer une ou plusieurs étiquettes parmi des étiquettes non mutuellement exclusives"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "Au moins un objet est requis"
+            },
+            "defaultName": "Projet n° {{number}}"
+        },
+        "import": {
+            "title": "Créer un projet à partir d’un jeu de données - Importation",
+            "labelMapping": {
+                "title": "Association des étiquettes"
+            },
+            "preparingMessage": "Préparation de l’importation du jeu de données en tant que nouveau projet",
+            "taskSelection": {
+                "projectName": "Nom du projet",
+                "selectTaskPlaceholder": "Sélectionner une tâche",
+                "recommendationHint": "Le choix recommandé est basé sur le type d’annotations détecté dans le jeu de données. Si vous choisissez un autre type, les annotations seront automatiquement transformées lors de l’importation pour correspondre au type sélectionné."
+            },
+            "jobsList": {
+                "selectTaskType": "Sélectionner le type de tâche",
+                "mapLabelsButton": "Associer les étiquettes"
+            }
+        },
+        "taskType": "Type de tâche"
+    },
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "Raccourci clavier",
+            "nameExists": "Ce nom d’étiquette existe déjà",
+            "hotkeyExists": "Ce raccourci clavier est déjà utilisé"
+        },
+        "editor": {
+            "namePlaceholder": "Nom de l’étiquette",
+            "pin": "Épingler l’étiquette",
+            "unpin": "Désépingler l’étiquette",
+            "editTrigger": "Modifier les étiquettes",
+            "createTrigger": "Créer une étiquette",
+            "delete": {
+                "title": "Supprimer l’étiquette",
+                "message": "Si vous supprimez l’étiquette {{labelName}}, toutes les annotations de votre jeu de données portant cette étiquette seront supprimées. Cela n’aura toutefois aucun impact sur les modèles que vous avez entraînés précédemment."
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "Raccourci : {{hotkey}}",
+            "overflowCount": "+ {{count}} de plus"
+        },
+        "empty": {
+            "noLabel": "Aucune étiquette",
+            "noObject": "Aucun objet"
+        }
+    },
+    "annotator": {
+        "canvas": {
+            "hideLabels": "Masquer les étiquettes",
+            "pixelView": "Vue pixel",
+            "annotationFillOpacity": "Opacité du remplissage des annotations",
+            "annotationBorderOpacity": "Opacité de la bordure des annotations",
+            "imageBrightness": "Luminosité de l’image",
+            "imageContrast": "Contraste de l’image",
+            "imageSaturation": "Saturation de l’image"
+        },
+        "actions": {
+            "zoomIn": "Zoom avant",
+            "zoomOut": "Zoom arrière",
+            "fitToScreen": "Ajuster à l’écran ({{hotkey}})",
+            "undo": "Annuler ({{hotkey}})",
+            "redo": "Rétablir ({{hotkeys}})",
+            "toggleFocus": "Activer/désactiver le mode focus",
+            "showAnnotations": "Afficher les annotations ({{hotkey}})",
+            "hideAnnotations": "Masquer les annotations ({{hotkey}})"
+        },
+        "modes": {
+            "annotation": "Annotation",
+            "prediction": "Prédiction"
+        },
+        "predictions": {
+            "settingsTitle": "Paramètres de prédiction",
+            "confirm": "Confirmer la prédiction"
+        },
+        "hotkeys": {
+            "alternatives": "{{primary}} ou {{alternative}}",
+            "title": "Raccourcis clavier",
+            "submitAnnotationsPredictions": "Soumettre les annotations/prédictions",
+            "previousMedia": "Média précédent",
+            "nextMedia": "Média suivant",
+            "deleteSelectedAnnotation": "Supprimer l’annotation sélectionnée",
+            "toggleAnnotationsVisibility": "Afficher ou masquer toutes les annotations",
+            "selectAllAnnotations": "Sélectionner toutes les annotations",
+            "deselectAllAnnotations": "Désélectionner toutes les annotations",
+            "selectNextAnnotation": "Sélectionner l’annotation suivante",
+            "resetZoom": "Réinitialiser le zoom"
+        },
+        "tools": {
+            "selection": {
+                "label": "Sélection"
+            },
+            "boundingBox": {
+                "label": "Cadre de délimitation",
+                "description": "Dessinez un rectangle ou un carré autour d’un objet dans une image."
+            },
+            "autoSegmentation": {
+                "label": "Segmentation automatique",
+                "detectionDescription": "Survolez un objet avec le curseur pour prévisualiser un rectangle suggéré, puis cliquez pour créer l’annotation.",
+                "segmentationDescription": "Survolez un objet avec le curseur pour prévisualiser un polygone suggéré, puis cliquez pour créer l’annotation.",
+                "loading": "Traitement de l’image, veuillez patienter...",
+                "error": "Erreur dans l’outil Segment Anything : {{message}}",
+                "unknownError": "Erreur inconnue, veuillez actualiser la page.",
+                "timeoutError": "{{operation}} : délai dépassé après {{timeoutMs}} ms. Veuillez actualiser la page.",
+                "embeddingError": "Impossible de récupérer l’embedding de l’image ({{status}}{{statusText}}).",
+                "operations": {
+                    "workerBuild": "Construction du worker SAM",
+                    "workerInit": "Initialisation du worker SAM",
+                    "decoder": "Décodeur SAM"
+                }
+            },
+            "polygon": {
+                "label": "Polygone",
+                "description": "Cliquez pour placer les points un par un, ou maintenez le bouton enfoncé et faites glisser pour dessiner à main levée. Idéal pour les formes irrégulières nécessitant une précision au pixel près."
+            },
+            "magneticLasso": {
+                "label": "Lasso magnétique",
+                "description": "Survolez le bord d’un objet et cliquez régulièrement pour que le contour s’aligne sur ses bordures.",
+                "error": "Impossible de sélectionner les limites de la forme. Pouvez-vous réessayer ?"
+            },
+            "ssim": {
+                "label": "Assistant de détection",
+                "description": "Dessinez un cadre autour d’un objet pour trouver et annoter automatiquement les objets similaires dans l’image.",
+                "loading": "Chargement de l’assistant de détection, veuillez patienter...",
+                "error": "Erreur dans l’outil Assistant de détection : {{message}}",
+                "operations": {
+                    "workerBuild": "Construction du worker de l’assistant de détection"
+                }
+            }
+        },
+        "video": {
+            "playback": {
+                "slower": "Plus lent",
+                "slow": "Lent",
+                "normal": "Normal",
+                "speed": "Vitesse de lecture",
+                "showAllFrames": "Afficher toutes les trames",
+                "showOneFramePerSecond": "Afficher 1 trame par seconde"
+            },
+            "frames": {
+                "currentTotal": "Trame actuelle : {{currentFrame}} / Nombre total de trames : {{totalFrames}}",
+                "thumbnailAlt": "Miniature de la trame {{frameNumber}}"
+            },
+            "errors": {
+                "network": "Impossible de lire la vidéo en raison d’une erreur réseau. Veuillez actualiser la page et réessayer.",
+                "unableToPlay": "Impossible de lire la vidéo. Veuillez réessayer.",
+                "unsupportedFormat": "Impossible de lire la vidéo. Veuillez essayer un autre format vidéo (mp4/webm)."
+            }
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "La tâche a échoué. Consultez les journaux pour plus de détails et réessayez.",
+            "pending": "En attente...",
+            "running": "En cours...",
+            "stopDialog": {
+                "title": "Arrêter la tâche",
+                "confirmation": "Voulez-vous vraiment arrêter cette tâche ?"
+            },
+            "logs": "Journaux",
+            "startedAt": "Démarrage : {{time}}",
+            "waitingToStart": "En attente de démarrage...",
+            "device": "Périphérique : {{device}}"
+        },
+        "detail": {
+            "loadError": "Échec du chargement des détails du modèle",
+            "tabs": {
+                "variants": "Variantes du modèle",
+                "metrics": "Métriques du modèle",
+                "parameters": "Paramètres d’entraînement",
+                "datasets": "Jeux de données d’entraînement"
+            }
+        },
+        "metrics": {
+            "noMetrics": "Aucune métrique disponible",
+            "loadError": "Échec du chargement des métriques d’entraînement",
+            "evaluationsTitle": "Évaluations",
+            "noEvaluations": "Les métriques d’évaluation sur le jeu de test ne sont pas disponibles"
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "Copié avec succès",
+                "copyError": "Échec de la copie",
+                "copyPathTooltip": "Cliquez pour copier le chemin",
+                "showTraceback": "Afficher la trace de la pile",
+                "levelLabel": "Niveau",
+                "levelHelpTitle": "Niveau de journalisation minimal",
+                "levelHelpDescription": "Affiche les entrées du journal du niveau sélectionné et des niveaux supérieurs. Par exemple, sélectionner WARNING affiche les entrées WARNING, ERROR et CRITICAL, et masque DEBUG et INFO.",
+                "searchPlaceholder": "Rechercher dans les journaux...",
+                "connectionStatus": {
+                    "connecting": "Connexion...",
+                    "connected": "En direct",
+                    "error": "Erreur de connexion"
+                },
+                "entriesCount": "{{filtered}} / {{total}} entrées",
+                "noEntries": "Aucune entrée de journal",
+                "noMatchingEntries": "Aucune entrée de journal correspondante",
+                "scrollToBottom": "Faire défiler vers le bas",
+                "dialogTitle": "Journaux d’entraînement",
+                "loadError": "Échec du chargement des journaux : {{message}}",
+                "noJobOrModel": "Aucune tâche ni aucun modèle spécifié",
+                "fetchError": "Échec de la récupération des journaux du modèle : {{status}} {{statusText}}",
+                "downloadStarted": "Le téléchargement des journaux d’entraînement a commencé"
+            },
+            "parameters": {
+                "noParameters": "Aucun paramètre.",
+                "learningParameters": "PARAMÈTRES D’APPRENTISSAGE",
+                "filters": "FILTRES",
+                "augmentations": "AUGMENTATIONS",
+                "intensityMapping": "MAPPAGE D’INTENSITÉ"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "Exactitude top-1 sur ImageNet",
+                    "mapOnCoco": "mAP sur COCO",
+                    "map50OnCoco": "mAP50 sur COCO"
+                },
+                "card": {
+                    "numberOfParameters": "Nombre de paramètres : {{count}} millions",
+                    "gigaflops": "Gigaflops : {{value}}"
+                },
+                "sort": {
+                    "label": "Trier les modèles par :",
+                    "nameAsc": "Nom (A à Z)",
+                    "nameDesc": "Nom (Z à A)",
+                    "speedAsc": "Vitesse (plus rapide d’abord)",
+                    "speedDesc": "Vitesse (plus lent d’abord)",
+                    "accuracyAsc": "Exactitude (plus faible d’abord)",
+                    "accuracyDesc": "Exactitude (plus élevée d’abord)"
+                },
+                "timm": {
+                    "heading": "Configuration du modèle TIMM",
+                    "architectureFamilyLabel": "Famille d’architecture",
+                    "selectArchitecturePlaceholder": "Sélectionner une architecture",
+                    "modelVariantLabel": "Variante du modèle",
+                    "selectVariantPlaceholder": "Sélectionner une variante",
+                    "pretrainedWeightsLabel": "Poids pré-entraînés",
+                    "selectWeightsPlaceholder": "Sélectionner des poids",
+                    "parameters": "Paramètres : {{count}} millions",
+                    "gigaflops": "GigaFlops : {{value}}"
+                }
+            },
+            "devices": {
+                "selectLabel": "Sélectionner le périphérique d’entraînement"
+            },
+            "setup": {
+                "trigger": "Entraîner un modèle",
+                "dialog": {
+                    "title": "Sélectionner un modèle à entraîner",
+                    "disabledReasonTitle": "Pourquoi ne puis-je pas démarrer l’entraînement ?",
+                    "advancedSettings": "Paramètres avancés"
+                },
+                "toast": {
+                    "trainingStarted": "L’entraînement du modèle a démarré avec succès.",
+                    "trainingStartedWithLink": "L’entraînement du modèle a démarré avec succès. <modelsLink>Ouvrez l’écran des modèles pour suivre la progression.</modelsLink>"
+                },
+                "selectDataset": {
+                    "label": "Sélectionner le jeu de données",
+                    "useEntireDataset": "Utiliser le jeu de données complet",
+                    "helpTitle": "Sélection d’un jeu de données",
+                    "helpDescription": "Choisissez les données à utiliser pour l’entraînement. Sélectionnez « Utiliser le jeu de données complet » pour entraîner le modèle sur la version la plus récente de toutes les données (ce que vous voyez sur la page « Jeu de données »). Sélectionnez une vue du jeu de données pour entraîner le modèle uniquement sur les médias attribués à cette vue. Sélectionnez une révision du jeu de données pour entraîner le modèle sur exactement les mêmes données (médias et annotations) qu’un autre modèle.",
+                    "sections": {
+                        "views": "Vues du jeu de données",
+                        "revisions": "Révisions du jeu de données"
+                    }
+                },
+                "selectModel": {
+                    "label": "Sélectionner les poids d’entrée",
+                    "defaultPretrainedWeights": "Poids pré-entraînés par défaut",
+                    "helpTitle": "Sélection des poids d’entrée",
+                    "helpDescription": "Choisissez un modèle existant pour poursuivre son affinage, ou sélectionnez « Poids pré-entraînés par défaut » pour affiner un nouveau modèle à partir de poids publics pré-entraînés sur de grands jeux de données publics."
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "Pour entraîner un modèle, vous devez annoter au moins 3 éléments de votre jeu de données, mais nous vous recommandons d’en annoter davantage pour obtenir de meilleurs résultats.",
+                "notEnoughAnnotationsInView": "Pour entraîner un modèle, vous devez annoter au moins 3 éléments de la vue du jeu de données sélectionnée, mais nous vous recommandons d’en annoter davantage pour obtenir de meilleurs résultats.",
+                "emptySubsetsReason": "Pour entraîner un modèle, chaque sous-ensemble (entraînement, validation, test) doit contenir au moins un élément. Cette condition ne peut actuellement pas être satisfaite, car {{subsetClause}} et {{assignmentDetail}}.",
+                "emptySubsetClause_one": "le sous-ensemble {{list}} est vide",
+                "emptySubsetClause_other": "les sous-ensembles {{list}} sont vides",
+                "emptySubsetClause_many": "les sous-ensembles {{list}} sont vides",
+                "reviewedOnly_one": "il reste {{count}} élément vérifié à attribuer",
+                "reviewedOnly_other": "il reste {{count}} éléments vérifiés à attribuer",
+                "reviewedOnly_many": "il reste {{count}} éléments vérifiés à attribuer",
+                "unannotatedOnly_one": "{{count}} élément doit encore être annoté avant de pouvoir être attribué",
+                "unannotatedOnly_other": "{{count}} éléments doivent encore être annotés avant de pouvoir être attribués",
+                "unannotatedOnly_many": "{{count}} éléments doivent encore être annotés avant de pouvoir être attribués",
+                "mixedReviewedClause_one": "{{count}} élément vérifié est prêt à être attribué",
+                "mixedReviewedClause_other": "{{count}} éléments vérifiés sont prêts à être attribués",
+                "mixedReviewedClause_many": "{{count}} éléments vérifiés sont prêts à être attribués",
+                "mixedUnannotatedClause_one": "{{count}} élément doit encore être annoté avant de pouvoir être attribué",
+                "mixedUnannotatedClause_other": "{{count}} éléments doivent encore être annotés avant de pouvoir être attribués",
+                "mixedUnannotatedClause_many": "{{count}} éléments doivent encore être annotés avant de pouvoir être attribués",
+                "mixedAssignmentDetail": "{{reviewedClause}}, tandis que {{unannotatedClause}}",
+                "noUnassignedItems": "aucun élément non attribué n’est disponible pour la redistribution"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "Gestion des données"
+                },
+                "notAvailable": "La configuration de l’entraînement n’est pas disponible."
+            },
+            "learning": {
+                "title": "Paramètres d’apprentissage",
+                "tagDefault": "Par défaut",
+                "tagModified": "Modifié",
+                "inputSize": "Taille d’entrée"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "Sous-ensembles d’entraînement",
+                    "description": "Indiquez la répartition des échantillons annotés qui n’ont PAS encore été attribués à un sous-ensemble. Notez que les échantillons utilisés lors des cycles d’entraînement précédents ont déjà un sous-ensemble, qui restera inchangé afin d’éviter la contamination des données et les biais d’évaluation.",
+                    "unavailableTitle": "Configuration des sous-ensembles d’entraînement non valide",
+                    "unavailableDescription": "Les sous-ensembles d’entraînement ne contiennent pas assez d’éléments multimédias pour permettre une répartition configurable entre les sous-ensembles d’entraînement, de validation et de test.",
+                    "unavailableHint": "Veuillez ajouter des éléments multimédias pour que chaque sous-ensemble contienne au moins un élément.",
+                    "datasetSamples": "Jeu de données : {{count}} échantillons",
+                    "assignedSamples": "Attribués : {{count}}",
+                    "unassignedSamples": "Non attribués : {{count}}",
+                    "distributionLabel": "Répartition des nouveaux échantillons",
+                    "resultingDistribution": "Répartition résultante du jeu de données :",
+                    "totalLabel": "Total :",
+                    "mediaItemsLabel": "éléments multimédias"
+                },
+                "filters": {
+                    "noMinimum": "Aucun minimum",
+                    "unlimited": "Illimité"
+                },
+                "augmentation": {
+                    "title": "Augmentation de données"
+                },
+                "tiling": {
+                    "title": "Découpage en tuiles",
+                    "description": "Le découpage en tuiles est une technique qui divise les images haute résolution en tuiles plus petites et peut contribuer à améliorer l’exactitude de la détection de petits objets.",
+                    "modeLabel": "Mode de découpage",
+                    "modes": {
+                        "automatic": "Automatique",
+                        "custom": "Personnalisé"
+                    },
+                    "offDescription": "Le modèle traite l’image entière comme une seule unité, sans la diviser en tuiles plus petites. Cette approche est simple, mais peut avoir du mal à détecter de petits objets dans des images haute résolution, car le modèle risque de manquer des détails plus fins",
+                    "automaticDescription": "Le système définit automatiquement les paramètres en fonction de la résolution des images et de la taille des annotations."
+                },
+                "intensityMapping": {
+                    "title": "Mappage d’intensité"
+                }
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "Regrouper par",
+            "groupByDataset": "Regrouper par : jeu de données",
+            "groupByArchitecture": "Regrouper par : architecture",
+            "hideFailedModels": "Masquer les modèles en échec",
+            "showFailedModels": "Afficher les modèles en échec",
+            "searchPlaceholder": "Rechercher des modèles...",
+            "noModelsFound": "Aucun modèle trouvé",
+            "empty": {
+                "title": "Aucun modèle pour l’instant.",
+                "description": "Entraînez votre premier modèle pour commencer."
+            },
+            "deletedWeightsBadge": "Poids supprimés",
+            "fineTunedFrom": "Affiné à partir de",
+            "columns": {
+                "trained": "Entraîné",
+                "totalSize": "Taille totale"
+            }
+        },
+        "performance": {
+            "metrics": {
+                "accuracy": "Exactitude",
+                "precision": "Précision",
+                "recall": "Rappel",
+                "fMeasure": "F-mesure"
+            },
+            "categories": {
+                "balance": "Équilibre",
+                "speed": "Vitesse",
+                "accuracy": "Exactitude"
+            }
+        },
+        "variants": {
+            "empty": "Aucune variante de modèle disponible.",
+            "columns": {
+                "precision": "PRÉCISION"
+            },
+            "quantizedInfo": {
+                "title": "Quantifié avec NNCF PTQ",
+                "maxAccuracyDrop": "Baisse d’exactitude maximale : {{value}}",
+                "calibrationDatasetSize": "Taille du jeu de données de calibration : {{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "Le téléchargement du modèle a commencé"
+        },
+        "optimize": {
+            "description": "Optimiser le modèle FP16 avec OpenVINO NNCF (via la quantification INT8)",
+            "contextualHelp": "OpenVINO NNCF (Neural Network Compression Framework), via la quantification INT8, réduit la taille du modèle et accélère l’inférence avec un impact minimal sur l’exactitude",
+            "start": "Démarrer la quantification",
+            "dialogTitle": "Quantification",
+            "subheading": "Quantifier le modèle en INT8",
+            "jobStarted": "Tâche de quantification démarrée.",
+            "recommendedCalibrationSize": "Taille recommandée du jeu de données de calibration : entre 200 et 500 éléments multimédias",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "Baisse d’exactitude maximale (%)",
+                    "help": {
+                        "paragraph1": "Baisse maximale autorisée de l’exactitude de validation.",
+                        "paragraph2": "Sachez que la quantification tenant compte de l’exactitude peut prendre beaucoup de temps lorsque la baisse maximale autorisée est faible.",
+                        "paragraph3": "Notez également que l’exactitude finale sur le jeu de test peut être inférieure au seuil d’exactitude de validation spécifié, en particulier pour les jeux de données relativement petits."
+                    }
+                },
+                "maxIterations": {
+                    "label": "Nombre maximal d’itérations",
+                    "help": {
+                        "paragraph1": "Nombre maximal d’itérations de la quantification tenant compte de l’exactitude.",
+                        "paragraph2": "La quantification tenant compte de l’exactitude retire de manière itérative des couches du modèle du périmètre de quantification jusqu’à ce que le critère de baisse d’exactitude maximale soit respecté. Limiter le nombre d’itérations peut réduire considérablement le temps nécessaire pour quantifier des modèles comportant de nombreuses couches.",
+                        "paragraph3": "Ce paramètre n’est utilisé que lorsqu’une baisse d’exactitude maximale est définie."
+                    }
+                },
+                "calibrationSize": {
+                    "label": "Taille maximale de calibration",
+                    "help": "Les échantillons de calibration seront sélectionnés aléatoirement dans le jeu de données",
+                    "useFullDataset": "Utiliser le jeu de données complet"
+                }
+            }
+        },
+        "actions": {
+            "deleteWeights": "Supprimer les poids",
+            "deleteModel": "Supprimer le modèle",
+            "viewLogs": "Afficher les journaux d’entraînement",
+            "deleteWeightsDescription": "Voulez-vous vraiment supprimer les poids du modèle « {{modelName}} » ?",
+            "deleteModelDescription": "Voulez-vous vraiment supprimer le modèle « {{modelName}} » ? Cette action est irréversible.",
+            "renameDialog": {
+                "title": "Renommer le modèle",
+                "nameLabel": "Nom du modèle"
+            }
+        },
+        "columns": {
+            "modelName": "Nom du modèle"
+        }
+    },
+    "jobs": {
+        "allProjects": "Tous les projets",
+        "currentProjectLabel": "{{name}} (actuel)",
+        "projectsSection": "Projets",
+        "tabs": {
+            "all": "Toutes",
+            "finished": "Terminées"
+        },
+        "status": {
+            "pending": "En file d’attente",
+            "cancelling": "Annulation en cours",
+            "done": "Terminée"
+        },
+        "type": {
+            "quantize": "Optimisation"
+        },
+        "columns": {
+            "type": "Type"
+        },
+        "cancel": {
+            "title": "Annuler la tâche",
+            "confirmation": "Voulez-vous vraiment annuler la tâche {{jobId}} ?"
+        },
+        "meta": {
+            "started": "Démarrée le {{time}}",
+            "elapsed": "Durée écoulée : {{time}}",
+            "duration": "Durée : {{time}}",
+            "finished": "Terminée le {{time}}",
+            "failed": "Échouée le {{time}}",
+            "cancelled": "Annulée le {{time}}"
+        },
+        "emptyState": {
+            "all": "Aucune tâche",
+            "running": "Aucune tâche en cours",
+            "finished": "Aucune tâche terminée",
+            "scheduled": "Aucune tâche en file d’attente",
+            "cancelled": "Aucune tâche annulée",
+            "failed": "Aucune tâche en échec"
+        },
+        "actions": {
+            "viewLogs": "Afficher les journaux"
+        }
+    },
+    "license": {
+        "label": "Licence : ",
+        "agreement": {
+            "title": "Contrats de licence",
+            "intro": "Veuillez lire et accepter les licences suivantes pour continuer à utiliser Geti.",
+            "progress": "{{current}} sur {{total}}",
+            "required": "Obligatoire",
+            "optional": "Facultatif",
+            "fullLicense": "Lire la licence complète",
+            "previous": "Précédent",
+            "accept": "Accepter et continuer"
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "Chargement... Veuillez patienter."
+        },
+        "serverError": {
+            "heading": "Erreur du serveur"
+        },
+        "errorPage": {
+            "badRequest": "Le serveur ne peut pas ou ne veut pas traiter la requête actuelle.",
+            "forbidden": "Vous n’avez pas l’autorisation d’accéder à cette page.",
+            "notFound": "Cette page n’existe pas !",
+            "unauthorized": "Vous n’êtes pas autorisé à voir ce contenu",
+            "serverError": "Le serveur a rencontré une erreur et n’a pas pu traiter votre requête.",
+            "serviceUnavailable": "Il semble que notre API soit indisponible",
+            "goHome": "Retour à la page d’accueil"
+        },
+        "notifications": {
+            "unexpectedError": "Une erreur inattendue s’est produite. Veuillez réessayer.",
+            "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
+            "uploadTransferError": "Le transfert du fichier a échoué. Veuillez réessayer."
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "Échec du téléchargement du fichier"
+        },
+        "saveDialog": {
+            "allFiles": "Tous les fichiers",
+            "fileTypeFilter": "Fichier {{extension}}"
+        }
+    }
+}

@@ -51,7 +51,7 @@ describe('createI18nInstance', () => {
         expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('en');
     });
 
-    it.each(['fr-FR', 'not a language', '---', ''])(
+    it.each(['de-DE', 'not a language', '---', ''])(
         'renders English for unsupported browser language %s',
         (language) => {
             setNavigatorLanguage(language);
@@ -61,6 +61,20 @@ describe('createI18nInstance', () => {
             expect(instance.t('common.labels.dataset')).toBe('Dataset');
         }
     );
+
+    it.each(['fr', 'fr-FR', 'fr-BE', 'fr-CA', 'fr-CH'])('renders French for browser language %s', (language) => {
+        setNavigatorLanguage(language);
+        const instance = createI18nInstance();
+
+        expect(instance.resolvedLanguage).toBe('fr');
+        expect(instance.t('common.labels.dataset')).toBe('Jeu de données');
+    });
+
+    it.each([0, 1, 2, 1_000_000])('uses the French plural forms for %i', (count) => {
+        const instance = createI18nInstance({ lng: 'fr' });
+
+        expect(instance.t('project.list.count', { count })).toBe(`${count} projet${count < 2 ? '' : 's'}`);
+    });
 
     it.each(['nl', 'nl-NL', 'nl-BE'])('renders Dutch for browser language %s', (language) => {
         setNavigatorLanguage(language);
@@ -119,7 +133,7 @@ describe('createI18nInstance', () => {
     });
 
     it('renders English for a pinned unsupported language', () => {
-        const instance = createI18nInstance({ lng: 'fr-FR' });
+        const instance = createI18nInstance({ lng: 'de-DE' });
 
         expect(instance.resolvedLanguage).toBe('en');
         expect(instance.t('common.labels.dataset')).toBe('Dataset');
