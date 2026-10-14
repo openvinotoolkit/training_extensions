@@ -6,7 +6,7 @@ import { useTranslation } from '@/i18n';
 import { Grid, Heading, IllustratedMessage, Text } from '@geti-ui/ui';
 
 import type { ModelJob, StatusGroup } from '../utils';
-import { JOB_GRID_COLUMNS, JobRow } from './job-row.component';
+import { JOB_GRID_COLUMNS, JobRow } from './job-row/job-row.component';
 
 import classes from './jobs-dialog.module.scss';
 

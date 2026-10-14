@@ -1,0 +1,24 @@
+.modelName {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.metaText,
+.projectLink {
+    font-size: var(--spectrum-global-dimension-font-size-75);
+    color: var(--spectrum-global-color-gray-700);
+}
+
+.projectLink {
+    text-decoration: underline;
+}
+
+.metaRow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spectrum-global-dimension-size-100);
+}
+
+.messageText {
+    font-size: var(--spectrum-global-dimension-font-size-75);
+}

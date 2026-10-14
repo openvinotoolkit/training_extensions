@@ -1132,7 +1132,11 @@
         },
         "meta": {
             "started": "Avviato {{time}}",
-            "elapsed": "Tempo trascorso: {{time}}"
+            "elapsed": "Tempo trascorso: {{time}}",
+            "duration": "Durata {{time}}",
+            "finished": "Completato {{time}}",
+            "failed": "Non riuscito {{time}}",
+            "cancelled": "Annullato {{time}}"
         },
         "emptyState": {
             "all": "Nessun processo",

@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n';
 import { Flex, Item, TabList, Tabs, Text } from '@geti-ui/ui';
 
 import type { StatusGroup } from '../utils';
-import { STATUS_BADGE, TONE, ToneBadge } from './job-status-badge.component';
+import { STATUS_BADGE, TONE, ToneBadge } from './job-row/job-status-badge.component';
 
 import classes from './jobs-dialog.module.scss';
 
