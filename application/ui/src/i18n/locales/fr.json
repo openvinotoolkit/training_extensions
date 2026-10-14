@@ -1165,7 +1165,11 @@
         },
         "meta": {
             "started": "Démarrée le {{time}}",
-            "elapsed": "Durée écoulée : {{time}}"
+            "elapsed": "Durée écoulée : {{time}}",
+            "duration": "Durée : {{time}}",
+            "finished": "Terminée le {{time}}",
+            "failed": "Échouée le {{time}}",
+            "cancelled": "Annulée le {{time}}"
         },
         "emptyState": {
             "all": "Aucune tâche",
