@@ -145,7 +145,10 @@ the report with `npx playwright show-report`.
 ### Internationalization
 
 The UI uses i18next and react-i18next for internationalization. English is the
-default, fallback, and currently the only supported language.
+default and fallback language. Translation catalogs live in `src/i18n/locales/`
+and are registered in `src/i18n/locales.ts`; currently supported languages are
+English (`en`), Spanish (`es`), Italian (`it`), Dutch (`nl`), Polish (`pl`),
+Portuguese (`pt`) and Chinese (`zh-CN`, `zh-HK`, `zh-MO`, `zh-TW`).
 
 ### Code Quality
 

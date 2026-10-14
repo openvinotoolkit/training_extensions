@@ -62,6 +62,14 @@ describe('createI18nInstance', () => {
         }
     );
 
+    it.each(['nl', 'nl-NL', 'nl-BE'])('renders Dutch for browser language %s', (language) => {
+        setNavigatorLanguage(language);
+        const instance = createI18nInstance();
+
+        expect(instance.resolvedLanguage).toBe('nl');
+        expect(instance.t('common.labels.images')).toBe('Afbeeldingen');
+    });
+
     it.each(['zh', 'zh-CN', 'zh-Hant-HK'])('renders Simplified Chinese for browser language %s', (language) => {
         setNavigatorLanguage(language);
         const instance = createI18nInstance();
