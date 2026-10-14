@@ -224,6 +224,7 @@ class TestGetModelArchitectureById:
             fxt_client.get(f"/api/model_architectures/timm/families/{family}/variants/{variant}/pretrained-tags").json()
         )[0]
         model_name = TimmCatalog.get_model_name(family, variant, pretrained_tag)
+        assert model_name is not None
         architecture_id = model_name_to_id(model_name)
 
         response = fxt_client.get(f"/api/model_architectures/{architecture_id}")
