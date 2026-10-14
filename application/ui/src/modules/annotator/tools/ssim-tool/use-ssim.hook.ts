@@ -126,7 +126,7 @@ export const useSSIM = (shapeType: SSIMShapeType, enabled = true) => {
         isPending,
         error: executionError,
     } = useMutation({
-        mutationFn: async ({ props }: SSIMRun) => {
+        mutationFn: async ({ props, runId }: SSIMRun) => {
             try {
                 if (ssim === undefined) {
                     throw new Error('SSIM worker is not initialized yet');
@@ -140,8 +140,11 @@ export const useSSIM = (shapeType: SSIMShapeType, enabled = true) => {
             } catch (executeError) {
                 // Comlink calls can't be cancelled and the worker runs them serially, so a stuck (or
                 // never built) worker would block every later run: replace it instead.
-                rawWorker?.terminate();
-                void queryClient.resetQueries({ queryKey: SSIM_WORKER_QUERY_KEY });
+                // A stale run must not tear down the worker a newer run is using.
+                if (runId === runIdRef.current) {
+                    rawWorker?.terminate();
+                    void queryClient.resetQueries({ queryKey: SSIM_WORKER_QUERY_KEY });
+                }
 
                 throw executeError;
             }

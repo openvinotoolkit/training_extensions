@@ -154,4 +154,56 @@ describe('useSSIM', () => {
 
         expect(result.current.toolState.shapes).toHaveLength(2);
     });
+
+    it('does not replace the worker when a superseded run rejects', async () => {
+        const { promise: firstRun, reject: rejectFirstRun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
+        const { promise: secondRun, resolve: resolveSecondRun } =
+            Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
+        mockWorker(vi.fn().mockReturnValueOnce(firstRun).mockReturnValueOnce(secondRun));
+
+        const { result } = renderHook(() => useSSIM('rectangle'));
+
+        await waitFor(() => expect(result.current.worker).toBeDefined());
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+
+        rejectFirstRun(new Error('stale failure'));
+        await flushPromises();
+
+        expect(FakeWorker.instances).toHaveLength(1);
+        expect(FakeWorker.instances[0].terminate).not.toHaveBeenCalled();
+
+        resolveSecondRun([toolMatch(60, 60)]);
+
+        await waitFor(() => expect(result.current.toolState.shapes).toHaveLength(2));
+        expect(result.current.isError).toBe(false);
+    });
+
+    it('does not replace the worker when a run rejects after a reset', async () => {
+        const { promise, reject } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
+        mockWorker(vi.fn().mockReturnValue(promise));
+
+        const { result } = renderHook(() => useSSIM('rectangle'));
+
+        await waitFor(() => expect(result.current.worker).toBeDefined());
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+        act(() => {
+            result.current.reset();
+        });
+
+        reject(new Error('stale failure'));
+        await flushPromises();
+
+        expect(FakeWorker.instances).toHaveLength(1);
+        expect(FakeWorker.instances[0].terminate).not.toHaveBeenCalled();
+        expect(result.current.toolState.shapes).toEqual([]);
+    });
 });
