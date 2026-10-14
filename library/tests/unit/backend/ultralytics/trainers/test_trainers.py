@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
+from ultralytics.utils import IterableSimpleNamespace
 
 from getitune.backend.ultralytics.trainers.classification import (
     ClassificationTrainer,
@@ -32,7 +33,7 @@ def test_detection_trainer_fallback_uses_upstream_preprocess() -> None:
     trainer._datamodule = None
     trainer._use_getitune_data = False
     trainer.device = torch.device("cpu")
-    trainer.args = SimpleNamespace(multi_scale=0.0)
+    trainer.args = IterableSimpleNamespace(multi_scale=0.0)
 
     batch = {"img": torch.full((1, 3, 4, 4), 255, dtype=torch.uint8)}
 
@@ -48,7 +49,7 @@ def test_segmentation_trainer_fallback_uses_upstream_preprocess() -> None:
     trainer._datamodule = None
     trainer._use_getitune_data = False
     trainer.device = torch.device("cpu")
-    trainer.args = SimpleNamespace(multi_scale=0.0)
+    trainer.args = IterableSimpleNamespace(multi_scale=0.0)
 
     batch = {"img": torch.full((1, 3, 4, 4), 255, dtype=torch.uint8)}
 
@@ -92,7 +93,7 @@ def test_segmentation_trainer_datamodule_path_skips_divide_by_255() -> None:
 def test_yolo_detr_trainer_datamodule_path_skips_native_epoch_callback() -> None:
     trainer = object.__new__(YoloDetrTrainer)
     trainer._use_getitune_data = True
-    trainer.args = SimpleNamespace(close_mosaic=10)
+    trainer.args = IterableSimpleNamespace(close_mosaic=10)
 
     with patch("getitune.backend.ultralytics.trainers.yolo_detr._RTDETRTrainer.train", return_value="trained") as train:
         result = trainer.train()
@@ -117,10 +118,16 @@ def test_yolo_detr_trainer_datamodule_path_skips_divide_by_255() -> None:
 def test_yolo_detr_trainer_uses_dfine_loss_names() -> None:
     trainer = object.__new__(YoloDetrTrainer)
     trainer._use_getitune_data = True
-    trainer.model = SimpleNamespace(model=[type("DeimDecoder", (), {})()])
+
+    class FakeModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.model = [type("DeimDecoder", (), {})()]
+
+    trainer.model = FakeModel()
     trainer.test_loader = MagicMock()
     trainer.save_dir = Path("save")
-    trainer.args = SimpleNamespace()
+    trainer.args = IterableSimpleNamespace()
     trainer.callbacks = defaultdict(list)
     trainer._datamodule = MagicMock()
 
@@ -171,7 +178,7 @@ def test_move_batch_to_device_uses_non_blocking_for_xpu() -> None:
 
     trainer = object.__new__(DetectionTrainer)
     trainer.device = torch.device("xpu:0")
-    trainer.args = SimpleNamespace(amp=True)
+    trainer.args = IterableSimpleNamespace(amp=True)
 
     tensor = MagicMock(spec=torch.Tensor)
     tensor.to.return_value = tensor
@@ -185,6 +192,41 @@ def test_move_batch_to_device_uses_non_blocking_for_xpu() -> None:
 
     tensor.to.assert_called_once_with(torch.device("xpu:0"), non_blocking=True)
     assert result["meta"] == "value"
+
+
+def test_optimizer_step_updates_fp32_ema_from_bf16_model() -> None:
+    """EMA update supports BF16 model weights while keeping EMA weights FP32."""
+    from ultralytics.utils.torch_utils import ModelEMA
+
+    class NoOpScaler:
+        def unscale_(self, optimizer: torch.optim.Optimizer) -> None:
+            pass
+
+        def step(self, optimizer: torch.optim.Optimizer) -> None:
+            optimizer.step()
+
+        def update(self) -> None:
+            pass
+
+    model = torch.nn.Linear(2, 1)
+    ema = ModelEMA(model)
+    model.bfloat16()
+    trainer = object.__new__(DetectionTrainer)
+    trainer.model = model
+    trainer.ema = ema
+    trainer.args = IterableSimpleNamespace(max_grad_norm=0)
+    trainer.scaler = NoOpScaler()
+    trainer.optimizer = torch.optim.SGD(model.parameters(), lr=0.0)
+
+    ema_before = ema.ema.state_dict()["weight"].clone()
+    decay = ema.decay(1)
+    expected = ema_before.lerp_(model.weight.float(), 1 - decay)
+
+    trainer.optimizer_step()
+
+    assert ema.updates == 1
+    assert ema.ema.weight.dtype == torch.float32
+    assert torch.allclose(ema.ema.state_dict()["weight"], expected)
 
 
 class TestClearMemory:
@@ -427,7 +469,7 @@ class TestNumWorkers:
         trainer = object.__new__(trainer_cls)
         trainer._use_getitune_data = True
         trainer.device = torch.device("cpu")
-        trainer.args = SimpleNamespace(workers=8)
+        trainer.args = IterableSimpleNamespace(workers=8)
         trainer._datamodule = MagicMock(
             train_subset=SimpleNamespace(num_workers=train_workers),
             val_subset=SimpleNamespace(num_workers=val_workers),

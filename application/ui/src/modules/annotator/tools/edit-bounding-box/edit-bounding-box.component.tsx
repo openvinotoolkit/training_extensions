@@ -4,7 +4,7 @@
 import { useState } from 'react';
 
 import type { Annotation, Point } from '../../../../shared/types';
-import { useAnnotationCommands } from '../../annotation-actions-provider.component';
+import { useAnnotationCommands } from '../../annotation-document-provider.component';
 import { AnnotationShapeRenderer } from '../../annotations/annotation-shape-renderer.component';
 import { ANCHOR_SIZE, ResizeAnchor } from '../../resize-anchor.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';

@@ -9,7 +9,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.db.schema import ProjectDB
-from app.models import Label, PipelineStatus, Project, Task
+from app.models import Label, PipelineStatus, Project, Task, TrainingStatus
 from app.repositories import MediaRepository, ProjectRepository
 from app.repositories.base import PrimaryKeyIntegrityError
 
@@ -90,6 +90,23 @@ class ProjectService(BaseSessionManagedService):
         if not project_db:
             raise ResourceNotFoundError(ResourceType.PROJECT, str(project_id))
         return self._to_project(project_db)
+
+    def get_trained_model_counts(self, project_ids: list[UUID] | None = None) -> dict[UUID, int]:
+        """
+        Get the number of successfully trained models per project.
+
+        Args:
+            project_ids (list[UUID] | None): Optional project ids to restrict the count to; all projects if None.
+
+        Returns:
+            dict[UUID, int]: Mapping of project id to trained model count. Projects without models are omitted.
+        """
+        project_repo = ProjectRepository(self.db_session)
+        counts = project_repo.count_model_revisions(
+            training_status=TrainingStatus.SUCCESSFUL,
+            project_ids=[str(project_id) for project_id in project_ids] if project_ids is not None else None,
+        )
+        return {UUID(project_id): count for project_id, count in counts.items()}
 
     @parent_process_only
     def update_project_name(self, project_id: UUID, name: str) -> Project:

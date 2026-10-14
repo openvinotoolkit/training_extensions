@@ -3,7 +3,7 @@
 
 import { isEmpty } from 'lodash-es';
 
-import { useAnnotations } from '../annotation-actions-provider.component';
+import { useAnnotations } from '../annotation-document-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { DEFAULT_ANNOTATION_STYLES } from '../utils';
 import { AnnotationShapeRenderer } from './annotation-shape-renderer.component';

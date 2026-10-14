@@ -230,8 +230,11 @@
             "downloadStarted": "Il download di {{fileName}} è iniziato"
         },
         "gallery": {
-            "sortOldestFirst": "Meno recenti prima",
-            "sortNewestFirst": "Più recenti prima",
+            "sort": {
+                "label": "Ordina media per:",
+                "uploadDateDescending": "Data di caricamento (più recenti prima)",
+                "uploadDateAscending": "Data di caricamento (meno recenti prima)"
+            },
             "selectedCount": "{{count}} selezionati",
             "totalMediaCount_one": "{{count}} media",
             "totalMediaCount_other": "{{count}} media",
@@ -602,7 +605,9 @@
             "createNewProject": "Crea nuovo progetto",
             "createProjectFromDataset": "Crea progetto da un dataset",
             "card": {
-                "created": "Creato: {{date}}"
+                "created": "Creato: {{date}}",
+                "models_one": "{{count}} modello",
+                "models_other": "{{count}} modelli"
             },
             "menu": {
                 "enablePipeline": "Abilita pipeline",
@@ -617,7 +622,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Cerca progetti",
-                "taskType": "Filtra per tipo di attività"
+                "taskType": "Filtra per tipo di attività",
+                "models": "Filtra per modelli",
+                "withTrainedModels": "Con modelli addestrati"
             },
             "noMatches": {
                 "title": "Nessun progetto corrisponde ai tuoi filtri",

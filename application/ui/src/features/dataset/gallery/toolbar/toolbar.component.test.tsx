@@ -247,33 +247,34 @@ describe('Toolbar', () => {
         expect(screen.getByRole('button', { name: 'More filters' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /media status/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'View mode' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Newest first' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Sort Media by:/ })).toBeInTheDocument();
     });
 
-    it('shows "Newest first" sort button by default', async () => {
+    it('sorts by upload date, newest first, by default', async () => {
         await renderToolbar();
 
-        const sortButton = screen.getByRole('button', { name: 'Newest first' });
-
-        expect(sortButton).toHaveTextContent('Newest first');
+        expect(screen.getByRole('button', { name: /Sort Media by:/ })).toHaveTextContent('Upload date (newest)');
     });
 
-    it('toggles the sort button label between "Newest first" and "Oldest first" when clicked', async () => {
+    it('switches between newest and oldest upload date sorting', async () => {
         await renderToolbar();
 
-        const newestFirstButton = screen.getByRole('button', { name: 'Newest first' });
-        fireEvent.click(newestFirstButton);
+        fireEvent.click(screen.getByRole('button', { name: /Sort Media by:/ }));
+        fireEvent.click(await screen.findByRole('option', { name: 'Upload date (oldest)' }));
 
-        const oldestFirstButton = await screen.findByRole('button', { name: 'Oldest first' });
-        expect(oldestFirstButton).toHaveTextContent('Oldest first');
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /Sort Media by:/ })).toHaveTextContent('Upload date (oldest)');
+        });
 
-        fireEvent.click(oldestFirstButton);
+        fireEvent.click(screen.getByRole('button', { name: /Sort Media by:/ }));
+        fireEvent.click(await screen.findByRole('option', { name: 'Upload date (newest)' }));
 
-        const newestFirstButton2 = await screen.findByRole('button', { name: 'Newest first' });
-        expect(newestFirstButton2).toHaveTextContent('Newest first');
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /Sort Media by:/ })).toHaveTextContent('Upload date (newest)');
+        });
     });
 
-    it('hides sort button when at least one media item is selected', async () => {
+    it('hides sort picker when at least one media item is selected', async () => {
         const firstItem = getMockedMediaImage({ id: 'first-item' });
 
         vi.mocked(useSelectedData).mockReturnValue({
@@ -285,8 +286,7 @@ describe('Toolbar', () => {
 
         await renderToolbar([firstItem]);
 
-        expect(screen.queryByRole('button', { name: 'Newest first' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Oldest first' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /Sort Media by:/ })).not.toBeInTheDocument();
     });
 
     it('does not display dataset view actions until media is selected', async () => {

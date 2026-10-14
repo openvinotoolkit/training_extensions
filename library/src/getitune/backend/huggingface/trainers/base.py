@@ -106,6 +106,8 @@ class GetiTuneHFTrainer(Trainer):
 
     def save_model(self, output_dir: str | None = None, _internal_call: bool = False) -> None:
         """Save through the wrapped HF model so custom wrappers persist their configuration."""
+        if not self.is_world_process_zero():
+            return
         target = output_dir or self.args.output_dir
         if target is None:
             msg = "TrainingArguments.output_dir is not set; cannot save the model."
@@ -113,16 +115,22 @@ class GetiTuneHFTrainer(Trainer):
         self.model_wrapper.save_pretrained(target)
 
     def get_train_dataloader(self) -> DataLoader:
-        """Return the DataModule's training dataloader."""
-        return self.datamodule.train_dataloader()
+        """Return the training dataloader sharded across distributed processes."""
+        return self._prepare_distributed_dataloader(self.datamodule.train_dataloader())
 
     def get_eval_dataloader(self, eval_dataset: Any = None) -> DataLoader:  # noqa: ANN401
-        """Return the DataModule's validation dataloader."""
-        return self.datamodule.val_dataloader()
+        """Return the validation dataloader sharded across distributed processes."""
+        return self._prepare_distributed_dataloader(self.datamodule.val_dataloader())
 
     def get_test_dataloader(self, test_dataset: Any = None) -> DataLoader:  # noqa: ANN401
         """Return the DataModule's test dataloader."""
         return self.datamodule.test_dataloader()
+
+    def _prepare_distributed_dataloader(self, dataloader: DataLoader) -> DataLoader:
+        """Shard complete collated batches without recursively moving custom batches."""
+        if self.accelerator.num_processes == 1:
+            return dataloader
+        return self.accelerator.prepare_data_loader(dataloader, device_placement=False)
 
     def _get_num_items_in_batch(self, batch_samples: list[Any], device: torch.device) -> int | None:
         """Disable per-batch item counting for gradient-accumulation loss scaling.
@@ -341,13 +349,14 @@ class GetiTuneHFTrainer(Trainer):
         if split == "val":
             dataloader = self.get_eval_dataloader(eval_dataset)
         else:
-            dataloader = self.get_test_dataloader(eval_dataset)
+            dataloader = self._prepare_distributed_dataloader(self.get_test_dataloader(eval_dataset))
 
         epoch = int(getattr(self.state, "epoch", 0))
         if split == "val" and epoch % self._val_check_interval != 0:
             return {}
 
         self.model_wrapper.ensure_predict_ready()
+        metric_obj.to(self.args.device)
         metric_obj.reset()
 
         pipeline = self._eval_gpu_pipeline if split == "val" else self._test_gpu_pipeline
@@ -370,10 +379,7 @@ class GetiTuneHFTrainer(Trainer):
                 batch = self._prepare_batch(inputs, pipeline)
                 outputs = model(**self.model_wrapper.build_eval_inputs(batch))
                 metric_inputs = self.model_wrapper.to_metric_inputs(outputs, batch)
-                # HF postprocess returns CPU tensors while the batch lives on the
-                # accelerator, so move every tensor in the metric inputs to CPU once
-                # here instead of scattering .cpu() through each to_metric_inputs.
-                metric_inputs = apply_to_collection(metric_inputs, torch.Tensor, lambda t: t.cpu())
+                metric_inputs = apply_to_collection(metric_inputs, torch.Tensor, lambda t: t.to(self.args.device))
                 metric_obj.update(**metric_inputs)
                 iter_time += perf_counter() - start
                 num_batches += 1

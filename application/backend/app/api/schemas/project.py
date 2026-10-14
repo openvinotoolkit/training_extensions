@@ -86,9 +86,17 @@ class ProjectCreate(HasID, ProjectBase[TaskCreate]):
     }
 
 
+class ModelCountsView(BaseModel):
+    trained_models: int = Field(..., ge=0, description="Number of models whose training completed successfully.")
+
+
 class ProjectView(RequiresID, ProjectBase[TaskView]):
     active_pipeline: bool = Field(..., description="Whether the project has an active pipeline.")
     created_at: datetime = Field(..., description="Timestamp when the project was created.")
+    model_counts: ModelCountsView | None = Field(
+        default=None,
+        description="Model counts of the project. Only populated when requested with `include_model_counts=true`.",
+    )
 
     model_config = {
         "json_schema_extra": {

@@ -1,5 +1,5 @@
 id: image-classification-dinov3-convnext-large
-name: DINOv3 ConvNeXt-Large
+name: DINOv3-ConvNeXt-L
 license:
   name: DINOv3 License
   url: https://ai.meta.com/resources/models-and-libraries/dinov3-license
@@ -10,7 +10,7 @@ pretrained_weights:
 description: "DINOv3 ConvNeXt-Large is a large convolutional feature model distilled on LVD-1689M with the DINOv3 method."
 stats:
   gigaflops: 68.72
-  trainable_parameters: 197.767336
+  trainable_parameters: 197.8
   benchmark_metrics: {}
 capabilities:
   xai: false

@@ -32,7 +32,7 @@ vi.mock('../select-annotation-provider.component', () => ({
     }),
 }));
 
-vi.mock('../annotation-actions-provider.component', () => ({
+vi.mock('../annotation-document-provider.component', () => ({
     useAnnotations: () => ({ annotations: [] }),
     useAnnotationCommands: () => ({
         updateAnnotations: vi.fn(),

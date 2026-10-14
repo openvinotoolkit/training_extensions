@@ -10,7 +10,6 @@ const getLicense = (id: string, isRequired: boolean): LicenseNotice => ({
     id,
     name: id,
     notice: '',
-    href: '',
     isRequired,
 });
 

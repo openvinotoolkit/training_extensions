@@ -8,7 +8,7 @@ import { Checkmark, Edit } from '@geti-ui/ui/icons';
 import {
     useAnnotationCommands,
     useAnnotations,
-} from '../../../../modules/annotator/annotation-actions-provider.component';
+} from '../../../../modules/annotator/annotation-document-provider.component';
 import { convertPredictionToAnnotation } from '../../../../modules/annotator/annotations/utils';
 import type { AnnotatorMode } from '../../../../modules/annotator/annotator-mode';
 

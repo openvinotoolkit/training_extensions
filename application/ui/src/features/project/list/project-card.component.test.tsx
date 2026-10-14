@@ -67,6 +67,31 @@ describe('ProjectCard', () => {
         expect(screen.queryByText('Active')).not.toBeInTheDocument();
     });
 
+    it.each([
+        { trainedModels: 1, text: '1 model' },
+        { trainedModels: 5, text: '5 models' },
+    ])('shows "$text" badge when the project has $trainedModels trained models', async ({ trainedModels, text }) => {
+        render(
+            <ProjectCard item={{ ...mockProject, model_counts: { trained_models: trainedModels } }} projectNames={[]} />
+        );
+
+        expect(await screen.findByText(text)).toBeInTheDocument();
+    });
+
+    it('does not show the models badge when model counts are not available', async () => {
+        render(<ProjectCard item={mockProject} projectNames={[]} />);
+
+        expect(await screen.findByRole('heading', { name: 'Test Project' })).toBeInTheDocument();
+        expect(screen.queryByText(/\d+ models?$/)).not.toBeInTheDocument();
+    });
+
+    it('does not show the models badge when there are no trained models', async () => {
+        render(<ProjectCard item={{ ...mockProject, model_counts: { trained_models: 0 } }} projectNames={[]} />);
+
+        expect(await screen.findByRole('heading', { name: 'Test Project' })).toBeInTheDocument();
+        expect(screen.queryByText(/\d+ models?$/)).not.toBeInTheDocument();
+    });
+
     it('renders as a link to project dataset page', async () => {
         render(<ProjectCard item={mockProject} projectNames={[]} />);
 

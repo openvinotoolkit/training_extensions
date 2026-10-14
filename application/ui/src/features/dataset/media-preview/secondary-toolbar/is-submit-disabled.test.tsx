@@ -12,11 +12,12 @@ import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 
 import { http } from '../../../../api/utils';
-import { AnnotationActionsProvider } from '../../../../modules/annotator/annotation-actions-provider.component';
+import { AnnotationDocumentProvider } from '../../../../modules/annotator/annotation-document-provider.component';
 import type { AnnotatorMode } from '../../../../modules/annotator/annotator-mode';
 import { server } from '../../../../msw-node-setup';
 import { renderHook } from '../../../../test-utils/render';
-import { useIsSubmitDisabled } from './use-is-submit-disabled.hook';
+import { useSubmitAnnotations } from '../api/use-submit-annotations';
+import { getIsSubmitDisabled } from './is-submit-disabled';
 
 type RenderIsSubmitDisabledParams = {
     mode?: AnnotatorMode;
@@ -42,20 +43,26 @@ const renderIsSubmitDisabled = ({
     );
 
     const wrapper = ({ children }: { children: ReactNode }) => (
-        <AnnotationActionsProvider
+        <AnnotationDocumentProvider
             mode={mode}
-            mediaItem={getMockedMediaImage()}
             initialAnnotationsDTO={initialAnnotationsDTO}
             initialPredictionsDTO={initialPredictionsDTO}
         >
             {children}
-        </AnnotationActionsProvider>
+        </AnnotationDocumentProvider>
     );
 
-    return renderHook(() => useIsSubmitDisabled({ mode, hasSubsetChanged, isLoadingPredictions }), { wrapper });
+    return renderHook(
+        () => {
+            const submission = useSubmitAnnotations({ mediaItem: getMockedMediaImage(), hasSubsetChanged });
+
+            return getIsSubmitDisabled({ isLoadingPredictions, ...submission });
+        },
+        { wrapper }
+    );
 };
 
-describe('useIsSubmitDisabled', () => {
+describe('getIsSubmitDisabled', () => {
     const label1 = getMockedLabel({ id: 'label-1', name: 'Cat', color: '#FF0000' });
 
     it('annotation mode: disabled when annotations and subset are both unchanged', async () => {
