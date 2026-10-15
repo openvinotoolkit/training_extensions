@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig, loadEnv } from '@rsbuild/core';
-import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginSass } from '@rsbuild/plugin-sass';
 import { pluginSvgr } from '@rsbuild/plugin-svgr';
@@ -75,16 +74,7 @@ const runtimeAssetPrefixJson = JSON.stringify(assetPrefix.replace(/\/+$/, ''));
 
 export default defineConfig({
     plugins: [
-        pluginReact(),
-
-        // React Compiler. `.ts` is included as well as `.tsx`: most custom hooks
-        // live in hook-only `.ts` files and would otherwise never be optimised.
-        pluginBabel({
-            include: /\.tsx?$/,
-            babelLoaderOptions(opts) {
-                opts.plugins?.unshift('babel-plugin-react-compiler');
-            },
-        }),
+        pluginReact({ reactCompiler: true }),
 
         pluginSass(),
 
