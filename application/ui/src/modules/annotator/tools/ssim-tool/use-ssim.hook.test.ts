@@ -206,4 +206,116 @@ describe('useSSIM', () => {
         expect(FakeWorker.instances[0].terminate).not.toHaveBeenCalled();
         expect(result.current.toolState.shapes).toEqual([]);
     });
+
+    it('reruns the last template with the given overrides', async () => {
+        const executeSSIM = vi.fn().mockResolvedValue([toolMatch(60, 60)]);
+        mockWorker(executeSSIM);
+
+        const { result } = renderHook(() => useSSIM('rectangle'));
+
+        await waitFor(() => expect(result.current.worker).toBeDefined());
+
+        act(() => {
+            result.current.rerun({ autoMergeDuplicates: false });
+        });
+
+        expect(executeSSIM).not.toHaveBeenCalled();
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+
+        await waitFor(() => expect(result.current.toolState.shapes).toHaveLength(2));
+
+        act(() => {
+            result.current.rerun({ autoMergeDuplicates: false });
+        });
+
+        await waitFor(() => expect(executeSSIM).toHaveBeenCalledTimes(2));
+        expect(executeSSIM.mock.lastCall?.[0]).toMatchObject({
+            autoMergeDuplicates: false,
+            template: { x: 10, y: 10, width: 20, height: 20 },
+        });
+    });
+
+    it('limits the previewed shapes to the selected number of items', async () => {
+        mockWorker(vi.fn().mockResolvedValue([toolMatch(40, 40), toolMatch(70, 70)]));
+
+        const { result } = renderHook(() => useSSIM('rectangle'));
+
+        await waitFor(() => expect(result.current.worker).toBeDefined());
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+
+        await waitFor(() => expect(result.current.toolState.shapes).toHaveLength(3));
+
+        act(() => {
+            result.current.updateToolState({ threshold: 1 });
+        });
+
+        expect(result.current.toolState.shapes).toEqual([template]);
+        expect(result.current.toolState.matches).toHaveLength(3);
+    });
+
+    it('keeps the selected number of items and the preview while re-running', async () => {
+        const { promise: rerunResult, resolve: resolveRerun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
+        const executeSSIM = vi
+            .fn()
+            .mockResolvedValueOnce([toolMatch(40, 40), toolMatch(70, 70)])
+            .mockReturnValueOnce(rerunResult);
+        mockWorker(executeSSIM);
+
+        const { result } = renderHook(() => useSSIM('rectangle'));
+
+        await waitFor(() => expect(result.current.worker).toBeDefined());
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+
+        await waitFor(() => expect(result.current.toolState.shapes).toHaveLength(3));
+
+        act(() => {
+            result.current.updateToolState({ threshold: 2 });
+        });
+        act(() => {
+            result.current.rerun({ autoMergeDuplicates: false });
+        });
+
+        await waitFor(() => expect(result.current.isProcessing).toBe(true));
+        expect(result.current.toolState.shapes).toHaveLength(2);
+
+        resolveRerun([toolMatch(40, 40), toolMatch(70, 70), toolMatch(10, 70)]);
+
+        await waitFor(() => expect(result.current.toolState.matches).toHaveLength(4));
+        expect(result.current.toolState.threshold).toBe(2);
+        expect(result.current.toolState.shapes).toHaveLength(2);
+    });
+
+    it('clears the previous preview when running a new template', async () => {
+        const { promise: secondRun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
+        const executeSSIM = vi
+            .fn()
+            .mockResolvedValueOnce([toolMatch(60, 60)])
+            .mockReturnValueOnce(secondRun);
+        mockWorker(executeSSIM);
+
+        const { result } = renderHook(() => useSSIM('rectangle'));
+
+        await waitFor(() => expect(result.current.worker).toBeDefined());
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+
+        await waitFor(() => expect(result.current.toolState.shapes).toHaveLength(2));
+
+        act(() => {
+            result.current.runSSIM(runProps);
+        });
+
+        expect(result.current.toolState.shapes).toEqual([]);
+    });
 });

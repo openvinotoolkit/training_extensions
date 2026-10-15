@@ -813,7 +813,9 @@
                 },
                 "options": {
                     "accept": "接受",
-                    "reject": "拒绝"
+                    "reject": "拒绝",
+                    "numberOfItems": "项目数量",
+                    "autoMergeDuplicates": "自动合并重复项"
                 }
             }
         },

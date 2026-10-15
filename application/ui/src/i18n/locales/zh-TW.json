@@ -815,7 +815,9 @@
                 },
                 "options": {
                     "accept": "接受",
-                    "reject": "拒絕"
+                    "reject": "拒絕",
+                    "numberOfItems": "項目數量",
+                    "autoMergeDuplicates": "自動合併重複項"
                 }
             }
         },

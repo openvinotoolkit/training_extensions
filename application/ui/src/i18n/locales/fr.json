@@ -832,7 +832,9 @@
                 },
                 "options": {
                     "accept": "Accepter",
-                    "reject": "Rejeter"
+                    "reject": "Rejeter",
+                    "numberOfItems": "Nombre d'éléments",
+                    "autoMergeDuplicates": "Fusionner automatiquement les doublons"
                 }
             }
         },

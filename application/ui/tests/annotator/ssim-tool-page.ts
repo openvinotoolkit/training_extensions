@@ -39,6 +39,10 @@ export class SSIMToolPage {
         return this.getOptions().getByRole('button', { name: 'Reject' });
     }
 
+    getNumberOfItemsSlider() {
+        return this.getOptions().getByRole('slider', { name: 'Number of items' });
+    }
+
     getPreviewShapes() {
         return this.page.getByLabel('ssim preview').getByLabel(/^(template|prediction)$/);
     }

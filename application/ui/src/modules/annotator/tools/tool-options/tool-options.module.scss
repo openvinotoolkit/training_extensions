@@ -1,7 +1,10 @@
 .toolOptions {
     position: absolute;
     top: var(--spectrum-global-dimension-size-100);
-    left: 50%;
-    transform: translateX(-50%);
+    // Centred via auto margins: `left: 50%` would halve the width available before the bar wraps.
+    inset-inline: 0;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
     z-index: 1;
 }
