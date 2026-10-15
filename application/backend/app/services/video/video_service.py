@@ -244,7 +244,7 @@ class VideoService:
                 width = stream.codec_context.width
                 height = stream.codec_context.height
         except Exception as e:
-            logger.error(f"Failed getting metadata for video {video_path}", exc_info=e)
+            logger.error("Failed getting metadata for video {}", video_path, exc_info=e)
             raise RuntimeError("Error occurred while getting video metadata")
 
         return VideoMetadata(

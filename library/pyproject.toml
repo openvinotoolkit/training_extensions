@@ -283,6 +283,7 @@ select = [
     "T10",  # flake8-debugger (`T10`)
     "EM",   # flake8-errmsg (`EM`)
     "FA",   # flake8-future-annotations (`FA`)
+    "G004", # flake8-logging-format: no f-strings in logging calls (`G004`)
     "ISC",  # flake8-implicit-str-concat (`ISC`)
     "ICN",  # flake8-import-conventions (`ICN`)
     "PIE",  # flake8-pie (`PIE`)

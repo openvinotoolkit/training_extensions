@@ -40,7 +40,7 @@ class FolderDispatcher(BaseDispatcher):
             if success:
                 f.write(img_buf.tobytes())
             else:
-                logger.error(f"Failed to encode image for {file_path}")
+                logger.error("Failed to encode image for {}", file_path)
 
     @staticmethod
     def _write_predictions_to_file(predictions: str, file_path: str) -> None:
@@ -64,7 +64,7 @@ class FolderDispatcher(BaseDispatcher):
         image_viz_file = os.path.join(self.output_folder, f"{timestamp}-pred.jpg")
         pred_txt_file = os.path.join(self.output_folder, f"{timestamp}-pred.txt")
 
-        logger.debug(f"Saving results to folder for timestamp '{timestamp}' to folder '{self.output_folder}'")
+        logger.debug("Saving results to folder for timestamp '{}' to folder '{}'", timestamp, self.output_folder)
 
         if OutputFormat.IMAGE_ORIGINAL in self.output_formats:
             self._write_image_to_file(original_image, image_orig_file)

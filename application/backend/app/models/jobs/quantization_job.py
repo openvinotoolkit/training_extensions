@@ -42,7 +42,7 @@ class QuantizationJob(ProjectJob[QuantizationJobParams]):
         """Copy the quantization log and clean up the getitune workspace upon job completion."""
         log_path = self.log_dir / self.log_file
         if not log_path.exists():
-            logger.warning(f"Log file {log_path} does not exist")
+            logger.warning("Log file {} does not exist", log_path)
         else:
             new_path = (
                 self.data_dir
@@ -62,11 +62,11 @@ class QuantizationJob(ProjectJob[QuantizationJobParams]):
         workspace_dir = self.data_dir / f"getitune-quantize-workspace-{self.params.model_id}"
         try:
             shutil.rmtree(workspace_dir)
-            logger.info(f"Cleaned up getitune quantization workspace directory at {workspace_dir}")
+            logger.info("Cleaned up getitune quantization workspace directory at {}", workspace_dir)
         except FileNotFoundError:
             # Directory was never created or already removed; treat as a no-op.
             pass
         except Exception as cleanup_exc:
             logger.error(
-                f"Failed to clean up getitune quantization workspace directory at {workspace_dir}: {cleanup_exc}"
+                "Failed to clean up getitune quantization workspace directory at {}: {}", workspace_dir, cleanup_exc
             )
