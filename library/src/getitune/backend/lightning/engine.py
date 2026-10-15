@@ -804,7 +804,7 @@ class LightningEngine(Engine):
             # Only reassign when it actually differs, to avoid emitting the
             # (misleading) "Assign new label_info to the model" warning on
             # every from_config() call.  The CLI path in
-            # OTXCLI.instantiate_model already sets label_info at model
+            # CLI.instantiate_model already sets label_info at model
             # construction time, so this branch is normally a no-op.
             model.label_info = datamodule.label_info
 

@@ -336,9 +336,6 @@ class BBoxHeadModule(BaseModule):
         scores = torch.nn.functional.softmax(cls_scores, dim=-1) if cls_scores is not None else None
 
         if bbox_preds is not None:
-            # num_classes = 1 if self.reg_class_agnostic else self.num_classes
-            # if num_classes > 1:
-            #     rois = rois.repeat_interleave(num_classes, dim=1)
             bboxes = self.bbox_coder.decode_export(rois[..., 1:], bbox_preds, max_shape=img_shape)
         else:
             bboxes = rois[..., 1:].clone()

@@ -57,12 +57,6 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 
         self.init_cfg = copy.deepcopy(init_cfg)
 
-        # Backward compatibility in derived classes
-        # if pretrained is not None:
-        #     warnings.warn('DeprecationWarning: pretrained is a deprecated \
-        #         key, please consider using init_cfg')
-        #     self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
-
     @property
     def is_init(self) -> bool:
         """Check if the module has been initialized."""

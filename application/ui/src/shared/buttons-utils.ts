@@ -21,7 +21,7 @@ const BUTTON_ERASER = {
     buttons: 32,
 };
 
-interface MouseButton {
+export interface MouseButton {
     button: number;
     buttons: number;
 }

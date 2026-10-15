@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, type DependencyList, type RefObject } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 import { isNil } from 'lodash-es';
 
@@ -10,7 +10,6 @@ interface useGetTargetPositionProps {
     ref: RefObject<HTMLDivElement | null>;
     delay?: number;
     scrollToIndex?: number;
-    dependencies?: DependencyList;
     callback: (scrollTo: number) => void;
 }
 

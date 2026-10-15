@@ -61,23 +61,6 @@ export const SourceOptions = ({ onSaved, hasHeader, children, existingNames = []
                             />
                         ),
                     },
-                    // TODO: Reenable after MVP
-                    // {
-                    //     label: 'GenICam',
-                    //     value: 'gen_i_cam',
-
-                    //     icon: <GenICam width={'24px'} />,
-                    //     content: (
-                    //         <AddSource
-                    //             onSaved={onSaved}
-                    //             config={getImagesFolderInitialConfig()}
-                    //             componentFields={(state: ImagesFolderSourceConfig) => (
-                    //                 <ImageFolder defaultState={state} />
-                    //             )}
-                    //             bodyFormatter={imagesFolderBodyFormatter}
-                    //         />
-                    //     ),
-                    // },
                     {
                         label: t('inference.sources.options.videoFile'),
                         value: 'video_file',
@@ -99,22 +82,6 @@ export const SourceOptions = ({ onSaved, hasHeader, children, existingNames = []
                             />
                         ),
                     },
-                    // TODO: Reenable after MVP
-                    // {
-                    //     label: 'Images folder',
-                    //     value: 'images_folder',
-                    //     icon: <Image width={'24px'} />,
-                    //     content: (
-                    //         <AddSource
-                    //             onSaved={onSaved}
-                    //             config={getImagesFolderInitialConfig()}
-                    //             componentFields={(state: ImagesFolderSourceConfig) => (
-                    //                 <ImageFolder defaultState={state} />
-                    //             )}
-                    //             bodyFormatter={imagesFolderBodyFormatter}
-                    //         />
-                    //     ),
-                    // },
                 ]}
             />
         </>
