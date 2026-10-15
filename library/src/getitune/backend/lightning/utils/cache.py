@@ -53,7 +53,10 @@ class TrainerArgumentsCache:
                 continue
             if key in self._cached_args and self._cached_args[key] != value:
                 logger.info(
-                    f"Overriding {key} from {self._cached_args[key]} with {value}",
+                    "Overriding %s from %s with %s",
+                    key,
+                    self._cached_args[key],
+                    value,
                 )
             self._cached_args[key] = value
 

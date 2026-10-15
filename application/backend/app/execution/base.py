@@ -49,7 +49,7 @@ def step(name: str, complete: float = 0.0) -> Callable[[Callable[..., T]], Calla
                 self._report_progress(f"Completed: {name}", percent=complete)
             else:
                 self._pinned_message = False  # reset pinned message state for the next step
-                logger.info(f"Completed: {name}")
+                logger.info("Completed: {}", name)
             return result
 
         return wrapper

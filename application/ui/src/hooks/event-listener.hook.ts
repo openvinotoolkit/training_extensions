@@ -3,7 +3,6 @@
 
 import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 
-//Todo import from geti-classic when available
 function determineTargetElement<ElementType extends Element = Element>(
     element?: RefObject<ElementType | null> | ElementType | null
 ): ElementType | (Window & typeof globalThis) | null {

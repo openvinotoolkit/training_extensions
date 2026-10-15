@@ -1,5 +1,5 @@
-#  Copyright (C) 2026 Intel Corporation
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from .export_project import export_project
 from .import_project import import_project

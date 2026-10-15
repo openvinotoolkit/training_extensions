@@ -683,7 +683,7 @@ class LightningEngine(Engine):
             flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops * 10**3))
             final_stats["complexity"] = flops_str + " MACs"
         except Exception as e:
-            logging.warning(f"Failed to complete complexity estimation: {e}")
+            logging.warning("Failed to complete complexity estimation: %s", e)
 
             params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num * 100))
@@ -804,7 +804,7 @@ class LightningEngine(Engine):
             # Only reassign when it actually differs, to avoid emitting the
             # (misleading) "Assign new label_info to the model" warning on
             # every from_config() call.  The CLI path in
-            # OTXCLI.instantiate_model already sets label_info at model
+            # CLI.instantiate_model already sets label_info at model
             # construction time, so this branch is normally a no-op.
             model.label_info = datamodule.label_info
 
