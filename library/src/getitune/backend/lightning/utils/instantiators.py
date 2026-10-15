@@ -57,7 +57,7 @@ def instantiate_callbacks(callbacks_cfg: list) -> list[Callback]:
 
     for cb_conf in callbacks_cfg:
         if isinstance(cb_conf, dict) and "class_path" in cb_conf:
-            log.info(f"Instantiating callback <{cb_conf['class_path']}>")
+            log.info("Instantiating callback <%s>", cb_conf["class_path"])
             callbacks.append(instantiate_class(args=(), init=cb_conf))
 
     return callbacks
@@ -80,7 +80,7 @@ def instantiate_loggers(logger_cfg: list | None) -> list[Logger]:
 
     for lg_conf in logger_cfg:
         if isinstance(lg_conf, dict) and "class_path" in lg_conf:
-            log.info(f"Instantiating logger <{lg_conf['class_path']}>")
+            log.info("Instantiating logger <%s>", lg_conf["class_path"])
             logger.append(instantiate_class(args=(), init=lg_conf))
 
     return logger

@@ -169,7 +169,7 @@ class UltralyticsEngine(Engine):
             if isinstance(devices, list) and len(devices) >= 1:
                 idx = devices[0]
                 if len(devices) > 1:
-                    logger.warning(f"UltralyticsEngine does not support multi-device; using first device: {idx}")
+                    logger.warning("UltralyticsEngine does not support multi-device; using first device: %s", idx)
                 # Only set index for accelerator devices; CPU doesn't support indices.
                 dev_type = self._device.type
                 if dev_type != "cpu":
@@ -215,8 +215,10 @@ class UltralyticsEngine(Engine):
             train_args["amp"] = amp_val
 
         logger.info(
-            f"Starting Ultralytics training: model={self._model.model_name}, "
-            f"device={self._device}, imgsz={self._model.imgsz}"
+            "Starting Ultralytics training: model=%s, device=%s, imgsz=%s",
+            self._model.model_name,
+            self._device,
+            self._model.imgsz,
         )
 
         results = yolo.train(**train_args)
@@ -231,7 +233,7 @@ class UltralyticsEngine(Engine):
                 # to avoid overly aggressive pruning that can harm export performance.
                 threshold = min(best_val_confidence_thr, self._export_args.get("confidence_threshold", 0.25))
                 self._export_args["confidence_threshold"] = threshold
-                logger.info(f"Best confidence threshold from FMeasure: {threshold:.4f}")
+                logger.info("Best confidence threshold from FMeasure: %.4f", threshold)
         return self._translate_metrics(results)
 
     def test(self, checkpoint: PathLike | None = None, metric: Callable[..., Any] | None = None, **kwargs) -> METRICS:
@@ -286,7 +288,7 @@ class UltralyticsEngine(Engine):
             **merged,
         }
 
-        logger.info(f"Starting Ultralytics validation: model={self._model.model_name}")
+        logger.info("Starting Ultralytics validation: model=%s", self._model.model_name)
 
         results = yolo.val(**val_args)
         return self._translate_metrics(results)
@@ -376,9 +378,10 @@ class UltralyticsEngine(Engine):
                 self._model.load_checkpoint(best_pt)
 
         logger.info(
-            f"Exporting model: format={export_format.value}, "
-            f"precision={export_precision.value}, "
-            f"checkpoint={checkpoint or self._last_train_checkpoint or 'current weights'}"
+            "Exporting model: format=%s, precision=%s, checkpoint=%s",
+            export_format.value,
+            export_precision.value,
+            checkpoint or self._last_train_checkpoint or "current weights",
         )
 
         previous_export_nms = self._model.export_nms
@@ -511,7 +514,7 @@ class UltralyticsEngine(Engine):
             "mode": "val",
         }
 
-        logger.info(f"Starting DataModule validation: model={self._model.model_name}")
+        logger.info("Starting DataModule validation: model=%s", self._model.model_name)
 
         validator = validator_cls(
             save_dir=self._work_dir / "val",
@@ -568,8 +571,10 @@ class UltralyticsEngine(Engine):
         imgsz = self._model.imgsz
 
         logger.info(
-            f"Starting torchmetrics evaluation: model={self._model.model_name}, "
-            f"metric={type(metric).__name__}, batches={len(dataloader)}"
+            "Starting torchmetrics evaluation: model=%s, metric=%s, batches=%s",
+            self._model.model_name,
+            type(metric).__name__,
+            len(dataloader),
         )
 
         if self._model.task == "classify":
@@ -738,8 +743,10 @@ class UltralyticsEngine(Engine):
         yolo.model.to(device).eval()
 
         logger.info(
-            f"Starting torchmetrics semantic segmentation evaluation: model={self._model.model_name}, "
-            f"metric={type(metric).__name__}, batches={len(dataloader)}"
+            "Starting torchmetrics semantic segmentation evaluation: model=%s, metric=%s, batches=%s",
+            self._model.model_name,
+            type(metric).__name__,
+            len(dataloader),
         )
 
         for batch in dataloader:
@@ -906,7 +913,7 @@ class UltralyticsEngine(Engine):
         if checkpoint.exists():
             return checkpoint
 
-        logger.warning(f"Ignoring stale checkpoint pointer: {checkpoint}")
+        logger.warning("Ignoring stale checkpoint pointer: %s", checkpoint)
         return None
 
     def _record_last_train_checkpoint(self, checkpoint: Path | None) -> None:
@@ -983,7 +990,7 @@ class UltralyticsEngine(Engine):
         csv_version_dir = self._work_dir / "csv" / "version_0"
         csv_version_dir.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(results_csv, csv_version_dir / "metrics.csv")
-        logger.info(f"Remapped results.csv columns to standard metric names: {results_csv}")
+        logger.info("Remapped results.csv columns to standard metric names: %s", results_csv)
 
     def _make_bound_trainer(
         self,
@@ -1166,7 +1173,7 @@ class UltralyticsEngine(Engine):
                 if value.numel() == 1:
                     formatted[prefix] = value.item()
                 else:
-                    logger.debug(f"Skipping non-scalar torchmetric '{prefix}' with {value.numel()} elements")
+                    logger.debug("Skipping non-scalar torchmetric '%s' with %s elements", prefix, value.numel())
             elif isinstance(value, (int, float)):
                 formatted[prefix] = float(value)
 
@@ -1374,7 +1381,7 @@ class UltralyticsEngine(Engine):
             "bf16-true",
         ):
             if device.type == "cpu":
-                logger.warning(f"precision={precision!r} is not supported on CPU; falling back to FP32 (amp=False)")
+                logger.warning("precision=%r is not supported on CPU; falling back to FP32 (amp=False)", precision)
                 return False
             return True
 

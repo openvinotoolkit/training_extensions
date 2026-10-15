@@ -203,8 +203,8 @@ class SSD(LightningDetectionModel):
             new_anchors = self._get_new_anchors(dataset, anchor_generator)
             if new_anchors is not None:
                 logger.warning("Anchor will be updated by Dataset's statistics")
-                logger.warning(f"{anchor_generator.widths} -> {new_anchors[0]}")
-                logger.warning(f"{anchor_generator.heights} -> {new_anchors[1]}")
+                logger.warning("%s -> %s", anchor_generator.widths, new_anchors[0])
+                logger.warning("%s -> %s", anchor_generator.heights, new_anchors[1])
                 anchor_generator.widths = new_anchors[0]
                 anchor_generator.heights = new_anchors[1]
                 anchor_generator.gen_base_anchors()
@@ -236,8 +236,10 @@ class SSD(LightningDetectionModel):
 
         if len(wh_stats) < sum(group_as):
             logger.warning(
-                f"There are not enough objects to cluster: {len(wh_stats)} were detected, while it should be "
-                f"at least {sum(group_as)}. Anchor box clustering was skipped.",
+                "There are not enough objects to cluster: %s were detected, while it should be "
+                "at least %s. Anchor box clustering was skipped.",
+                len(wh_stats),
+                sum(group_as),
             )
             return None
 

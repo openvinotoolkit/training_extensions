@@ -114,7 +114,7 @@ def _build_pytorchcv_model(
     """Build pytorchcv model."""
     models_cache_root = Path(kwargs.pop("root", os.environ["PRETRAINED_WEIGHTS_CACHE_DIR"]))
     pretrained = kwargs.pop("pretrained", False)
-    logger.info(f"Init model {type}, pretrained={pretrained}, models cache {models_cache_root}")
+    logger.info("Init model %s, pretrained=%s, models cache %s", type, pretrained, models_cache_root)
     model = _models[type](root=models_cache_root, pretrained=pretrained, **kwargs)
     if activation:
         model = replace_activation(model, activation)
@@ -139,8 +139,9 @@ def _build_pytorchcv_model(
     else:
         logger.warning(
             "Failed to automatically wrap backbone network. "
-            f"Object of type {model.__class__} has no valid attribute called "
+            "Object of type %s has no valid attribute called "
             "'features'.",
+            model.__class__,
         )
 
     return model

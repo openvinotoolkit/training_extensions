@@ -683,7 +683,7 @@ class LightningEngine(Engine):
             flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops * 10**3))
             final_stats["complexity"] = flops_str + " MACs"
         except Exception as e:
-            logging.warning(f"Failed to complete complexity estimation: {e}")
+            logging.warning("Failed to complete complexity estimation: %s", e)
 
             params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num * 100))

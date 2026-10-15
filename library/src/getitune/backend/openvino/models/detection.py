@@ -116,8 +116,9 @@ class OVDetectionModel(OVModel):
         self.async_inference = False
         self.model = DetectionTiler(self.model, execution_mode=execution_mode)
         log.info(
-            f"Enable tiler with tile size: {self.model.tile_size} \
-                and overlap: {self.model.tiles_overlap}",
+            "Enable tiler with tile size: %s                 and overlap: %s",
+            self.model.tile_size,
+            self.model.tiles_overlap,
         )
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
@@ -177,7 +178,7 @@ class OVDetectionModel(OVModel):
 
         label_shift = 1 if first_label == "background" else 0
         if label_shift:
-            log.warning(f"label_shift: {label_shift}")
+            log.warning("label_shift: %s", label_shift)
 
         imgs_info = cast("Sequence[ImageInfo]", inputs.imgs_info)
         for i, output in enumerate(outputs):

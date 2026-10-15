@@ -157,13 +157,16 @@ class DataModule(LightningDataModule):
             if self.device not in [DeviceType.gpu, DeviceType.auto]:
                 logger.warning(
                     "Only GPU device type support auto_num_workers. "
-                    f"Current deveice type is {self.device!s}. auto_num_workers is skipped.",
+                    "Current deveice type is %s. auto_num_workers is skipped.",
+                    self.device,
                 )
             elif (num_workers := get_adaptive_num_workers()) is not None:
                 for subset_name, subset_config in config_mapping.items():
                     logger.info(
-                        f"num_workers of {subset_name} subset is changed : "
-                        f"{subset_config.num_workers} -> {num_workers}",
+                        "num_workers of %s subset is changed : %s -> %s",
+                        subset_name,
+                        subset_config.num_workers,
+                        num_workers,
                     )
                     subset_config.num_workers = num_workers
 
@@ -171,12 +174,12 @@ class DataModule(LightningDataModule):
         for name, subset_cfg in config_mapping.items():
             subset_enum = _SUBSET_NAME_TO_ENUM.get(name.lower())
             if subset_enum is None:
-                logger.warning(f"{name} has no Subset enum mapping. Skip it")
+                logger.warning("%s has no Subset enum mapping. Skip it", name)
                 continue
 
             dm_subset = dataset.filter_by_subset(subset_enum)
             if len(dm_subset) == 0:
-                logger.warning(f"Subset '{name}' is empty in the dataset. Skip it")
+                logger.warning("Subset '%s' is empty in the dataset. Skip it", name)
                 continue
 
             if storage_dtype is None:
@@ -184,8 +187,9 @@ class DataModule(LightningDataModule):
 
             if subset_cfg.intensity.storage_dtype != storage_dtype:
                 logger.warning(
-                    f"Overriding intensity storage_dtype '{subset_cfg.intensity.storage_dtype}' "
-                    f"with auto-detected '{storage_dtype}'",
+                    "Overriding intensity storage_dtype '%s' with auto-detected '%s'",
+                    subset_cfg.intensity.storage_dtype,
+                    storage_dtype,
                 )
                 subset_cfg.intensity.storage_dtype = storage_dtype
 
@@ -195,8 +199,9 @@ class DataModule(LightningDataModule):
             # (embedded preprocessing metadata).
             if num_channels == 1 and subset_cfg.intensity.repeat_channels < 3:
                 logger.info(
-                    f"Single-channel image detected ({num_channels}ch). "
-                    f"Auto-setting intensity.repeat_channels=3 for subset '{name}'.",
+                    "Single-channel image detected (%sch). Auto-setting intensity.repeat_channels=3 for subset '%s'.",
+                    num_channels,
+                    name,
                 )
                 subset_cfg.intensity.repeat_channels = 3
 
@@ -325,9 +330,10 @@ class DataModule(LightningDataModule):
                 subset_to_assign = subset
                 if getattr(subset, "augmentations_cpu", None):
                     logger.warning(
-                        f"The provided {name} SubsetConfig contains augmentations_cpu which will be overridden "
+                        "The provided %s SubsetConfig contains augmentations_cpu which will be overridden "
                         "by the transforms of the provided VisionDataset. When building DataModule from "
                         "pre-constructed datasets, developers should set up the transforms when creating the datasets.",
+                        name,
                     )
             else:
                 # Use default config but get transforms from the dataset
@@ -463,7 +469,7 @@ class DataModule(LightningDataModule):
         tile_config = self.tile_config
         if tile_config.enable_tiler and tile_config.sampling_ratio < 1:
             num_samples = max(1, int(len(dataset) * tile_config.sampling_ratio))
-            logger.info(f"Using tiled sampling with {num_samples} samples")
+            logger.info("Using tiled sampling with %s samples", num_samples)
             common_args.update(
                 {
                     "shuffle": False,

@@ -112,7 +112,7 @@ class GetiTuneBaseTrainer:
             callbacks[event] = kept
         if removed:
             logger.info(
-                f"Disabled {removed} Ultralytics third-party logger callback(s); getitune manages experiment tracking."
+                "Disabled %s Ultralytics third-party logger callback(s); getitune manages experiment tracking.", removed
             )
 
     def get_dataset(self) -> dict[str, Any]:
@@ -229,9 +229,12 @@ class GetiTuneBaseTrainer:
         natural_nw = round(self.args.warmup_epochs * nb)
         if natural_nw < 100:
             logger.info(
-                f"Bypassing Ultralytics 100-iteration warmup minimum. "
-                f"With {nb} batches/epoch, using natural warmup of "
-                f"{natural_nw} iterations ({self.args.warmup_epochs} epochs)."
+                "Bypassing Ultralytics 100-iteration warmup minimum. "
+                "With %s batches/epoch, using natural warmup of "
+                "%s iterations (%s epochs).",
+                nb,
+                natural_nw,
+                self.args.warmup_epochs,
             )
 
             warmup_bias_lr = self.args.warmup_bias_lr
@@ -346,7 +349,7 @@ class GetiTuneBaseTrainer:
             progress_fn(progress)
 
         self.add_callback("on_train_batch_end", _progress_callback)
-        logger.info(f"Registered progress callback: {total_steps} total steps, range [{min_p}, {max_p}]")
+        logger.info("Registered progress callback: %s total steps, range [%s, %s]", total_steps, min_p, max_p)
 
     def _clear_memory(self, threshold: float | None = None) -> None:
         """Lightweight memory clearing that skips ``gc.collect()``.

@@ -103,7 +103,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
         module_name = self.__class__.__name__
         if not self._is_init:
             if self.init_cfg:
-                logger.debug(f"initialize {module_name} with init_cfg {self.init_cfg}", stacklevel=1)
+                logger.debug("initialize %s with init_cfg %s", module_name, self.init_cfg, stacklevel=1)
 
                 init_cfgs = self.init_cfg
                 if isinstance(self.init_cfg, dict):
@@ -140,7 +140,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 initialize(self, pretrained_cfg)
             self._is_init = True
         else:
-            logger.warning(f"init_weights of {self.__class__.__name__} has been called more than once.")
+            logger.warning("init_weights of %s has been called more than once.", self.__class__.__name__)
 
         if is_top_level_module:
             self._dump_init_info()
@@ -163,7 +163,7 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
                 with_file_handler = True
         if not with_file_handler:
             for name, param in self.named_parameters():
-                logger.debug(f"\n{name} - {param.shape}: \n{self._params_init_info[param]['init_info']} \n ")
+                logger.debug("\n%s - %s: \n%s \n ", name, param.shape, self._params_init_info[param]["init_info"])
 
     def __repr__(self):
         s = super().__repr__()
