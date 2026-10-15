@@ -80,7 +80,7 @@
         "@ianvs/prettier-plugin-sort-imports": "~4.7.1",
         "@msw/playwright": "~0.6.7",
         "@msw/source": "~0.6.1",
-        "@playwright/test": "~1.61.1",
+        "@playwright/test": "~1.64.0",
         "@rsbuild/core": "~2.2.12",
         "@rsbuild/plugin-react": "~2.1.1",
         "@rsbuild/plugin-sass": "~2.0.1",
