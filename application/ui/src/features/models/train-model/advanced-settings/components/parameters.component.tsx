@@ -238,6 +238,7 @@ export const NumberEnumParameterField = ({
 
     return (
         <Picker
+            isDisabled={isDisabled}
             items={items}
             selectedKey={parameter.value.toString()}
             onSelectionChange={(key) => key !== null && handleChange(key)}
@@ -406,7 +407,7 @@ const ParametersEnableGroup = ({
                     parameters={configurableParameters}
                     onChange={onChange}
                     isReadOnly={isReadOnly}
-                    isDisabled={!enableParameter.value}
+                    isDisabled={isDisabled || !enableParameter.value}
                     marginStart={'size-200'}
                     parentGroupKeys={groupKeys}
                 />

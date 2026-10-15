@@ -30,6 +30,7 @@ from app.datumaro_converter import SampleMode
 from app.execution.base import Execution, ExecutionErr, step
 from app.execution.common.geti_config_converter import GetiConfigConverter
 from app.execution.common.getitune_converters import (
+    build_getitune_subset_config,
     convert_metrics,
     get_getitune_dataset_class_by_task_type,
     get_getitune_task_type_by_task,
@@ -267,19 +268,9 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
         restricted to the given dataset view when one is selected.
         """
 
-        from getitune.config.data import SamplerConfig, SubsetConfig, TileConfig
+        from getitune.config.data import TileConfig
         from getitune.data.dataset.tile import TileDatasetFactory
         from getitune.data.entity.utils import detect_storage_dtype
-        from getitune.data.factory import TransformLibFactory
-
-        def build_subset_config(subset_name: str) -> SubsetConfig:
-            subset_cfg_data = getitune_training_config["data"][f"{subset_name}_subset"]
-            subset_cfg_data["input_size"] = getitune_training_config["data"]["input_size"]
-            sampler_cfg_data = subset_cfg_data.pop("sampler", {})
-            subset_config = SubsetConfig(sampler=SamplerConfig(**sampler_cfg_data), **subset_cfg_data)
-            # pyrefly: ignore[missing-attribute,bad-assignment]
-            subset_config.transforms = TransformLibFactory.generate(subset_config)
-            return subset_config
 
         with self._db_session_factory() as db:
             self._dataset_service.set_db_session(db)
@@ -346,9 +337,9 @@ class GetiTuneTrainer(Execution[TrainingJobParams]):
 
             # Build a SubsetConfig for each subset based on the training configuration.
             # SubsetConfigs define the transformations applied to the subset, as well the parameters for data loaders.
-            train_subset_config = build_subset_config("train")
-            val_subset_config = build_subset_config("val")
-            test_subset_config = build_subset_config("test")
+            train_subset_config = build_getitune_subset_config(getitune_training_config, "train")
+            val_subset_config = build_getitune_subset_config(getitune_training_config, "val")
+            test_subset_config = build_getitune_subset_config(getitune_training_config, "test")
 
             # Detect storage dtype and propagate to subset configs.
             storage_dtype, num_channels = detect_storage_dtype(dm_training_dataset)
