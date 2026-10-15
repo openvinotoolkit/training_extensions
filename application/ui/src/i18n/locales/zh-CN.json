@@ -810,6 +810,10 @@
                 "error": "检测助手工具出错：{{message}}",
                 "operations": {
                     "workerBuild": "检测助手工作进程构建"
+                },
+                "options": {
+                    "accept": "接受",
+                    "reject": "拒绝"
                 }
             }
         },

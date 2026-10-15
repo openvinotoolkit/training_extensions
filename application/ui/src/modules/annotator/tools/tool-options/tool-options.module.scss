@@ -1,0 +1,7 @@
+.toolOptions {
+    position: absolute;
+    top: var(--spectrum-global-dimension-size-100);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}

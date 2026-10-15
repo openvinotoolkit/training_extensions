@@ -810,6 +810,10 @@
                 "error": "Fout in de tool Detectieassistent: {{message}}",
                 "operations": {
                     "workerBuild": "Bouwen van worker voor detectieassistent"
+                },
+                "options": {
+                    "accept": "Accepteren",
+                    "reject": "Afwijzen"
                 }
             }
         },
