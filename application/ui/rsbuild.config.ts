@@ -29,10 +29,10 @@ const platformExtensions = isTauriBuild ? ['.tauri.tsx', '.tauri.ts', '.tauri.js
 const styleExtensions = ['.scss'];
 
 // API base URL injected into the bundle. Web builds resolve to '' (relative
-// paths, served same-origin behind a reverse proxy). Tauri builds load the
-// frontend from a custom protocol (`tauri://localhost`) that has no API, so
-// fetches must point at the absolute backend URL — the sidecar always binds
-// to localhost:7860. The web dev server reads the same value from .env.development.
+// paths, served same-origin: by the backend in production, or through the
+// dev/preview server proxy below). Tauri builds load the frontend from a
+// custom protocol (`tauri://localhost`) that has no API, so fetches must point
+// at the absolute backend URL — the sidecar always binds to localhost:7860.
 const getPublicApiUrl = () => {
     if (publicVars['import.meta.env.PUBLIC_API_BASE_URL'] !== undefined) {
         return JSON.parse(publicVars['import.meta.env.PUBLIC_API_BASE_URL']);
@@ -46,6 +46,16 @@ const getPublicApiUrl = () => {
 };
 const publicApiUrl = getPublicApiUrl();
 const publicApiUrlJson = JSON.stringify(publicApiUrl);
+
+// Same-origin proxy for the web dev/preview server. Browsers cannot prompt to
+// accept the backend's self-signed certificate on `fetch()`, so the server-side
+// proxy terminates TLS instead (`secure: false`) and the browser only talks to
+// the dev server.
+const apiProxyTarget = process.env.API_PROXY_TARGET || 'https://localhost:7860';
+const apiProxy =
+    !isTauriBuild && publicApiUrl === ''
+        ? [{ pathFilter: ['/api', '/health'], target: apiProxyTarget, secure: false, changeOrigin: true }]
+        : undefined;
 
 // Static assets (including the `onnxruntime-web` wasm/mjs artifacts copied
 // below) are served from wherever the backend mounts the built UI — the
@@ -200,6 +210,7 @@ export default defineConfig({
         },
     },
     server: {
+        proxy: apiProxy,
         headers: {
             'Cross-Origin-Embedder-Policy': 'credentialless',
             'Cross-Origin-Opener-Policy': 'same-origin',
