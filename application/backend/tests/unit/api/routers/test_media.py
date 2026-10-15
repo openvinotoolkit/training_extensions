@@ -2381,6 +2381,17 @@ class TestMediaEndpoints:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         fxt_media_prediction_service.predict_media.assert_not_called()
 
+    def test_media_predict_deprecated_path_returns_404(self, fxt_get_project, fxt_client) -> None:
+        response = fxt_client.post(
+            f"/api/projects/{str(uuid4())}/dataset/media/media:predict",
+            json={
+                "model_id": str(uuid4()),
+                "media": [{"media_id": str(uuid4()), "range": None}],
+                "device": "AUTO",
+            },
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
     def test_media_embeddings_image_success(
         self, fxt_image_media, fxt_get_project, fxt_media_service, fxt_media_segment_service, fxt_client
     ) -> None:
