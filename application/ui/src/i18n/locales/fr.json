@@ -829,6 +829,10 @@
                 "error": "Erreur dans l’outil Assistant de détection : {{message}}",
                 "operations": {
                     "workerBuild": "Construction du worker de l’assistant de détection"
+                },
+                "options": {
+                    "accept": "Accepter",
+                    "reject": "Rejeter"
                 }
             }
         },
