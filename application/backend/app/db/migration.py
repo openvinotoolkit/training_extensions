@@ -62,7 +62,7 @@ class MigrationManager:
                 conn.execute(text("SELECT 1"))
                 return True
         except Exception as e:
-            logger.error(f"Database connection check failed: {e}")
+            logger.error("Database connection check failed: {}", e)
             return False
 
     def get_alembic_config(self) -> Config:
@@ -102,11 +102,11 @@ class MigrationManager:
         timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S%f")
         backup_path = db_path.with_name(f"{db_path.name}.{timestamp}.bak")
 
-        logger.info(f"Backing up database to {backup_path} before migration...")
+        logger.info("Backing up database to {} before migration...", backup_path)
         with closing(sqlite3.connect(str(db_path))) as source, closing(sqlite3.connect(str(backup_path))) as dest:
             source.backup(dest)
 
-        logger.info(f"✓ Database backup created at {backup_path}")
+        logger.info("✓ Database backup created at {}", backup_path)
         return backup_path
 
     @staticmethod
@@ -118,9 +118,9 @@ class MigrationManager:
         """
         try:
             backup_path.unlink(missing_ok=True)
-            logger.info(f"✓ Removed database backup {backup_path} after successful migration")
+            logger.info("✓ Removed database backup {} after successful migration", backup_path)
         except OSError as e:
-            logger.warning(f"Could not remove database backup {backup_path}: {e}")
+            logger.warning("Could not remove database backup {}: {}", backup_path, e)
 
     def run_migrations(self, backup_path: Path | None = None) -> bool:
         """Run database migrations.
@@ -144,7 +144,7 @@ class MigrationManager:
             logger.info("✓ Database migrations completed successfully")
             return True
         except Exception as e:
-            logger.error(f"✗ Database migration failed: {e}")
+            logger.error("✗ Database migration failed: {}", e)
             raise MigrationFatalError(f"Database migration failed: {e}", backup_path=backup_path) from e
 
     def check_migration_status(self) -> tuple[bool, str]:
@@ -175,7 +175,7 @@ class MigrationManager:
         except RevisionNotFoundError:
             raise
         except Exception as e:
-            logger.warning(f"Could not check migration status: {e}")
+            logger.warning("Could not check migration status: {}", e)
             return True, "Unknown - assuming migration needed"
 
     def initialize_database(self) -> bool:
@@ -201,7 +201,7 @@ class MigrationManager:
 
             # Check migration status
             needs_migration, status = self.check_migration_status()
-            logger.info(f"Migration status: {status}")
+            logger.info("Migration status: {}", status)
 
             if needs_migration:
                 logger.info("Database needs migration")
@@ -220,8 +220,8 @@ class MigrationManager:
             # Already fatal and non-restartable; propagate to the process boundary.
             raise
         except RevisionNotFoundError as e:
-            logger.error(f"Revision not found: {e}")
+            logger.error("Revision not found: {}", e)
             raise MigrationFatalError(f"Unrecognized database schema revision: {e}") from e
         except Exception as e:
-            logger.error(f"Database initialization failed: {e}")
+            logger.error("Database initialization failed: {}", e)
             return False

@@ -205,7 +205,6 @@ class DetrCriterion(nn.Module):
             num_boxes = num_boxes * outputs["dn_meta"]["dn_num_group"]
 
             for i, aux_outputs in enumerate(outputs["dn_aux_outputs"]):
-                # indices = self.matcher(aux_outputs, targets)
                 for loss in self._available_losses:
                     kwargs = {}
                     l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)

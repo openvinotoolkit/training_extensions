@@ -258,9 +258,9 @@ class AugmentationSchedulerCallback(Callback):
         self._gpu_aug_callback._train_pipeline = new_pipeline  # noqa: SLF001
         # Log the change. If the new pipeline has no augmentations, it will have aug_sequential = None.
         if new_pipeline.aug_sequential is not None:
-            logger.info(f"Swapped GPU augmentation pipeline to policy '{policy_name}'")
+            logger.info("Swapped GPU augmentation pipeline to policy '%s'", policy_name)
         else:
-            logger.info(f"No GPU augmentations for policy '{policy_name}'; cleared GPU pipeline")
+            logger.info("No GPU augmentations for policy '%s'; cleared GPU pipeline", policy_name)
 
     def set_data_aug_switch(self, data_aug_switch: DataAugSwitch) -> None:
         """Set or update the DataAugSwitch instance."""

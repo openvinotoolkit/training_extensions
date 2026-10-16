@@ -816,6 +816,10 @@
                 "error": "Błąd narzędzia asystenta wykrywania: {{message}}",
                 "operations": {
                     "workerBuild": "Kompilacja workera asystenta wykrywania"
+                },
+                "options": {
+                    "accept": "Akceptuj",
+                    "reject": "Odrzuć"
                 }
             }
         },
@@ -1147,7 +1151,11 @@
         },
         "meta": {
             "started": "Rozpoczęto {{time}}",
-            "elapsed": "Czas trwania: {{time}}"
+            "elapsed": "Czas trwania: {{time}}",
+            "duration": "Czas trwania {{time}}",
+            "finished": "Zakończono {{time}}",
+            "failed": "Niepowodzenie {{time}}",
+            "cancelled": "Anulowano {{time}}"
         },
         "emptyState": {
             "all": "Brak zadań",

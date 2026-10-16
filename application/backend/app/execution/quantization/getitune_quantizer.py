@@ -12,7 +12,6 @@ from uuid import UUID
 
 if TYPE_CHECKING:
     from getitune.backend.openvino.engine import OVEngine
-    from getitune.config.data import SubsetConfig
     from getitune.data.module import DataModule
 
 import yaml
@@ -23,6 +22,7 @@ from sqlalchemy.orm import Session
 from app.execution.base import Execution, step
 from app.execution.common.geti_config_converter import GetiConfigConverter
 from app.execution.common.getitune_converters import (
+    build_getitune_subset_config,
     convert_metrics,
     get_getitune_dataset_class_by_task_type,
     get_getitune_task_type_by_task,
@@ -110,9 +110,7 @@ class GetiTuneQuantizer(Execution[QuantizationJobParams]):
         model: ModelRevision,
     ) -> DataModule:
         """Load and prepare the calibration dataset from the training dataset revision."""
-        from getitune.config.data import SamplerConfig, SubsetConfig
         from getitune.data.entity.utils import detect_storage_dtype
-        from getitune.data.factory import TransformLibFactory
         from getitune.data.module import DataModule
 
         # Get the dataset revision used for training
@@ -142,15 +140,6 @@ class GetiTuneQuantizer(Execution[QuantizationJobParams]):
         converter = GetiConfigConverter()
         getitune_training_config = converter.convert(geti_training_config)
 
-        def build_subset_config(subset_name: str) -> SubsetConfig:
-            subset_cfg_data = getitune_training_config["data"][f"{subset_name}_subset"]
-            subset_cfg_data["input_size"] = getitune_training_config["data"]["input_size"]
-            sampler_cfg_data = subset_cfg_data.pop("sampler", {})
-            subset_config = SubsetConfig(sampler=SamplerConfig(**sampler_cfg_data), **subset_cfg_data)
-            # pyrefly: ignore[missing-attribute,bad-assignment]
-            subset_config.transforms = TransformLibFactory.generate(subset_config)
-            return subset_config
-
         # Load the dataset revision
         with self._db_session_factory() as db:
             self._dataset_revision_service.set_db_session(db)
@@ -165,9 +154,9 @@ class GetiTuneQuantizer(Execution[QuantizationJobParams]):
         dm_testing_dataset = dm_dataset.filter_by_subset(Subset.TESTING)
 
         # Build subset configs
-        train_subset_config = build_subset_config("train")
-        val_subset_config = build_subset_config("val")
-        test_subset_config = build_subset_config("test")
+        train_subset_config = build_getitune_subset_config(getitune_training_config, "train")
+        val_subset_config = build_getitune_subset_config(getitune_training_config, "val")
+        test_subset_config = build_getitune_subset_config(getitune_training_config, "test")
 
         # Detect storage dtype and propagate to subset configs.
         storage_dtype, num_channels = detect_storage_dtype(dm_training_dataset)

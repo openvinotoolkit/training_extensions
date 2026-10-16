@@ -40,9 +40,9 @@ npm start            # Start dev server at http://localhost:3000
 npm run server       # Start backend (Hypercorn, HTTP/2 + TLS) at https://localhost:7860 (separate terminal, requires `uv` and `just`)
 ```
 
-The backend serves HTTP/2 over TLS using a self-signed certificate, auto-generated on first run into `application/backend/data/certs/` (see `just gen-certs`). Your browser/OS may need to trust this cert, or you can accept the self-signed warning when visiting `https://localhost:7860` directly.
+The backend serves HTTP/2 over TLS using a self-signed certificate, auto-generated on first run into `application/backend/data/certs/` (see `just gen-certs`).
 
-The dev server proxies API requests to `PUBLIC_API_BASE_URL` (set in `.env.development`, defaults to `https://localhost:7860`). The `PUBLIC_` prefix is required for Rsbuild client exposure.
+The dev/preview server proxies `/api` and `/health` to `API_PROXY_TARGET` (set in `.env.development`, defaults to `https://localhost:7860`) and accepts the self-signed certificate, so the browser only talks to the dev server and no certificate warning has to be accepted. This also works when the UI is opened from another machine (e.g. `npm run start -- --host 0.0.0.0`). Setting `PUBLIC_API_BASE_URL` instead makes the browser call that backend URL directly (proxy disabled); the browser must then trust its certificate and the backend's `CORS_ORIGINS` must include the UI origin.
 While the backend is running on `localhost:7860`, use `npm run update-spec` to download a fresh OpenAPI spec and regenerate types.
 
 ```bash
@@ -147,8 +147,8 @@ the report with `npx playwright show-report`.
 The UI uses i18next and react-i18next for internationalization. English is the
 default and fallback language. Translation catalogs live in `src/i18n/locales/`
 and are registered in `src/i18n/locales.ts`; currently supported languages are
-English (`en`), Spanish (`es`), Italian (`it`), Dutch (`nl`), Polish (`pl`),
-Portuguese (`pt`) and Chinese (`zh-CN`, `zh-HK`, `zh-MO`, `zh-TW`).
+English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), Dutch (`nl`),
+Polish (`pl`), Portuguese (`pt`) and Chinese (`zh-CN`, `zh-HK`, `zh-MO`, `zh-TW`).
 
 ### Code Quality
 

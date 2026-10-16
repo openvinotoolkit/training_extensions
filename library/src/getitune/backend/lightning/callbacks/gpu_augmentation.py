@@ -72,19 +72,19 @@ class GPUAugmentationCallback(Callback):
         data_keys = ["input", *DATA_KEYS_BY_TASK.get(pl_module.task, ())]  # type: ignore[arg-type]
         if self.train_config is not None:
             self._train_pipeline = GPUAugmentationPipeline.from_config(self.train_config, data_keys=data_keys)
-            log.info(f"GPU train augmentation pipeline:\n{self._train_pipeline}")
+            log.info("GPU train augmentation pipeline:\n%s", self._train_pipeline)
 
         if self.val_config is not None:
             self._val_pipeline = GPUAugmentationPipeline.from_config(
                 self.val_config, data_keys=data_keys, sanitize_annotations=False
             )
-            log.info(f"GPU val augmentation pipeline:\n{self._val_pipeline}")
+            log.info("GPU val augmentation pipeline:\n%s", self._val_pipeline)
 
         if self.test_config is not None:
             self._test_pipeline = GPUAugmentationPipeline.from_config(
                 self.test_config, data_keys=data_keys, sanitize_annotations=False
             )
-            log.info(f"GPU test augmentation pipeline:\n{self._test_pipeline}")
+            log.info("GPU test augmentation pipeline:\n%s", self._test_pipeline)
 
         # Update model's normalization params from GPU pipeline
         self._update_model_normalization(pl_module)
@@ -112,8 +112,8 @@ class GPUAugmentationCallback(Callback):
 
         # log update
         if model_mean != data_input_params.mean or model_std != data_input_params.std:
-            log.info(f"Updated model mean: {model_mean} -> {data_input_params.mean}")
-            log.info(f"Updated model std: {model_std} -> {data_input_params.std}")
+            log.info("Updated model mean: %s -> %s", model_mean, data_input_params.mean)
+            log.info("Updated model std: %s -> %s", model_std, data_input_params.std)
 
     def _apply_pipeline(
         self,

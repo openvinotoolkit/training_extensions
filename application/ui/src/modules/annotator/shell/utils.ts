@@ -62,10 +62,7 @@ export const useNextMediaItem = (currentMediaItem: Media, allMediaItems: Media[]
     );
 };
 
-// When the user navigates to next media, image data and annotations will be already in React Query cache,
-// so the UI will feel smoother whenever the user switches image unless the user changes to a random or item.
-// We could also consider those cases but I feel like it's overkill.
-// Let's see how this improvement performs and then we can iterate on it.
+// Prefetches the next media item so sequential navigation hits the React Query cache.
 export const useNextMediaPrefetch = (currentMediaItem: Media, allMediaItems: Media[]) => {
     const nextMediaItem = useNextMediaItem(currentMediaItem, allMediaItems);
 

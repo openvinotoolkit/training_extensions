@@ -145,12 +145,12 @@ class UltralyticsModel:
             # flag (which only governs the config + weight-download path
             # below) has no effect here.
             if not self.pretrained:
-                logger.warning(f"pretrained=False is ignored when model_name is a checkpoint: {self.model_name}")
-            logger.info(f"Building Ultralytics model from checkpoint: {self.model_name} (task={self.task})")
+                logger.warning("pretrained=False is ignored when model_name is a checkpoint: %s", self.model_name)
+            logger.info("Building Ultralytics model from checkpoint: %s (task=%s)", self.model_name, self.task)
             return YOLO(self.model_name, task=self.task or None)
 
         config = self.model_name if self.model_name.endswith(".yaml") else f"{self.model_name}.yaml"
-        logger.info(f"Building Ultralytics model: {config} (task={self.task})")
+        logger.info("Building Ultralytics model: %s (task=%s)", config, self.task)
         yolo = YOLO(config, task=self.task or None)
 
         # Normalize model_name for pretrained weight lookup: strip .yaml/.yml
@@ -159,7 +159,7 @@ class UltralyticsModel:
         base_name = self.model_name.removesuffix(".yaml").removesuffix(".yml")
         if self.pretrained and base_name in self._pretrained_weights:
             weights_url = self._pretrained_weights[base_name]
-            logger.info(f"Loading pretrained weights: {weights_url}")
+            logger.info("Loading pretrained weights: %s", weights_url)
             yolo.load(weights_url)
         elif self.pretrained and self._pretrained_weights:
             msg = (
@@ -198,7 +198,7 @@ class UltralyticsModel:
         if not path.exists():
             msg = f"Checkpoint file not found: {path}"
             raise FileNotFoundError(msg)
-        logger.info(f"Loading checkpoint from: {path}")
+        logger.info("Loading checkpoint from: %s", path)
         self._yolo = YOLO(str(path), task=self.task or None)
 
     def export(

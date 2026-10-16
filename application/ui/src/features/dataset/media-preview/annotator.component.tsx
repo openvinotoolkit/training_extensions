@@ -19,6 +19,7 @@ import { PrimaryToolbar } from '../../../modules/annotator/shell/primary-toolbar
 import { AnnotatorCanvasSettings } from '../../../modules/annotator/shell/primary-toolbar/settings/annotator-canvas-settings.component';
 import { useNextMediaPrefetch, usePlayPauseVideoBySystem } from '../../../modules/annotator/shell/utils';
 import { ToolManagerProvider } from '../../../modules/annotator/tools/tool-manager-provider.component';
+import { ToolOptions } from '../../../modules/annotator/tools/tool-options/tool-options.component';
 import { VideoPlayerProvider } from '../../../modules/annotator/video-player/video-player-provider.component';
 import { VideoToolbar } from '../../../modules/annotator/video-player/video-toolbar/video-toolbar.component';
 import { isVideo, isVideoFrame } from '../../../shared/media-item-utils';
@@ -165,6 +166,7 @@ const Annotator = ({
                         isReadOnly={isPredictionMode}
                     />
                 </AnnotatorCanvasSettings>
+                {isAnnotationMode && <ToolOptions />}
             </View>
         </>
     );

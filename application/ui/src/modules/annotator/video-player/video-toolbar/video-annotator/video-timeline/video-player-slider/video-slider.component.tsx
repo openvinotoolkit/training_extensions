@@ -37,16 +37,7 @@ const Thumb = ({ state, trackRef, index, trackWidth }: ThumbProps) => {
     );
 };
 
-type BufferRange = {
-    startFrame: number;
-    endFrame: number;
-    status: 'loading' | 'success';
-};
-
 type VideoSliderProps = SpectrumSliderProps & {
-    highlightedFramesColor?: string;
-    highlightedFrames: number[];
-    buffers?: BufferRange[];
     isLastFrame?: boolean;
     sizePerSquare?: number;
     leftOffset?: number;
@@ -66,15 +57,7 @@ const getTrackWidthWhileIsLastFrame = (trackRef: RefObject<HTMLDivElement | null
     return `${width}px`;
 };
 
-export const VideoSlider = ({
-    buffers = [],
-    leftOffset = 0,
-    sizePerSquare,
-    isLastFrame,
-    highlightedFrames,
-    highlightedFramesColor = 'var(--brand-daisy)',
-    ...props
-}: VideoSliderProps) => {
+export const VideoSlider = ({ leftOffset = 0, sizePerSquare, isLastFrame, ...props }: VideoSliderProps) => {
     const trackRef = useRef<ComponentRef<'div'>>(null);
     const sliderProps = props as unknown as AriaSliderProps<number | number[]>;
 
@@ -99,44 +82,7 @@ export const VideoSlider = ({
             }}
         >
             <div {...trackProps} ref={trackRef} className={classes.track} style={{ left: `${leftOffset}px` }}>
-                {buffers.map(({ startFrame, endFrame, status }, idx) => {
-                    const isLoading = status === 'loading';
-
-                    return (
-                        <div
-                            key={`${startFrame}-${endFrame}-${idx}`}
-                            aria-label={
-                                isLoading
-                                    ? `Loading predictions for frames ${startFrame} to ${endFrame}`
-                                    : `Finished loading predictions for frames ${startFrame} to ${endFrame}`
-                            }
-                            className={
-                                isLoading
-                                    ? [classes.bufferTrack, classes.loadingBufferTrack, classes.loadingGradient].join(
-                                          ' '
-                                      )
-                                    : classes.bufferTrack
-                            }
-                            style={{
-                                left: `${state.getValuePercent(startFrame) * 100}%`,
-                                width: `${
-                                    (state.getValuePercent(endFrame) - state.getValuePercent(startFrame)) * 100
-                                }%`,
-                            }}
-                        ></div>
-                    );
-                })}
-
                 <div className={classes.lowerTrack} style={{ width: trackWidth }}></div>
-
-                {highlightedFrames.map((frame) => (
-                    <div
-                        key={`highlight-${frame}`}
-                        className={classes.highlightPosition}
-                        aria-label={`highlight-frame-${frame}`}
-                        style={{ left: `${state.getValuePercent(frame) * 100}%`, background: highlightedFramesColor }}
-                    ></div>
-                ))}
 
                 <Thumb index={THUMB_INDEX} state={state} trackRef={trackRef} trackWidth={trackWidth} />
             </div>

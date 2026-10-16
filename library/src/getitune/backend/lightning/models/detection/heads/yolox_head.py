@@ -151,8 +151,9 @@ class YOLOXHeadModule(BaseDenseHead):
             # conv_cfg = {"type": "DCNv2"} if self.dcn_on_last_conv and i == self.stacked_convs - 1 else self.conv_cfg
             if self.dcn_on_last_conv and i == self.stacked_convs - 1:
                 logger.warning(
-                    f"stacked convs[{i}] : Deformable convolution is not supported in YOLOXHead, "
+                    "stacked convs[%s] : Deformable convolution is not supported in YOLOXHead, "
                     "use normal convolution instead.",
+                    i,
                 )
 
             stacked_convs.append(

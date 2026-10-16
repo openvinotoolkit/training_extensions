@@ -83,7 +83,7 @@ class TestTrainingJob:
 
         # Verify warning was logged and no file was copied
         log_path = fxt_training_job.log_dir / fxt_training_job.log_file
-        mock_logger.warning.assert_called_once_with(f"Log file {log_path} does not exist")
+        mock_logger.warning.assert_called_once_with("Log file {} does not exist", log_path)
         expected_path = (
             fxt_training_job.data_dir
             / "projects"

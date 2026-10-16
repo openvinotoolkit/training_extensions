@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import asyncio
-import logging
 import socket
 
 from aiortc.sdp import SessionDescription
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class SDPHandler:
@@ -26,7 +24,7 @@ class SDPHandler:
         try:
             return await loop.run_in_executor(None, socket.gethostbyname, hostname)
         except Exception as exc:
-            logger.warning(f"Failed to resolve hostname {hostname}: {exc}")
+            logger.warning("Failed to resolve hostname {}: {}", hostname, exc)
             return hostname
 
     async def mangle_sdp(self, sdp: str, advertise_ip: str | None) -> str:
@@ -62,7 +60,7 @@ class SDPHandler:
         try:
             parsed_sdp = SessionDescription.parse(sdp)
         except Exception as exc:
-            logger.warning(f"Failed to parse SDP for mangling: {exc}. Returning original SDP.")
+            logger.warning("Failed to parse SDP for mangling: {}. Returning original SDP.", exc)
             return sdp
 
         if parsed_sdp.host:

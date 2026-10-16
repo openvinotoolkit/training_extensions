@@ -23,9 +23,9 @@ const getCenterCoordinates = (container: Size, target: Size): ZoomState['initial
 
 const INITIAL_ZOOM = { scale: 1.0, x: 0, y: 0 };
 
-type useSyncZoomProps = { container: Size; target: Size; zoomInMultiplier: number; zoomOutDivisor: number };
+type useSyncZoomProps = { container: Size; target: Size; zoomInMultiplier: number };
 
-export const useSyncZoom = ({ container, target, zoomInMultiplier, zoomOutDivisor }: useSyncZoomProps) => {
+export const useSyncZoom = ({ container, target, zoomInMultiplier }: useSyncZoomProps) => {
     const { setZoom } = useSetZoom();
 
     const targetZoom = useMemo(() => {
@@ -49,5 +49,5 @@ export const useSyncZoom = ({ container, target, zoomInMultiplier, zoomOutDiviso
             },
             initialCoordinates: { ...targetZoom },
         });
-    }, [setZoom, zoomInMultiplier, zoomOutDivisor, targetZoom]);
+    }, [setZoom, zoomInMultiplier, targetZoom]);
 };

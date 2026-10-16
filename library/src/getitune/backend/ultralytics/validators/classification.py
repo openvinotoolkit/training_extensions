@@ -148,8 +148,8 @@ class MultiLabelClassificationValidator(GetiTuneValidatorMixin, _UltralyticsClas
     def print_results(self) -> None:
         """Print multi-label validation metrics."""
         stats = self.get_stats()
-        LOGGER.info(f"{'multi-label accuracy':>20}: {stats['metrics/accuracy']:.3g}")
-        LOGGER.info(f"{'multi-label mAP':>20}: {stats['metrics/map']:.3g}")
+        LOGGER.info("%20s: %.3g", "multi-label accuracy", stats["metrics/accuracy"])
+        LOGGER.info("%20s: %.3g", "multi-label mAP", stats["metrics/map"])
 
     def plot_val_samples(self, batch: dict[str, Any], ni: int) -> None:
         """Skip image plotting for multi-label batches.

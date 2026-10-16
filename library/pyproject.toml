@@ -283,6 +283,7 @@ select = [
     "T10",  # flake8-debugger (`T10`)
     "EM",   # flake8-errmsg (`EM`)
     "FA",   # flake8-future-annotations (`FA`)
+    "G004", # flake8-logging-format: no f-strings in logging calls (`G004`)
     "ISC",  # flake8-implicit-str-concat (`ISC`)
     "ICN",  # flake8-import-conventions (`ICN`)
     "PIE",  # flake8-pie (`PIE`)
@@ -369,15 +370,6 @@ exclude = [
     "node_modules",
     "venv",
     "tests/assets",
-
-    # Ruff complains about it without providing details about the reason.
-    "tests/regression/*.py",
-
-    # Mostly borrowed from jsonargparse codebase
-    "src/getitune/core/utils/jsonargparse.py",
-
-    # Sphinx auto-generated files
-    "docs/source/conf.py",
 ]
 
 # Allow unused variables when underscore-prefixed.
@@ -430,9 +422,6 @@ notice-rgx = """
 ]
 "src/getitune/**/*.py" = [
     "ERA001",
-]
-"src/getitune/core/config/**/*.py" = [
-    "UP007"
 ]
 
 [tool.ruff.lint.pydocstyle]

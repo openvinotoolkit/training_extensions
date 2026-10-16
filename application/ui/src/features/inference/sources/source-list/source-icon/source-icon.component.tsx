@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    GenICam as GenICamIcon,
     ImagesFolder as ImagesFolderIcon,
     IpCamera as IpCameraIcon,
     VideoFile as VideoFileIcon,
@@ -24,10 +23,6 @@ export const SourceIcon = ({ type }: SourceIconProps) => {
 
     if (type === 'video_file') {
         return <VideoFileIcon />;
-    }
-
-    if (type === 'gen_i_cam') {
-        return <GenICamIcon />;
     }
 
     return <ImagesFolderIcon />;

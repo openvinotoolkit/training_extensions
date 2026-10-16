@@ -810,6 +810,10 @@
                 "error": "Error en la herramienta Asistente de detección: {{message}}",
                 "operations": {
                     "workerBuild": "Compilación del worker del Asistente de detección"
+                },
+                "options": {
+                    "accept": "Aceptar",
+                    "reject": "Rechazar"
                 }
             }
         },
@@ -1141,7 +1145,11 @@
         },
         "meta": {
             "started": "Iniciada {{time}}",
-            "elapsed": "Tiempo transcurrido: {{time}}"
+            "elapsed": "Tiempo transcurrido: {{time}}",
+            "duration": "Duración {{time}}",
+            "finished": "Finalizada {{time}}",
+            "failed": "Fallida {{time}}",
+            "cancelled": "Cancelada {{time}}"
         },
         "emptyState": {
             "all": "No hay tareas",

@@ -50,8 +50,8 @@ class CLI:
         self._subcommand_method_arguments: dict[str, list[str]] = {}
         # Preserve the explicit args passed in so that add_subcommands() and
         # _set_default_config() do not fall back to the global sys.argv when
-        # OTXCLI is constructed programmatically (e.g. by the benchmark
-        # runner via OTXEngine.from_config / get_instantiated_classes).
+        # the CLI is constructed programmatically (e.g. by the benchmark
+        # runner via LightningEngine.from_config / get_instantiated_classes).
         # Using sys.argv in that case caused stale `.latest/train` artefacts
         # from a previous experiment to be picked up as "defaults" for the
         # current experiment's test/export/optimize phases.

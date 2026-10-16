@@ -810,6 +810,10 @@
                 "error": "检测助手工具出错：{{message}}",
                 "operations": {
                     "workerBuild": "检测助手工作进程构建"
+                },
+                "options": {
+                    "accept": "接受",
+                    "reject": "拒绝"
                 }
             }
         },
@@ -1141,7 +1145,11 @@
         },
         "meta": {
             "started": "开始于 {{time}}",
-            "elapsed": "已用时 {{time}}"
+            "elapsed": "已用时 {{time}}",
+            "duration": "持续时间 {{time}}",
+            "finished": "完成于 {{time}}",
+            "failed": "失败于 {{time}}",
+            "cancelled": "取消于 {{time}}"
         },
         "emptyState": {
             "all": "没有任务",
