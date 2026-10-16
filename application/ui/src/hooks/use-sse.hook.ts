@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef } from 'react';
 
 import { connectSSE, type SSEOptions } from '@/api';
 
@@ -10,10 +10,13 @@ type SSEConnection = {
 };
 
 export const useSSE = <T>(url: string | undefined, options: SSEOptions<T>): SSEConnection => {
-    const optionsRef = useRef(options);
-    optionsRef.current = options;
-
     const connectionRef = useRef<ReturnType<typeof connectSSE<T>> | null>(null);
+    const onMessage = useEffectEvent((data: T) => options.onMessage(data));
+    const onError = useEffectEvent((error: Event) => options.onError?.(error));
+    const onOpen = useEffectEvent(() => options.onOpen?.());
+    const onClose = useEffectEvent(() => options.onClose?.());
+    const onRetry = useEffectEvent(() => options.onRetry?.());
+    const getRetry = useEffectEvent(() => options.retry);
 
     useEffect(() => {
         if (!url) {
@@ -21,12 +24,12 @@ export const useSSE = <T>(url: string | undefined, options: SSEOptions<T>): SSEC
         }
 
         const connection = connectSSE<T>(url, {
-            onMessage: (data) => optionsRef.current.onMessage(data),
-            onError: (error) => optionsRef.current.onError?.(error),
-            onOpen: () => optionsRef.current.onOpen?.(),
-            onClose: () => optionsRef.current.onClose?.(),
-            onRetry: () => optionsRef.current.onRetry?.(),
-            retry: optionsRef.current.retry,
+            onMessage,
+            onError,
+            onOpen,
+            onClose,
+            onRetry,
+            retry: getRetry(),
         });
 
         connectionRef.current = connection;

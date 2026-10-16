@@ -44,6 +44,30 @@ describe('useImportJobStatus', () => {
         expect(onError).not.toHaveBeenCalled();
     });
 
+    it('does not call onSuccess again when its callback changes', async () => {
+        const firstOnSuccess = vi.fn();
+        let onSuccess = firstOnSuccess;
+
+        server.use(
+            http.get('/api/jobs/{job_id}', ({ params }) => {
+                return HttpResponse.json(getMockedPrepareImportDatasetJob({ job_id: params.job_id, status: 'DONE' }), {
+                    status: 200,
+                });
+            })
+        );
+
+        const { rerender } = renderHook(() => useImportJobStatus({ jobId: 'job-callback', onSuccess }));
+
+        await waitFor(() => {
+            expect(firstOnSuccess).toHaveBeenCalledOnce();
+        });
+
+        onSuccess = vi.fn();
+        rerender();
+
+        expect(onSuccess).not.toHaveBeenCalled();
+    });
+
     it('calls onError when job fails', async () => {
         const onError = vi.fn();
         const onSuccess = vi.fn();
