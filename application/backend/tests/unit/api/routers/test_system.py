@@ -89,12 +89,12 @@ class TestSystemEndpoints:
         assert memory["used"] == 1024
         assert memory["total"] == 8192
 
-    def test_download_system_logs(self, fxt_client: TestClient, tmp_path):
+    def test_download_system_logs(self, fxt_app, fxt_client: TestClient, tmp_path):
         """Test GET /api/system/logs"""
         # We need to mock get_log_dir to return our tmp_path
         from app.api.dependencies import get_log_dir
 
-        fxt_client.app.dependency_overrides[get_log_dir] = lambda: tmp_path
+        fxt_app.dependency_overrides[get_log_dir] = lambda: tmp_path
 
         # Create a dummy log file
         log_file = tmp_path / "test.log"
