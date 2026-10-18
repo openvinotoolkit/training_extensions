@@ -76,23 +76,27 @@ async def get_memory(
 
 
 @router.get("/logs", response_class=FileResponse)
-async def download_system_logs(log_dir: Annotated[Path, Depends(get_log_dir)]) -> FileResponse:
+def download_system_logs(log_dir: Annotated[Path, Depends(get_log_dir)]) -> FileResponse:
     """Downloads all system logs as a zip archive."""
-    with (
-        tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as temp_file,
-        zipfile.ZipFile(temp_file, "w", zipfile.ZIP_DEFLATED) as zf,
-    ):
-        if log_dir.exists():
-            for root, _, files in os.walk(log_dir):
-                for file in files:
-                    file_path = Path(root) / file
-                    # store path relative to log_dir
-                    arcname = file_path.relative_to(log_dir)
-                    zf.write(file_path, arcname)
+    fd, temp_name = tempfile.mkstemp(suffix=".zip")
+    os.close(fd)
+
+    try:
+        with zipfile.ZipFile(temp_name, "w", zipfile.ZIP_DEFLATED) as zf:
+            if log_dir.exists():
+                for root, _, files in os.walk(log_dir):
+                    for file in files:
+                        file_path = Path(root) / file
+                        # store path relative to log_dir
+                        arcname = file_path.relative_to(log_dir)
+                        zf.write(file_path, arcname)
+    except Exception:
+        Path(temp_name).unlink(missing_ok=True)
+        raise
 
     return FileResponse(
-        path=temp_file.name,
+        path=temp_name,
         filename="geti_logs.zip",
         media_type="application/zip",
-        background=BackgroundTask(os.unlink, temp_file.name),
+        background=BackgroundTask(os.unlink, temp_name),
     )
