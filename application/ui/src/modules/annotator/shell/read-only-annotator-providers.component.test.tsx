@@ -5,17 +5,14 @@ import { type ReactNode } from 'react';
 
 import { screen, waitFor } from '@testing-library/react';
 import { getMockedLabel } from 'mocks/mock-labels';
-import { getMockedMediaImage } from 'mocks/mock-media';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 import { render, renderHook } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
-import { useAnnotations, useIsAnnotatorReadOnly } from '../annotation-actions-provider.component';
+import { useAnnotations, useIsAnnotatorReadOnly } from '../annotation-document-provider.component';
 import { ReadOnlyAnnotatorProviders } from './read-only-annotator-providers.component';
-
-const mediaItem = getMockedMediaImage();
 
 describe('ReadOnlyAnnotatorProviders', () => {
     beforeEach(() => {
@@ -24,7 +21,7 @@ describe('ReadOnlyAnnotatorProviders', () => {
 
     it('renders children within the provider tree', async () => {
         render(
-            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={[]}>
+            <ReadOnlyAnnotatorProviders initialAnnotationsDTO={[]}>
                 <span>child content</span>
             </ReadOnlyAnnotatorProviders>
         );
@@ -34,9 +31,7 @@ describe('ReadOnlyAnnotatorProviders', () => {
 
     it('provides a read-only annotator', async () => {
         const wrapper = ({ children }: { children: ReactNode }) => (
-            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={[]}>
-                {children}
-            </ReadOnlyAnnotatorProviders>
+            <ReadOnlyAnnotatorProviders initialAnnotationsDTO={[]}>{children}</ReadOnlyAnnotatorProviders>
         );
 
         const { result } = renderHook(() => useIsAnnotatorReadOnly(), { wrapper });
@@ -65,7 +60,7 @@ describe('ReadOnlyAnnotatorProviders', () => {
         ];
 
         const wrapper = ({ children }: { children: ReactNode }) => (
-            <ReadOnlyAnnotatorProviders mediaItem={mediaItem} initialAnnotationsDTO={initialAnnotationsDTO}>
+            <ReadOnlyAnnotatorProviders initialAnnotationsDTO={initialAnnotationsDTO}>
                 {children}
             </ReadOnlyAnnotatorProviders>
         );

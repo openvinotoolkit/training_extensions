@@ -21,10 +21,10 @@ const BUTTON_ERASER = {
     buttons: 32,
 };
 
-interface MouseButton {
+export type MouseButton = {
     button: number;
     buttons: number;
-}
+};
 
 const isButton = (button: MouseButton, buttonToCompare: MouseButton): boolean =>
     button.button === buttonToCompare.button || button.buttons === buttonToCompare.buttons;

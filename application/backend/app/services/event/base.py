@@ -20,12 +20,12 @@ class BaseEventBus[E]:
         with self._lock:
             for event_type in event_types:
                 self._event_handlers[event_type].append(handler)
-                logger.debug(f"registered event handler for event '{event_type}'")
+                logger.debug("registered event handler for event '{}'", event_type)
 
     def emit_event(self, event_type: E) -> None:
         with self._lock:
             handlers = list(self._event_handlers[event_type])
-        logger.debug(f"Emitting event '{event_type}' to {len(handlers)} handlers")
+        logger.debug("Emitting event '{}' to {} handlers", event_type, len(handlers))
         for handler in handlers:
             try:
                 handler()

@@ -6,6 +6,7 @@ import { usePrefetchQuery, useQuery, useQueryClient, useSuspenseQuery } from '@t
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 
 import { getQueryKey } from '../../query-client/query-client';
+import { PROJECTS_QUERY_KEY } from './project.hook';
 
 const getPipelineQueryOptions = (projectId: string) => {
     return $api.queryOptions('get', '/api/projects/{project_id}/pipeline', {
@@ -116,7 +117,7 @@ export const useEnablePipeline = () => {
                     ]),
                 }),
                 queryClient.invalidateQueries({
-                    queryKey: getQueryKey(['get', '/api/projects']),
+                    queryKey: PROJECTS_QUERY_KEY,
                 }),
             ]);
         },
@@ -144,7 +145,7 @@ export const useDisablePipeline = () => {
                     ]),
                 }),
                 queryClient.invalidateQueries({
-                    queryKey: getQueryKey(['get', '/api/projects']),
+                    queryKey: PROJECTS_QUERY_KEY,
                 }),
             ]);
         },

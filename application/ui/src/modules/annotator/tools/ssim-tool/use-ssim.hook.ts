@@ -1,7 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { i18n } from '@/i18n';
 import { roiFromImage } from '@geti-ui/smart-tools/utils';
@@ -38,6 +38,11 @@ const INITIAL_SSIM_STATE: SSIMState = {
     shapes: [],
     matches: [],
     threshold: 0,
+};
+
+type SSIMRun = {
+    props: RunSSIMProps;
+    runId: number;
 };
 
 export const useSSIMWorker = (enabled = true) => {
@@ -79,7 +84,7 @@ export const useSSIMWorker = (enabled = true) => {
     return { worker: data?.instance, rawWorker: data?.worker, isLoading, isError, error };
 };
 
-export const useSSIM = (enabled = true) => {
+export const useSSIM = (shapeType: SSIMShapeType, enabled = true) => {
     const queryClient = useQueryClient();
     const {
         worker: ssim,
@@ -92,9 +97,11 @@ export const useSSIM = (enabled = true) => {
     const [toolState, setToolState] = useState<SSIMState>(INITIAL_SSIM_STATE);
     const [previewThreshold, setPreviewThreshold] = useState<number | null>(null);
     const [ssimProps, setSSIMProps] = useState<RunSSIMProps | null>(null);
+    // Results of a run that was reset or superseded must not repopulate the state.
+    const runIdRef = useRef(0);
 
     const updateToolState = useCallback(
-        (updatedProperties: Partial<SSIMState>, shapeType: SSIMShapeType = 'rectangle') => {
+        (updatedProperties: Partial<SSIMState>) => {
             if (updatedProperties.threshold !== undefined) {
                 setPreviewThreshold(null);
             }
@@ -110,7 +117,7 @@ export const useSSIM = (enabled = true) => {
                 };
             });
         },
-        []
+        [shapeType]
     );
 
     const {
@@ -119,49 +126,56 @@ export const useSSIM = (enabled = true) => {
         isPending,
         error: executionError,
     } = useMutation({
-        mutationFn: async (runSSIMProps: RunSSIMProps) => {
+        mutationFn: async ({ props, runId }: SSIMRun) => {
             try {
                 if (ssim === undefined) {
                     throw new Error('SSIM worker is not initialized yet');
                 }
 
                 return await executeWithTimeout(
-                    ssim.executeSSIM(toToolRunSSIMProps(runSSIMProps)),
+                    ssim.executeSSIM(toToolRunSSIMProps(props)),
                     i18n.t('annotator.tools.ssim.label'),
                     SSIM_EXECUTE_TIMEOUT_MS
                 );
             } catch (executeError) {
                 // Comlink calls can't be cancelled and the worker runs them serially, so a stuck (or
                 // never built) worker would block every later run: replace it instead.
-                rawWorker?.terminate();
-                void queryClient.resetQueries({ queryKey: SSIM_WORKER_QUERY_KEY });
+                // A stale run must not tear down the worker a newer run is using.
+                if (runId === runIdRef.current) {
+                    rawWorker?.terminate();
+                    void queryClient.resetQueries({ queryKey: SSIM_WORKER_QUERY_KEY });
+                }
 
                 throw executeError;
             }
         },
-        onSuccess: (matches, { imageData, existingAnnotations, autoMergeDuplicates, template, shapeType }) => {
+        onSuccess: (matches, { props, runId }) => {
+            if (runId !== runIdRef.current) {
+                return;
+            }
+
+            const { imageData, existingAnnotations, autoMergeDuplicates, template } = props;
             const ssimMatches = convertToolMatchesToGetiMatches(matches);
             const existingRects = autoMergeDuplicates ? getExistingRects(existingAnnotations) : [];
             const filteredMatches = filterSSIMResults(roiFromImage(imageData), ssimMatches, template, existingRects);
             const threshold = guessNumberOfItemsThreshold(filteredMatches);
 
-            updateToolState(
-                {
-                    matches: filteredMatches,
-                    threshold,
-                },
-                shapeType
-            );
+            updateToolState({ matches: filteredMatches, threshold });
         },
-        onError: (_error, { template, shapeType }) => {
-            updateToolState({ matches: [{ shape: template, confidence: 1 }], threshold: 1 }, shapeType);
+        onError: (_error, { props, runId }) => {
+            if (runId !== runIdRef.current) {
+                return;
+            }
+
+            updateToolState({ matches: [{ shape: props.template, confidence: 1 }], threshold: 1 });
         },
     });
 
     const runSSIM = useCallback(
         (props: RunSSIMProps) => {
+            runIdRef.current += 1;
             setSSIMProps(props);
-            mutate(props);
+            mutate({ props, runId: runIdRef.current });
         },
         [mutate]
     );
@@ -176,6 +190,7 @@ export const useSSIM = (enabled = true) => {
     );
 
     const reset = useCallback(() => {
+        runIdRef.current += 1;
         setToolState(INITIAL_SSIM_STATE);
         setSSIMProps(null);
         setPreviewThreshold(null);

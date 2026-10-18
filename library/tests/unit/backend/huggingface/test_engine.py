@@ -152,6 +152,34 @@ def test_engine_construction_with_data_root(tmp_path: Path, model: _StubHFModel)
     assert engine.datamodule == tmp_path
 
 
+def test_engine_accepts_num_devices(tmp_path: Path, model: _StubHFModel) -> None:
+    engine = HFEngine(model=model, data=tmp_path, num_devices=2)
+
+    assert engine.num_devices == 2
+
+
+@pytest.mark.parametrize(("device", "expected"), [("cuda:2", "cuda:2"), ("xpu:1", "xpu:1")])
+def test_engine_accepts_explicit_accelerator_index(
+    tmp_path: Path, model: _StubHFModel, device: str, expected: str
+) -> None:
+    engine = HFEngine(model=model, data=tmp_path, device=device)
+
+    assert str(engine.device) == expected
+
+
+def test_train_rejects_explicit_devices_for_cpu(tmp_path: Path, model: _StubHFModel) -> None:
+    engine = HFEngine(model=model, data=tmp_path, device="cpu")
+    engine._datamodule = MagicMock()
+
+    with pytest.raises(ValueError, match="only supported for CUDA and XPU"):
+        engine.train(max_epochs=1, batch=2, devices=[0])
+
+
+def test_engine_rejects_invalid_num_devices(tmp_path: Path, model: _StubHFModel) -> None:
+    with pytest.raises(ValueError, match="num_devices must be at least 1"):
+        HFEngine(model=model, data=tmp_path, num_devices=0)
+
+
 def test_engine_rejects_non_hf_model(tmp_path: Path) -> None:
     with pytest.raises(TypeError, match="model must be an HFModel"):
         HFEngine(model=object(), data=tmp_path)  # type: ignore[arg-type]
@@ -208,13 +236,13 @@ def test_test_defaults_to_best_checkpoint(tmp_path: Path, model: _StubHFModel) -
     ("spec", "expected"),
     [("cpu", "cpu"), (DeviceType.cpu, "cpu"), ("gpu", "cuda"), ("cuda", "cuda"), ("xpu", "xpu")],
 )
-def test_resolve_device(spec: str | DeviceType, expected: str) -> None:
-    assert HFEngine._resolve_device(spec).type == expected
+def test_resolve_accelerator(spec: str | DeviceType, expected: str) -> None:
+    assert HFEngine._resolve_accelerator(spec).type == expected
 
 
-def test_resolve_device_auto_prefers_accelerator() -> None:
+def test_resolve_accelerator_auto_prefers_accelerator() -> None:
     """auto must resolve to a real device without raising."""
-    assert HFEngine._resolve_device("auto").type in {"xpu", "cuda", "cpu"}
+    assert HFEngine._resolve_accelerator("auto").type in {"xpu", "cuda", "cpu"}
 
 
 def test_datamodule_property_raises_when_unset(tmp_path: Path, model: _StubHFModel) -> None:
@@ -366,6 +394,59 @@ class TestTrain:
         trainer.state.log_history = [{"loss": 0.1, "learning_rate": 1e-5, "epoch": 1}]
         trainer._best_eval_metrics = best_eval_metrics or {"val/map": 0.5, "val/map_50": 0.7}
         return trainer
+
+    def test_train_requires_matching_torchrun_world_size(
+        self, tmp_path: Path, model: _StubHFModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        engine = HFEngine(model=model, data=tmp_path, num_devices=2)
+        engine._datamodule = MagicMock()
+        monkeypatch.setenv("WORLD_SIZE", "1")
+
+        with pytest.raises(ValueError, match="torchrun"):
+            engine.train(max_epochs=1, batch=2)
+
+    def test_train_devices_count_must_match_torchrun_world_size(
+        self, tmp_path: Path, model: _StubHFModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        engine = self._engine(tmp_path, model)
+        monkeypatch.setenv("WORLD_SIZE", "1")
+
+        with pytest.raises(ValueError, match=r"configured for 2 device\(s\)"):
+            engine.train(max_epochs=1, batch=2, devices=2)
+
+    def test_train_uses_one_gpu_when_multiple_are_visible(
+        self, tmp_path: Path, model: _StubHFModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        engine = self._engine(tmp_path, model)
+        trainer = self._mock_trainer()
+        args = MagicMock(n_gpu=2)
+        monkeypatch.setenv("WORLD_SIZE", "1")
+
+        with (
+            patch("getitune.backend.huggingface.engine.GetiTuneHFTrainer", return_value=trainer),
+            patch("getitune.backend.huggingface.engine.TrainingArguments", return_value=args),
+        ):
+            engine.train(max_epochs=1, batch=2)
+
+        assert args._n_gpu == 1
+
+    def test_train_sets_explicit_single_process_device(
+        self, tmp_path: Path, model: _StubHFModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        engine = HFEngine(model=model, data=tmp_path, device="cuda")
+        engine._datamodule = MagicMock()
+        args = MagicMock(n_gpu=1)
+        monkeypatch.setenv("WORLD_SIZE", "1")
+
+        with (
+            patch("getitune.backend.huggingface.engine.torch.cuda.set_device") as set_device,
+            patch("getitune.backend.huggingface.engine.TrainingArguments", return_value=args),
+            patch("getitune.backend.huggingface.engine.GetiTuneHFTrainer", return_value=self._mock_trainer()),
+        ):
+            engine.train(max_epochs=1, batch=2, devices=[2])
+
+        set_device.assert_called_with(engine.device)
+        assert args._setup_devices == engine.device
 
     @pytest.mark.parametrize(
         ("task", "expected_monitor"),
@@ -559,6 +640,7 @@ class TestTrain:
             patch("getitune.backend.huggingface.engine.GetiTuneHFTrainer", return_value=self._mock_trainer()),
             patch("getitune.backend.huggingface.engine.TrainingArguments") as args_cls,
         ):
+            args_cls.return_value.n_gpu = 1
             engine.train(max_epochs=3, batch=1, **kwargs)
 
         _, call_kwargs = args_cls.call_args
@@ -581,6 +663,7 @@ class TestTrain:
             patch("getitune.backend.huggingface.engine.GetiTuneHFTrainer", return_value=self._mock_trainer()),
             patch("getitune.backend.huggingface.engine.TrainingArguments") as args_cls,
         ):
+            args_cls.return_value.n_gpu = 1
             engine.train(
                 max_epochs=1,
                 batch=2,

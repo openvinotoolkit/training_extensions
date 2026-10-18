@@ -3,7 +3,7 @@
 
 import type { Media } from '@/api/types';
 
-import { useAnnotationCommands } from '../../../modules/annotator/annotation-actions-provider.component';
+import { useAnnotationCommands } from '../../../modules/annotator/annotation-document-provider.component';
 import { useSelectedAnnotations } from '../../../modules/annotator/select-annotation-provider.component';
 import { useSelectedMediaItem } from '../../../modules/annotator/selected-media-item-provider.component';
 

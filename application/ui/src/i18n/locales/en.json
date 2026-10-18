@@ -102,7 +102,12 @@
         "models": "Models",
         "modelsDescription": "Models page to visualise your models",
         "inference": "Inference",
-        "inferenceDescription": "Inference page showing live inference on your project"
+        "inferenceDescription": "Inference page showing live inference on your project",
+        "help": {
+            "documentation": "User documentation",
+            "whatsNew": "What's new",
+            "reportIssue": "Report an issue"
+        }
     },
     "dataset": {
         "validation": {
@@ -230,8 +235,11 @@
             "downloadStarted": "{{fileName}} download has started"
         },
         "gallery": {
-            "sortOldestFirst": "Oldest first",
-            "sortNewestFirst": "Newest first",
+            "sort": {
+                "label": "Sort Media by:",
+                "uploadDateDescending": "Upload date (newest)",
+                "uploadDateAscending": "Upload date (oldest)"
+            },
             "selectedCount": "{{count}} selected",
             "totalMediaCount_one": "{{count}} media item",
             "totalMediaCount_other": "{{count}} media items",
@@ -602,7 +610,9 @@
             "createNewProject": "Create new project",
             "createProjectFromDataset": "Create from dataset",
             "card": {
-                "created": "Created: {{date}}"
+                "created": "Created: {{date}}",
+                "models_one": "{{count}} model",
+                "models_other": "{{count}} models"
             },
             "menu": {
                 "enablePipeline": "Enable pipeline",
@@ -617,7 +627,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Search projects",
-                "taskType": "Filter by task type"
+                "taskType": "Filter by task type",
+                "models": "Filter by models",
+                "withTrainedModels": "With trained models"
             },
             "noMatches": {
                 "title": "No projects match your filters",
@@ -798,6 +810,10 @@
                 "error": "Error in Detection assistant tool: {{message}}",
                 "operations": {
                     "workerBuild": "Detection assistant worker build"
+                },
+                "options": {
+                    "accept": "Accept",
+                    "reject": "Reject"
                 }
             }
         },
@@ -1129,7 +1145,11 @@
         },
         "meta": {
             "started": "Started {{time}}",
-            "elapsed": "Elapsed {{time}}"
+            "elapsed": "Elapsed {{time}}",
+            "duration": "Duration {{time}}",
+            "finished": "Finished {{time}}",
+            "failed": "Failed {{time}}",
+            "cancelled": "Cancelled {{time}}"
         },
         "emptyState": {
             "all": "No jobs",

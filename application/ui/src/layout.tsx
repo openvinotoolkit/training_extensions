@@ -4,14 +4,15 @@
 import { Suspense } from 'react';
 
 import { $api } from '@/api';
-import getiLogo from '@/assets/icons/geti-logo.webp';
+import { GetiLogoLink } from '@/components/geti-logo-link/geti-logo-link.component';
+import { HelpMenu } from '@/components/help-menu/help-menu.component';
 import { LanguagesSelector } from '@/components/languages-selector/languages-selector.component';
 import { useTranslation } from '@/i18n';
-import { Divider, Flex, Grid, Item, Loading, TabList, Tabs, Text, View } from '@geti-ui/ui';
+import { Divider, Flex, Grid, Item, Loading, TabList, Tabs, View } from '@geti-ui/ui';
 import { usePrefetchQuery } from '@tanstack/react-query';
 import { usePrefetchPipeline } from 'hooks/api/pipeline.hook';
 import { useProject } from 'hooks/api/project.hook';
-import { Link, Outlet, useLocation } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 
 import { paths } from './constants/paths';
 import { usePrefetchSinksQuery } from './features/inference/sinks/api/use-sinks-query';
@@ -37,12 +38,7 @@ const Header = () => {
                 alignItems={'center'}
             >
                 <View paddingEnd={'size-200'}>
-                    <Link to={paths.project.index({})} viewTransition>
-                        <Flex alignItems='center' gap='size-50'>
-                            <img src={getiLogo} alt={t('navigation.logoAlt')} className={classes.logo} />
-                            <Text UNSAFE_className={classes.logoText}>Geti™</Text>
-                        </Flex>
-                    </Link>
+                    <GetiLogoLink />
                 </View>
 
                 <TabList height={'100%'} UNSAFE_className={classes.tabList}>
@@ -81,6 +77,7 @@ const Header = () => {
                     </Suspense>
 
                     <LanguagesSelector />
+                    <HelpMenu />
                 </Flex>
             </Grid>
         </View>

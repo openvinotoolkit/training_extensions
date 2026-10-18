@@ -10,7 +10,7 @@ pretrained_weights:
 description: "Mask2Former with a Swin-L backbone predicts instance masks using masked attention and multi-scale features."
 stats:
   gigaflops: 1919.1
-  trainable_parameters: 215.525061
+  trainable_parameters: 215.5
   benchmark_metrics:
     coco_map_50_95: 50.1
 capabilities:

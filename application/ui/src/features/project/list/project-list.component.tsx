@@ -4,16 +4,15 @@
 import { ReactNode, Suspense, useState } from 'react';
 
 import type { TaskType } from '@/api/types';
-import getiLogo from '@/assets/icons/geti-logo.webp';
+import { GetiLogoLink } from '@/components/geti-logo-link/geti-logo-link.component';
+import { HelpMenu } from '@/components/help-menu/help-menu.component';
 import { LanguagesSelector } from '@/components/languages-selector/languages-selector.component';
 import { useTranslation } from '@/i18n';
 import { Content, Divider, Flex, Grid, Loading, Text, View } from '@geti-ui/ui';
 import { useProjects } from 'hooks/api/project.hook';
 import { partition } from 'lodash-es';
-import { Link } from 'react-router';
 
 import { version } from '../../../../package.json';
-import { paths } from '../../../constants/paths';
 import { isNonEmptyArray } from '../../../shared/util';
 import { EmptyProjectList } from './empty-project-list/empty-project-list.component';
 import { NoMatchingProjects } from './filter-projects/no-matching-projects.component';
@@ -35,24 +34,21 @@ const ProjectSidebar = ({
     setSearchName,
     selectedTaskTypes,
     setSelectedTaskTypes,
+    onlyWithTrainedModels,
+    setOnlyWithTrainedModels,
 }: {
     shouldShowFilters: boolean;
     searchName: string;
     setSearchName: (value: string) => void;
     selectedTaskTypes: TaskType[];
     setSelectedTaskTypes: (taskTypes: TaskType[]) => void;
+    onlyWithTrainedModels: boolean;
+    setOnlyWithTrainedModels: (value: boolean) => void;
 }) => {
-    const { t } = useTranslation();
-
     return (
         <Flex direction={'column'} gap={'size-300'} justifyContent={'space-between'} UNSAFE_className={classes.sidebar}>
             <Flex direction={'column'} gap={'size-300'}>
-                <Link to={paths.project.index({})} viewTransition>
-                    <Flex alignItems={'center'} gap={'size-50'}>
-                        <img src={getiLogo} alt={t('navigation.logoAlt')} className={classes.logo} />
-                        <Text UNSAFE_className={classes.logoText}>Geti™</Text>
-                    </Flex>
-                </Link>
+                <GetiLogoLink />
 
                 <Divider size={'S'} />
 
@@ -67,15 +63,25 @@ const ProjectSidebar = ({
                             onSearchChange={setSearchName}
                             selectedTaskTypes={selectedTaskTypes}
                             onSelectedTaskTypesChange={setSelectedTaskTypes}
+                            onlyWithTrainedModels={onlyWithTrainedModels}
+                            onOnlyWithTrainedModelsChange={setOnlyWithTrainedModels}
                         />
                     </>
                 )}
             </Flex>
 
-            <Flex gap={'size-200'} alignItems={'center'} justifyContent={'center'}>
-                <Text UNSAFE_className={classes.version}>Geti v{version}</Text>
-            </Flex>
+            <Text UNSAFE_className={classes.version}>Geti v{version}</Text>
         </Flex>
+    );
+};
+
+const ProjectListActions = ({ jobsButton }: { jobsButton?: ReactNode }) => {
+    return (
+        <>
+            {jobsButton}
+            <LanguagesSelector />
+            <HelpMenu />
+        </>
     );
 };
 
@@ -90,15 +96,37 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
 
     const shouldShowFilters = projectsWithoutActivePipeline.length > 0;
 
-    const { searchName, setSearchName, selectedTaskTypes, setSelectedTaskTypes, filteredProjects, isFiltering } =
-        useProjectFilters(projectsWithoutActivePipeline);
+    const {
+        searchName,
+        setSearchName,
+        selectedTaskTypes,
+        setSelectedTaskTypes,
+        onlyWithTrainedModels,
+        setOnlyWithTrainedModels,
+        filteredProjects,
+        isFiltering,
+    } = useProjectFilters(projectsWithoutActivePipeline);
 
     const sortedProjects = SORT_BY_HANDLERS[sortBy](filteredProjects);
 
     const projectNames = projects.map((project) => project.name);
 
     if (!hasProjects) {
-        return <EmptyProjectList />;
+        return (
+            <Flex direction={'column'} height={'100%'}>
+                <Flex
+                    justifyContent={'end'}
+                    alignItems={'center'}
+                    gap={'size-75'}
+                    UNSAFE_className={classes.emptyToolbar}
+                >
+                    <ProjectListActions />
+                </Flex>
+                <View flex={1} minHeight={0}>
+                    <EmptyProjectList />
+                </View>
+            </Flex>
+        );
     }
 
     const totalCount = projectsWithoutActivePipeline.length;
@@ -115,16 +143,17 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
                 setSearchName={setSearchName}
                 selectedTaskTypes={selectedTaskTypes}
                 setSelectedTaskTypes={setSelectedTaskTypes}
+                onlyWithTrainedModels={onlyWithTrainedModels}
+                setOnlyWithTrainedModels={setOnlyWithTrainedModels}
             />
 
             <Flex direction={'column'} gap={'size-300'} flex={1} minWidth={0} UNSAFE_className={classes.gridPanel}>
                 <Flex width={'100%'} alignItems={'center'} justifyContent={'space-between'} gap={'size-300'}>
                     {shouldShowFilters && <SortProjects sortBy={sortBy} onSort={setSortBy} />}
 
-                    <Flex marginStart={'auto'} alignItems={'center'} gap={'size-200'}>
+                    <Flex marginStart={'auto'} alignItems={'center'} gap={'size-75'}>
                         {shouldShowFilters && <Text UNSAFE_className={classes.projectMetadata}>{countLabel}</Text>}
-                        {jobsButton}
-                        <LanguagesSelector />
+                        <ProjectListActions jobsButton={jobsButton} />
                     </Flex>
                 </Flex>
 

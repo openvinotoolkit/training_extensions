@@ -267,6 +267,23 @@ def test_create_engine_forwards_the_recipes_training_block(tmp_path: Path) -> No
     }
 
 
+def test_engine_from_config_applies_benchmark_recipe_overrides(tmp_path: Path) -> None:
+    recipe_path = _write_offline_recipe_with_training(tmp_path)
+
+    engine = HFEngine.from_config(
+        config_path=recipe_path,
+        data="tests/assets/instance_segmentation_coco",
+        work_dir=tmp_path / "wd",
+        overrides={
+            "model.init_args.checkpoint.init_args.num_queries": "12",
+            "training.batch": "4",
+        },
+    )
+
+    assert engine.model.hf_model.config.num_queries == 12
+    assert engine._training_defaults["batch"] == 4
+
+
 def test_create_engine_builds_an_hf_engine_from_a_recipe_path(tmp_path: Path) -> None:
     recipe_path = _write_offline_recipe(tmp_path)
     configurator = Configurator(data="tests/assets/instance_segmentation_coco", model=recipe_path)

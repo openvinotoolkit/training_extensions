@@ -9,6 +9,7 @@ from app.api.schemas.model_architecture import ModelArchitectures, ModelArchitec
 from app.models import TaskType
 from app.models.model_manifest import Capabilities, License, ModelManifestDeprecationStatus
 from app.services import ModelManifestService
+from app.services.model_manifest_service import ManifestNotFoundException
 from app.supported_models import RECOMMENDED_MODEL_ARCHITECTURES
 from app.supported_models.timm import TimmCatalog, TimmManifestProvider
 
@@ -91,6 +92,28 @@ def get_timm_manifest(family: str, variant: str, pretrained_tag: str) -> ModelAr
 
 
 TIMM_CARD_ID = "image-classification-timm"
+
+
+@router.get(
+    "/{architecture_id}",
+    response_model=ModelArchitectureView,
+    responses={
+        status.HTTP_200_OK: {"description": "Model architecture details"},
+        status.HTTP_404_NOT_FOUND: {"description": "No model architecture found for the given ID"},
+    },
+)
+def get_model_architecture_by_id(architecture_id: str) -> ModelArchitectureView:
+    """Resolve any known architecture ID - a static manifest or a concrete timm backbone.
+
+    Trained timm models carry a concrete `image-classification-timm-<name>` architecture
+    ID which never appears in the list endpoint (only the synthetic selector card does).
+    This endpoint lets clients resolve such IDs to the full manifest, license included.
+    """
+    try:
+        manifest = ModelManifestService.get_model_manifest_by_id(architecture_id)
+    except ManifestNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    return ModelArchitectureView.model_validate(manifest, from_attributes=True)
 
 
 def _build_timm_card_entry() -> ModelArchitectureView:

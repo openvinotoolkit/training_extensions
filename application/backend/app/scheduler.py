@@ -136,20 +136,20 @@ class Scheduler:
         pid = os.getpid()
         cur_process = psutil.Process(pid)
         alive_children = [child.pid for child in cur_process.children(recursive=True) if child.is_running()]
-        logger.debug(f"Alive children of process '{pid}': {alive_children}")
+        logger.debug("Alive children of process '{}': {}", pid, alive_children)
 
         # Join threads first
         for thread in self.threads:
             if thread.is_alive():
-                logger.debug(f"Joining thread: {thread.name}")
+                logger.debug("Joining thread: {}", thread.name)
                 thread.join(timeout=10)
                 if thread.is_alive():
-                    logger.warning(f"Thread {thread.name} did not terminate within timeout")
+                    logger.warning("Thread {} did not terminate within timeout", thread.name)
 
         # Join processes in reverse order so that consumers are terminated before producers.
         for process in self.processes[::-1]:
             if process.is_alive():
-                logger.debug(f"Joining process: {process.name}")
+                logger.debug("Joining process: {}", process.name)
                 process.join(timeout=10)
                 if process.is_alive():
                     logger.warning("Force terminating process: {}", process.name)

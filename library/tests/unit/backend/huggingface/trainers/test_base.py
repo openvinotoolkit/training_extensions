@@ -5,13 +5,18 @@
 
 from __future__ import annotations
 
+import json
+import os
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
 import transformers as tf
+from torch.utils.data import DataLoader, TensorDataset
 from torchvision import tv_tensors
 from transformers import TrainingArguments
 
@@ -20,6 +25,7 @@ from getitune.backend.huggingface.trainers.base import GetiTuneHFTrainer
 from getitune.config.data import SubsetConfig
 from getitune.data.entity.base import ImageInfo
 from getitune.data.entity.sample import SampleBatch
+from getitune.types import PathLike
 from getitune.types.label import LabelInfo
 
 
@@ -93,6 +99,60 @@ def _build_trainer(model_wrapper, datamodule, **args_kwargs) -> GetiTuneHFTraine
             train_dataset=[0],
             eval_dataset=[0],
         )
+
+
+def _collate_indexed_samples(samples: list[tuple[torch.Tensor]]) -> SampleBatch:
+    indices = [int(sample[0]) for sample in samples]
+    return SampleBatch(
+        images=torch.tensor(indices, dtype=torch.float32).view(-1, 1, 1, 1).expand(-1, 3, 2, 2),
+        labels=[torch.full((index % 3 + 1,), index, dtype=torch.long) for index in indices],
+    )
+
+
+def _ddp_train_dataloader_worker(rank: int, init_file: str, result_dir: str) -> None:
+    os.environ.update(
+        RANK=str(rank), LOCAL_RANK=str(rank), WORLD_SIZE="2", MASTER_ADDR="127.0.0.1", MASTER_PORT="29571"
+    )
+    dist.init_process_group("gloo", init_method=f"file://{init_file}", rank=rank, world_size=2)
+    try:
+        datamodule = _mock_datamodule()
+        datamodule.train_dataloader.return_value = DataLoader(
+            TensorDataset(torch.arange(8)), batch_size=2, collate_fn=_collate_indexed_samples
+        )
+        trainer = _build_trainer(_multiclass_model(), datamodule)
+        batches = [
+            {"images": batch.images[:, 0, 0, 0].tolist(), "labels": [labels.tolist() for labels in batch.labels]}
+            for batch in trainer.get_train_dataloader()
+        ]
+        Path(result_dir, f"rank-{rank}.json").write_text(json.dumps(batches))
+
+        def save_rank_marker(checkpoint: PathLike) -> None:
+            checkpoint_dir = Path(checkpoint)
+            checkpoint_dir.mkdir(parents=True, exist_ok=True)
+            (checkpoint_dir / f"rank-{rank}").touch()
+
+        trainer.model_wrapper.save_pretrained = save_rank_marker
+        trainer.save_model(str(Path(result_dir, "checkpoint")))
+    finally:
+        dist.destroy_process_group()
+
+
+def test_train_dataloader_is_sharded_across_distributed_processes(tmp_path: Path) -> None:
+    init_file = str(tmp_path / "distributed-init")
+    result_dir = str(tmp_path)
+
+    mp.spawn(_ddp_train_dataloader_worker, args=(init_file, result_dir), nprocs=2, join=True)
+
+    rank_batches = [json.loads(Path(result_dir, f"rank-{rank}.json").read_text()) for rank in range(2)]
+    rank_indices = [[index for batch in batches for index in batch["images"]] for batches in rank_batches]
+    assert set(rank_indices[0]).isdisjoint(rank_indices[1])
+    assert sorted(rank_indices[0] + rank_indices[1]) == list(range(8))
+    for batches in rank_batches:
+        for batch in batches:
+            for image_id, labels in zip(batch["images"], batch["labels"], strict=True):
+                sample_index = int(image_id)
+                assert labels == [sample_index] * (sample_index % 3 + 1)
+    assert [path.name for path in (tmp_path / "checkpoint").iterdir()] == ["rank-0"]
 
 
 class TestGpuPipelineConstruction:

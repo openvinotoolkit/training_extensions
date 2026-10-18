@@ -1,11 +1,8 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useTranslation } from '@/i18n';
 import { Checkbox, Flex, Heading, Text, Well } from '@geti-ui/ui';
-import { LinkOut } from '@geti-ui/ui/icons';
 
-import { Link } from '../../platform/components/link.component';
 import { LEGAL_STATEMENTS, type LicenseNotice } from './license-notices';
 import { RequirementBadge } from './requirement-badge.component';
 
@@ -18,8 +15,6 @@ type LicenseDetailsProps = {
 };
 
 export const LicenseDetails = ({ license, isAgreed, onAgreedChange }: LicenseDetailsProps) => {
-    const { t } = useTranslation();
-
     return (
         <>
             {/* Spectrum layout components don't forward aria-live. */}
@@ -43,9 +38,6 @@ export const LicenseDetails = ({ license, isAgreed, onAgreedChange }: LicenseDet
             >
                 <Flex direction={'column'} alignItems={'start'} gap={'size-200'}>
                     <Text UNSAFE_className={styles.noticeText}>{license.notice}</Text>
-                    <Link href={license.href} target={'_blank'} rel={'noopener noreferrer'}>
-                        {t('license.agreement.fullLicense')} <LinkOut size={'XS'} />
-                    </Link>
                 </Flex>
             </Well>
 

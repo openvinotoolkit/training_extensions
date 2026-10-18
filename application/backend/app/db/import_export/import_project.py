@@ -1,5 +1,5 @@
-#  Copyright (C) 2026 Intel Corporation
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 # Run through the CLI: uv run app/cli.py import-project --input <archive_path>
 

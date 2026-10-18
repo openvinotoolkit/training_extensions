@@ -7,7 +7,7 @@ pretrained_weights:
 description: "RT-DETRv2-R50 is a real-time end-to-end detector with selective multi-scale feature extraction and improved training strategies."
 stats:
   gigaflops: 136
-  trainable_parameters: 42.891372
+  trainable_parameters: 42.9
   benchmark_metrics:
     coco_map_50_95: 53.4
     coco_map_50: 71.6

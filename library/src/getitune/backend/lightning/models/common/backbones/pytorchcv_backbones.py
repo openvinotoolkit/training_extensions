@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Callable
@@ -17,6 +18,8 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from getitune.backend.lightning.models.modules.norm import build_norm_layer
 
 # ruff: noqa: SLF001
+
+logger = logging.getLogger(__name__)
 
 
 def replace_activation(model: nn.Module, activation: Callable[..., nn.Module]) -> nn.Module:
@@ -51,7 +54,7 @@ def multioutput_forward(self: nn.Module, x: torch.Tensor) -> list[torch.Tensor]:
             outputs.append(x)
             s_verbose += "*"
         if self.verbose:
-            print(s_verbose)
+            logger.info(s_verbose)
         if i == last_stage:
             break
 
@@ -111,7 +114,7 @@ def _build_pytorchcv_model(
     """Build pytorchcv model."""
     models_cache_root = Path(kwargs.pop("root", os.environ["PRETRAINED_WEIGHTS_CACHE_DIR"]))
     pretrained = kwargs.pop("pretrained", False)
-    print(f"Init model {type}, pretrained={pretrained}, models cache {models_cache_root}")
+    logger.info("Init model %s, pretrained=%s, models cache %s", type, pretrained, models_cache_root)
     model = _models[type](root=models_cache_root, pretrained=pretrained, **kwargs)
     if activation:
         model = replace_activation(model, activation)
@@ -134,10 +137,11 @@ def _build_pytorchcv_model(
             if i > max(out_indices):
                 model.features[i] = None
     else:
-        print(
+        logger.warning(
             "Failed to automatically wrap backbone network. "
-            f"Object of type {model.__class__} has no valid attribute called "
+            "Object of type %s has no valid attribute called "
             "'features'.",
+            model.__class__,
         )
 
     return model

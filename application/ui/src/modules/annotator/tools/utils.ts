@@ -55,15 +55,6 @@ export const getBoundingRectFromShape = (shape: Shape): Rect | null => {
     };
 };
 
-export const isRectWithinRoi = (roi: RegionOfInterest, rect: Rect): boolean => {
-    return (
-        rect.x >= roi.x &&
-        rect.y >= roi.y &&
-        rect.x + rect.width <= roi.x + roi.width &&
-        rect.y + rect.height <= roi.y + roi.height
-    );
-};
-
 export const intersectionOverUnion = (a: Rect, b: Rect): number => {
     const xMin = Math.max(a.x, b.x);
     const yMin = Math.max(a.y, b.y);

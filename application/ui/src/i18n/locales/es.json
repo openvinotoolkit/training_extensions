@@ -102,7 +102,12 @@
         "models": "Modelos",
         "modelsDescription": "Página de modelos para visualizar tus modelos",
         "inference": "Inferencia",
-        "inferenceDescription": "Página de inferencia que muestra la inferencia en vivo en tu proyecto"
+        "inferenceDescription": "Página de inferencia que muestra la inferencia en vivo en tu proyecto",
+        "help": {
+            "documentation": "Documentación de usuario",
+            "whatsNew": "Novedades",
+            "reportIssue": "Informar de un problema"
+        }
     },
     "dataset": {
         "validation": {
@@ -230,8 +235,11 @@
             "downloadStarted": "Se ha iniciado la descarga de {{fileName}}"
         },
         "gallery": {
-            "sortOldestFirst": "Más antiguos primero",
-            "sortNewestFirst": "Más recientes primero",
+            "sort": {
+                "label": "Ordenar multimedia por:",
+                "uploadDateDescending": "Fecha de carga (más recientes)",
+                "uploadDateAscending": "Fecha de carga (más antiguos)"
+            },
             "selectedCount": "{{count}} seleccionados",
             "totalMediaCount_one": "{{count}} elemento multimedia",
             "totalMediaCount_other": "{{count}} elementos multimedia",
@@ -602,7 +610,9 @@
             "createNewProject": "Crear nuevo proyecto",
             "createProjectFromDataset": "Crear a partir de dataset",
             "card": {
-                "created": "Creado: {{date}}"
+                "created": "Creado: {{date}}",
+                "models_one": "{{count}} modelo",
+                "models_other": "{{count}} modelos"
             },
             "menu": {
                 "enablePipeline": "Activar pipeline",
@@ -617,7 +627,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Buscar proyectos",
-                "taskType": "Filtrar por tipo de tarea"
+                "taskType": "Filtrar por tipo de tarea",
+                "models": "Filtrar por modelos",
+                "withTrainedModels": "Con modelos entrenados"
             },
             "noMatches": {
                 "title": "Ningún proyecto coincide con tus filtros",
@@ -798,6 +810,10 @@
                 "error": "Error en la herramienta Asistente de detección: {{message}}",
                 "operations": {
                     "workerBuild": "Compilación del worker del Asistente de detección"
+                },
+                "options": {
+                    "accept": "Aceptar",
+                    "reject": "Rechazar"
                 }
             }
         },
@@ -1129,7 +1145,11 @@
         },
         "meta": {
             "started": "Iniciada {{time}}",
-            "elapsed": "Tiempo transcurrido: {{time}}"
+            "elapsed": "Tiempo transcurrido: {{time}}",
+            "duration": "Duración {{time}}",
+            "finished": "Finalizada {{time}}",
+            "failed": "Fallida {{time}}",
+            "cancelled": "Cancelada {{time}}"
         },
         "emptyState": {
             "all": "No hay tareas",

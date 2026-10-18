@@ -24,7 +24,7 @@ vi.mock('../annotation-visibility-provider.component', () => ({
     }),
 }));
 
-vi.mock('../annotation-actions-provider.component', () => ({
+vi.mock('../annotation-document-provider.component', () => ({
     useAnnotationCommands: () => ({
         updateAnnotations: mockUpdateAnnotations,
         deleteAnnotations: mockDeleteAnnotations,

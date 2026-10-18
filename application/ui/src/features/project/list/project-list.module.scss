@@ -7,7 +7,9 @@ $card-content-height: 68px;
     width: var(--spectrum-global-dimension-size-3600);
     flex-shrink: 0;
     overflow-y: auto;
-    padding: var(--spectrum-global-dimension-size-300);
+    // Top padding puts the logo at the same spot as in the project header (size-800 tall).
+    padding: var(--spectrum-global-dimension-size-200) var(--spectrum-global-dimension-size-300)
+        var(--spectrum-global-dimension-size-300);
 }
 
 .gridPanel {
@@ -15,13 +17,8 @@ $card-content-height: 68px;
     background-color: var(--spectrum-global-color-gray-50);
 }
 
-.logo {
-    width: var(--spectrum-global-dimension-size-300);
-    height: var(--spectrum-global-dimension-size-300);
-}
-
-.logoText {
-    font-size: var(--spectrum-global-dimension-font-size-200);
+.emptyToolbar {
+    padding: var(--spectrum-global-dimension-size-200) var(--spectrum-global-dimension-size-300) 0;
 }
 
 .projectGrid {
@@ -50,12 +47,14 @@ $card-content-height: 68px;
 
 .thumbnailContainer {
     height: $thumbnail-height;
+    overflow: hidden;
     background-color: var(--spectrum-global-color-gray-100);
 }
 
 .cardBadges {
     position: absolute;
     left: var(--spectrum-global-dimension-size-100);
+    right: var(--spectrum-global-dimension-size-100);
     bottom: var(--spectrum-global-dimension-size-100);
 }
 
@@ -70,6 +69,11 @@ $card-content-height: 68px;
     display: block;
     height: 100%;
     width: 100%;
+    transition: transform 0.2s ease-in-out;
+
+    .card:hover & {
+        transform: scale(1.1);
+    }
 }
 
 .thumbnailError {
@@ -96,7 +100,6 @@ $card-content-height: 68px;
 }
 
 .tag {
-    background-color: var(--spectrum-global-color-gray-200);
     color: var(--spectrum-global-color-gray-900);
 }
 
@@ -114,4 +117,5 @@ $card-content-height: 68px;
 .version {
     opacity: 0.6;
     font-size: var(--spectrum-global-dimension-font-size-75);
+    text-align: center;
 }

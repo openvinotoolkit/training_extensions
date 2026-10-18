@@ -9,6 +9,7 @@ from loguru import logger
 
 if TYPE_CHECKING:
     from getitune import TaskType as GetiTuneTaskType
+    from getitune.config.data import SubsetConfig
     from getitune.data.dataset.base import VisionDataset
     from getitune.metrics import MetricCallable
 
@@ -66,6 +67,28 @@ def get_getitune_dataset_class_by_task_type(getitune_task_type: GetiTuneTaskType
         return task_type_to_class[getitune_task_type]
     except KeyError:
         raise ValueError(f"Unsupported getitune task type: {getitune_task_type}")
+
+
+def build_getitune_subset_config(getitune_training_config: dict, subset_name: str) -> SubsetConfig:
+    """Build the getitune SubsetConfig (data loader parameters and transforms) for a subset.
+
+    Args:
+        getitune_training_config: Training configuration in the format consumed by getitune.
+        subset_name: Name of the subset, one of 'train', 'val' or 'test'.
+
+    Returns:
+        The SubsetConfig with its transforms already instantiated.
+    """
+    from getitune.config.data import SamplerConfig, SubsetConfig
+    from getitune.data.factory import TransformLibFactory
+
+    subset_cfg_data = getitune_training_config["data"][f"{subset_name}_subset"]
+    subset_cfg_data["input_size"] = getitune_training_config["data"]["input_size"]
+    sampler_cfg_data = subset_cfg_data.pop("sampler", {})
+    subset_config = SubsetConfig(sampler=SamplerConfig(**sampler_cfg_data), **subset_cfg_data)
+    # pyrefly: ignore[missing-attribute,bad-assignment]
+    subset_config.transforms = TransformLibFactory.generate(subset_config)
+    return subset_config
 
 
 def convert_metrics(metrics: dict) -> dict[str, float]:

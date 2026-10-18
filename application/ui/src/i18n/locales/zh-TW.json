@@ -104,7 +104,12 @@
         "modelsDescription": "模型頁面，用於瀏覽模型",
         "inference": "推論",
         "inferenceDescription": "推論頁面，用於檢視專案的即時推論效果",
-        "preferences": "偏好設定"
+        "preferences": "偏好設定",
+        "help": {
+            "documentation": "使用者文件",
+            "whatsNew": "新功能",
+            "reportIssue": "回報問題"
+        }
     },
     "dataset": {
         "validation": {
@@ -232,8 +237,11 @@
             "downloadStarted": "{{fileName}} 已開始下載"
         },
         "gallery": {
-            "sortOldestFirst": "最舊優先",
-            "sortNewestFirst": "最新優先",
+            "sort": {
+                "label": "排序：",
+                "uploadDateDescending": "依上傳時間（最新優先）",
+                "uploadDateAscending": "依上傳時間（最舊優先）"
+            },
             "selectedCount": "已選 {{count}} 項",
             "totalMediaCount_one": "共 {{count}} 個媒體檔案",
             "totalMediaCount_other": "共 {{count}} 個媒體檔案",
@@ -604,7 +612,9 @@
             "createNewProject": "新增專案",
             "createProjectFromDataset": "從資料集建立",
             "card": {
-                "created": "建立於：{{date}}"
+                "created": "建立於：{{date}}",
+                "models_one": "{{count}} 個模型",
+                "models_other": "{{count}} 個模型"
             },
             "menu": {
                 "enablePipeline": "啟用管線",
@@ -619,7 +629,9 @@
             },
             "filters": {
                 "searchPlaceholder": "搜尋專案",
-                "taskType": "依工作類型篩選"
+                "taskType": "依工作類型篩選",
+                "models": "依模型篩選",
+                "withTrainedModels": "有已訓練模型"
             },
             "noMatches": {
                 "title": "沒有符合條件的專案",
@@ -800,6 +812,10 @@
                 "error": "偵測助手工具發生錯誤：{{message}}",
                 "operations": {
                     "workerBuild": "偵測助手工作進程建置"
+                },
+                "options": {
+                    "accept": "接受",
+                    "reject": "拒絕"
                 }
             }
         },
@@ -1131,7 +1147,11 @@
         },
         "meta": {
             "started": "開始於 {{time}}",
-            "elapsed": "已用時間 {{time}}"
+            "elapsed": "已用時間 {{time}}",
+            "duration": "持續時間 {{time}}",
+            "finished": "完成於 {{time}}",
+            "failed": "失敗於 {{time}}",
+            "cancelled": "取消於 {{time}}"
         },
         "emptyState": {
             "all": "此類別中沒有工作",

@@ -1,5 +1,5 @@
-#  Copyright (C) 2026 Intel Corporation
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 import os
 from functools import cache
@@ -103,7 +103,10 @@ class ModelManifestService:
         if model_manifest_id in static:
             return static[model_manifest_id]
         if TimmManifestProvider.is_timm_id(model_manifest_id):
-            return TimmManifestProvider.build_manifest(id_to_model_name(model_manifest_id))
+            try:
+                return TimmManifestProvider.build_manifest(id_to_model_name(model_manifest_id))
+            except KeyError as e:
+                raise ManifestNotFoundException(model_manifest_id=model_manifest_id) from e
         raise ManifestNotFoundException(model_manifest_id=model_manifest_id)
 
     @classmethod

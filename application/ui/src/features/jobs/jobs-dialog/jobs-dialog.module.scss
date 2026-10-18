@@ -18,31 +18,6 @@
     background-color: var(--spectrum-global-color-gray-200);
 }
 
-.modelName {
-    font-weight: 600;
-    overflow-wrap: anywhere;
-}
-
-.metaText {
-    font-size: var(--spectrum-global-dimension-font-size-75);
-    color: var(--spectrum-global-color-gray-700);
-}
-
-.metaRow {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spectrum-global-dimension-size-100);
-}
-
-.errorText {
-    font-size: var(--spectrum-global-dimension-font-size-75);
-    color: var(--spectrum-semantic-negative-color-text-small);
-}
-
-.messageText {
-    font-size: var(--spectrum-global-dimension-font-size-75);
-}
-
 .toneEnergyBlue {
     background-color: var(--energy-blue) !important;
     color: var(--spectrum-global-color-gray-50);

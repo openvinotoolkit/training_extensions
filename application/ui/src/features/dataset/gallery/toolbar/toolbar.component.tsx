@@ -6,20 +6,8 @@ import { Dispatch, ReactNode, SetStateAction, Suspense, useState } from 'react';
 import type { Media } from '@/api/types';
 import { GalleryViewModeMenu } from '@/components/gallery-view-mode-menu/gallery-view-mode-menu.component';
 import { useTranslation } from '@/i18n';
-import {
-    ActionButton,
-    Button,
-    ButtonGroup,
-    Checkbox,
-    dimensionValue,
-    Divider,
-    Flex,
-    Heading,
-    ViewModes,
-} from '@geti-ui/ui';
-import { SortDown, SortUp } from '@geti-ui/ui/icons';
+import { Button, ButtonGroup, Checkbox, dimensionValue, Divider, Flex, Heading, ViewModes } from '@geti-ui/ui';
 import { useDatasetViewsQuery } from 'hooks/api/dataset-views.hook';
-import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
 import { useDatasetMediaWithReviewStatus } from 'hooks/use-dataset-media-with-review-status.hook';
 import { useSelectAllDatasetMedia } from 'hooks/use-select-all-dataset-media.hook';
 
@@ -37,6 +25,7 @@ import { SaveDatasetView } from './dataset-view-selector/save-dataset-view/save-
 import { UnassignMediaFromView } from './dataset-view-selector/unassign-media-from-view/unassign-media-from-view.component';
 import { MediaFiltering } from './media-filtering/media-filtering.component';
 import { MediaUpload } from './media-upload.component';
+import { SortMedia } from './sort-media/sort-media.component';
 import { TotalItems } from './total-items.component';
 
 type ToolbarProps = {
@@ -97,25 +86,6 @@ const DatasetViewActions = ({ selectedMediaIds, resetSelectedMediaIds }: Dataset
                 resetSelectedMediaIds={resetSelectedMediaIds}
             />
         </>
-    );
-};
-
-const SortMediaByUploadDate = () => {
-    const { t } = useTranslation();
-    const { sortDirection, setSortDirection } = useDatasetFiltersSearchParams();
-
-    if (sortDirection === 'asc') {
-        return (
-            <ActionButton isQuiet onPress={() => setSortDirection('desc')}>
-                {t('dataset.gallery.sortOldestFirst')} <SortUp />
-            </ActionButton>
-        );
-    }
-
-    return (
-        <ActionButton isQuiet onPress={() => setSortDirection('asc')}>
-            {t('dataset.gallery.sortNewestFirst')} <SortDown />
-        </ActionButton>
     );
 };
 
@@ -213,7 +183,7 @@ export const Toolbar = ({ items, viewMode, setViewMode, trainModel }: ToolbarPro
                         isDisabled={totalCount === 0 || selectAllMedia.isPending}
                     />
 
-                    {!hasSelectedElements && <SortMediaByUploadDate />}
+                    {!hasSelectedElements && <SortMedia />}
 
                     {hasSelectedElements && (
                         <>

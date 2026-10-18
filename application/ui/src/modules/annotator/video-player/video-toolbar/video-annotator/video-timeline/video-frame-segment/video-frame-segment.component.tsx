@@ -254,9 +254,6 @@ export const VideoFrameSegment = ({
                 )}
             </View>
 
-            {/* TODO: Check if we need this overlay */}
-            {/*{isActiveFrame || isFilteredFrame ? <ActiveFrameOverlay /> : <></>}*/}
-
             {isSelectedFrame && <SelectedFrameOverlay />}
 
             {mode === 'annotation' ? (

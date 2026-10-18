@@ -102,7 +102,12 @@
         "models": "模型",
         "modelsDescription": "模型页面，用于浏览模型",
         "inference": "推理",
-        "inferenceDescription": "推理页面，用于查看项目的实时推理效果"
+        "inferenceDescription": "推理页面，用于查看项目的实时推理效果",
+        "help": {
+            "documentation": "用户文档",
+            "whatsNew": "新功能",
+            "reportIssue": "报告问题"
+        }
     },
     "dataset": {
         "validation": {
@@ -230,8 +235,11 @@
             "downloadStarted": "{{fileName}} 已开始下载"
         },
         "gallery": {
-            "sortOldestFirst": "最早优先",
-            "sortNewestFirst": "最新优先",
+            "sort": {
+                "label": "排序：",
+                "uploadDateDescending": "按上传时间（最新优先）",
+                "uploadDateAscending": "按上传时间（最早优先）"
+            },
             "selectedCount": "已选 {{count}} 项",
             "totalMediaCount_one": "共 {{count}} 个媒体文件",
             "totalMediaCount_other": "共 {{count}} 个媒体文件",
@@ -602,7 +610,9 @@
             "createNewProject": "新建项目",
             "createProjectFromDataset": "从数据集创建",
             "card": {
-                "created": "创建于：{{date}}"
+                "created": "创建于：{{date}}",
+                "models_one": "{{count}} 个模型",
+                "models_other": "{{count}} 个模型"
             },
             "menu": {
                 "enablePipeline": "启用流水线",
@@ -617,7 +627,9 @@
             },
             "filters": {
                 "searchPlaceholder": "搜索项目",
-                "taskType": "按任务类型筛选"
+                "taskType": "按任务类型筛选",
+                "models": "按模型筛选",
+                "withTrainedModels": "有已训练模型"
             },
             "noMatches": {
                 "title": "没有符合条件的项目",
@@ -798,6 +810,10 @@
                 "error": "检测助手工具出错：{{message}}",
                 "operations": {
                     "workerBuild": "检测助手工作进程构建"
+                },
+                "options": {
+                    "accept": "接受",
+                    "reject": "拒绝"
                 }
             }
         },
@@ -1129,7 +1145,11 @@
         },
         "meta": {
             "started": "开始于 {{time}}",
-            "elapsed": "已用时 {{time}}"
+            "elapsed": "已用时 {{time}}",
+            "duration": "持续时间 {{time}}",
+            "finished": "完成于 {{time}}",
+            "failed": "失败于 {{time}}",
+            "cancelled": "取消于 {{time}}"
         },
         "emptyState": {
             "all": "没有任务",

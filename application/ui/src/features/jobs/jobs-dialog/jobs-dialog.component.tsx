@@ -5,8 +5,7 @@ import { useState } from 'react';
 
 import { TrainingLogsDialog } from '@/components/training-logs/training-logs-dialog.component';
 import { useTranslation } from '@/i18n';
-import { ActionButton, Content, Dialog, DialogContainer, Divider, Flex, Header, Heading } from '@geti-ui/ui';
-import { CloseSemiBold } from '@geti-ui/ui/icons';
+import { Content, Dialog, DialogContainer, Divider, Flex, Header, Heading } from '@geti-ui/ui';
 import { useModelJobs } from 'hooks/api/jobs/jobs.hook';
 import { useProjects } from 'hooks/api/project.hook';
 
@@ -48,22 +47,19 @@ export const JobsDialog = ({ initialProjectId, currentProjectId, onClose }: Jobs
     const isAllProjects = projectId === ALL_PROJECTS;
 
     return (
-        <DialogContainer onDismiss={onClose}>
+        <DialogContainer isDismissable onDismiss={onClose}>
             <Dialog width={'90vw'} height={'80vh'}>
                 <Heading>{t('common.labels.jobs')}</Heading>
-                <Header>
-                    {projects.length > 1 && (
+                {projects.length > 1 && (
+                    <Header>
                         <ProjectFilterPicker
                             projects={projects}
                             value={projectId}
                             onChange={setProjectId}
                             currentProjectId={currentProjectId}
                         />
-                    )}
-                    <ActionButton isQuiet aria-label={'Close jobs'} marginStart={'size-200'} onPress={onClose}>
-                        <CloseSemiBold />
-                    </ActionButton>
-                </Header>
+                    </Header>
+                )}
                 <Divider />
                 <Content>
                     <Flex direction={'column'} height={'100%'} gap={'size-200'}>

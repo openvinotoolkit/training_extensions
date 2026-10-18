@@ -102,7 +102,12 @@
         "models": "Modele",
         "modelsDescription": "Strona modeli do wizualizacji Twoich modeli",
         "inference": "Wnioskowanie",
-        "inferenceDescription": "Strona wnioskowania pokazująca wnioskowanie na żywo w Twoim projekcie"
+        "inferenceDescription": "Strona wnioskowania pokazująca wnioskowanie na żywo w Twoim projekcie",
+        "help": {
+            "documentation": "Dokumentacja użytkownika",
+            "whatsNew": "Co nowego",
+            "reportIssue": "Zgłoś problem"
+        }
     },
     "dataset": {
         "validation": {
@@ -230,8 +235,11 @@
             "downloadStarted": "Rozpoczęto pobieranie {{fileName}}"
         },
         "gallery": {
-            "sortOldestFirst": "Od najstarszych",
-            "sortNewestFirst": "Od najnowszych",
+            "sort": {
+                "label": "Sortuj multimedia według:",
+                "uploadDateDescending": "Data przesłania (najnowsze)",
+                "uploadDateAscending": "Data przesłania (najstarsze)"
+            },
             "selectedCount": "Wybrano: {{count}}",
             "totalMediaCount_one": "{{count}} element multimedialny",
             "totalMediaCount_other": "{{count}} elementów multimedialnych",
@@ -606,7 +614,11 @@
             "createNewProject": "Utwórz nowy projekt",
             "createProjectFromDataset": "Utwórz z datasetu",
             "card": {
-                "created": "Utworzono: {{date}}"
+                "created": "Utworzono: {{date}}",
+                "models_one": "{{count}} model",
+                "models_few": "{{count}} modele",
+                "models_many": "{{count}} modeli",
+                "models_other": "{{count}} modeli"
             },
             "menu": {
                 "enablePipeline": "Włącz pipeline",
@@ -621,7 +633,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Szukaj projektów",
-                "taskType": "Filtruj według typu zadania"
+                "taskType": "Filtruj według typu zadania",
+                "models": "Filtruj według modeli",
+                "withTrainedModels": "Z wytrenowanymi modelami"
             },
             "noMatches": {
                 "title": "Żaden projekt nie pasuje do Twoich filtrów",
@@ -802,6 +816,10 @@
                 "error": "Błąd narzędzia asystenta wykrywania: {{message}}",
                 "operations": {
                     "workerBuild": "Kompilacja workera asystenta wykrywania"
+                },
+                "options": {
+                    "accept": "Akceptuj",
+                    "reject": "Odrzuć"
                 }
             }
         },
@@ -1133,7 +1151,11 @@
         },
         "meta": {
             "started": "Rozpoczęto {{time}}",
-            "elapsed": "Czas trwania: {{time}}"
+            "elapsed": "Czas trwania: {{time}}",
+            "duration": "Czas trwania {{time}}",
+            "finished": "Zakończono {{time}}",
+            "failed": "Niepowodzenie {{time}}",
+            "cancelled": "Anulowano {{time}}"
         },
         "emptyState": {
             "all": "Brak zadań",
