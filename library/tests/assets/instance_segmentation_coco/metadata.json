@@ -71,7 +71,7 @@
         "field": {
           "type": "LabelField",
           "semantic": "default",
-          "dtype": "UInt8",
+          "dtype": "UInt16",
           "multi_label": false,
           "is_list": true
         }
