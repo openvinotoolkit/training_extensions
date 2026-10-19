@@ -7,12 +7,26 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 
 export const downloadFile = (url: string, name?: string, startedMessage?: string): void => {
-    void saveDownload(url, name, startedMessage);
+    void saveDownload(name ?? getFallbackFilename(url), startedMessage, async () => {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`download failed: ${response.status} ${response.statusText}`);
+        }
+
+        return new Uint8Array(await response.arrayBuffer());
+    });
 };
 
-const saveDownload = async (url: string, name?: string, startedMessage?: string): Promise<void> => {
+export const downloadBlob = (blob: Blob, name: string, startedMessage?: string): void => {
+    void saveDownload(name, startedMessage, async () => new Uint8Array(await blob.arrayBuffer()));
+};
+
+const saveDownload = async (
+    filename: string,
+    startedMessage: string | undefined,
+    readData: () => Promise<Uint8Array>
+): Promise<void> => {
     try {
-        const filename = name ?? getFallbackFilename(url);
         const selectedPath = await save({
             defaultPath: filename,
             filters: [getFilterForFilename(filename)],
@@ -26,13 +40,7 @@ const saveDownload = async (url: string, name?: string, startedMessage?: string)
             toast({ type: 'info', message: startedMessage });
         }
 
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`download failed: ${response.status} ${response.statusText}`);
-        }
-
-        const fileData = new Uint8Array(await response.arrayBuffer());
-        await writeFile(selectedPath, fileData);
+        await writeFile(selectedPath, await readData());
     } catch (error: unknown) {
         console.error('[tauri downloadFile] failed', error);
         toast({ type: 'error', message: i18n.t('downloads.failure.genericError') });

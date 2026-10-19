@@ -16,6 +16,7 @@ import {
 } from '@geti-ui/ui';
 import { CloseSemiBold, DownloadIcon } from '@geti-ui/ui/icons';
 
+import { downloadBlob } from '../../platform/download-file';
 import { useDownloadModelLogs, useModelLogs } from './hooks/use-model-logs.hook';
 import { useStreamJobLogs } from './hooks/use-stream-job-logs.hook';
 import { LogViewer } from './log-viewer.component';
@@ -27,12 +28,6 @@ type TrainingLogsDialogProps = {
     isJobActive: boolean;
     jobId?: string;
     modelId?: string;
-};
-
-const ActiveJobLogs = ({ jobId, isJobActive }: { jobId: string; isJobActive: boolean }) => {
-    const { logs, connectionStatus } = useStreamJobLogs(jobId, { retry: isJobActive });
-
-    return <LogViewer logs={logs} isStreaming connectionStatus={connectionStatus} />;
 };
 
 const HistoricalModelLogs = ({ projectId, modelId }: { projectId: string; modelId: string }) => {
@@ -66,13 +61,34 @@ export const TrainingLogsDialog = ({ jobId, modelId, projectId, isJobActive }: T
     const { t } = useTranslation();
     const dialogContainer = useDialogContainer();
     const { downloadModelLogs, isDownloading } = useDownloadModelLogs(projectId, String(modelId));
+    const { logs: jobLogs, connectionStatus } = useStreamJobLogs(jobId, { retry: isJobActive });
+
+    const downloadJobLogs = () => {
+        const content = jobLogs.map((entry) => JSON.stringify(entry)).join('\n');
+
+        downloadBlob(
+            new Blob([content], { type: 'application/x-ndjson' }),
+            `job-logs-${jobId}.log`,
+            t('models.training.logs.downloadStarted')
+        );
+    };
 
     return (
         <Dialog aria-label={'Training logs'} UNSAFE_className={classes.dialog}>
             <Heading>{t('models.training.logs.dialogTitle')}</Heading>
             <Header>
                 <Flex alignItems={'center'} gap={'size-100'} marginStart={'auto'}>
-                    {modelId && (
+                    {jobId && (
+                        <ActionButton
+                            isQuiet
+                            onPress={downloadJobLogs}
+                            aria-label={'Download logs'}
+                            isDisabled={jobLogs.length === 0}
+                        >
+                            <DownloadIcon />
+                        </ActionButton>
+                    )}
+                    {!jobId && modelId && (
                         <ActionButton
                             isQuiet
                             onPress={downloadModelLogs}
@@ -94,7 +110,7 @@ export const TrainingLogsDialog = ({ jobId, modelId, projectId, isJobActive }: T
             </Header>
             <Divider />
             <Content UNSAFE_className={classes.contentArea}>
-                {jobId && <ActiveJobLogs jobId={jobId} isJobActive={isJobActive} />}
+                {jobId && <LogViewer logs={jobLogs} isStreaming connectionStatus={connectionStatus} />}
                 {!jobId && modelId && <HistoricalModelLogs projectId={projectId} modelId={modelId} />}
                 {!jobId && !modelId && (
                     <Flex alignItems={'center'} justifyContent={'center'} height={'100%'}>

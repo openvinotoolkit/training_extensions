@@ -17,3 +17,10 @@ export const downloadFile = (url: string, name?: string, startedMessage?: string
         toast({ type: 'info', message: startedMessage });
     }
 };
+
+export const downloadBlob = (blob: Blob, name: string, startedMessage?: string): void => {
+    const url = URL.createObjectURL(blob);
+
+    downloadFile(url, name, startedMessage);
+    setTimeout(() => URL.revokeObjectURL(url));
+};

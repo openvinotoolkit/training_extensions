@@ -260,6 +260,7 @@ describe('JobsDialog', () => {
         await userEvent.click(screen.getByRole('menuitem', { name: 'View logs' }));
 
         expect(await screen.findByText('Training Logs')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Download logs' })).toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
         await waitFor(() => expect(screen.queryByText('Training Logs')).not.toBeInTheDocument());
         expect(screen.getByRole('button', { name: /Filter jobs by project/ })).toHaveTextContent('All projects');
