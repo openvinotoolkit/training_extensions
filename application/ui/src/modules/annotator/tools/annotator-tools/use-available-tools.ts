@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MagneticLasso } from '@/assets/icons';
-import { BoundingBoxImg, MagneticLassoImg, PolygonImg, SAMDetectionImg, SAMSegmentationImg } from '@/assets/tools';
+import {
+    BoundingBoxImg,
+    MagneticLassoImg,
+    PolygonImg,
+    SAMDetectionImg,
+    SAMSegmentationImg,
+    SSIMImg,
+} from '@/assets/tools';
 import { useTranslation } from '@/i18n';
 import { BoundingBox, DetectionTool, Polygon, SegmentAnythingIcon, Selector } from '@geti-ui/ui/icons';
 
@@ -93,6 +100,7 @@ export const useTaskTools = (): ToolConfig[] => {
         label: t('annotator.tools.ssim.label'),
         ariaLabel: 'Detection assistant',
         tooltip: {
+            img: SSIMImg,
             description: t('annotator.tools.ssim.description'),
         },
     };
