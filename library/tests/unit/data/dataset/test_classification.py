@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from typing import cast
 from unittest.mock import Mock
 
 import polars as pl
@@ -50,6 +51,10 @@ def _make_dm_dataset(sample_cls: type[Sample], labels: list[int], num_classes: i
     return dm_dataset
 
 
+def _read_labels(dataset: MulticlassClsDataset) -> list[int]:
+    return [int(cast("ClassificationSample", dataset[i]).label) for i in range(len(dataset))]
+
+
 class TestMulticlassClsDatasetLabelRange:
     """Test that multi-class labels are not limited to the UInt8 range."""
 
@@ -63,7 +68,7 @@ class TestMulticlassClsDatasetLabelRange:
         dataset = MulticlassClsDataset(dm_subset=dm_dataset, transforms=[])
 
         assert len(dataset.label_info.label_names) == _NUM_CLASSES_ABOVE_UINT8
-        assert [int(dataset[i].label) for i in range(len(labels))] == labels
+        assert _read_labels(dataset) == labels
 
         batch = _default_collate_fn([dataset[i] for i in range(len(labels))])
         assert batch.labels is not None
@@ -78,7 +83,7 @@ class TestMulticlassClsDatasetLabelRange:
 
         dataset = MulticlassClsDataset(dm_subset=dm_dataset, transforms=[])
 
-        assert [int(dataset[i].label) for i in range(len(labels))] == labels
+        assert _read_labels(dataset) == labels
         assert dataset.get_idx_list_per_classes() == {label: [idx] for idx, label in enumerate(labels)}
 
 

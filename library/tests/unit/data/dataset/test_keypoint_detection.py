@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import polars as pl
 import pytest
 import torch
 from datumaro.experimental import Dataset
@@ -76,3 +77,31 @@ class TestKeypointDetectionDataset:
         # visibility channel should be clamped to 1 at max
         visibility = entity.keypoints[:, 2]
         assert visibility.max().item() <= 1
+
+
+class TestKeypointDetectionDatasetLabelRange:
+    """Test that keypoint labels are not limited to the UInt8 range."""
+
+    def test_label_field_is_uint16(self) -> None:
+        assert KeypointSample.label.dtype == pl.UInt16()  # type: ignore[attr-defined]
+
+    def test_labels_above_255(self) -> None:
+        num_classes = 300
+        labels = [0, 255, 256, num_classes - 1]
+        categories = {
+            "label": LabelCategories(labels=tuple(f"class_{i}" for i in range(num_classes))),
+            "keypoints": KeypointCategories(labels=("kp0", "kp1")),
+        }
+        dm_dataset = Dataset(KeypointSample, categories=categories)  # type: ignore[arg-type]
+        for label in labels:
+            dm_dataset.append(
+                KeypointSample(
+                    image=tv_tensors.Image(torch.zeros(3, 8, 8, dtype=torch.uint8)),
+                    label=torch.tensor([label], dtype=torch.uint16),
+                    keypoints=torch.ones(2, 3, dtype=torch.float32),
+                    dm_image_info=DmImageInfo(width=8, height=8),
+                    subset=Subset.TRAINING,
+                ),
+            )
+        dataset = KeypointDetectionDataset(dm_dataset, transforms=Identity())
+        assert [dataset[i].label.tolist() for i in range(len(labels))] == [[label] for label in labels]  # type: ignore[attr-defined]
