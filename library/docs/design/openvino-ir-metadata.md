@@ -94,7 +94,7 @@ Semantic segmentation class maps are instead resized to the original size with n
 | `confidence_threshold`   | float                | Classification, Detection, Instance seg. | Drop predictions with a score not strictly greater than this value.                                                                                     | `0.5` (`YOLO11`, `YOLO-seg`: `0.25`) |
 | `iou_threshold`          | float                | Detection, Instance seg.                 | IoU threshold for NMS.                                                                                                                                  | `0.5` (`YOLO11`: `0.7`)              |
 | `nms_execute`            | `"True"` / `"False"` | Detection, Instance seg.                 | `True`: the model has no built-in NMS, so the runtime must run NMS (`iou_threshold`, `agnostic_nms`, `nms_max_predictions`). `False`: skip NMS.         | `False` (`YOLO11`: `True`)           |
-| `agnostic_nms`           | `"True"` / `"False"` | Detection, Instance seg.                 | `True`: run NMS across all classes together. `False`: run NMS per class.                                                                                | `False`                              |
+| `agnostic_nms`           | `"True"` / `"False"` | Detection, Instance seg.                 | `True`: run NMS across all classes together. `False`: run NMS per class. getitune never writes this key, so the wrapper default always applies.         | `False` (`YOLO11`: `True`)           |
 | `nms_max_predictions`    | int                  | Detection, Instance seg.                 | Keep at most N boxes after NMS.                                                                                                                         | `200` (`YOLO11`: `30000`)            |
 | `return_soft_prediction` | `"True"` / `"False"` | Semantic seg.                            | Also return the per-pixel class probability maps.                                                                                                       | `True`                               |
 | `soft_threshold`         | float                | Semantic seg.                            | Only used when `blur_strength != -1`: after blurring, probabilities below this value are set to 0 before the argmax.                                    | `-inf`                               |
@@ -159,7 +159,8 @@ Class index `i` maps to `labels[i]`.
 - **Postprocessing:**
   1. Keep anchors whose max class score is `> confidence_threshold`; the label is the argmax.
   2. Convert boxes to `x1, y1, x2, y2`.
-  3. Run NMS.
+  3. Run NMS **across all classes** (class-agnostic): the wrapper default is `agnostic_nms=True`, and getitune does not write an override.
+     Overlapping boxes with different labels are merged, keeping the highest-scoring one. Per-class NMS gives different results.
   4. Map boxes back to the original image.
 - **Labels:** class index `i` maps to `labels[i]`.
 - The wrapper defaults (`reverse_input_channels=True`, `scale_values=255`) only apply if the keys are missing; getitune always writes them.
@@ -207,3 +208,4 @@ Class index `i` maps to `labels[i]`.
 | Ultralytics  | `UltralyticsModelExporter` | `fit_to_window_letterbox`        | `114`                     | `0,0,0` / `1,1,1`         | `scale_to_unit`, `uint8`                       |
 
 Ultralytics also writes `nms_execute = not export_nms` and a separate `metadata.yaml` (for the Ultralytics CLI, not `rt_info`).
+It does not write `agnostic_nms`, so runtime NMS for `YOLO11` models is class-agnostic (ModelAPI default `True`).
