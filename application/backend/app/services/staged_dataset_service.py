@@ -304,7 +304,7 @@ class StagedDatasetService:
         return sum(item.stat().st_size for item in path.rglob("*") if item.is_file())
 
     def _get_staged_dataset_from_path(self, dataset_id: UUID, dataset_path: Path) -> StagedDataset:
-        from datumaro.experimental import import_dataset
+        from app.datumaro_converter import import_dataset
 
         size = self._calculate_path_size(dataset_path)
         compressed = dataset_path.is_file() and dataset_path.suffix == ".zip"

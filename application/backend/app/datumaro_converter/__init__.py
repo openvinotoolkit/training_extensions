@@ -13,6 +13,7 @@ from .domain import (
     SampleMode,
 )
 from .facade import convert_dataset
+from .loading import import_dataset
 
 __all__ = [
     "DetectionImportExportSample",
@@ -25,4 +26,5 @@ __all__ = [
     "MultilabelClassificationTrainingSample",
     "SampleMode",
     "convert_dataset",
+    "import_dataset",
 ]
