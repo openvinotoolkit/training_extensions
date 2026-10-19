@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DatasetRevision, Model } from '@/api/types';
-import dayjs from 'dayjs';
 import { orderBy } from 'lodash-es';
 
 import { getTestingMetric } from '../components/model-row/utils';
@@ -32,18 +31,20 @@ export const sortModels = (
         case 'architecture':
             return orderBy(models, (model) => model.architecture?.toLowerCase() ?? '', direction);
         case 'trained': {
-            const endTimes = new Map(models.map((model) => [model, dayjs(model.training_info?.end_time)]));
+            const endTimes = new Map(
+                models.map((model) => {
+                    const time = Date.parse(model.training_info?.end_time ?? '');
+
+                    return [model, Number.isNaN(time) ? undefined : time];
+                })
+            );
 
             return orderBy(
                 models,
                 [
                     // Models without a valid training date come last in both directions.
-                    (model) => (endTimes.get(model)?.isValid() ? 0 : 1),
-                    (model) => {
-                        const date = endTimes.get(model);
-
-                        return date?.isValid() ? date.valueOf() : 0;
-                    },
+                    (model) => (endTimes.get(model) === undefined ? 1 : 0),
+                    (model) => endTimes.get(model) ?? 0,
                 ],
                 ['asc', direction]
             );

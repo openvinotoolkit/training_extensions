@@ -4,8 +4,8 @@
 import { Fragment } from 'react';
 
 import { useTranslation } from '@/i18n';
-import dayjs from 'dayjs';
 import { useClipboard } from 'hooks/use-clipboard/use-clipboard.hook';
+import { TIME_WITH_SECONDS_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 
 import { LOG_LEVEL_COLORS, type LogEntry as LogEntryType } from './log-types';
 
@@ -17,14 +17,6 @@ type LogEntryProps = {
 
 // Matches URLs (https?://...), absolute paths (/foo, C:\foo), and relative multi-segment paths (foo/bar/baz)
 const PATH_REGEX = /(https?:\/\/[^\s'"<>]+|(?:\/|[A-Za-z]:\\)[^\s'"<>]+|[\w][\w.-]*(?:\/[\w.-]+)+)/g;
-
-const formatTimestamp = (timestamp: number): string => {
-    if (!timestamp) {
-        return '';
-    }
-
-    return dayjs.unix(timestamp).format('HH:mm:ss');
-};
 
 const formatSource = (name: string, func: string, line: number): string => {
     if (!name && !func) {
@@ -95,9 +87,10 @@ const MessageWithPaths = ({ message }: { message: string }) => {
 
 export const LogEntry = ({ entry }: LogEntryProps) => {
     const { t } = useTranslation();
+    const formatDate = useFormatDate(TIME_WITH_SECONDS_FORMAT);
     const { record } = entry;
     const levelColor = LOG_LEVEL_COLORS[record.level.name] ?? LOG_LEVEL_COLORS.INFO;
-    const timestamp = formatTimestamp(record.time.timestamp);
+    const timestamp = record.time.timestamp ? (formatDate(record.time.timestamp * 1000) ?? '') : '';
     const source = formatSource(record.name, record.function, record.line);
     const traceback = getTraceback(entry);
 

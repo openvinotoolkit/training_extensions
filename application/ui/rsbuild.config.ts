@@ -13,6 +13,7 @@ const { publicVars } = loadEnv({ prefixes: ['PUBLIC_'] });
 // overrides (e.g. `foo.tauri.ts` wins over `foo.ts`). Files not shadowed by
 // a `.tauri.*` twin resolve as usual. This keeps Tauri-specific code out of
 // the web graph entirely, and removes the need for runtime `isTauri` checks.
+// `BUILD_TARGET` comes from `.env.tauri`, which rsbuild loads for `--env-mode tauri`.
 const isTauriBuild = process.env.BUILD_TARGET === 'tauri';
 
 // `TAURI_ENV_DEBUG` is set by the Tauri CLI: `tauri dev` / `start:desktop`

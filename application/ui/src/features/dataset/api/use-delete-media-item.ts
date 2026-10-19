@@ -4,10 +4,10 @@
 import { $api } from '@/api';
 import { toast } from '@/components/toast/toast.component';
 import { useTranslation } from '@/i18n';
-import { useOverlayTriggerState } from '@react-stately/overlays';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { isFunction } from 'lodash-es';
+import { useOverlayTriggerState } from 'react-stately';
 
 import { getQueryKey } from '../../../query-client/query-client';
 

@@ -1,13 +1,13 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { MutableRefObject } from 'react';
+import type { CSSProperties } from 'react';
 
 import type { Label } from '@/api/types';
 import { Flex } from '@geti-ui/ui';
-import { type Item } from 'react-cool-virtual';
 
 import type { AnnotatorMode } from '../../../../../annotator-mode';
+import type { VirtualItem } from '../use-horizontal-virtualizer.hook';
 import { VideoFrameSegment } from './video-frame-segment.component';
 
 import classes from './video-frame-segment.module.scss';
@@ -21,8 +21,8 @@ type VideoFrameSegmentsProps = {
     isPlaying: boolean;
     minSizeOfSegment: number;
     containerSize: number;
-    ref: MutableRefObject<HTMLDivElement | null>;
-    items: Item[];
+    style?: CSSProperties;
+    items: VirtualItem[];
     frameNumber: number;
     selectFrame: (frameNumber: number) => void;
     mode: AnnotatorMode;
@@ -36,16 +36,15 @@ export const VideoFrameSegments = ({
     isPlaying,
     minSizeOfSegment,
     containerSize,
-    ref,
+    style,
     items,
     frameNumber,
     selectFrame,
 }: VideoFrameSegmentsProps) => {
     return (
         <div
-            ref={ref}
             className={classes.videoFrameSegmentsContainer}
-            style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${minSizeOfSegment}px, max-content))` }}
+            style={{ ...style, gridTemplateColumns: `repeat(auto-fit, minmax(${minSizeOfSegment}px, max-content))` }}
             role='grid'
             aria-label={'Video timeline'}
             aria-colcount={totalSegments}

@@ -3,8 +3,8 @@
 
 import { ReactNode, useRef } from 'react';
 
-import { useOverlayTriggerState } from '@react-stately/overlays';
 import { render, screen } from '@testing-library/react';
+import { useOverlayTriggerState } from 'react-stately';
 
 import { CursorContextMenu } from './cursor-context-menu.component';
 

@@ -15,6 +15,12 @@ export const DATE_TIME_FORMAT: DateFormatterOptions = {
 };
 export const DATE_FORMAT: DateFormatterOptions = { day: '2-digit', month: 'short', year: 'numeric' };
 export const TIME_FORMAT: DateFormatterOptions = { hour: '2-digit', minute: '2-digit' };
+export const TIME_WITH_SECONDS_FORMAT: DateFormatterOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+};
 export const LONG_DATE_TIME_FORMAT: DateFormatterOptions = {
     day: 'numeric',
     month: 'long',
@@ -31,8 +37,8 @@ export const useFormatDate = (options: DateFormatterOptions) => {
     const formatter = useDateFormatter(options);
 
     return useCallback(
-        (value: string | null | undefined): string | null => {
-            if (!value) return null;
+        (value: string | number | null | undefined): string | null => {
+            if (value == null || value === '') return null;
 
             const date = new Date(value);
 

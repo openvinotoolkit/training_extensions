@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 
 import { useTranslation } from '@/i18n';
 import { Content, Heading, IllustratedMessage, View } from '@geti-ui/ui';
-import dayjs from 'dayjs';
 import { usePipelineMetrics } from 'hooks/api/pipeline.hook';
+import { TIME_WITH_SECONDS_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 import { CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 
 type DataPoint = {
@@ -15,8 +15,6 @@ type DataPoint = {
 };
 
 const DISPLAYED_WINDOW_MS = 5 * 60 * 1000;
-
-const formatTime = (timestamp: number) => dayjs(timestamp).format('HH:mm:ss');
 
 const appendDataPoint = (points: DataPoint[], point: DataPoint): DataPoint[] =>
     [...points, point].filter(({ timestamp }) => timestamp > point.timestamp - DISPLAYED_WINDOW_MS);
@@ -30,7 +28,7 @@ const useMetricsData = () => {
     useEffect(() => {
         if (!metrics) return;
 
-        const timestamp = dayjs(metrics.time_window.end).valueOf();
+        const timestamp = new Date(metrics.time_window.end).getTime();
 
         setLatencyData((prev) => appendDataPoint(prev, { timestamp, value: metrics.inference.latency.avg_ms ?? 0 }));
         setThroughputData((prev) =>
@@ -58,6 +56,8 @@ type GraphProps = {
 
 const Graph = ({ label, data, fractionDigits }: GraphProps) => {
     const { t } = useTranslation();
+    const formatDate = useFormatDate(TIME_WITH_SECONDS_FORMAT);
+    const formatTime = (timestamp: number) => formatDate(timestamp) ?? '';
     const end = data.at(-1)?.timestamp ?? Date.now();
 
     return (
