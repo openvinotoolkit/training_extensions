@@ -209,3 +209,21 @@ Class index `i` maps to `labels[i]`.
 
 Ultralytics also writes `nms_execute = not export_nms` and a separate `metadata.yaml` (for the Ultralytics CLI, not `rt_info`).
 It does not write `agnostic_nms`, so runtime NMS for `YOLO11` models is class-agnostic (ModelAPI default `True`).
+
+## Parameters used by exported models
+
+The following parameters subset is used when exporting model. So any client that wants to run inference using OpenVINO on the exported model should be aware of these parameters and their default values.
+See the sections above for what each parameter does.
+
+| Stage           | Parameter              | Description                                                                                         |
+| --------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
+| Pre-processing  | `resize_type`          | How the input image is resized to the network input size (`standard`, `crop`, `fit_to_window`, `fit_to_window_letterbox`). |
+| Pre-processing  | `pad_value`            | Fill value for padded areas, in raw input pixel units.                                              |
+| Pre-processing  | `mean_values`          | Per-channel mean subtracted from the input.                                                         |
+| Pre-processing  | `scale_values`         | Per-channel scale (std) the input is divided by.                                                    |
+| Post-processing | `confidence_threshold` | Predictions with a score not above this value are dropped.                                          |
+| Post-processing | `iou_threshold`        | IoU threshold for NMS.                                                                              |
+| Post-processing | `nms_execute`          | Whether the runtime must run NMS (`True` when NMS is not in the graph).                             |
+| Post-processing | `agnostic_nms`         | Run NMS across all classes (`True`) or per class (`False`).                                         |
+| Post-processing | `nms_max_predictions`  | Maximum number of boxes kept after NMS.                                                             |
+
