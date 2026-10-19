@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 
 import type { Project, TaskType } from '@/api/types';
 
@@ -22,8 +22,9 @@ export const useProjectFilters = (projects: Project[]): UseProjectFiltersResult 
     const [searchName, setSearchName] = useState<string>('');
     const [selectedTaskTypes, setSelectedTaskTypes] = useState<TaskType[]>([]);
     const [onlyWithTrainedModels, setOnlyWithTrainedModels] = useState<boolean>(false);
+    const deferredSearchName = useDeferredValue(searchName);
 
-    const filteredProjects = filterProjects(projects, searchName, selectedTaskTypes, onlyWithTrainedModels);
+    const filteredProjects = filterProjects(projects, deferredSearchName, selectedTaskTypes, onlyWithTrainedModels);
 
     const isFiltering = searchName.trim() !== '' || selectedTaskTypes.length > 0 || onlyWithTrainedModels;
 

@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useEffect, useEffectEvent, type RefObject } from 'react';
 
 function determineTargetElement<ElementType extends Element = Element>(
     element?: RefObject<ElementType | null> | ElementType | null
@@ -28,11 +28,7 @@ export function useEventListener<
     Handler extends (event: EventType[EventName]) => void,
     ElementType extends Element = Element,
 >(eventName: EventName, handler: Handler, element?: RefObject<ElementType | null> | ElementType | null): void {
-    const savedHandler = useRef<Handler>(handler);
-
-    useLayoutEffect(() => {
-        savedHandler.current = handler;
-    }, [handler]);
+    const onEvent = useEffectEvent((event: EventType[EventName]) => handler(event));
 
     useEffect(() => {
         const controller = new AbortController();
@@ -45,9 +41,7 @@ export function useEventListener<
         targetElement.addEventListener(
             eventName,
             (event) => {
-                if (savedHandler.current !== undefined) {
-                    savedHandler.current(event as EventType[EventName]);
-                }
+                onEvent(event as EventType[EventName]);
             },
             {
                 signal: controller.signal,

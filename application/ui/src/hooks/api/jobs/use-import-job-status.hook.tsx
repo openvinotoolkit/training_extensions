@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 
 import { $api } from '@/api';
 import { toast } from '@/components/toast/toast.component';
@@ -32,25 +32,35 @@ export const useImportJobStatus = ({ jobId, onError, onSuccess }: UseImportJobSt
         }
     );
 
+    const handleInvalidJob = useEffectEvent((error: typeof response.error) => {
+        isFunction(onError) && onError(error);
+        toast({ type: 'error', message: `${t('dataset.import.genericError')} ${error?.detail}` });
+    });
+    const handleFailedJob = useEffectEvent((message: string | undefined | null) => {
+        isFunction(onError) && onError();
+        toast({ type: 'error', message: `${t('dataset.import.genericError')} ${message}` });
+    });
+    const handleDoneJob = useEffectEvent(() => {
+        isFunction(onSuccess) && onSuccess();
+    });
+
     useEffect(() => {
         if (response.isError && isInvalidJob(response.error)) {
-            isFunction(onError) && onError(response.error);
-            toast({ type: 'error', message: `${t('dataset.import.genericError')} ${response.error?.detail}` });
+            handleInvalidJob(response.error);
         }
-    }, [onError, response.error, response.isError, t]);
+    }, [response.error, response.isError]);
 
     useEffect(() => {
         if (isJobFailed(response.data)) {
-            isFunction(onError) && onError();
-            toast({ type: 'error', message: `${t('dataset.import.genericError')} ${response.data?.message}` });
+            handleFailedJob(response.data?.message);
         }
-    }, [onError, response.data, t]);
+    }, [response.data]);
 
     useEffect(() => {
         if (isJobDone(response.data)) {
-            isFunction(onSuccess) && onSuccess();
+            handleDoneJob();
         }
-    }, [onSuccess, response.data]);
+    }, [response.data]);
 
     return response;
 };

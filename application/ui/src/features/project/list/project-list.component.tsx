@@ -136,7 +136,7 @@ const ProjectGrid = ({ jobsButton }: { jobsButton?: ReactNode }) => {
     const visibleCardsCount = (activeProject === undefined ? 0 : 1) + sortedProjects.length;
 
     return (
-        <Flex height={'100%'} gap={'size-300'}>
+        <Flex height={'100%'}>
             <ProjectSidebar
                 shouldShowFilters={shouldShowFilters}
                 searchName={searchName}
