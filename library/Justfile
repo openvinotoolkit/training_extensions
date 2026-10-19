@@ -103,3 +103,7 @@ test-unit-openvino *ARGS: _ensure_uv
 # Run integration tests with pytest
 test-integration *ARGS: _ensure_uv
     uv run pytest ./tests/integration -v {{ ARGS }}
+
+# Run the preprocessing-throughput benchmarks (regression guard)
+bench-preprocessing *ARGS: _ensure_uv
+    uv run pytest ./tests/benchmarks -v -m benchmark -p no:randomly {{ ARGS }}
