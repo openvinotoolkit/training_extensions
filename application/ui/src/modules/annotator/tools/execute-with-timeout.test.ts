@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { executeWithTimeout } from './execute-with-timeout';
+import { executeWithTimeout, OperationTimeoutError } from './execute-with-timeout';
 
 describe('executeWithTimeout', () => {
     beforeEach(() => {
@@ -26,5 +26,6 @@ describe('executeWithTimeout', () => {
         await rs.advanceTimersByTimeAsync(11);
 
         await rejectionExpectation;
+        await expect(promise).rejects.toBeInstanceOf(OperationTimeoutError);
     });
 });

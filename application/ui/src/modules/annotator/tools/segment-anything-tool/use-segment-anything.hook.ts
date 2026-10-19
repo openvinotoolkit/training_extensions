@@ -5,7 +5,7 @@ import { fetchClient } from '@/api';
 import type { Media } from '@/api/types';
 import { i18n } from '@/i18n';
 import { EncodingOutput, InvalidEncodingError, parseEncoding } from '@geti-ui/smart-tools/segment-anything';
-import { queryOptions, skipToken, useQuery, type QueryKey } from '@tanstack/react-query';
+import { queryOptions, skipToken, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { Remote, wrap } from 'comlink';
 import { useProject } from 'hooks/api/project.hook';
 import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
@@ -18,7 +18,7 @@ import type {
     SegmentAnythingWorkerApi,
     SegmentAnythingWorkerInstance,
 } from '../../webworkers/segment-anything.worker.interface';
-import { executeWithTimeout } from '../execute-with-timeout';
+import { executeWithTimeout, OperationTimeoutError } from '../execute-with-timeout';
 import { convertToolShapeToGetiShape } from '../utils';
 import {
     SAM_ASSET_DOWNLOAD_STALL_TIMEOUT_MS,
@@ -212,7 +212,21 @@ const useDecoderOutputType = () => {
 };
 
 const useDecodingFn = (model: SegmentAnythingRemoteInstance | undefined, encoding: EncodingOutput | undefined) => {
+    const queryClient = useQueryClient();
     const decoderOutput = useDecoderOutputType();
+
+    // A decode that never finishes leaves the worker unusable, so replace it.
+    const restartWorker = (stuckModel: SegmentAnythingRemoteInstance) => {
+        const { queryKey } = segmentAnythingWorkerQueryOptions();
+        const current = queryClient.getQueryData(queryKey);
+
+        if (current?.instance !== stuckModel) {
+            return;
+        }
+
+        current.worker.terminate();
+        void queryClient.resetQueries({ queryKey, exact: true });
+    };
 
     // TODO: look into returning a new "decoder model" instance that already has the encoding data
     // stored in memory, to reduce  memory usage
@@ -224,22 +238,30 @@ const useDecodingFn = (model: SegmentAnythingRemoteInstance | undefined, encodin
             return { shapes: [] };
         }
 
-        const { shapes, lowResMask } = await executeWithTimeout(
-            model.processDecoder(encoding, {
-                points,
-                boxes: [],
-                // Decoding runs against the already-computed `encoding`; no image is needed.
-                image: undefined,
-                outputConfig: {
-                    type: decoderOutput,
-                },
-                previousMask,
-            }),
-            i18n.t('annotator.tools.autoSegmentation.operations.decoder'),
-            SAM_DECODER_TIMEOUT_MS
-        );
+        try {
+            const { shapes, lowResMask } = await executeWithTimeout(
+                model.processDecoder(encoding, {
+                    points,
+                    boxes: [],
+                    // Decoding runs against the already-computed `encoding`; no image is needed.
+                    image: undefined,
+                    outputConfig: {
+                        type: decoderOutput,
+                    },
+                    previousMask,
+                }),
+                i18n.t('annotator.tools.autoSegmentation.operations.decoder'),
+                SAM_DECODER_TIMEOUT_MS
+            );
 
-        return { shapes: shapes.map(convertToolShapeToGetiShape), lowResMask };
+            return { shapes: shapes.map(convertToolShapeToGetiShape), lowResMask };
+        } catch (error) {
+            if (error instanceof OperationTimeoutError) {
+                restartWorker(model);
+            }
+
+            throw error;
+        }
     };
 };
 

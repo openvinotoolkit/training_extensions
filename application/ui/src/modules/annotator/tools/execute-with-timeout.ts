@@ -5,6 +5,10 @@ import { i18n } from '@/i18n';
 
 const DEFAULT_WORKER_TIMEOUT_MS = 8000;
 
+export class OperationTimeoutError extends Error {
+    name = 'OperationTimeoutError';
+}
+
 export const executeWithTimeout = async <T>(
     promise: Promise<T>,
     operation: string,
@@ -20,7 +24,7 @@ export const executeWithTimeout = async <T>(
                     const message = i18n.isInitialized
                         ? i18n.t('annotator.tools.autoSegmentation.timeoutError', { operation, timeoutMs })
                         : `${operation} timed out after ${timeoutMs}ms. Please try refreshing the page.`;
-                    reject(new Error(message));
+                    reject(new OperationTimeoutError(message));
                 }, timeoutMs);
             }),
         ]);
