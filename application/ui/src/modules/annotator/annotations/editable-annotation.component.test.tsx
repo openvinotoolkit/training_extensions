@@ -11,10 +11,13 @@ import { render } from 'test-utils/render';
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
 import { Annotation } from '../../../shared/types';
+import * as actualDoc from '../annotation-document-provider.component' with { rstest: 'importActual' };
 import { AnnotationVisibilityProvider, useAnnotationVisibility } from '../annotation-visibility-provider.component';
+import * as actualVis from '../annotation-visibility-provider.component' with { rstest: 'importActual' };
 import { AnnotatorLabelsProvider } from '../annotator-labels-provider.component';
 import { AnnotatorProvider } from '../annotator-provider.component';
 import { useSelectedAnnotations } from '../select-annotation-provider.component';
+import * as actualSelect from '../select-annotation-provider.component' with { rstest: 'importActual' };
 import { CanvasSettingsProvider } from '../shell/primary-toolbar/settings/canvas-settings-provider.component';
 import { ToolProvider } from '../tool-provider.component';
 import { AnnotationContext } from './annotation-context';
@@ -25,36 +28,32 @@ const Child = () => <g data-testid={CHILD_TEST_ID} />;
 
 const mockROI = { x: 0, y: 0, width: 1000, height: 1000 };
 
-vi.mock('../selected-media-item-provider.component', () => ({
+rs.mock('../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({ roi: mockROI, image: { width: mockROI.width, height: mockROI.height } }),
 }));
 
-vi.mock('../annotation-document-provider.component', async (importActual) => {
-    const actual = await importActual<typeof import('../annotation-document-provider.component')>();
-
+rs.mock('../annotation-document-provider.component', () => {
     return {
-        ...actual,
+        ...actualDoc,
         useAnnotationCommands: () => ({
-            updateAnnotations: vi.fn(),
-            deleteAnnotations: vi.fn(),
+            updateAnnotations: rs.fn(),
+            deleteAnnotations: rs.fn(),
         }),
         useIsAnnotatorReadOnly: () => false,
     };
 });
 
-vi.mock('../select-annotation-provider.component', async (importActual) => {
-    const actual = await importActual<typeof import('../select-annotation-provider.component')>();
+rs.mock('../select-annotation-provider.component', () => {
     return {
-        ...actual,
-        useSelectedAnnotations: vi.fn(),
+        ...actualSelect,
+        useSelectedAnnotations: rs.fn(),
     };
 });
 
-vi.mock('../annotation-visibility-provider.component', async (importActual) => {
-    const actual = await importActual<typeof import('../annotation-visibility-provider.component')>();
+rs.mock('../annotation-visibility-provider.component', () => {
     return {
-        ...actual,
-        useAnnotationVisibility: vi.fn(),
+        ...actualVis,
+        useAnnotationVisibility: rs.fn(),
     };
 });
 
@@ -67,15 +66,15 @@ const renderWithAnnotation = async (
     annotation: Annotation,
     { isVisible = true, selectedAnnotations = new Set<string>() }: AnnotationOptions = {}
 ) => {
-    vi.mocked(useAnnotationVisibility).mockReturnValue({
+    rs.mocked(useAnnotationVisibility).mockReturnValue({
         isVisible,
         isFocussed: false,
-        toggleVisibility: vi.fn(),
-        toggleFocus: vi.fn(),
+        toggleVisibility: rs.fn(),
+        toggleFocus: rs.fn(),
     });
-    vi.mocked(useSelectedAnnotations).mockReturnValue({
+    rs.mocked(useSelectedAnnotations).mockReturnValue({
         selectedAnnotations,
-        setSelectedAnnotations: vi.fn(),
+        setSelectedAnnotations: rs.fn(),
     });
 
     render(

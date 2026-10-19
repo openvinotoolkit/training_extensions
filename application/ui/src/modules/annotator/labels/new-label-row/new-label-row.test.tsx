@@ -5,16 +5,13 @@ import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from 'test-utils/render';
 
+import * as actualLabelUtils from '../../../../shared/label-utils' with { rstest: 'importActual' };
 import { NewLabelRow } from './new-label-row.component';
 
-vi.mock('../../../../shared/label-utils', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../../../../shared/label-utils')>();
-
-    return {
-        ...actual,
-        getRandomDistinctColor: () => '#123456',
-    };
-});
+rs.mock('../../../../shared/label-utils', () => ({
+    ...actualLabelUtils,
+    getRandomDistinctColor: () => '#123456',
+}));
 
 describe('NewLabelRow', () => {
     const getNameInput = () => screen.getByRole('textbox', { name: 'New label name' });
@@ -23,10 +20,10 @@ describe('NewLabelRow', () => {
     it('renders name input and row controls', () => {
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
-                onSave={vi.fn()}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                validateHotkey={rs.fn()}
+                onSave={rs.fn()}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -37,10 +34,10 @@ describe('NewLabelRow', () => {
 
     it('disables create button for empty or invalid names and enables it for valid names', async () => {
         const user = userEvent.setup();
-        const validateName = vi.fn((name: string) => (name === 'valid-label' ? undefined : 'invalid name'));
+        const validateName = rs.fn((name: string) => (name === 'valid-label' ? undefined : 'invalid name'));
 
         render(
-            <NewLabelRow validateHotkey={vi.fn()} onSave={vi.fn()} onCancel={vi.fn()} validateName={validateName} />
+            <NewLabelRow validateHotkey={rs.fn()} onSave={rs.fn()} onCancel={rs.fn()} validateName={validateName} />
         );
 
         const nameInput = getNameInput();
@@ -62,14 +59,14 @@ describe('NewLabelRow', () => {
 
     it('calls onSave with trimmed name and current color when create is clicked', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
+                validateHotkey={rs.fn()}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -82,14 +79,14 @@ describe('NewLabelRow', () => {
 
     it('does not call onSave when create is clicked for invalid name', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
+                validateHotkey={rs.fn()}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => 'invalid name')}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => 'invalid name')}
             />
         );
 
@@ -101,14 +98,14 @@ describe('NewLabelRow', () => {
 
     it('saves when Enter is pressed', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
+                validateHotkey={rs.fn()}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -123,14 +120,14 @@ describe('NewLabelRow', () => {
 
     it('cancels when Escape is pressed', async () => {
         const user = userEvent.setup();
-        const onCancel = vi.fn();
+        const onCancel = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
-                onSave={vi.fn()}
+                validateHotkey={rs.fn()}
+                onSave={rs.fn()}
                 onCancel={onCancel}
-                validateName={vi.fn(() => undefined)}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -144,15 +141,15 @@ describe('NewLabelRow', () => {
 
     it('does nothing on blur when focus stays inside the row', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
-        const onCancel = vi.fn();
+        const onSave = rs.fn();
+        const onCancel = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
+                validateHotkey={rs.fn()}
                 onSave={onSave}
                 onCancel={onCancel}
-                validateName={vi.fn(() => undefined)}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -168,14 +165,14 @@ describe('NewLabelRow', () => {
 
     it('saves on blur when focus leaves the row and name can be saved', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
+                validateHotkey={rs.fn()}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -188,14 +185,14 @@ describe('NewLabelRow', () => {
 
     it('cancels on blur when focus leaves row and name is empty after trimming', async () => {
         const user = userEvent.setup();
-        const onCancel = vi.fn();
+        const onCancel = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn()}
-                onSave={vi.fn()}
+                validateHotkey={rs.fn()}
+                onSave={rs.fn()}
                 onCancel={onCancel}
-                validateName={vi.fn(() => undefined)}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -208,14 +205,14 @@ describe('NewLabelRow', () => {
 
     it('calls onSave when Enter is pressed in hotkey field with a valid hotkey', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn(() => undefined)}
+                validateHotkey={rs.fn(() => undefined)}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -229,14 +226,14 @@ describe('NewLabelRow', () => {
 
     it('does not call onSave when Enter is pressed in hotkey field with an invalid hotkey', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn(() => 'That hotkey is already in use')}
+                validateHotkey={rs.fn(() => 'That hotkey is already in use')}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 
@@ -250,14 +247,14 @@ describe('NewLabelRow', () => {
 
     it('calls onSave with undefined hotkey when Enter is pressed with empty hotkey', async () => {
         const user = userEvent.setup();
-        const onSave = vi.fn();
+        const onSave = rs.fn();
 
         render(
             <NewLabelRow
-                validateHotkey={vi.fn(() => undefined)}
+                validateHotkey={rs.fn(() => undefined)}
                 onSave={onSave}
-                onCancel={vi.fn()}
-                validateName={vi.fn(() => undefined)}
+                onCancel={rs.fn()}
+                validateName={rs.fn(() => undefined)}
             />
         );
 

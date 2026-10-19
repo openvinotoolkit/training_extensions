@@ -16,12 +16,12 @@ import { ExportDatasetConfig } from './export-dataset-config.component';
 describe('ExportDatasetConfig', () => {
     const mockDialogState = {
         isOpen: true,
-        open: vi.fn(),
-        close: vi.fn(),
-        toggle: vi.fn(),
-        setOpen: vi.fn(),
+        open: rs.fn(),
+        close: rs.fn(),
+        toggle: rs.fn(),
+        setOpen: rs.fn(),
         point: { x: 0, y: 0 },
-        setPoint: vi.fn(),
+        setPoint: rs.fn(),
     };
 
     const VIDEO_WARNING = /Exporting videos is not supported by this dataset format/i;

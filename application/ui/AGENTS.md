@@ -67,7 +67,7 @@ together with the repo-wide `../../AGENTS.md` and the matching skill
 
 ## Testing
 
-- Unit tests sit next to source as `*.test.ts(x)` and run under Vitest.
+- Unit tests sit next to source as `*.test.ts(x)` and run under Rstest.
 - Component and E2E tests live under `tests/` and run under Playwright.
 - Only reach for component/E2E tests when the change affects rendered browser
   behavior.

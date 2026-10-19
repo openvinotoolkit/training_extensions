@@ -189,7 +189,7 @@ describe('ModelRow', () => {
 
     describe('parent revision model', () => {
         it('renders parent revision model when provided and call onExpandModel when clicked', async () => {
-            const onExpandModel = vi.fn();
+            const onExpandModel = rs.fn();
             const parentModel = getMockedModel({
                 id: 'parent-123',
                 name: 'Parent Model',

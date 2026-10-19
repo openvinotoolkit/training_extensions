@@ -16,12 +16,12 @@ import { getLocalFolderInitialConfig, localFolderBodyFormatter } from '../local-
 import { OutputFormat } from '../utils';
 import { EditSink } from './edit-sink.component';
 
-vi.mock('../hooks/use-sink-mutation.hook');
-vi.mock('../../../../hooks/api/pipeline.hook');
+rs.mock('../hooks/use-sink-mutation.hook');
+rs.mock('../../../../hooks/api/pipeline.hook');
 
 describe('EditSink', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         server.use(http.post('/api/sinks/{sink_id}:test', () => HttpResponse.json({ reachable: true })));
     });
 
@@ -34,12 +34,12 @@ describe('EditSink', () => {
         output_formats: [],
     };
 
-    const renderApp = (mockOnSaved = vi.fn(), isConnected = false) => {
+    const renderApp = (mockOnSaved = rs.fn(), isConnected = false) => {
         render(
             <EditSink
                 config={{ ...getLocalFolderInitialConfig(), output_formats: [OutputFormat.PREDICTIONS] }}
                 onSaved={mockOnSaved}
-                onBackToList={vi.fn()}
+                onBackToList={rs.fn()}
                 componentFields={(state: LocalFolderSinkConfig) => <LocalFolder defaultState={state} />}
                 bodyFormatter={localFolderBodyFormatter}
                 isConnected={isConnected}
@@ -48,12 +48,12 @@ describe('EditSink', () => {
     };
 
     it('calls connectToPipelineMutation after successful "Save & Connect" submit', async () => {
-        const mockOnSaved = vi.fn();
-        const mockSinkMutation = vi.fn().mockResolvedValue(updatedConfig.id);
-        const mockConnectToPipeline = vi.fn().mockResolvedValue(undefined);
+        const mockOnSaved = rs.fn();
+        const mockSinkMutation = rs.fn().mockResolvedValue(updatedConfig.id);
+        const mockConnectToPipeline = rs.fn().mockResolvedValue(undefined);
 
-        vi.mocked(useConnectSinkToPipeline).mockReturnValue(mockConnectToPipeline);
-        vi.mocked(useSinkMutation).mockReturnValue(mockSinkMutation);
+        rs.mocked(useConnectSinkToPipeline).mockReturnValue(mockConnectToPipeline);
+        rs.mocked(useSinkMutation).mockReturnValue(mockSinkMutation);
 
         renderApp(mockOnSaved);
 
@@ -70,12 +70,12 @@ describe('EditSink', () => {
     });
 
     it('does not call connectToPipelineMutation after successful "Save" submit', async () => {
-        const mockOnSaved = vi.fn();
-        const mockSinkMutation = vi.fn().mockResolvedValue(updatedConfig.id);
-        const mockConnectToPipeline = vi.fn().mockResolvedValue(undefined);
+        const mockOnSaved = rs.fn();
+        const mockSinkMutation = rs.fn().mockResolvedValue(updatedConfig.id);
+        const mockConnectToPipeline = rs.fn().mockResolvedValue(undefined);
 
-        vi.mocked(useConnectSinkToPipeline).mockReturnValue(mockConnectToPipeline);
-        vi.mocked(useSinkMutation).mockReturnValue(mockSinkMutation);
+        rs.mocked(useConnectSinkToPipeline).mockReturnValue(mockConnectToPipeline);
+        rs.mocked(useSinkMutation).mockReturnValue(mockSinkMutation);
 
         renderApp(mockOnSaved);
 
@@ -92,19 +92,19 @@ describe('EditSink', () => {
     });
 
     it('hides "Save & Connect" button when already connected', () => {
-        vi.mocked(useConnectSinkToPipeline).mockReturnValue(vi.fn());
-        vi.mocked(useSinkMutation).mockReturnValue(vi.fn());
+        rs.mocked(useConnectSinkToPipeline).mockReturnValue(rs.fn());
+        rs.mocked(useSinkMutation).mockReturnValue(rs.fn());
 
-        renderApp(vi.fn(), true);
+        renderApp(rs.fn(), true);
 
         expect(screen.queryByRole('button', { name: /Save & Connect/i })).not.toBeInTheDocument();
     });
 
     it('shows "Save & Connect" button when not connected', () => {
-        vi.mocked(useConnectSinkToPipeline).mockReturnValue(vi.fn());
-        vi.mocked(useSinkMutation).mockReturnValue(vi.fn());
+        rs.mocked(useConnectSinkToPipeline).mockReturnValue(rs.fn());
+        rs.mocked(useSinkMutation).mockReturnValue(rs.fn());
 
-        renderApp(vi.fn(), false);
+        renderApp(rs.fn(), false);
 
         expect(screen.getByRole('button', { name: /Save & Connect/i })).toBeInTheDocument();
     });

@@ -13,12 +13,12 @@ describe('LabelRow', () => {
         label = getMockedLabel(),
         isSelected = false,
         isPinned = false,
-        onSelect = vi.fn(),
-        onDelete = vi.fn(),
-        onTogglePin = vi.fn(),
-        onUpdate = vi.fn(),
-        validateName = vi.fn(() => undefined),
-        validateHotkey = vi.fn(() => undefined),
+        onSelect = rs.fn(),
+        onDelete = rs.fn(),
+        onTogglePin = rs.fn(),
+        onUpdate = rs.fn(),
+        validateName = rs.fn(() => undefined),
+        validateHotkey = rs.fn(() => undefined),
     }: Partial<LabelRowProps> = {}) => {
         render(
             <LabelRow
@@ -41,7 +41,7 @@ describe('LabelRow', () => {
         const label = getMockedLabel({ id: 'label-1', name: 'old name', color: '#ffff00', hotkey: 'a' });
 
         it('calls onUpdate with trimmed name on blur', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -54,7 +54,7 @@ describe('LabelRow', () => {
         });
 
         it('calls onUpdate on Enter key', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -66,8 +66,8 @@ describe('LabelRow', () => {
         });
 
         it('does not call onUpdate when name has validation error', async () => {
-            const onUpdate = vi.fn();
-            const validateName = vi.fn(() => 'Name already exists');
+            const onUpdate = rs.fn();
+            const validateName = rs.fn(() => 'Name already exists');
 
             renderApp({ label, onUpdate, validateName });
 
@@ -80,7 +80,7 @@ describe('LabelRow', () => {
         });
 
         it('does not call onUpdate when name is empty', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -92,7 +92,7 @@ describe('LabelRow', () => {
         });
 
         it('does not call onUpdate when name has not changed', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -109,7 +109,7 @@ describe('LabelRow', () => {
         const label = getMockedLabel({ id: 'label-1', name: 'old name', color: '#ffff00', hotkey: 'a' });
 
         it('calls onUpdate on Enter when hotkey is valid and is changed', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -122,7 +122,7 @@ describe('LabelRow', () => {
         });
 
         it('does not call onUpdate on Enter when hotkey is valid but is not changed', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -134,7 +134,7 @@ describe('LabelRow', () => {
         });
 
         it('calls onUpdate when input is no longer focused', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
 
             renderApp({ label, onUpdate });
 
@@ -147,8 +147,8 @@ describe('LabelRow', () => {
         });
 
         it('does not call onUpdate when hotkey has validation error', async () => {
-            const onUpdate = vi.fn();
-            const validateHotkey = vi.fn(() => 'Hotkey already in use');
+            const onUpdate = rs.fn();
+            const validateHotkey = rs.fn(() => 'Hotkey already in use');
 
             renderApp({ label, onUpdate, validateHotkey });
 
@@ -160,7 +160,7 @@ describe('LabelRow', () => {
         });
 
         it('sends undefined for hotkey when hotkey is empty', async () => {
-            const onUpdate = vi.fn();
+            const onUpdate = rs.fn();
             const labelNoHotkey = getMockedLabel({ id: 'label-1', name: 'old name', color: '#ffff00', hotkey: '' });
 
             renderApp({ label: labelNoHotkey, onUpdate });
@@ -176,7 +176,7 @@ describe('LabelRow', () => {
     describe('name validation display', () => {
         it('displays validation error message for name', () => {
             const label = getMockedLabel({ name: 'duplicate' });
-            const validateName = vi.fn(() => 'Name already exists');
+            const validateName = rs.fn(() => 'Name already exists');
 
             renderApp({ label, validateName });
 
@@ -187,7 +187,7 @@ describe('LabelRow', () => {
     describe('hotkey validation display', () => {
         it('displays validation error message for hotkey', () => {
             const label = getMockedLabel({ hotkey: 'a' });
-            const validateHotkey = vi.fn(() => 'Hotkey already in use');
+            const validateHotkey = rs.fn(() => 'Hotkey already in use');
 
             renderApp({ label, validateHotkey });
 

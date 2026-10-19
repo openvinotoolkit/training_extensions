@@ -18,7 +18,7 @@ const getMockedInteractivePoint = (x: number, y: number, positive = true): Inter
 const makeControllableFn = () => {
     const resolvers: Array<(shapes: Shape[]) => void> = [];
 
-    const fn = vi.fn(
+    const fn = rs.fn(
         (_points: InteractiveAnnotationPoint[]) =>
             new Promise<Shape[]>((res) => {
                 resolvers.push(res);
@@ -34,7 +34,7 @@ const makeControllableFn = () => {
 describe('useWithCancel', () => {
     it('returns the resolved value when fn resolves normally', async () => {
         const shapes = [getMockedShape()];
-        const fn = vi.fn().mockResolvedValue(shapes);
+        const fn = rs.fn().mockResolvedValue(shapes);
 
         const { result } = renderHook(() => useWithCancel(fn));
 
@@ -48,7 +48,7 @@ describe('useWithCancel', () => {
 
     it('passes the correct arguments to fn', async () => {
         const points = [getMockedInteractivePoint(3, 4, false), getMockedInteractivePoint(7, 8)];
-        const fn = vi.fn().mockResolvedValue([]);
+        const fn = rs.fn().mockResolvedValue([]);
 
         const { result } = renderHook(() => useWithCancel(fn));
 
@@ -114,7 +114,7 @@ describe('useWithCancel', () => {
     });
 
     it('does not throw when cancel() is called before any call', () => {
-        const fn = vi.fn().mockResolvedValue([]);
+        const fn = rs.fn().mockResolvedValue([]);
         const { result } = renderHook(() => useWithCancel(fn));
 
         expect(() => {
@@ -146,7 +146,7 @@ describe('useWithCancel', () => {
 
     it('works normally after a previous cancel()', async () => {
         const shapes = [getMockedShape()];
-        const fn = vi.fn().mockResolvedValue(shapes);
+        const fn = rs.fn().mockResolvedValue(shapes);
 
         const { result } = renderHook(() => useWithCancel(fn));
 

@@ -15,23 +15,23 @@ const mockDevices = [
     { type: 'xpu' as const, name: 'XPU', memory: null, index: null },
 ];
 
-const mockChangeSelectedDevice = vi.fn();
+const mockChangeSelectedDevice = rs.fn();
 const mockSelectedDevice = 'cpu';
 
-vi.mock('../../../../../modules/annotator/predictions-setup-provider.component', () => ({
+rs.mock('../../../../../modules/annotator/predictions-setup-provider.component', () => ({
     usePredictionSetup: () => ({
         selectedDevice: mockSelectedDevice,
         changeSelectedDevice: mockChangeSelectedDevice,
         selectableModels: [],
         selectedModelId: null,
         selectedModel: undefined,
-        changeSelectedModelId: vi.fn(),
+        changeSelectedModelId: rs.fn(),
     }),
 }));
 
 describe('PredictionInferenceDevices', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         server.use(http.get('/api/system/devices/inference', () => HttpResponse.json(mockDevices)));
     });
 

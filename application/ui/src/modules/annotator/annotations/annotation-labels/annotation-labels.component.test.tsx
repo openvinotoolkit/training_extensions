@@ -6,14 +6,14 @@ import { fireEvent, screen } from '@testing-library/react';
 import { getMockedAnnotationLabel, getMockedAnnotationLabelRef } from 'mocks/mock-labels';
 import { render } from 'test-utils/render';
 
+import * as actualLabels from '../../../../shared/labels' with { rstest: 'importActual' };
 import type { AnnotationLabel, AnnotationLabelRef } from '../../../../shared/types';
 import { AnnotationLabels } from './annotation-labels.component';
 
 // Resolve refs by returning a mock AnnotationLabel matching the ref id
-vi.mock('../../../../shared/labels', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../../../../shared/labels')>();
+rs.mock('../../../../shared/labels', () => {
     return {
-        ...actual,
+        ...actualLabels,
         useLabelResolver: () => ({
             getLabel: () => undefined,
             resolveAnnotationLabel: (ref: AnnotationLabelRef): AnnotationLabel | undefined => {
@@ -24,7 +24,7 @@ vi.mock('../../../../shared/labels', async (importOriginal) => {
 });
 
 describe('AnnotationLabels', () => {
-    const mockOnRemove = vi.fn();
+    const mockOnRemove = rs.fn();
 
     afterEach(() => {
         mockOnRemove.mockClear();
@@ -134,7 +134,7 @@ describe('AnnotationLabels', () => {
 
     it('prevents event propagation on close button click', () => {
         const labelRef = getMockedAnnotationLabelRef({ id: 'label-1' });
-        const mockParentHandler = vi.fn();
+        const mockParentHandler = rs.fn();
 
         render(
             <svg onPointerDown={mockParentHandler}>

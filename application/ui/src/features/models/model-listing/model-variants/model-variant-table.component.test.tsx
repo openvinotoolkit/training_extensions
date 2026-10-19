@@ -10,17 +10,17 @@ import { render } from 'test-utils/render';
 import { downloadFile } from '../../../../platform/download-file';
 import { ModelVariantTable } from './model-variant-table.component';
 
-vi.mock('../../../../platform/download-file', () => ({
-    downloadFile: vi.fn(),
+rs.mock('../../../../platform/download-file', () => ({
+    downloadFile: rs.fn(),
 }));
 
-vi.mock('hooks/use-project-identifier.hook', () => ({
+rs.mock('hooks/use-project-identifier.hook', () => ({
     useProjectIdentifier: () => 'project-123',
 }));
 
 describe('ModelVariantTable', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('shows primary testing metric value for a variant', () => {

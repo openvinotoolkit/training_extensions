@@ -5,7 +5,7 @@ import { drawImageDataOnCanvas } from './draw-image-data-on-canvas';
 
 const createCanvasContext = () => {
     return {
-        putImageData: vi.fn(),
+        putImageData: rs.fn(),
     } as unknown as CanvasRenderingContext2D;
 };
 

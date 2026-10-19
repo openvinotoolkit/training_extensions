@@ -13,13 +13,13 @@ import { http } from '../../../../../../api/utils';
 import { server } from '../../../../../../msw-node-setup';
 import { ExportFailedJob } from './export-failed-job.component';
 
-const mockedRemoveLsExportId = vi.fn();
+const mockedRemoveLsExportId = rs.fn();
 
-vi.mock('../../../../../../hooks/storage/use-export-dataset.hook', () => ({
+rs.mock('../../../../../../hooks/storage/use-export-dataset.hook', () => ({
     useExportDataset: () => ({
         removeLsExportId: mockedRemoveLsExportId,
         lsExportIds: [],
-        addLsExportId: vi.fn(),
+        addLsExportId: rs.fn(),
     }),
 }));
 
@@ -35,7 +35,7 @@ describe('ExportFailedJob', () => {
     };
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('removes from local storage when close button is clicked', async () => {

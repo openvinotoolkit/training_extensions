@@ -12,8 +12,8 @@ import { useDeleteStagedDataset } from './staged-dataset.hook';
 describe('useDeleteStagedDataset', () => {
     it('deletes a staged dataset successfully', async () => {
         const stagedDatasetId = 'staged-dataset-1';
-        const requestSpy = vi.fn();
-        const deleteImportEntryMock = vi.fn();
+        const requestSpy = rs.fn();
+        const deleteImportEntryMock = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', ({ params }) => {
@@ -39,7 +39,7 @@ describe('useDeleteStagedDataset', () => {
 
     it('removes import entry when server returns not found', async () => {
         const stagedDatasetId = 'staged-dataset-1';
-        const deleteImportEntryMock = vi.fn();
+        const deleteImportEntryMock = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () =>
@@ -65,7 +65,7 @@ describe('useDeleteStagedDataset', () => {
 
     it('does not remove import entry for other errors', async () => {
         const stagedDatasetId = 'staged-dataset-1';
-        const deleteImportEntryMock = vi.fn();
+        const deleteImportEntryMock = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () =>

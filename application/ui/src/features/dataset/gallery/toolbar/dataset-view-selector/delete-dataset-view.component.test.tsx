@@ -16,13 +16,13 @@ import { DatasetView } from './type';
 const VIEW = getMockedDatasetView({ id: 'collection-one', name: 'Collection One' });
 
 const renderDialog = ({
-    onDismiss = vi.fn(),
-    onSuccess = vi.fn(),
+    onDismiss = rs.fn(),
+    onSuccess = rs.fn(),
     datasetView = VIEW,
 }: Partial<{ onSuccess: () => void; onDismiss: () => void; datasetView?: DatasetView }> = {}) => {
     return render(
         <DialogContainer onDismiss={onDismiss}>
-            <DeleteDatasetViewDialog datasetView={datasetView} onSuccess={onSuccess} onCancel={vi.fn()} />
+            <DeleteDatasetViewDialog datasetView={datasetView} onSuccess={onSuccess} onCancel={rs.fn()} />
         </DialogContainer>
     );
 };
@@ -55,7 +55,7 @@ describe('DeleteDatasetViewDialog', () => {
             })
         );
 
-        const onSuccess = vi.fn();
+        const onSuccess = rs.fn();
         const user = userEvent.setup();
         renderDialog({ onSuccess });
 
@@ -90,7 +90,7 @@ describe('DeleteDatasetViewDialog', () => {
             })
         );
 
-        const onDismiss = vi.fn();
+        const onDismiss = rs.fn();
         const user = userEvent.setup();
         renderDialog({ onDismiss });
 

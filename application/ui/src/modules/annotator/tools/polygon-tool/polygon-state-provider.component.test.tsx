@@ -11,10 +11,10 @@ import useUndoRedoState from '../../../../shared/undo-redo/use-undo-redo-state';
 import type { ToolType } from '../../tool-type';
 import { PolygonStateProvider, usePolygonState } from './polygon-state-provider.component';
 
-const mockSetActiveTool = vi.fn();
+const mockSetActiveTool = rs.fn();
 let mockActiveTool: ToolType | null = 'polygon';
 
-vi.mock('../../tool-provider.component', () => ({
+rs.mock('../../tool-provider.component', () => ({
     useTool: () => ({ activeTool: mockActiveTool, setActiveTool: mockSetActiveTool }),
 }));
 

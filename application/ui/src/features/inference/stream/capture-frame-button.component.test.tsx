@@ -12,7 +12,7 @@ import { server } from '../../../msw-node-setup';
 import { CaptureFrameButton } from './capture-frame-button.component';
 import { useWebRTCConnection } from './web-rtc-connection-provider';
 
-vi.mock('./web-rtc-connection-provider');
+rs.mock('./web-rtc-connection-provider');
 
 describe('CaptureFrameButton', () => {
     const renderApp = ({
@@ -24,12 +24,12 @@ describe('CaptureFrameButton', () => {
         sourceStatus?: 'ok' | 'finished' | 'error';
         streamStatus?: 'connected' | 'idle';
     } = {}) => {
-        const captureSpy = vi.fn();
+        const captureSpy = rs.fn();
 
-        vi.mocked(useWebRTCConnection).mockReturnValue({
+        rs.mocked(useWebRTCConnection).mockReturnValue({
             status: streamStatus,
-            start: vi.fn(),
-            stop: vi.fn(),
+            start: rs.fn(),
+            stop: rs.fn(),
             webRTCConnectionRef: { current: null },
         });
 
@@ -60,7 +60,7 @@ describe('CaptureFrameButton', () => {
     };
 
     afterEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('captures a frame while the stream is running', async () => {

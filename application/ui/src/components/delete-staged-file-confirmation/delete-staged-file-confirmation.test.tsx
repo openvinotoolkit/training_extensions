@@ -13,12 +13,12 @@ describe('DeleteStagedFileConfirmation', () => {
     const stagedDatasetId = 'test-staged-dataset-id';
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('calls delete API and removes staged dataset from localStorage on success', async () => {
-        const deleteSpy = vi.fn();
-        const mockedDeleteImportEntry = vi.fn();
+        const deleteSpy = rs.fn();
+        const mockedDeleteImportEntry = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () => {
@@ -41,8 +41,8 @@ describe('DeleteStagedFileConfirmation', () => {
     });
 
     it('does not remove staged dataset from localStorage when delete API fails', async () => {
-        const deleteSpy = vi.fn();
-        const mockedDeleteImportEntry = vi.fn();
+        const deleteSpy = rs.fn();
+        const mockedDeleteImportEntry = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () => {
@@ -68,8 +68,8 @@ describe('DeleteStagedFileConfirmation', () => {
     });
 
     it('removes staged dataset from localStorage when delete API indicates staged file is invalid', async () => {
-        const deleteSpy = vi.fn();
-        const mockedDeleteImportEntry = vi.fn();
+        const deleteSpy = rs.fn();
+        const mockedDeleteImportEntry = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () => {

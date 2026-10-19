@@ -24,9 +24,9 @@
         "lint:fix": "eslint --fix \"./src/**/*.ts*\"",
         "preview": "npm run build && rsbuild preview",
         "preview:tauri": "rsbuild preview --env-mode tauri --port 3001",
-        "test:unit": "vitest --config vitest.config.ts",
-        "test:unit:watch": "vitest --config vitest.config.ts --reporter=tree --watch",
-        "test:unit:coverage": "vitest --coverage",
+        "test:unit": "rstest --config rstest.config.ts",
+        "test:unit:watch": "rstest --config rstest.config.ts --watch",
+        "test:unit:coverage": "rstest --coverage",
         "test:component": "npx playwright test --project=component --project=\"Tauri component tests\"",
         "test:e2e": "npx playwright test --project=e2e",
         "type-check": "tsc --noEmit",
@@ -81,6 +81,9 @@
         "@rsbuild/plugin-react": "~2.1.1",
         "@rsbuild/plugin-sass": "~2.0.1",
         "@rsbuild/plugin-svgr": "~2.0.5",
+        "@rstest/adapter-rsbuild": "~0.12.3",
+        "@rstest/core": "~0.12.3",
+        "@rstest/coverage-v8": "~0.12.3",
         "@tauri-apps/cli": "~2.12.1",
         "@testing-library/jest-dom": "~6.6.4",
         "@testing-library/react": "~16.3.3",
@@ -92,8 +95,6 @@
         "@types/utif": "^3.0.6",
         "@typescript-eslint/eslint-plugin": "~8.71.1",
         "@typescript-eslint/parser": "~8.71.1",
-        "@vitejs/plugin-react": "~6.0.5",
-        "@vitest/coverage-v8": "~5.0.0",
         "@wessberg/pointer-events": "^1.0.9",
         "eslint": "~9.39.5",
         "eslint-import-resolver-typescript": "~4.4.5",
@@ -111,9 +112,7 @@
         "openapi-typescript": "~7.13.0",
         "prettier": "~3.9.9",
         "typescript": "~5.9.3",
-        "typescript-eslint": "~8.71.1",
-        "vite-plugin-svgr": "~5.2.0",
-        "vitest": "~5.0.0"
+        "typescript-eslint": "~8.71.1"
     },
     "overrides": {
         "@faker-js/faker": "~10.6.0"

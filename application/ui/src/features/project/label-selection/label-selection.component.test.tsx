@@ -14,7 +14,7 @@ const mockLabels = [getMockedLabel({ id: 'id-1', name: 'Car' })];
 
 const App = ({
     labels = mockLabels,
-    setLabels = vi.fn(),
+    setLabels = rs.fn(),
     taskType = 'detection',
 }: {
     labels?: Label[];
@@ -37,7 +37,7 @@ describe('LabelSelection', () => {
     });
 
     it('creates a new label item', async () => {
-        const mockSetLabels = vi.fn();
+        const mockSetLabels = rs.fn();
         render(<App setLabels={mockSetLabels} />);
 
         const addButton = screen.getByRole('button', { name: /create label/i });
@@ -54,7 +54,7 @@ describe('LabelSelection', () => {
     });
 
     it('deletes a label item when delete is clicked', () => {
-        const mockSetLabels = vi.fn();
+        const mockSetLabels = rs.fn();
         render(
             <App
                 labels={[mockLabels[0], getMockedLabel({ id: 'id-2', color: '#F20004', name: 'People' })]}

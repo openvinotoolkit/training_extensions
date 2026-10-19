@@ -6,23 +6,23 @@ import { renderHook } from '@testing-library/react';
 import type { Polygon } from '../../../../shared/types';
 import { usePolygonConfig } from './use-polygon-config.hook';
 
-const mockOptimizeSegments = vi.fn();
+const mockOptimizeSegments = rs.fn();
 let mockWorker:
     { optimizeSegments: typeof mockOptimizeSegments; loadImage: () => void; cleanImg: () => void } | undefined;
 
-vi.mock('./use-intelligent-scissors-worker.hook', () => ({
+rs.mock('./use-intelligent-scissors-worker.hook', () => ({
     useIntelligentScissorsWorker: () => ({ worker: mockWorker }),
 }));
 
-vi.mock('../polygon-tool/polygon-state-provider.component', () => ({
+rs.mock('../polygon-tool/polygon-state-provider.component', () => ({
     usePolygonState: () => ({
         segments: [[{ x: 0, y: 0 }]],
-        setSegments: vi.fn(),
+        setSegments: rs.fn(),
         pointerLine: [],
-        setPointerLine: vi.fn(),
+        setPointerLine: rs.fn(),
         lassoSegment: [],
-        setLassoSegment: vi.fn(),
-        undoRedoActions: { reset: vi.fn() },
+        setLassoSegment: rs.fn(),
+        undoRedoActions: { reset: rs.fn() },
     }),
 }));
 
@@ -47,7 +47,7 @@ const renderPolygonConfig = () =>
 describe('usePolygonConfig', () => {
     beforeEach(() => {
         mockOptimizeSegments.mockReset();
-        mockWorker = { optimizeSegments: mockOptimizeSegments, loadImage: vi.fn(), cleanImg: vi.fn() };
+        mockWorker = { optimizeSegments: mockOptimizeSegments, loadImage: rs.fn(), cleanImg: rs.fn() };
     });
 
     it('returns the optimized polygon from the worker', async () => {

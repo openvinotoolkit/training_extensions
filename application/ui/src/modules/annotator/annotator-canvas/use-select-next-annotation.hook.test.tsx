@@ -40,7 +40,7 @@ describe('useSelectNextAnnotation', () => {
             expectedId: 'annotation-1',
         },
     ])('$name on Tab', ({ annotations: items, selectedId, expectedId }) => {
-        const updateSelectedAnnotationsIds = vi.fn();
+        const updateSelectedAnnotationsIds = rs.fn();
         render(
             <App
                 annotations={items}
@@ -64,7 +64,7 @@ describe('useSelectNextAnnotation', () => {
         },
         { name: 'there are no annotations', annotations: [], selectedIds: ['annotation-1'] },
     ])('does not change the selection when $name', ({ annotations: items, selectedIds }) => {
-        const updateSelectedAnnotationsIds = vi.fn();
+        const updateSelectedAnnotationsIds = rs.fn();
         render(
             <App
                 annotations={items}

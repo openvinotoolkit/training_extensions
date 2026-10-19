@@ -10,7 +10,7 @@ import { useGroupedModels } from './use-grouped-models.hook';
 
 describe('useGroupedModels', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     describe('basic functionality', () => {

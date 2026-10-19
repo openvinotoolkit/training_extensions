@@ -8,8 +8,8 @@ import { useContainerSize } from './use-container-size';
 import { ZoomTransform } from './zoom-transform';
 import { ZoomProvider } from './zoom.provider';
 
-vi.mock('./use-container-size', () => ({
-    useContainerSize: vi.fn(),
+rs.mock('./use-container-size', () => ({
+    useContainerSize: rs.fn(),
 }));
 
 const INITIAL_SCALE = 0.9;
@@ -21,7 +21,7 @@ const SCREEN_SIZE = { width: 500, height: 500 };
 const CONTENT_SIZE = { width: 500, height: 500 };
 
 const setupZoom = () => {
-    vi.mocked(useContainerSize).mockImplementation(() => SCREEN_SIZE);
+    rs.mocked(useContainerSize).mockImplementation(() => SCREEN_SIZE);
 
     render(
         <ZoomProvider>

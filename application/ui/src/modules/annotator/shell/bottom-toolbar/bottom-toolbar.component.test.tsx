@@ -44,7 +44,7 @@ const renderBottomToolbar = ({
                         mediaItem={mediaItem}
                         isUserReviewed={isUserReviewed}
                         subset={subset}
-                        onSubsetChange={vi.fn()}
+                        onSubsetChange={rs.fn()}
                     />
                 </CanvasSettingsProvider>
             </AnnotationVisibilityProvider>

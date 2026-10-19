@@ -24,7 +24,7 @@ const SearchParamsSpy = () => {
 const renderDatasetViewSelector = ({
     route = '/projects/123',
     datasetViews = DATASET_VIEWS,
-    resetSelectedMediaIds = vi.fn(),
+    resetSelectedMediaIds = rs.fn(),
 }: {
     route?: string;
     datasetViews?: typeof DATASET_VIEWS;
@@ -152,7 +152,7 @@ describe('DatasetViewSelector', () => {
     });
 
     it('clears the media selection when the user switches view', async () => {
-        const resetSelectedMediaIds = vi.fn();
+        const resetSelectedMediaIds = rs.fn();
         const user = userEvent.setup();
         renderDatasetViewSelector({ resetSelectedMediaIds });
 
@@ -163,7 +163,7 @@ describe('DatasetViewSelector', () => {
     });
 
     it('keeps the media selection when the user re-picks the current view', async () => {
-        const resetSelectedMediaIds = vi.fn();
+        const resetSelectedMediaIds = rs.fn();
         const user = userEvent.setup();
         renderDatasetViewSelector({
             route: `/projects/123?${DATASET_VIEW_ID_PARAM}=collection-one`,

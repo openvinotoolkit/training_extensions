@@ -25,7 +25,7 @@ const getSearchParams = () => new URLSearchParams(screen.getByTestId('search-par
 const renderAssignToExistingView = ({
     datasetViews = [COLLECTION_ONE],
     selectedMediaIds = ['m1', 'm2'],
-    resetSelectedMediaIds = vi.fn(),
+    resetSelectedMediaIds = rs.fn(),
     route = '/projects/123',
 }: {
     datasetViews?: (typeof COLLECTION_ONE)[];
@@ -125,7 +125,7 @@ describe('AssignToExistingView', () => {
             )
         );
 
-        const resetSelectedMediaIds = vi.fn();
+        const resetSelectedMediaIds = rs.fn();
         const user = userEvent.setup();
         renderAssignToExistingView({
             selectedMediaIds: ['m1', 'm2'],

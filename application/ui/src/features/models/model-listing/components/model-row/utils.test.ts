@@ -3,8 +3,8 @@
 
 import type { Metric } from '@/api/types';
 import { createI18nInstance } from '@/i18n';
+import { describe, expect, it } from '@rstest/core';
 import { getMockedModel } from 'mocks/mock-model';
-import { describe, expect, it } from 'vitest';
 
 import {
     getFirstAvailableTestingMetric,

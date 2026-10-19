@@ -9,13 +9,13 @@ import { http } from '../../../../../api/utils';
 import { server } from '../../../../../msw-node-setup';
 import { useExportStatus } from './use-export-status.hook';
 
-const mockRemoveLsExportId = vi.fn();
+const mockRemoveLsExportId = rs.fn();
 
-vi.mock('hooks/storage/use-export-dataset.hook', () => ({
+rs.mock('hooks/storage/use-export-dataset.hook', () => ({
     useExportDataset: () => ({
         removeLsExportId: mockRemoveLsExportId,
         lsExportIds: [],
-        addLsExportId: vi.fn(),
+        addLsExportId: rs.fn(),
     }),
 }));
 

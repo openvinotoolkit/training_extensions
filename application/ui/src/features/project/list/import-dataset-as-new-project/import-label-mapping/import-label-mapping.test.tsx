@@ -10,16 +10,16 @@ import { server } from '../../../../../msw-node-setup';
 import { ImportDatasetDialogProvider } from '../../../providers/import-dataset-dialog-provider.component';
 import { ImportLabelMapping } from './import-label-mapping.component';
 
-vi.mock('hooks/storage/use-import-dataset-as-new-project.hook', () => ({
+rs.mock('hooks/storage/use-import-dataset-as-new-project.hook', () => ({
     useImportDatasetAsNewProject: () => ({
-        getImportEntry: vi.fn(),
-        updateImportEntry: vi.fn(),
+        getImportEntry: rs.fn(),
+        updateImportEntry: rs.fn(),
     }),
 }));
 
 describe('ImportLabelMapping', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     const renderApp = (stagedDatasetId: string, datasetLabels: string[] = []) => {

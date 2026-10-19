@@ -25,7 +25,7 @@ const getSearchParams = () => new URLSearchParams(screen.getByTestId('search-par
 
 const renderSaveDatasetView = ({
     selectedMediaIds = ['m1', 'm2', 'm3'],
-    resetSelectedMediaIds = vi.fn(),
+    resetSelectedMediaIds = rs.fn(),
     route = '/projects/123',
     datasetViews = [EXISTING_VIEW],
 }: {
@@ -113,7 +113,7 @@ describe('SaveDatasetView', () => {
             })
         );
 
-        const resetSelectedMediaIds = vi.fn();
+        const resetSelectedMediaIds = rs.fn();
         const user = userEvent.setup();
         renderSaveDatasetView({ selectedMediaIds: ['m1', 'm2', 'm3'], resetSelectedMediaIds });
 
@@ -128,7 +128,7 @@ describe('SaveDatasetView', () => {
     });
 
     it('leaves the view and the selection untouched when the user closes', async () => {
-        const resetSelectedMediaIds = vi.fn();
+        const resetSelectedMediaIds = rs.fn();
         const user = userEvent.setup();
         renderSaveDatasetView({ resetSelectedMediaIds });
 

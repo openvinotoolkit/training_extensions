@@ -16,7 +16,7 @@ describe('DeleteProjectDialog', () => {
     it('preserves punctuation and markup-like text in the project name', () => {
         const name = 'A "quoted" project & <sample>';
 
-        render(<DeleteProjectDialog projectId={projectId} projectName={name} isOpen onClose={vi.fn()} />);
+        render(<DeleteProjectDialog projectId={projectId} projectName={name} isOpen onClose={rs.fn()} />);
 
         expect(screen.getByText(`Are you sure you want to delete project "${name}"?`)).toBeVisible();
         expect(document.querySelector('sample')).toBeNull();
@@ -29,7 +29,7 @@ describe('DeleteProjectDialog', () => {
             })
         );
 
-        const onClose = vi.fn();
+        const onClose = rs.fn();
         render(<DeleteProjectDialog projectId={projectId} projectName={projectName} isOpen onClose={onClose} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
@@ -50,7 +50,7 @@ describe('DeleteProjectDialog', () => {
             })
         );
 
-        const onClose = vi.fn();
+        const onClose = rs.fn();
         render(<DeleteProjectDialog projectId={projectId} projectName={projectName} isOpen onClose={onClose} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Delete' }));

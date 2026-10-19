@@ -12,7 +12,7 @@ import { DeleteMediaItem } from './delete-media-item.component';
 describe('DeleteMediaItem', () => {
     it('deletes a single media item and shows a success toast', async () => {
         const itemId = '123';
-        const mockedOnDeleted = vitest.fn();
+        const mockedOnDeleted = rs.fn();
         let requestBody: { media_ids?: string[] } | undefined;
 
         server.use(
@@ -36,7 +36,7 @@ describe('DeleteMediaItem', () => {
 
     it('deletes multiple media items and shows a success toast', async () => {
         const itemsIds = ['123', '456', '789'];
-        const mockedOnDeleted = vitest.fn();
+        const mockedOnDeleted = rs.fn();
         let requestBody: { media_ids?: string[] } | undefined;
 
         server.use(
@@ -61,7 +61,7 @@ describe('DeleteMediaItem', () => {
     it('shows an error toast when deleting media items fails', async () => {
         const itemsIds = ['123', '456'];
         const errorMessage = 'test error message';
-        const mockedOnDeleted = vitest.fn();
+        const mockedOnDeleted = rs.fn();
 
         server.use(
             http.delete('/api/projects/{project_id}/dataset/media', () => {

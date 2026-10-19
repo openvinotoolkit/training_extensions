@@ -5,6 +5,7 @@ import { PropsWithChildren } from 'react';
 
 import { render, screen } from '@testing-library/react';
 
+import * as actualToolProvider from '../tool-provider.component' with { rstest: 'importActual' };
 import type { ToolType } from '../tool-type';
 import type { ToolConfig } from './interface';
 import { ToolManagerProvider } from './tool-manager-provider.component';
@@ -14,23 +15,23 @@ const DETECTION_TOOLS = [toolConfig('selection'), toolConfig('bounding-box'), to
 
 let mockAvailableTools: ToolConfig[] = DETECTION_TOOLS;
 let mockActiveTool: ToolType | null = 'ssim';
-const mockSetActiveTool = vi.fn();
+const mockSetActiveTool = rs.fn();
 
-vi.mock('hooks/use-project-task.hook', () => ({
+rs.mock('hooks/use-project-task.hook', () => ({
     useProjectTask: () => 'detection',
 }));
 
-vi.mock('../tool-provider.component', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../tool-provider.component')>()),
+rs.mock('../tool-provider.component', () => ({
+    ...actualToolProvider,
     useTool: () => ({ activeTool: mockActiveTool, setActiveTool: mockSetActiveTool }),
 }));
 
-vi.mock('./annotator-tools/use-available-tools', () => ({
+rs.mock('./annotator-tools/use-available-tools', () => ({
     useTaskTools: () => DETECTION_TOOLS,
     useAvailableTools: () => mockAvailableTools,
 }));
 
-vi.mock('./ssim-tool/ssim-state-provider.component', () => ({
+rs.mock('./ssim-tool/ssim-state-provider.component', () => ({
     SSIMStateProvider: ({ children }: PropsWithChildren) => <div data-testid='ssim-state'>{children}</div>,
 }));
 
@@ -42,7 +43,7 @@ const renderProvider = () => (
 
 describe('ToolManagerProvider', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         mockAvailableTools = DETECTION_TOOLS;
         mockActiveTool = 'ssim';
     });

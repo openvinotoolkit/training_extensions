@@ -5,9 +5,10 @@ import type { TrainingDevice } from '@/api/types';
 import { fireEvent, screen } from '@testing-library/react';
 import { render } from 'test-utils/render';
 
+import * as actualTrainModelProvider from '../train-model-provider.component' with { rstest: 'importActual' };
 import { SelectTrainingDevice } from './select-training-device.component';
 
-const mockOnSelectTrainingDevice = vi.hoisted(() => vi.fn());
+const mockOnSelectTrainingDevice = rs.hoisted(() => rs.fn());
 
 const getMockedTrainingDevice = (device: Partial<TrainingDevice> = {}): TrainingDevice => ({
     type: 'cpu',
@@ -28,8 +29,8 @@ const gpuDeviceWithIndex = getMockedTrainingDevice({
 
 const mockTrainingDevices = [cpuDevice, gpuDevice, gpuDeviceWithIndex];
 
-vi.mock('../train-model-provider.component', async (importOriginal) => ({
-    ...(await importOriginal()),
+rs.mock('../train-model-provider.component', () => ({
+    ...actualTrainModelProvider,
     useTrainModelState: () => ({
         trainingDevices: mockTrainingDevices,
         onSelectTrainingDevice: mockOnSelectTrainingDevice,

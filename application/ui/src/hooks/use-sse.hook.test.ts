@@ -20,20 +20,20 @@ describe('useSSE', () => {
     });
 
     it('does not create an EventSource when url is undefined', () => {
-        renderHook(() => useSSE(undefined, { onMessage: vi.fn() }));
+        renderHook(() => useSSE(undefined, { onMessage: rs.fn() }));
 
         expect(MockEventSourceConstructor).not.toHaveBeenCalled();
     });
 
     it('creates an EventSource when url is provided', () => {
-        renderHook(() => useSSE('/api/test/stream', { onMessage: vi.fn() }));
+        renderHook(() => useSSE('/api/test/stream', { onMessage: rs.fn() }));
 
         expect(MockEventSourceConstructor).toHaveBeenCalledTimes(1);
         expect(getLastEventSource().url).toContain('/api/test/stream');
     });
 
     it('closes the EventSource on unmount', () => {
-        const { unmount } = renderHook(() => useSSE('/api/test/stream', { onMessage: vi.fn() }));
+        const { unmount } = renderHook(() => useSSE('/api/test/stream', { onMessage: rs.fn() }));
         const es = getLastEventSource();
 
         unmount();
@@ -42,7 +42,7 @@ describe('useSSE', () => {
     });
 
     it('calls onMessage when an SSE message arrives', () => {
-        const onMessage = vi.fn();
+        const onMessage = rs.fn();
         renderHook(() => useSSE<{ value: number }>('/api/test/stream', { onMessage }));
         const es = getLastEventSource();
 
@@ -54,8 +54,8 @@ describe('useSSE', () => {
     });
 
     it('calls onOpen when the connection opens', () => {
-        const onOpen = vi.fn();
-        renderHook(() => useSSE('/api/test/stream', { onMessage: vi.fn(), onOpen }));
+        const onOpen = rs.fn();
+        renderHook(() => useSSE('/api/test/stream', { onMessage: rs.fn(), onOpen }));
         const es = getLastEventSource();
 
         act(() => {
@@ -66,9 +66,9 @@ describe('useSSE', () => {
     });
 
     it('calls onError and onClose when an error occurs', () => {
-        const onError = vi.fn();
-        const onClose = vi.fn();
-        renderHook(() => useSSE('/api/test/stream', { onMessage: vi.fn(), onError, onClose }));
+        const onError = rs.fn();
+        const onClose = rs.fn();
+        renderHook(() => useSSE('/api/test/stream', { onMessage: rs.fn(), onError, onClose }));
         const es = getLastEventSource();
 
         act(() => {
@@ -81,7 +81,7 @@ describe('useSSE', () => {
 
     it('reconnects when url changes', () => {
         let url: string | undefined = '/api/test/1';
-        const { rerender } = renderHook(() => useSSE(url, { onMessage: vi.fn() }));
+        const { rerender } = renderHook(() => useSSE(url, { onMessage: rs.fn() }));
         const firstEs = getLastEventSource();
 
         url = '/api/test/2';
@@ -94,7 +94,7 @@ describe('useSSE', () => {
 
     it('closes when url becomes undefined', () => {
         let url: string | undefined = '/api/test/1';
-        const { rerender } = renderHook(() => useSSE(url, { onMessage: vi.fn() }));
+        const { rerender } = renderHook(() => useSSE(url, { onMessage: rs.fn() }));
         const es = getLastEventSource();
 
         url = undefined;
@@ -104,8 +104,8 @@ describe('useSSE', () => {
     });
 
     it('returns a close function that closes the connection', () => {
-        const onClose = vi.fn();
-        const { result } = renderHook(() => useSSE('/api/test/stream', { onMessage: vi.fn(), onClose }));
+        const onClose = rs.fn();
+        const { result } = renderHook(() => useSSE('/api/test/stream', { onMessage: rs.fn(), onClose }));
         const es = getLastEventSource();
 
         act(() => {
@@ -117,11 +117,11 @@ describe('useSSE', () => {
     });
 
     it('uses latest callbacks without reconnecting', () => {
-        let onMessage = vi.fn();
+        let onMessage = rs.fn();
         const { rerender } = renderHook(() => useSSE('/api/test/stream', { onMessage }));
         const es = getLastEventSource();
 
-        const secondOnMessage = vi.fn();
+        const secondOnMessage = rs.fn();
         onMessage = secondOnMessage;
         rerender();
 

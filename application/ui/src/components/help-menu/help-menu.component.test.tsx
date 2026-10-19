@@ -8,13 +8,13 @@ import { render } from 'test-utils/render';
 import { openExternalUrl } from '../../platform/open-external-url';
 import { HelpMenu } from './help-menu.component';
 
-vi.mock('../../platform/open-external-url', () => ({
-    openExternalUrl: vi.fn(),
+rs.mock('../../platform/open-external-url', () => ({
+    openExternalUrl: rs.fn(),
 }));
 
 describe('HelpMenu', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it.each([

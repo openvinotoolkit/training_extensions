@@ -53,7 +53,7 @@ const mockJobs = (jobs: ModelJob[]) => {
 };
 
 const renderDialog = (props: Partial<Parameters<typeof JobsDialog>[0]> = {}) =>
-    render(<JobsDialog initialProjectId={ALL_PROJECTS} onClose={vi.fn()} {...props} />);
+    render(<JobsDialog initialProjectId={ALL_PROJECTS} onClose={rs.fn()} {...props} />);
 
 const openJobActions = async (modelName: string) =>
     userEvent.click(await screen.findByRole('button', { name: `Job actions for ${modelName}` }));
@@ -231,7 +231,7 @@ describe('JobsDialog', () => {
     });
 
     it('confirms and cancels a running job through the actions menu', async () => {
-        const cancelSpy = vi.fn();
+        const cancelSpy = rs.fn();
         mockJobs([trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' })]);
         server.use(
             http.post('/api/jobs/{job_id}:cancel', () => {
@@ -247,7 +247,7 @@ describe('JobsDialog', () => {
 
         expect(await screen.findByRole('alertdialog', { name: 'Cancel job' })).toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', { name: 'Cancel job' }));
-        await vi.waitFor(() => expect(cancelSpy).toHaveBeenCalled());
+        await rs.waitFor(() => expect(cancelSpy).toHaveBeenCalled());
     });
 
     it('opens running-job logs and returns to the jobs dialog on close, tab unchanged', async () => {

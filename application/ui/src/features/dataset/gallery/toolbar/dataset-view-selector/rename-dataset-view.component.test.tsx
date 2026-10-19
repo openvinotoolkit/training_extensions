@@ -24,7 +24,7 @@ describe('RenameDatasetView', () => {
     });
 
     it('pre-fills the field with the current name', () => {
-        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={vi.fn()} />);
+        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={rs.fn()} />);
 
         const field = screen.getByLabelText('View name');
 
@@ -34,7 +34,7 @@ describe('RenameDatasetView', () => {
 
     it('keeps save disabled until the name changes', async () => {
         const user = userEvent.setup();
-        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={vi.fn()} />);
+        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={rs.fn()} />);
 
         expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
 
@@ -45,7 +45,7 @@ describe('RenameDatasetView', () => {
 
     it('keeps save disabled for a blank name', async () => {
         const user = userEvent.setup();
-        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={vi.fn()} />);
+        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={rs.fn()} />);
 
         await user.clear(screen.getByLabelText('View name'));
 
@@ -54,7 +54,7 @@ describe('RenameDatasetView', () => {
 
     it('rejects a name that another view already uses', async () => {
         const user = userEvent.setup();
-        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={vi.fn()} />);
+        render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={rs.fn()} />);
 
         const field = screen.getByLabelText('View name');
         await user.clear(field);
@@ -74,7 +74,7 @@ describe('RenameDatasetView', () => {
             })
         );
 
-        const onClose = vi.fn();
+        const onClose = rs.fn();
         const user = userEvent.setup();
         render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={onClose} />);
 
@@ -96,7 +96,7 @@ describe('RenameDatasetView', () => {
             })
         );
 
-        const onClose = vi.fn();
+        const onClose = rs.fn();
         const user = userEvent.setup();
         render(<RenameDatasetView datasetView={CURRENT_VIEW} datasetViews={[SIBLING_VIEW]} onClose={onClose} />);
 

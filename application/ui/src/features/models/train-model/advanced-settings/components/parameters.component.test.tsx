@@ -57,25 +57,25 @@ const getPatienceField = () => screen.getByRole('textbox', { name: 'Change Patie
 
 describe('Parameters', () => {
     it('disables the picker of a number enum parameter with many allowed values', () => {
-        render(<Parameters parameters={[numberEnumParameter]} onChange={vi.fn()} isDisabled />);
+        render(<Parameters parameters={[numberEnumParameter]} onChange={rs.fn()} isDisabled />);
 
         expect(screen.getByRole('button', { name: /Select Input size width/ })).toBeDisabled();
     });
 
     it('disables the parameters of an enable group when the group is toggled off', () => {
-        render(<Parameters parameters={[getEnableGroup(false)]} onChange={vi.fn()} />);
+        render(<Parameters parameters={[getEnableGroup(false)]} onChange={rs.fn()} />);
 
         expect(getPatienceField()).toBeDisabled();
     });
 
     it('keeps the parameters of an enabled group disabled when its parent is disabled', () => {
-        render(<Parameters parameters={[getEnableGroup(true)]} onChange={vi.fn()} isDisabled />);
+        render(<Parameters parameters={[getEnableGroup(true)]} onChange={rs.fn()} isDisabled />);
 
         expect(getPatienceField()).toBeDisabled();
     });
 
     it('enables the parameters of an enabled group when its parent is enabled', () => {
-        render(<Parameters parameters={[getEnableGroup(true)]} onChange={vi.fn()} />);
+        render(<Parameters parameters={[getEnableGroup(true)]} onChange={rs.fn()} />);
 
         expect(getPatienceField()).toBeEnabled();
     });

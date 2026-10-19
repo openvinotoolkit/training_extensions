@@ -11,7 +11,7 @@ import { FrameStep } from './frame-step.component';
 
 describe('FrameStep', () => {
     it('toggles to all frames', async () => {
-        const setStepState = vi.fn();
+        const setStepState = rs.fn();
         const currentStep = 60;
         const setStep: Dispatch<SetStateAction<number>> = (updateStep) => {
             setStepState(isFunction(updateStep) ? updateStep(currentStep) : updateStep);
@@ -25,7 +25,7 @@ describe('FrameStep', () => {
     });
 
     it('toggles to 1 frame per second', async () => {
-        const setStepState = vi.fn();
+        const setStepState = rs.fn();
         const step = 1;
         const setStep: Dispatch<SetStateAction<number>> = (updateStep) => {
             setStepState(isFunction(updateStep) ? updateStep(step) : updateStep);

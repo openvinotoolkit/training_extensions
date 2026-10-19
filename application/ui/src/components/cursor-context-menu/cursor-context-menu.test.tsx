@@ -10,7 +10,7 @@ import { CursorContextMenu } from './cursor-context-menu.component';
 
 describe('CursorContextMenu', () => {
     const renderApp = ({
-        onOpen = vi.fn(),
+        onOpen = rs.fn(),
         isOpen = false,
         children = <div>Menu Content</div>,
     }: {

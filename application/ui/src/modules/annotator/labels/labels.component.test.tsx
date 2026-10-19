@@ -24,14 +24,14 @@ const mockLabels: Label[] = [
 
 const mockSelectedLabelId = { current: 'label-1' };
 
-const mockSetSelectedLabelId = vi.fn();
-const mockUpdateAnnotations = vi.fn();
-const mockAddAnnotations = vi.fn();
-const mockDeleteAnnotations = vi.fn();
+const mockSetSelectedLabelId = rs.fn();
+const mockUpdateAnnotations = rs.fn();
+const mockAddAnnotations = rs.fn();
+const mockDeleteAnnotations = rs.fn();
 const mockSelectedAnnotations = { current: new Set<string>() };
 const mockAnnotations = { current: [] as { id: string; labels: AnnotationLabelRef[]; shape: { type: string } }[] };
 
-vi.mock('../annotator-labels-provider.component', () => ({
+rs.mock('../annotator-labels-provider.component', () => ({
     useAnnotatorLabels: () => ({
         labels: mockLabels,
         selectedLabelId: mockSelectedLabelId.current,
@@ -39,25 +39,25 @@ vi.mock('../annotator-labels-provider.component', () => ({
     }),
 }));
 
-vi.mock('../select-annotation-provider.component', () => ({
+rs.mock('../select-annotation-provider.component', () => ({
     useSelectedAnnotations: () => ({
         selectedAnnotations: mockSelectedAnnotations.current,
     }),
 }));
 
-vi.mock('../annotation-document-provider.component', () => ({
+rs.mock('../annotation-document-provider.component', () => ({
     useAnnotations: () => ({ annotations: mockAnnotations.current }),
     useAnnotationCommands: () => ({
         updateAnnotations: mockUpdateAnnotations,
         addAnnotations: mockAddAnnotations,
         deleteAnnotations: mockDeleteAnnotations,
-        addAnnotationWithEmptyLabel: vi.fn(),
+        addAnnotationWithEmptyLabel: rs.fn(),
     }),
 }));
 
-vi.mock('./api/use-update-label.hook', () => ({
+rs.mock('./api/use-update-label.hook', () => ({
     useUpdateLabel: () => ({
-        mutate: vi.fn(),
+        mutate: rs.fn(),
     }),
 }));
 

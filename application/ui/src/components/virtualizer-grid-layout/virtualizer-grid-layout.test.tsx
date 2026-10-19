@@ -19,7 +19,7 @@ describe('VirtualizerGridLayout', () => {
     const mockedItems = getMultipleMockedMediaImage(2, 'test');
 
     it('renders all items as visible options', () => {
-        const mockedLoadingMore = vi.fn();
+        const mockedLoadingMore = rs.fn();
 
         render(
             <VirtualizerGridLayout
@@ -45,7 +45,7 @@ describe('VirtualizerGridLayout', () => {
                 selectionMode={'single'}
                 layoutOptions={mockedLayoutOptions}
                 isLoadingMore={false}
-                onLoadMore={vi.fn()}
+                onLoadMore={rs.fn()}
                 contentItem={() => <div></div>}
             />
         );
@@ -53,7 +53,7 @@ describe('VirtualizerGridLayout', () => {
     });
 
     it('renders loading indicator when isLoadingMore is true', () => {
-        const mockedLoadingMore = vi.fn();
+        const mockedLoadingMore = rs.fn();
         render(
             <VirtualizerGridLayout
                 items={mockedItems}

@@ -17,7 +17,7 @@ describe('UploadProgress', () => {
     });
 
     it('calls onCancel when the cancel button is pressed', async () => {
-        const onCancel = vi.fn();
+        const onCancel = rs.fn();
         render(<UploadProgress bytesSent={1} bytesTotal={2} onCancel={onCancel} />);
 
         await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));

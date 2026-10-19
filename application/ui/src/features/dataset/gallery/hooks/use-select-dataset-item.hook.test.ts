@@ -4,39 +4,39 @@
 import type { Media } from '@/api/types';
 import { act } from '@testing-library/react';
 import { getMockedMediaImage, getMockedVideo, getMockedVideoFrame } from 'mocks/mock-media';
+import * as actualRouter from 'react-router' with { rstest: 'importActual' };
 import { renderHook } from 'test-utils/render';
 
 import { paths } from '../../../../constants/paths';
 import { useGetDatasetMediaItems } from '../../../../hooks/use-get-dataset-media-items.hook';
 import { useSelectDatasetItem } from './use-select-dataset-item.hook';
 
-const mockNavigate = vi.fn();
+const mockNavigate = rs.fn();
 
-vi.mock('react-router', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('react-router')>();
+rs.mock('react-router', () => {
     return {
-        ...actual,
+        ...actualRouter,
         useNavigate: () => mockNavigate,
     };
 });
 
 const mockDatasetMediaItems = {
     items: [] as Media[],
-    fetchNextPage: vi.fn(),
+    fetchNextPage: rs.fn(),
     hasNextPage: false,
     isFetchingNextPage: false,
     isPending: false,
     totalCount: 0,
 };
 
-vi.mock('../../../../hooks/use-get-dataset-media-items.hook', () => ({
-    useGetDatasetMediaItems: vi.fn(() => mockDatasetMediaItems),
+rs.mock('../../../../hooks/use-get-dataset-media-items.hook', () => ({
+    useGetDatasetMediaItems: rs.fn(() => mockDatasetMediaItems),
 }));
 
 const MOCKED_PROJECT_ID = '123';
 
-vi.mock('../../../../hooks/use-project-identifier.hook', () => ({
-    useProjectIdentifier: vi.fn(() => MOCKED_PROJECT_ID),
+rs.mock('../../../../hooks/use-project-identifier.hook', () => ({
+    useProjectIdentifier: rs.fn(() => MOCKED_PROJECT_ID),
 }));
 
 const SEARCH = '?annotationStatusFilter=with_annotations';
@@ -44,7 +44,7 @@ const SEARCH = '?annotationStatusFilter=with_annotations';
 describe('useSelectDatasetItem', () => {
     beforeEach(() => {
         mockNavigate.mockClear();
-        vi.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
+        rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
     });
 
     describe('onSelectedMediaItemChange', () => {
@@ -156,7 +156,7 @@ describe('useSelectDatasetItem', () => {
     describe('selectedMediaItem', () => {
         it('returns the matching item when datasetItemId param matches an item in the list', () => {
             const image = getMockedMediaImage({ id: 'img-selected' });
-            vi.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [image] });
+            rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [image] });
 
             const route = `${paths.project.dataset.item.index({ projectId: MOCKED_PROJECT_ID, datasetItemId: image.id })}${SEARCH}`;
             const { result } = renderHook(() => useSelectDatasetItem(), {
@@ -169,7 +169,7 @@ describe('useSelectDatasetItem', () => {
 
         it('returns null when datasetItemId does not match any item', () => {
             const image = getMockedMediaImage({ id: 'img-other' });
-            vi.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [image] });
+            rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [image] });
 
             const route = `${paths.project.dataset.item.index({ projectId: MOCKED_PROJECT_ID, datasetItemId: `${image.id}-23` })}${SEARCH}`;
             const { result } = renderHook(() => useSelectDatasetItem(), {
@@ -181,7 +181,7 @@ describe('useSelectDatasetItem', () => {
         });
 
         it('returns null when there are no items', () => {
-            vi.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
+            rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
 
             const route = `${paths.project.dataset.item.index({ projectId: MOCKED_PROJECT_ID, datasetItemId: `img-selected` })}${SEARCH}`;
             const { result } = renderHook(() => useSelectDatasetItem(), {
@@ -194,7 +194,7 @@ describe('useSelectDatasetItem', () => {
 
         it('stays set once hydrated even after a filter shrinks items to exclude it', () => {
             const image = getMockedMediaImage({ id: 'img-selected' });
-            vi.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [image] });
+            rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [image] });
 
             const route = `${paths.project.dataset.item.index({ projectId: MOCKED_PROJECT_ID, datasetItemId: image.id })}${SEARCH}`;
             const { result, rerender } = renderHook(() => useSelectDatasetItem(), {
@@ -205,7 +205,7 @@ describe('useSelectDatasetItem', () => {
             expect(result.current.selectedMediaItem).toEqual(image);
 
             // Simulate an active filter now excluding the open item from the filtered list.
-            vi.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
+            rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
             rerender();
 
             expect(result.current.selectedMediaItem).toEqual(image);

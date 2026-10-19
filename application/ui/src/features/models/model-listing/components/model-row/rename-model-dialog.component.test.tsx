@@ -10,8 +10,8 @@ import { RenameModelDialog } from './rename-model-dialog.component';
 describe('RenameModelDialog', () => {
     const defaultProps = {
         currentName: 'Current Model Name',
-        onRename: vi.fn(),
-        onClose: vi.fn(),
+        onRename: rs.fn(),
+        onClose: rs.fn(),
     };
 
     describe('basic rendering', () => {
