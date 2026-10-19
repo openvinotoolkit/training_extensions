@@ -21,6 +21,7 @@ import type {
 import { executeWithTimeout } from '../execute-with-timeout';
 import { convertToolShapeToGetiShape } from '../utils';
 import {
+    SAM_ASSET_DOWNLOAD_STALL_TIMEOUT_MS,
     SAM_DECODER_TIMEOUT_MS,
     SAM_ENCODING_GC_TIME_MS,
     SAM_WORKER_BUILD_TIMEOUT_MS,
@@ -61,6 +62,9 @@ const segmentAnythingWorkerQueryOptions = (enabled = true) =>
 
             try {
                 const samWorker = wrap<SegmentAnythingWorkerApi>(worker);
+
+                await samWorker.prefetchAssets(SAM_ASSET_DOWNLOAD_STALL_TIMEOUT_MS);
+
                 const instance = await executeWithTimeout(
                     samWorker.build(),
                     i18n.t('annotator.tools.autoSegmentation.operations.workerBuild'),
@@ -73,6 +77,8 @@ const segmentAnythingWorkerQueryOptions = (enabled = true) =>
                     i18n.t('annotator.tools.autoSegmentation.operations.workerInit'),
                     SAM_WORKER_INIT_TIMEOUT_MS
                 );
+
+                await samWorker.releaseAssets();
 
                 if (signal.aborted) {
                     throw signal.reason;
@@ -87,6 +93,7 @@ const segmentAnythingWorkerQueryOptions = (enabled = true) =>
         },
         staleTime: Infinity,
         gcTime: Infinity,
+        retry: 2,
         enabled,
     });
 

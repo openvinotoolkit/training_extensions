@@ -82,8 +82,8 @@ export const useSSIMWorker = (enabled = true) => {
             }
         },
         staleTime: Infinity,
-        // Tanstack doesn't abort on gc, so evicting the entry would leak the worker; it is
-        // terminated by `useTerminateAnnotatorWorkersOnUnmount` instead.
+        // The worker is project-agnostic and lives for the whole page; evicting the entry would leak
+        // it, since tanstack doesn't abort on gc.
         gcTime: Infinity,
         enabled,
     });
