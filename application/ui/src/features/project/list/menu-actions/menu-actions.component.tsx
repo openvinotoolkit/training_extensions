@@ -8,7 +8,7 @@ import { DeleteProjectDialog } from '@/components/project-dialogs/delete-project
 import { EditProjectNameDialog } from '@/components/project-dialogs/edit-project-name-dialog.component';
 import { ActionButton, Item, Menu, MenuTrigger } from '@geti-ui/ui';
 import { MoreMenu } from '@geti-ui/ui/icons';
-import { useOverlayTriggerState } from '@react-stately/overlays';
+import { useOverlayTriggerState } from 'react-stately';
 
 import { useProjectMenuActions } from './use-project-menu-actions';
 

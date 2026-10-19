@@ -5,10 +5,10 @@ import { useEffect, useRef } from 'react';
 
 import type { Label } from '@/api/types';
 import { useSizeHook } from 'hooks/use-size.hook';
-import useVirtual from 'react-cool-virtual';
 
 import type { AnnotatorMode } from '../../../../annotator-mode';
 import { useVideoPlayer } from '../../../video-player-provider.component';
+import { useHorizontalVirtualizer } from './use-horizontal-virtualizer.hook';
 import { VideoFrameSegments } from './video-frame-segment/video-frame-segments.component';
 import { VideoPlayerSlider } from './video-player-slider/video-player-slider.component';
 
@@ -34,17 +34,15 @@ export const VideoTimeline = ({ labels, mode }: VideoTimelineProps) => {
     const sizePerSquare = size === undefined ? 0 : Math.max(MIN_SIZE_OF_SEGMENT, size.width / totalSegments);
     const frameOffset = Math.round(sizePerSquare / 2);
 
-    const { outerRef, innerRef, items, scrollToItem } = useVirtual<HTMLDivElement, HTMLDivElement>({
-        horizontal: true,
+    const { outerRef, items, innerStyle, scrollToItem } = useHorizontalVirtualizer({
         itemCount: totalSegments,
         itemSize: sizePerSquare,
+        viewportWidth: size?.width ?? 0,
         overscanCount: 20,
     });
 
     useEffect(() => {
-        const segmentIndex = Math.round(frameNumber / step);
-
-        scrollToItem({ index: segmentIndex, align: 'center' });
+        scrollToItem(Math.round(frameNumber / step));
     }, [scrollToItem, frameNumber, step]);
 
     return (
@@ -64,7 +62,7 @@ export const VideoTimeline = ({ labels, mode }: VideoTimelineProps) => {
                 <VideoFrameSegments
                     mode={mode}
                     frameNumber={frameNumber}
-                    ref={innerRef}
+                    style={innerStyle}
                     items={items}
                     containerSize={size?.width ?? 0}
                     labels={labels}

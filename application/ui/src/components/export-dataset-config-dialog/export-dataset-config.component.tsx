@@ -21,10 +21,10 @@ import {
     View,
 } from '@geti-ui/ui';
 import { Alert, LinkOut } from '@geti-ui/ui/icons';
-import { OverlayTriggerState } from '@react-stately/overlays';
 import { useDatasetStatisticsQuery } from 'hooks/api/dataset.hook';
 import { useProject } from 'hooks/api/project.hook';
 import { isEmpty } from 'lodash-es';
+import { OverlayTriggerState } from 'react-stately';
 
 import { useExportDatasetJobAction } from '../../hooks/use-export-dataset-job-action.hook';
 import { Link } from '../../platform/components/link.component';

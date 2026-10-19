@@ -4,8 +4,8 @@
 import { $api } from '@/api';
 import { useTranslation } from '@/i18n';
 import { AlertDialog, Button, DialogTrigger } from '@geti-ui/ui';
-import { useOverlayTriggerState } from '@react-stately/overlays';
 import { isInvalidJob } from 'hooks/api/util';
+import { useOverlayTriggerState } from 'react-stately';
 
 type CancelJobConfirmationProps = {
     jobId: string;

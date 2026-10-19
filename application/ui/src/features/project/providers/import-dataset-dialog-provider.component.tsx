@@ -3,8 +3,7 @@
 
 import { createContext, Dispatch, ReactNode, useContext, useState } from 'react';
 
-import { useOverlayTriggerState } from '@react-stately/overlays';
-import { OverlayTriggerState } from 'react-stately';
+import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
 import { ImportDatasetAsNewProjectState } from '../../../shared/import-dataset-state';
 
