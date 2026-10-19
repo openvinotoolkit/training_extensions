@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ConfigurableParameter, ConfigurableParameterGroup } from '@/api/types';
-import { rs } from '@rstest/core';
 import { act, waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import { renderHook } from 'test-utils/render';

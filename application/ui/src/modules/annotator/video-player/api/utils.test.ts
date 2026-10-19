@@ -1,8 +1,6 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, expect, it } from '@rstest/core';
-
 import { getVideoFrameRangeIndexes } from './utils';
 
 describe('getVideoFrameRangeIndexes', () => {

@@ -3,7 +3,6 @@
 
 import React from 'react';
 
-import { rs } from '@rstest/core';
 import { screen } from '@testing-library/react';
 import { getMockedLabel } from 'mocks/mock-labels';
 import * as actualRecharts from 'recharts' with { rstest: 'importActual' };

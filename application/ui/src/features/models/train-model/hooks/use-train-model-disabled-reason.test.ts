@@ -1,7 +1,6 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { rs } from '@rstest/core';
 import { renderHook } from 'test-utils/render';
 
 import * as actualTrainModelProvider from '../train-model-provider.component' with { rstest: 'importActual' };

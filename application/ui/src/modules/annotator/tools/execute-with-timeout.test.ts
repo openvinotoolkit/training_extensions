@@ -1,8 +1,6 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { afterEach, beforeEach, describe, expect, it, rs } from '@rstest/core';
-
 import { executeWithTimeout } from './execute-with-timeout';
 
 describe('executeWithTimeout', () => {

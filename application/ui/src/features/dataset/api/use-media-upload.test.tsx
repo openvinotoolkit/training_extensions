@@ -3,7 +3,6 @@
 
 import { uploadDatasetMedia } from '@/api';
 import * as actualApi from '@/api' with { rstest: 'importActual' };
-import { beforeEach, rs } from '@rstest/core';
 import { act, waitFor } from '@testing-library/react';
 import { getMockedMediaImage } from 'mocks/mock-media';
 import { renderHook } from 'test-utils/render';

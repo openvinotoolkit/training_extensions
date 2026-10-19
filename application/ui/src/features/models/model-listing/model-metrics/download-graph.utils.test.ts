@@ -1,8 +1,6 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { rs } from '@rstest/core';
-
 import { downloadSvgAsImage } from './download-graph.utils';
 
 describe('downloadSvgAsImage', () => {

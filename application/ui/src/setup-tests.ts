@@ -1,7 +1,6 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { afterAll, afterEach, beforeAll, expect } from '@rstest/core';
 import * as jestDomMatchers from '@testing-library/jest-dom/matchers';
 import fetchPolyfill, { Request as RequestPolyfill } from 'node-fetch';
 
