@@ -89,6 +89,11 @@ def get_data_dir(request: Request) -> Path:
     return request.app.state.settings.data_dir
 
 
+def get_log_dir(request: Request) -> Path:
+    """Provides the path to the folder where the application logs are saved."""
+    return request.app.state.settings.log_dir
+
+
 def get_job_dir(request: Request) -> Path:
     """Provides the path to the folder where the jobs logs are saved. This path is defined in the app settings."""
     return request.app.state.settings.job_dir

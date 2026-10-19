@@ -3,12 +3,18 @@
 
 """System API Endpoints"""
 
+import os
 import sys
+import tempfile
+import zipfile
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from starlette.background import BackgroundTask
+from starlette.responses import FileResponse
 
-from app.api.dependencies import get_license_service, get_system_service
+from app.api.dependencies import get_license_service, get_log_dir, get_system_service
 from app.api.schemas.system import CameraInfoView, DeviceInfoView, PlatformType, SystemInfoView
 from app.services import SystemService
 from app.services.license_service import LicenseService
@@ -67,3 +73,30 @@ async def get_memory(
     """Returns the used memory in MB and total available memory in MB."""
     used, total = system_service.get_memory_usage()
     return {"used": int(used), "total": int(total)}
+
+
+@router.get("/logs", response_class=FileResponse)
+def download_system_logs(log_dir: Annotated[Path, Depends(get_log_dir)]) -> FileResponse:
+    """Downloads all system logs as a zip archive."""
+    fd, temp_name = tempfile.mkstemp(suffix=".zip")
+    os.close(fd)
+
+    try:
+        with zipfile.ZipFile(temp_name, "w", zipfile.ZIP_DEFLATED) as zf:
+            if log_dir.exists():
+                for root, _, files in os.walk(log_dir):
+                    for file in files:
+                        file_path = Path(root) / file
+                        # store path relative to log_dir
+                        arcname = file_path.relative_to(log_dir)
+                        zf.write(file_path, arcname)
+    except Exception:
+        Path(temp_name).unlink(missing_ok=True)
+        raise
+
+    return FileResponse(
+        path=temp_name,
+        filename="geti_logs.zip",
+        media_type="application/zip",
+        background=BackgroundTask(os.unlink, temp_name),
+    )
