@@ -180,9 +180,9 @@ npm run build:api        # generate API typings from src\api\openapi-spec.json
 npm run start:desktop    # tauri dev
 ```
 
-`start:desktop` runs `tauri dev`, which invokes `npm run start:tauri` (sets
-`BUILD_TARGET=tauri` and starts the Rspack dev server) and opens the native
-window once the dev server is ready.
+`start:desktop` runs `tauri dev`, which invokes `npm run start:tauri` (starts
+the Rspack dev server with `--env-mode tauri`, which loads `BUILD_TARGET=tauri`
+from `.env.tauri`) and opens the native window once the dev server is ready.
 
 Working on the UI only? `npm run start` serves the same app in a browser with
 no Rust toolchain and no sidecar required — point it at a backend started with
@@ -212,12 +212,14 @@ Copy-Item -Recurse -Force "src-tauri\msix\*" $msix
 Release packages are then signed with `signtool.exe`. An unsigned MSIX can
 only be installed with Developer Mode enabled.
 
-> The `start:tauri` and `build:tauri` npm scripts set `BUILD_TARGET=tauri` using
-> `cross-env`, so they work from PowerShell, `cmd.exe`, and POSIX shells. If you
-> invoke Rspack directly, set the variable yourself:
+> The `start:tauri` and `build:tauri` npm scripts pass `--env-mode tauri` to
+> Rsbuild, which loads `BUILD_TARGET=tauri` from
+> [`../.env.tauri`](../.env.tauri). No shell-specific environment setup is
+> needed, so they work from PowerShell, `cmd.exe`, and POSIX shells. If you
+> invoke Rsbuild directly, pass the same flag:
 >
 > ```powershell
-> $env:BUILD_TARGET = 'tauri'; npx rsbuild build
+> npx rsbuild build --env-mode tauri
 > ```
 
 ### Troubleshooting
@@ -444,7 +446,8 @@ bundler**, not at runtime.
 
 #### How it works
 
-`rsbuild.config.ts` reads `process.env.BUILD_TARGET`. When it equals `"tauri"`,
+`rsbuild.config.ts` reads `process.env.BUILD_TARGET`, which is loaded from
+`.env.tauri` when Rsbuild runs with `--env-mode tauri`. When it equals `"tauri"`,
 the Rspack `resolve.extensions` list is prepended with `.tauri.tsx`,
 `.tauri.ts`, `.tauri.jsx`, `.tauri.js`, `.tauri.scss`:
 
@@ -509,10 +512,12 @@ Rules of thumb when adding a platform-specific behaviour:
    If you find yourself reaching for one, add (or split) a capability module
    instead.
 
-The Tauri shell wires `BUILD_TARGET=tauri` for both the dev server and the
+The Tauri shell selects the Tauri target for both the dev server and the
 production build via `beforeDevCommand` / `beforeBuildCommand` in
 [`tauri.conf.json`](./tauri.conf.json), which invoke the `start:tauri` and
-`build:tauri` scripts in [`../package.json`](../package.json).
+`build:tauri` scripts in [`../package.json`](../package.json). Those scripts
+run Rsbuild with `--env-mode tauri`, which loads `BUILD_TARGET=tauri` from
+[`../.env.tauri`](../.env.tauri).
 
 ### Verifying the platform split
 

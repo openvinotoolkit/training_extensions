@@ -64,7 +64,7 @@ npm run preview      # Preview production build
 │   ├── api/                 # OpenAPI client (openapi-fetch + openapi-react-query)
 │   ├── assets/              # Images, illustrations, icons
 │   ├── components/          # Reusable UI components
-│   ├── constants/           # Route paths (static-path), shared domain types
+│   ├── constants/           # Route paths (React Router generatePath helpers), shared domain types
 │   ├── features/            # Domain features (see below)
 │   │   ├── dataset/         # Data collection, gallery, media preview
 │   │   ├── inference/       # Live inference, WebRTC streaming
