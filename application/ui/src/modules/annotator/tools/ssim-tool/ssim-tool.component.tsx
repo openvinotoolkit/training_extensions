@@ -25,7 +25,7 @@ export const SSIMTool = () => {
     const { roi, image } = useSelectedMediaItem();
     const { annotations } = useAnnotations();
     const { selectedLabel } = useAnnotatorLabels();
-    const { runSSIM, toolState, isProcessing, isLoading, isError, error } = useSSIMState();
+    const { runSSIM, toolState, isProcessing, isLoading, isError, error, autoMergeDuplicates } = useSSIMState();
 
     useEffect(() => {
         if (!isError) {
@@ -108,7 +108,7 @@ export const SSIMTool = () => {
                         imageData: image,
                         template,
                         existingAnnotations: annotations.map((annotation) => annotation.shape),
-                        autoMergeDuplicates: true,
+                        autoMergeDuplicates,
                     });
 
                     return [];

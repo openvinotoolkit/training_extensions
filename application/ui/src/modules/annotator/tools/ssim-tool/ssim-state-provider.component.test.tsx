@@ -20,6 +20,8 @@ let mockTaskType = 'detection';
 let mockMode: AnnotatorMode = 'annotation';
 let mockShapes: Shape[] = [];
 const mockReset = vi.fn();
+const mockUpdateToolState = vi.fn();
+const mockRerun = vi.fn();
 const mockAddAndSelectAnnotations = vi.fn();
 
 vi.mock('../../tool-provider.component', () => ({
@@ -47,17 +49,26 @@ vi.mock('hooks/use-project-task.hook', () => ({
 }));
 
 vi.mock('./use-ssim.hook', () => ({
-    useSSIM: vi.fn(() => ({ reset: mockReset, toolState: { shapes: mockShapes } })),
+    useSSIM: vi.fn(() => ({
+        reset: mockReset,
+        updateToolState: mockUpdateToolState,
+        rerun: mockRerun,
+        toolState: { shapes: mockShapes },
+    })),
 }));
 
 const Consumer = () => {
-    const { hasPreview, accept, reject } = useSSIMState();
+    const { hasPreview, accept, reject, setNumberOfItems, autoMergeDuplicates, setAutoMergeDuplicates } =
+        useSSIMState();
 
     return (
         <>
             <span>{hasPreview ? 'has preview' : 'no preview'}</span>
+            <span>{autoMergeDuplicates ? 'merging duplicates' : 'keeping duplicates'}</span>
             <button onClick={accept}>Accept</button>
             <button onClick={reject}>Reject</button>
+            <button onClick={() => setNumberOfItems(3)}>Show 3 items</button>
+            <button onClick={() => setAutoMergeDuplicates(false)}>Keep duplicates</button>
         </>
     );
 };
@@ -151,5 +162,24 @@ describe('SSIMStateProvider', () => {
 
         expect(mockAddAndSelectAnnotations).not.toHaveBeenCalled();
         expect(mockReset).toHaveBeenCalledTimes(1);
+    });
+
+    it('updates the number of previewed items', () => {
+        render(renderTree());
+
+        fireEvent.click(screen.getByRole('button', { name: 'Show 3 items' }));
+
+        expect(mockUpdateToolState).toHaveBeenCalledWith({ threshold: 3 });
+    });
+
+    it('merges duplicates by default and reruns the last template when toggled', () => {
+        render(renderTree());
+
+        expect(screen.getByText('merging duplicates')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Keep duplicates' }));
+
+        expect(screen.getByText('keeping duplicates')).toBeInTheDocument();
+        expect(mockRerun).toHaveBeenCalledWith({ autoMergeDuplicates: false });
     });
 });

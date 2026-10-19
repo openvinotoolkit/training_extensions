@@ -81,6 +81,27 @@ for (const { taskType, annotationLabel } of SCENARIOS) {
             });
         });
 
+        test('Limits the matches with the number of items slider', async ({ page, ssimTool, annotatorPage }) => {
+            await page.goto(`/projects/${mockedProject.id}/dataset`);
+            await page.getByRole('img', { name: 'item-1.jpg' }).dblclick();
+
+            await ssimTool.selectTool();
+            await ssimTool.drawTemplate({ x: 100, y: 100, width: 150, height: 150 });
+            await ssimTool.waitForPreview();
+
+            await ssimTool.getNumberOfItemsSlider().focus();
+            await page.keyboard.press('Home');
+
+            await expect(ssimTool.getNumberOfItemsSlider()).toHaveValue('1');
+            await expect(ssimTool.getPreviewShapes()).toHaveCount(1);
+
+            await page.keyboard.press('Enter');
+
+            await expect(async () => {
+                expect(await annotatorPage.getAnnotationsListItems(annotationLabel)).toHaveLength(1);
+            }).toPass({ timeout: 5000 });
+        });
+
         test('Discards the preview on reject', async ({ page, ssimTool, annotatorPage }) => {
             await page.goto(`/projects/${mockedProject.id}/dataset`);
             await page.getByRole('img', { name: 'item-1.jpg' }).dblclick();

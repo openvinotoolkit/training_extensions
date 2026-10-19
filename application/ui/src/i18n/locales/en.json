@@ -813,7 +813,9 @@
                 },
                 "options": {
                     "accept": "Accept",
-                    "reject": "Reject"
+                    "reject": "Reject",
+                    "numberOfItems": "Number of items",
+                    "autoMergeDuplicates": "Auto-merge duplicates"
                 }
             }
         },

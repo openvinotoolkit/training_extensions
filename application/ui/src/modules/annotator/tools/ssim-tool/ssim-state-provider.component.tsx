@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useProjectTask } from 'hooks/use-project-task.hook';
 
@@ -17,6 +17,9 @@ type SSIMState = ReturnType<typeof useSSIM> & {
     hasPreview: boolean;
     accept: () => void;
     reject: () => void;
+    setNumberOfItems: (numberOfItems: number) => void;
+    autoMergeDuplicates: boolean;
+    setAutoMergeDuplicates: (autoMergeDuplicates: boolean) => void;
 };
 
 const SSIMStateContext = createContext<SSIMState | null>(null);
@@ -29,7 +32,8 @@ export const SSIMStateProvider = ({ children }: PropsWithChildren) => {
     const { mode } = useAnnotations();
     const { selectedLabel } = useAnnotatorLabels();
     const { addAndSelectAnnotations } = useAddAndSelectAnnotations();
-    const { reset, toolState } = ssim;
+    const { reset, toolState, updateToolState, rerun } = ssim;
+    const [autoMergeDuplicates, setAutoMergeDuplicatesState] = useState(true);
 
     useEffect(() => {
         reset();
@@ -40,9 +44,30 @@ export const SSIMStateProvider = ({ children }: PropsWithChildren) => {
         reset();
     }, [addAndSelectAnnotations, toolState.shapes, selectedLabel, reset]);
 
+    const setNumberOfItems = useCallback(
+        (numberOfItems: number) => updateToolState({ threshold: numberOfItems }),
+        [updateToolState]
+    );
+
+    const setAutoMergeDuplicates = useCallback(
+        (value: boolean) => {
+            setAutoMergeDuplicatesState(value);
+            rerun({ autoMergeDuplicates: value });
+        },
+        [rerun]
+    );
+
     const value = useMemo<SSIMState>(
-        () => ({ ...ssim, hasPreview: toolState.shapes.length > 0, accept, reject: reset }),
-        [ssim, toolState.shapes, accept, reset]
+        () => ({
+            ...ssim,
+            hasPreview: toolState.shapes.length > 0,
+            accept,
+            reject: reset,
+            setNumberOfItems,
+            autoMergeDuplicates,
+            setAutoMergeDuplicates,
+        }),
+        [ssim, toolState.shapes, accept, reset, setNumberOfItems, autoMergeDuplicates, setAutoMergeDuplicates]
     );
 
     return <SSIMStateContext.Provider value={value}>{children}</SSIMStateContext.Provider>;
