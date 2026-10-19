@@ -19,7 +19,7 @@ The design has two parts:
 
 ### User experience and responsibilities
 
-The user configures a provider API key, selects a model from the list supplied by the backend, and sends requests through the chat. The chat displays responses and progress and lets the user cancel an active request. Users can ask for any application action; fulfillment depends on the tools exposed to the model.
+The user configures a provider (an API key for a cloud provider, or a base URL for a self-hosted model server), selects a model from the list supplied by the backend, and sends requests through the chat. The chat displays responses and progress and lets the user cancel an active request. Users can ask for any application action; fulfillment depends on the tools exposed to the model.
 
 | Component | Responsibility |
 | --- | --- |
@@ -32,27 +32,34 @@ AG-UI defines the exchange between the chat UI and server, including streamed te
 
 ### Provider, model, and assistant settings
 
-Provide a separate settings flow for entering API keys and selecting models. Each provider stores its own API key and selected model. Assistant settings store one active provider, or `null` when none is active.
+Provide a separate settings flow for configuring providers and selecting models. Each provider stores its own connection settings and selected model. Assistant settings store one active provider, or `null` when none is active.
 
-The active model is derived from the active provider's selected model; it is not stored a second time. Switching providers preserves each provider's key and model selection.
+Providers are one of two kinds, which determine the required connection setting:
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| GET | `/api/assistant/providers` | List supported providers, each provider's selected model, and whether its API key is configured |
-| PATCH | `/api/assistant/providers/<provider>` | Update that provider's API key and/or selected model; omitted fields remain unchanged |
-| GET | `/api/assistant/models?provider=<provider>` | List models the backend makes available for that provider |
-| GET | `/api/assistant/settings` | Return the active provider and its resolved model, or `null` values when no provider is active |
-| PATCH | `/api/assistant/settings` | Set `activeProvider` to a configured provider or `null` |
+| Kind | Examples | Required | Not accepted | Model list source |
+| --- | --- | --- | --- | --- |
+| Cloud | OpenAI, Anthropic | `apiKey` | `baseUrl` (the backend uses the provider's fixed endpoint) | Backend-curated list for that provider |
+| Self-hosted | Ollama, LM Studio, llama.cpp server, vLLM, OpenVINO Model Server | `baseUrl` of an OpenAI-compatible endpoint, e.g. `http://localhost:11434/v1` | `apiKey` | Fetched from the server's `GET {baseUrl}/models` |
 
-For example, OpenAI and Anthropic can each have a saved key and selected model. Setting `activeProvider` to `anthropic` uses Anthropic's saved selection and key. Switching it to `openai` uses OpenAI's saved selection and key.
+A cloud provider is configured when its API key is set. A self-hosted provider is configured when its base URL is set and the endpoint responds.
 
-Provider responses report whether an API key is configured without returning the key itself.
+The active model is derived from the active provider's selected model; it is not stored a second time. Switching providers preserves each provider's connection settings and model selection.
+
+| Method | Endpoint | Purpose                                                                                                                                                            |
+| --- | --- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| GET | `/api/assistant/providers` | List supported providers with their kind, selected model, and connection status: whether an API key is configured (cloud) or the configured base URL (self-hosted) |
+| PATCH | `/api/assistant/providers/<provider>` | Update that provider's selected model and its connection setting (`apiKey` for cloud, `baseUrl` for self-hosted); omitted fields remain unchanged                  |
+| GET | `/api/assistant/models?provider=<provider>` | List models available for that provider                                                                                                                            |
+| GET | `/api/assistant/settings` | Return the active provider and its resolved model, or `null` values when no provider is active                                                                     |
+| PATCH | `/api/assistant/settings` | Set `activeProvider` to a configured provider or `null`                                                                                                            |
+
+For example, OpenAI and Anthropic can each have a saved key and selected model, and Ollama can have a saved base URL and selected model. Setting `activeProvider` to `anthropic` uses Anthropic's saved selection and key. Switching it to `ollama` uses the saved base URL and the model selected from that server.
 
 Keep an in-progress request and its tool continuations on the model selected when it started. Settings changes apply to the next request.
 
 **Open question:** Are the active provider and per-provider model selections global, or scoped to each chat ID? The endpoints above show the global form. If selections are per chat, their routes and payloads need chat scope; provider credentials remain configured separately. There is at most one active model within the chosen scope.
 
-Chat requests identify the applicable configuration so the server can resolve the model and credentials. They do not need to repeat the raw API key.
+Chat requests identify the applicable configuration so the server can resolve the model and its connection settings. They do not need to repeat the raw API key or base URL.
 
 ### Request and tool flow
 
@@ -72,10 +79,10 @@ sequenceDiagram
 
     UI->>Server: Request available models
     Server-->>UI: Available providers and models
-    UI->>Server: Save provider key and selected model
+    UI->>Server: Save provider API key (cloud) or base URL (self-hosted) and selected model
     UI->>Server: Set active provider
     UI->>Server: Message, UI state, and settings reference
-    Server->>Server: Resolve model and credentials
+    Server->>Server: Resolve model and connection settings
     opt Stored data is needed
         Server->>Data: Fetch image, labels, or records by ID
         Data-->>Server: Requested content
@@ -243,7 +250,8 @@ Expose application data and backend operations through MCP, make relevant UI ide
 
 - Are the active provider and per-provider model selections global or scoped to a chat ID?
 - Are conversations ephemeral, retained in memory, or persisted in a database? What survives reloads and restarts?
-- Should we implement the action-specific assistants, or a single assistant for all actions (e.g. if user starts chat about annotations with opened annotator and then closed annotator, UI won't be able to proceed with the generated response)?
+- Should we implement the action-specific assistants or a single assistant for all actions (e.g. if user starts chat about annotations with opened annotator and then closed annotator, UI won't be able to proceed with the generated response)?
+- Should we support self-hosted models or only cloud providers?
 
 ## References
 
