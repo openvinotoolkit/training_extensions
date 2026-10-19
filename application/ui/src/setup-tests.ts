@@ -12,7 +12,7 @@ import './test-utils/mock-event-source';
 expect.extend(jestDomMatchers);
 
 beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'bypass' });
+    server.listen({ onUnhandledRequest: 'error' });
 });
 
 afterEach(() => {

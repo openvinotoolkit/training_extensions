@@ -2,14 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { fireEvent, screen } from '@testing-library/react';
+import { getMockedPipeline } from 'mocks/mock-pipeline';
+import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
+import { http } from '../../../../api/utils';
+import { server } from '../../../../msw-node-setup';
 import { MenuActions } from './menu-actions.component';
 
 describe('MenuActions', () => {
     const projectId = 'test-project-id';
     const projectName = 'Test Project';
     const actionButtonStyle = {};
+
+    beforeEach(() => {
+        server.use(
+            http.get('/api/projects/{project_id}/pipeline', () =>
+                HttpResponse.json(getMockedPipeline({ status: 'idle' }))
+            )
+        );
+    });
 
     it('opens edit dialog when rename menu item is clicked', async () => {
         render(

@@ -497,7 +497,12 @@ describe('ProjectList', () => {
 
     describe('create project card', () => {
         it('renders create new project and create project from dataset buttons', async () => {
-            server.use(http.get('/api/projects', () => HttpResponse.json(projects)));
+            server.use(
+                http.get('/api/projects', () => HttpResponse.json(projects)),
+                http.get('/api/projects/{project_id}/pipeline', () =>
+                    HttpResponse.json(getMockedPipeline({ status: 'idle' }))
+                )
+            );
 
             renderProjectList();
 

@@ -76,6 +76,12 @@ const renderSegment = (overrides: Partial<Parameters<typeof VideoFrameSegment>[0
 
 describe('VideoFrameSegment', () => {
     describe('shared behaviour (mode-independent)', () => {
+        beforeEach(() => {
+            server.use(
+                http.get('/api/projects/{project_id}/dataset/media/{media_id}/frames', () => HttpResponse.json([]))
+            );
+        });
+
         describe('selected frame overlay', () => {
             it('renders the overlay when isSelectedFrame is true', () => {
                 renderSegment({ isSelectedFrame: true });

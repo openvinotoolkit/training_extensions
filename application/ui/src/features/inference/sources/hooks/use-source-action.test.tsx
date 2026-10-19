@@ -71,6 +71,10 @@ const renderApp = async ({
 };
 
 describe('useSourceAction', () => {
+    beforeEach(() => {
+        server.use(http.post('/api/sources/{source_id}:test', () => HttpResponse.json({ reachable: true })));
+    });
+
     it('return initial config', () => {
         const { result } = renderHook(() =>
             useSourceAction({ config: mockedConfig, isNewSource: true, bodyFormatter })

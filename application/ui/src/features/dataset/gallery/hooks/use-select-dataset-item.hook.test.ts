@@ -4,11 +4,14 @@
 import type { Media } from '@/api/types';
 import { act } from '@testing-library/react';
 import { getMockedMediaImage, getMockedVideo, getMockedVideoFrame } from 'mocks/mock-media';
+import { HttpResponse } from 'msw';
 import * as actualRouter from 'react-router' with { rstest: 'importActual' };
 import { renderHook } from 'test-utils/render';
 
+import { http } from '../../../../api/utils';
 import { paths } from '../../../../constants/paths';
 import { useGetDatasetMediaItems } from '../../../../hooks/use-get-dataset-media-items.hook';
+import { server } from '../../../../msw-node-setup';
 import { useSelectDatasetItem } from './use-select-dataset-item.hook';
 
 const mockNavigate = rs.fn();
@@ -45,6 +48,11 @@ describe('useSelectDatasetItem', () => {
     beforeEach(() => {
         mockNavigate.mockClear();
         rs.mocked(useGetDatasetMediaItems).mockReturnValue({ ...mockDatasetMediaItems, items: [] });
+        server.use(
+            http.get('/api/projects/{project_id}/dataset/items', () =>
+                HttpResponse.json({ items: [], pagination: { offset: 0, count: 0, total: 0, limit: 0 } })
+            )
+        );
     });
 
     describe('onSelectedMediaItemChange', () => {

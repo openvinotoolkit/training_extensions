@@ -76,6 +76,10 @@ const renderApp = async ({
 };
 
 describe('useSinkAction', () => {
+    beforeEach(() => {
+        server.use(http.post('/api/sinks/{sink_id}:test', () => HttpResponse.json({ reachable: true })));
+    });
+
     it('return initial config', () => {
         const { result } = renderHook(() => useSinkAction({ config: mockedConfig, isNewSink: true, bodyFormatter }));
 
