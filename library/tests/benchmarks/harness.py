@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import time
+from contextlib import ExitStack
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -120,11 +121,19 @@ def run_once(
 
     timer.reset()  # drop construction-time entries; warmup restarts here
     sampler = PeakRSSSampler()
-    stack_transforms = instrument_cpu_transforms(vision_dataset.transforms, timer)
-    stack_pipeline = instrument_pipeline(timer)
+
+    # Worker processes are spawned on macOS/Windows, which pickles ``collate_fn``
+    # by qualified name; a patched module global fails that identity check.
+    # The hooks would also record into worker-local timer copies, so they are
+    # only installed for the serial, attributing configuration.
+    instrument = attribute and num_workers == 0
 
     seen = 0
-    with sampler.sampling(), stack_pipeline, stack_transforms:
+    with ExitStack() as stack:
+        stack.enter_context(sampler.sampling())
+        if instrument:
+            stack.enter_context(instrument_pipeline(timer))
+            stack.enter_context(instrument_cpu_transforms(vision_dataset.transforms, timer))
         # Warmup is consumed and discarded inside StageTimer; here we only need
         # the wall clock to start after the loader has spun up its workers.
         iterator = iter(loader)
@@ -150,7 +159,7 @@ def run_once(
         peak_worker_rss_mb=round(sampler.peak_worker_mb, 1),
         schema_ms=round(schema_ms, 3),
         accounted_ms=round(timer.accounted_ms, 3),
-        attribution=timer.attribution() if attribute else [],
+        attribution=timer.attribution() if instrument else [],
     )
 
 
@@ -164,9 +173,7 @@ def control_experiment(
 ) -> dict[str, Any]:
     """Run the control: identical images, detection vs instance segmentation.
 
-    The returned ``ratio`` is the mask overhead. It is the number in the
-    Definition of Done (within ~1.2x) and the number that justifies the whole
-    effort; every other Phase 0 measurement is attribution *of* this ratio.
+    The returned ``ratio`` is the mask overhead.
     """
     det = run_once(
         data_root,

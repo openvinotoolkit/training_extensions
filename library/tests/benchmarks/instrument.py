@@ -38,11 +38,11 @@ def _wrap(fn: Callable[_P, _R], timer: StageTimer, name: str, *, sync: bool = Fa
 
 @contextmanager
 def instrument_pipeline(timer: StageTimer) -> Iterator[StageTimer]:
-    """Install timing hooks on stages 2, 4, 5 and 7 of the roadmap table.
+    """Install timing hooks on different stages of the pipeline.
 
-    Stage 1 (``convert_to_schema``) is timed by :func:`time_schema_conversion`
-    because it runs once at dataset construction, not per sample. Stage 3
-    (``Resize``) is handled by :func:`instrument_cpu_transforms`, which needs
+    ``convert_to_schema`` is timed by :func:`time_schema_conversion`
+    because it runs once at dataset construction, not per sample.
+    ``Resize`` is handled by :func:`instrument_cpu_transforms`, which needs
     the live pipeline instance to know which transform classes to patch.
     """
     with ExitStack() as stack:
@@ -107,13 +107,7 @@ def instrument_cpu_transforms(cpu_pipeline: object, timer: StageTimer) -> Iterat
 
 @contextmanager
 def time_schema_conversion(timer: StageTimer) -> Iterator[None]:
-    """Time ``Dataset.convert_to_schema`` (roadmap stage 1).
-
-    This is the roadmap's flagged re-ranking fork. If this stage dominates,
-    ``convert_to_schema`` is eager — it rasterizes the whole subset up front,
-    Phase 2a alone recovers most of the win, and Phases 4-6 drop in priority.
-    Check ``eager_ratio`` in the emitted report before writing any Phase 1 code.
-    """
+    """Time ``Dataset.convert_to_schema``."""
     from datumaro.experimental import Dataset as DmDataset
 
     with patch.object(

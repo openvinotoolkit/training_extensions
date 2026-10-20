@@ -30,8 +30,7 @@ class SweepCell:
 
 #: Diagonal first. The full 3x4x3 cross-product is 36 cells; expand only where
 #: the curve bends. The *vertices* axis is the one that separates rasterization
-#: cost (roughly flat in vertex count) from polygon-transform cost (linear in
-#: it) -- that distinction is what justifies Phase 2 over Phase 5.
+#: cost (roughly flat in vertex count) from polygon-transform cost (linear in it).
 DIAGONAL_SWEEP: tuple[SweepCell, ...] = (
     SweepCell(512, 1, 4),
     SweepCell(1024, 10, 20),
