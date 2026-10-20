@@ -9,25 +9,25 @@ import { render } from 'test-utils/render';
 
 import { ActiveFilters } from './active-filters.component';
 
-vi.mock('hooks/use-project-labels.hook', () => ({
-    useProjectLabels: vi.fn(),
+rs.mock('hooks/use-project-labels.hook', () => ({
+    useProjectLabels: rs.fn(),
 }));
 
-vi.mock('hooks/use-dataset-filters-search-params.hook', () => ({
-    useDatasetFiltersSearchParams: vi.fn(),
+rs.mock('hooks/use-dataset-filters-search-params.hook', () => ({
+    useDatasetFiltersSearchParams: rs.fn(),
 }));
 
 const mockLabels = [getMockedLabel({ id: 'label-1', name: 'Cat' }), getMockedLabel({ id: 'label-2', name: 'Dog' })];
 
-const mockSetSelectedLabelIds = vi.fn();
-const mockSetAnnotationStatus = vi.fn();
-const mockSetStartDate = vi.fn();
-const mockSetEndDate = vi.fn();
-const mockSetSelectedSubsets = vi.fn();
-const mockClearAllFilters = vi.fn();
+const mockSetSelectedLabelIds = rs.fn();
+const mockSetAnnotationStatus = rs.fn();
+const mockSetStartDate = rs.fn();
+const mockSetEndDate = rs.fn();
+const mockSetSelectedSubsets = rs.fn();
+const mockClearAllFilters = rs.fn();
 
 const mockUseDatasetFiltersSearchParams = (overrides?: Partial<ReturnType<typeof useDatasetFiltersSearchParams>>) => {
-    vi.mocked(useDatasetFiltersSearchParams).mockReturnValue({
+    rs.mocked(useDatasetFiltersSearchParams).mockReturnValue({
         selectedLabelIds: [],
         setSelectedLabelIds: mockSetSelectedLabelIds,
         annotationStatus: null,
@@ -36,8 +36,8 @@ const mockUseDatasetFiltersSearchParams = (overrides?: Partial<ReturnType<typeof
         setStartDate: mockSetStartDate,
         endDate: null,
         setEndDate: mockSetEndDate,
-        setDateRange: vi.fn(),
-        setSortDirection: vi.fn(),
+        setDateRange: rs.fn(),
+        setSortDirection: rs.fn(),
         sortDirection: 'desc',
         selectedSubsets: [],
         setSelectedSubsets: mockSetSelectedSubsets,
@@ -48,11 +48,11 @@ const mockUseDatasetFiltersSearchParams = (overrides?: Partial<ReturnType<typeof
 
 describe('ActiveFilters', () => {
     beforeEach(() => {
-        vi.mocked(useProjectLabels).mockReturnValue(mockLabels);
+        rs.mocked(useProjectLabels).mockReturnValue(mockLabels);
     });
 
     afterEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('renders nothing when there are no active filters', () => {

@@ -4,7 +4,6 @@
 import { waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
-import { vi } from 'vitest';
 
 import { getMockedTrainJob } from '../../../mocks/mock-job';
 import { http } from '../../api/utils';
@@ -41,7 +40,7 @@ describe('ActiveJobsSync', () => {
         await waitFor(() => expect(MockEventSourceConstructor).toHaveBeenCalledTimes(1));
 
         const eventSource = MockEventSourceConstructor.mock.results.at(-1)?.value;
-        const closeSpy = vi.spyOn(eventSource, 'close');
+        const closeSpy = rs.spyOn(eventSource, 'close');
 
         eventSource.onmessage?.({
             data: JSON.stringify({ ...runningJob, status: 'DONE' }),
@@ -71,7 +70,7 @@ describe('ActiveJobsSync', () => {
         server.use(http.get('/api/jobs', () => HttpResponse.json([otherProjectJob])));
 
         const queryClient = createQueryClient();
-        const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+        const invalidateSpy = rs.spyOn(queryClient, 'invalidateQueries');
 
         render(<ActiveJobsSync />, { queryClient, path: paths.project.details({ projectId: '123' }) });
 

@@ -6,6 +6,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
+import * as actualReactRouter from 'react-router' with { rstest: 'importActual' };
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
@@ -13,10 +14,10 @@ import { paths } from '../../../constants/paths';
 import { server } from '../../../msw-node-setup';
 import { CreateProjectForm } from './create-project-form';
 
-const mockNavigate = vi.hoisted(() => vi.fn());
+const mockNavigate = rs.hoisted(() => rs.fn());
 
-vi.mock('react-router', async (importOriginal) => ({
-    ...(await importOriginal()),
+rs.mock('react-router', () => ({
+    ...actualReactRouter,
     useNavigate: () => mockNavigate,
 }));
 
@@ -43,7 +44,7 @@ const clickGoBack = () => {
 
 describe('CreateProjectForm', () => {
     beforeEach(() => {
-        vi.resetAllMocks();
+        rs.resetAllMocks();
     });
 
     describe('initial state', () => {
@@ -269,14 +270,14 @@ describe('CreateProjectForm', () => {
 
         it('navigates to previous page when referrer is from the same origin', () => {
             mockReferrer('http://localhost/projects');
-            vi.stubGlobal('location', { ...window.location, origin: 'http://localhost' });
+            rs.stubGlobal('location', { ...window.location, origin: 'http://localhost' });
 
             renderCreateProjectForm();
             clickGoBack();
 
             expect(mockNavigate).toHaveBeenCalledWith(-1);
 
-            vi.unstubAllGlobals();
+            rs.unstubAllGlobals();
         });
 
         it('navigates to projects page when there is no referrer', () => {
@@ -290,14 +291,14 @@ describe('CreateProjectForm', () => {
 
         it('navigates to projects page when referrer is from a different origin', () => {
             mockReferrer('https://external-site.com/page');
-            vi.stubGlobal('location', { ...window.location, origin: 'http://localhost' });
+            rs.stubGlobal('location', { ...window.location, origin: 'http://localhost' });
 
             renderCreateProjectForm();
             clickGoBack();
 
             expect(mockNavigate).toHaveBeenCalledWith(paths.project.index({}));
 
-            vi.unstubAllGlobals();
+            rs.unstubAllGlobals();
         });
     });
 });

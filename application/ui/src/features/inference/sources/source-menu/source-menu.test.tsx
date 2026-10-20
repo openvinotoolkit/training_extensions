@@ -8,12 +8,13 @@ import { render } from 'test-utils/render';
 
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
+import * as actualWebRtc from '../../stream/web-rtc-connection-provider' with { rstest: 'importActual' };
 import { SourceMenu, SourceMenuProps } from './source-menu.component';
 
-const mockStopStream = vi.fn();
+const mockStopStream = rs.fn();
 
-vi.mock('../../stream/web-rtc-connection-provider', async (importOriginal) => ({
-    ...(await importOriginal()),
+rs.mock('../../stream/web-rtc-connection-provider', () => ({
+    ...actualWebRtc,
     useWebRTCConnection: () => ({
         stop: mockStopStream,
     }),
@@ -28,9 +29,9 @@ describe('SourceMenu', () => {
         id = 'id-test',
         name = 'name test',
         isConnected = false,
-        onEdit = vi.fn(),
+        onEdit = rs.fn(),
         isPipelineRunning = false,
-        onTest = vi.fn(),
+        onTest = rs.fn(),
     }: Partial<SourceMenuProps>) => {
         render(
             <SourceMenu
@@ -45,7 +46,7 @@ describe('SourceMenu', () => {
     };
 
     it('test connection', async () => {
-        const onTest = vi.fn().mockResolvedValue(true);
+        const onTest = rs.fn().mockResolvedValue(true);
         renderApp({ onTest });
 
         await userEvent.click(screen.getByRole('button', { name: /source menu/i }));
@@ -55,7 +56,7 @@ describe('SourceMenu', () => {
     });
 
     it('edit', async () => {
-        const mockedOnEdit = vi.fn();
+        const mockedOnEdit = rs.fn();
 
         renderApp({ onEdit: mockedOnEdit });
 
@@ -68,7 +69,7 @@ describe('SourceMenu', () => {
     describe('remove', () => {
         const name = 'test-name';
         const configRequests = (status = 200) => {
-            const pipelinePatchSpy = vi.fn();
+            const pipelinePatchSpy = rs.fn();
 
             server.use(
                 http.patch('/api/projects/{project_id}/pipeline', () => {
@@ -163,8 +164,8 @@ describe('SourceMenu', () => {
         const name = 'test-name';
 
         it('successfully disconnects source when pipeline is not running', async () => {
-            const pipelinePatchSpy = vi.fn();
-            const disablePipeline = vi.fn();
+            const pipelinePatchSpy = rs.fn();
+            const disablePipeline = rs.fn();
 
             server.use(
                 http.patch('/api/projects/{project_id}/pipeline', async ({ request }) => {
@@ -197,8 +198,8 @@ describe('SourceMenu', () => {
         });
 
         it('successfully disconnects source when pipeline is running and stops stream', async () => {
-            const pipelinePatchSpy = vi.fn();
-            const disablePipeline = vi.fn();
+            const pipelinePatchSpy = rs.fn();
+            const disablePipeline = rs.fn();
 
             server.use(
                 http.patch('/api/projects/{project_id}/pipeline', async ({ request }) => {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { uploadDatasetArchive } from '@/api';
+import * as actualApi from '@/api' with { rstest: 'importActual' };
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getMockedStagedDataset } from 'mocks/mock-staged-dataset';
@@ -13,9 +14,9 @@ import { http } from '../../api/utils';
 import { server } from '../../msw-node-setup';
 import { ImportUploadFile } from './import-upload-file.component';
 
-vi.mock('@/api', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('@/api')>()),
-    uploadDatasetArchive: vi.fn(),
+rs.mock('@/api', () => ({
+    ...actualApi,
+    uploadDatasetArchive: rs.fn(),
 }));
 
 describe('ImportUploadFile', () => {
@@ -25,7 +26,7 @@ describe('ImportUploadFile', () => {
     const mockedPrepareImportDatasetJob = getMockedPrepareImportDatasetJob({});
 
     const renderApp = () => {
-        vi.mocked(uploadDatasetArchive).mockResolvedValue(
+        rs.mocked(uploadDatasetArchive).mockResolvedValue(
             getMockedStagedDataset({ id: mockedStagedDatasetId, size: 123 })
         );
         server.use(
@@ -33,7 +34,7 @@ describe('ImportUploadFile', () => {
                 return HttpResponse.json(mockedPrepareImportDatasetJob, { status: 202 });
             })
         );
-        const mockedOnFileUploaded = vi.fn();
+        const mockedOnFileUploaded = rs.fn();
 
         render(<ImportUploadFile formatOptions='coco' onFileUploaded={mockedOnFileUploaded} />);
 
@@ -41,7 +42,7 @@ describe('ImportUploadFile', () => {
     };
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('invalid file extension', async () => {
@@ -78,7 +79,7 @@ describe('ImportUploadFile', () => {
     it('shows the transfer progress before processing the staged archive', async () => {
         renderApp();
         let finishStaging: ((result: ReturnType<typeof getMockedStagedDataset>) => void) | undefined;
-        vi.mocked(uploadDatasetArchive).mockImplementation(
+        rs.mocked(uploadDatasetArchive).mockImplementation(
             async (_file, options) =>
                 new Promise((resolve) => {
                     options?.onProgress?.(3);
@@ -96,7 +97,7 @@ describe('ImportUploadFile', () => {
 
     it('cancels the transfer without preparing the import or reporting an error', async () => {
         const mockedOnFileUploaded = renderApp();
-        vi.mocked(uploadDatasetArchive).mockImplementation(
+        rs.mocked(uploadDatasetArchive).mockImplementation(
             async (_file, options) =>
                 new Promise((_resolve, reject) => {
                     options?.onProgress?.(3);
@@ -110,7 +111,7 @@ describe('ImportUploadFile', () => {
         await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
 
         expect(await screen.findByText('Drop the dataset .zip file here')).toBeVisible();
-        expect(vi.mocked(uploadDatasetArchive).mock.calls[0][1]?.signal?.aborted).toBe(true);
+        expect(rs.mocked(uploadDatasetArchive).mock.calls[0][1]?.signal?.aborted).toBe(true);
         expect(screen.queryByText(/cancelled/i)).not.toBeInTheDocument();
         expect(mockedOnFileUploaded).not.toHaveBeenCalled();
     });

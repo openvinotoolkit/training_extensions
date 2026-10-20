@@ -14,17 +14,17 @@ import { server } from '../../../../../../msw-node-setup';
 import { downloadFile } from '../../../../../../platform/download-file';
 import { ExportCompletedJob } from './export-completed-job.component';
 
-vi.mock('../../../../../../platform/download-file', () => ({
-    downloadFile: vi.fn(),
+rs.mock('../../../../../../platform/download-file', () => ({
+    downloadFile: rs.fn(),
 }));
 
-const mockedRemoveLsExportId = vi.fn();
+const mockedRemoveLsExportId = rs.fn();
 
-vi.mock('../../../../../../hooks/storage/use-export-dataset.hook', () => ({
+rs.mock('../../../../../../hooks/storage/use-export-dataset.hook', () => ({
     useExportDataset: () => ({
         removeLsExportId: mockedRemoveLsExportId,
         lsExportIds: [],
-        addLsExportId: vi.fn(),
+        addLsExportId: rs.fn(),
     }),
 }));
 
@@ -43,7 +43,7 @@ describe('ExportCompletedJob', () => {
     };
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('downloads dataset when download button is clicked', async () => {
@@ -61,7 +61,7 @@ describe('ExportCompletedJob', () => {
     });
 
     it('deletes staged dataset and removes from local storage when close button is clicked', async () => {
-        const deleteStageFileSpy = vi.fn();
+        const deleteStageFileSpy = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () => {
@@ -101,7 +101,7 @@ describe('ExportCompletedJob', () => {
     });
 
     it('removes from local storage without delete request when dataset_id is nil', async () => {
-        const deleteStageFileSpy = vi.fn();
+        const deleteStageFileSpy = rs.fn();
 
         server.use(
             http.delete('/api/staged_datasets/{staged_dataset_id}', () => {

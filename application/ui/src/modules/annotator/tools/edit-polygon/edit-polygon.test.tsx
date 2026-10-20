@@ -12,36 +12,34 @@ import { render } from 'test-utils/render';
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { Annotation, Point, Polygon } from '../../../../shared/types';
+import * as actualAnnotationDocument from '../../annotation-document-provider.component' with {
+    rstest: 'importActual',
+};
 import { AnnotationVisibilityProvider } from '../../annotation-visibility-provider.component';
 import { CanvasSettingsProvider } from '../../shell/primary-toolbar/settings/canvas-settings-provider.component';
+import * as actualUtils from '../utils' with { rstest: 'importActual' };
 import { removeOffLimitPointsPolygon } from '../utils';
 import { EditPolygon } from './edit-polygon.component';
 
 const mockROI = { x: 0, y: 0, width: 1000, height: 1000 };
 
-vi.mock('../../selected-media-item-provider.component', () => ({
-    useSelectedMediaItem: vi.fn(() => ({ roi: mockROI })),
+rs.mock('../../selected-media-item-provider.component', () => ({
+    useSelectedMediaItem: rs.fn(() => ({ roi: mockROI })),
 }));
-vi.mock('../utils', async (importActual) => {
-    const actual = await importActual<typeof import('../utils')>();
-    return {
-        ...actual,
-        removeOffLimitPointsPolygon: vi.fn((shape) => shape),
-    };
-});
+rs.mock('../utils', () => ({
+    ...actualUtils,
+    removeOffLimitPointsPolygon: rs.fn((shape) => shape),
+}));
 
-const mockedUpdateAnnotations = vi.fn();
-const mockedDeleteAnnotations = vi.fn();
-vi.mock('../../annotation-document-provider.component', async (importActual) => {
-    const actual = await importActual<typeof import('../../annotation-document-provider.component')>();
-    return {
-        ...actual,
-        useAnnotationCommands: vi.fn(() => ({
-            updateAnnotations: mockedUpdateAnnotations,
-            deleteAnnotations: mockedDeleteAnnotations,
-        })),
-    };
-});
+const mockedUpdateAnnotations = rs.fn();
+const mockedDeleteAnnotations = rs.fn();
+rs.mock('../../annotation-document-provider.component', () => ({
+    ...actualAnnotationDocument,
+    useAnnotationCommands: rs.fn(() => ({
+        updateAnnotations: mockedUpdateAnnotations,
+        deleteAnnotations: mockedDeleteAnnotations,
+    })),
+}));
 
 const moveLine = (rect: HTMLElement, startPoint: Point, endPoint: Point) => {
     fireEvent.pointerDown(rect, {
@@ -106,7 +104,7 @@ describe('EditPolygonTool', () => {
             })
         );
 
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('allows the user to translate a polygon', async () => {

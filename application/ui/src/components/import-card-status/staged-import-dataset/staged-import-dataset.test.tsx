@@ -18,7 +18,7 @@ describe('StagedImportDataset', () => {
     it('opens the import dialog and sets current staged id on Continue', async () => {
         const stagedDatasetSize = 1024;
         const message = 'Map labels for the uploaded dataset';
-        const openDialogSpy = vi.fn();
+        const openDialogSpy = rs.fn();
 
         server.use(
             http.get('/api/staged_datasets/{staged_dataset_id}', () => {
@@ -40,7 +40,7 @@ describe('StagedImportDataset', () => {
                 stagedDatasetId={stagedDatasetId}
                 primaryButtonLabel={'continue'}
                 onOpen={openDialogSpy}
-                deleteEntry={vi.fn()}
+                deleteEntry={rs.fn()}
             />
         );
 
@@ -57,7 +57,7 @@ describe('StagedImportDataset', () => {
 
     it('renders failed import state when staged dataset request returns not found', async () => {
         const apiError = 'staged dataset not found';
-        const openDialogSpy = vi.fn();
+        const openDialogSpy = rs.fn();
 
         server.use(
             http.get('/api/staged_datasets/{staged_dataset_id}', () =>
@@ -74,7 +74,7 @@ describe('StagedImportDataset', () => {
                 stagedDatasetId={stagedDatasetId}
                 primaryButtonLabel={'continue'}
                 onOpen={openDialogSpy}
-                deleteEntry={vi.fn()}
+                deleteEntry={rs.fn()}
             />
         );
 

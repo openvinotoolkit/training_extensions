@@ -11,10 +11,10 @@ import { RangeParameterField } from './range-parameter-field.component';
 
 describe('RangeParameterField', () => {
     const name = 'Scaling ratio range';
-    const onChange = vi.fn();
+    const onChange = rs.fn();
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     const renderApp = ({

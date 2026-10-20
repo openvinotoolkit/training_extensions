@@ -5,16 +5,16 @@ import React from 'react';
 
 import { screen } from '@testing-library/react';
 import { getMockedLabel } from 'mocks/mock-labels';
+import * as actualRecharts from 'recharts' with { rstest: 'importActual' };
 import { render } from 'test-utils/render';
-import { vi } from 'vitest';
 
 import { useProjectLabelsWithEmptyLabel } from '../../../../../shared/labels';
+import * as actualLabels from '../../../../../shared/labels' with { rstest: 'importActual' };
 import { DatasetLabelsChart } from './dataset-labels-chart.component';
 
-vi.mock('recharts', async () => {
-    const actual = await vi.importActual<typeof import('recharts')>('recharts');
+rs.mock('recharts', () => {
     return {
-        ...actual,
+        ...actualRecharts,
         ResponsiveContainer: ({ children }: { children: React.ReactElement }) =>
             React.cloneElement(children, { width: 800, height: 200 } as React.HTMLAttributes<unknown>),
     };
@@ -33,17 +33,16 @@ const mockLabels = [
     getMockedLabel({ id: 'label-10', name: 'Fish-10' }),
 ];
 
-vi.mock('../../../../../shared/labels', async () => {
-    const actual = await vi.importActual('../../../../../shared/labels');
+rs.mock('../../../../../shared/labels', () => {
     return {
-        ...actual,
-        useProjectLabelsWithEmptyLabel: vi.fn(),
+        ...actualLabels,
+        useProjectLabelsWithEmptyLabel: rs.fn(),
     };
 });
 
 describe('DatasetLabelsChart', () => {
     beforeEach(() => {
-        vi.mocked(useProjectLabelsWithEmptyLabel).mockReturnValue(mockLabels);
+        rs.mocked(useProjectLabelsWithEmptyLabel).mockReturnValue(mockLabels);
     });
 
     it('renders all label names with multiple items', () => {
@@ -59,7 +58,7 @@ describe('DatasetLabelsChart', () => {
         const emptyLabel = getMockedLabel({ id: 'empty-label', name: 'No object' });
         const labelsWithEmpty = [...mockLabels, emptyLabel];
 
-        vi.mocked(useProjectLabelsWithEmptyLabel).mockReturnValue(labelsWithEmpty);
+        rs.mocked(useProjectLabelsWithEmptyLabel).mockReturnValue(labelsWithEmpty);
 
         const instancesPerLabel = [{ label_id: null, instances: 3 }];
         render(<DatasetLabelsChart totalItems={10} instancesPerLabel={instancesPerLabel} />);

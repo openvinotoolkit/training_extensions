@@ -5,6 +5,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
+import * as actualReactRouter from 'react-router' with { rstest: 'importActual' };
 import { render } from 'test-utils/render';
 
 import { http } from '../../../api/utils';
@@ -19,11 +20,10 @@ const otherProjectName = 'Other Project';
 const selectedProject = getMockedProject({ id: selectedProjectId, name: selectedProjectName, active_pipeline: false });
 const otherProject = getMockedProject({ id: otherProjectId, name: otherProjectName, active_pipeline: false });
 
-const mockNavigate = vi.fn();
+const mockNavigate = rs.fn();
 
-vi.mock('react-router', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('react-router')>();
-    return { ...actual, useNavigate: () => mockNavigate };
+rs.mock('react-router', () => {
+    return { ...actualReactRouter, useNavigate: () => mockNavigate };
 });
 
 describe('ProjectsListPanel', () => {

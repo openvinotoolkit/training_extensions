@@ -18,26 +18,26 @@ const mockLabels: Label[] = [
     getMockedLabel({ id: 'label-3', name: 'Dog', color: '#0000FF' }),
 ];
 
-vi.mock('../annotator-labels-provider.component', () => ({
+rs.mock('../annotator-labels-provider.component', () => ({
     useAnnotatorLabels: () => ({
         labels: mockLabels,
         selectedLabelId: 'label-1',
-        setSelectedLabelId: vi.fn(),
+        setSelectedLabelId: rs.fn(),
     }),
 }));
 
-vi.mock('../select-annotation-provider.component', () => ({
+rs.mock('../select-annotation-provider.component', () => ({
     useSelectedAnnotations: () => ({
         selectedAnnotations: new Set<string>(),
     }),
 }));
 
-vi.mock('../annotation-document-provider.component', () => ({
+rs.mock('../annotation-document-provider.component', () => ({
     useAnnotations: () => ({ annotations: [] }),
     useAnnotationCommands: () => ({
-        updateAnnotations: vi.fn(),
-        addAnnotations: vi.fn(),
-        addAnnotationWithEmptyLabel: vi.fn(),
+        updateAnnotations: rs.fn(),
+        addAnnotations: rs.fn(),
+        addAnnotationWithEmptyLabel: rs.fn(),
     }),
 }));
 

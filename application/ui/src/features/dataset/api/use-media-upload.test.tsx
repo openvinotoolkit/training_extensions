@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { uploadDatasetMedia } from '@/api';
+import * as actualApi from '@/api' with { rstest: 'importActual' };
 import { act, waitFor } from '@testing-library/react';
 import { getMockedMediaImage } from 'mocks/mock-media';
 import { renderHook } from 'test-utils/render';
-import { beforeEach, vi } from 'vitest';
 
 import { useUploadActions } from '../hooks/use-upload-actions';
 import { useMediaUploadState } from '../providers/media-upload-context';
@@ -13,11 +13,11 @@ import { MediaUploadProvider } from '../providers/media-upload-provider.componen
 import { computeSummary } from '../providers/media-upload-reducer';
 import { MEDIA_UPLOAD_CONCURRENCY, useMediaUpload } from './use-media-upload';
 
-vi.mock('@/api', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('@/api')>()),
-    uploadDatasetMedia: vi.fn(),
+rs.mock('@/api', () => ({
+    ...actualApi,
+    uploadDatasetMedia: rs.fn(),
 }));
-const uploadMock = vi.mocked(uploadDatasetMedia);
+const uploadMock = rs.mocked(uploadDatasetMedia);
 
 const useMediaUploadProgress = () => {
     const upload = useMediaUpload();

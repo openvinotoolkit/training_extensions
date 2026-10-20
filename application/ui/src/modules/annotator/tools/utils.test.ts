@@ -9,8 +9,8 @@ const createImage = (width: number, height: number, naturalWidth = width, natura
 const createCanvasContext = () => {
     return {
         filter: '',
-        drawImage: vi.fn(),
-        getImageData: vi.fn((_x: number, _y: number, width: number, height: number) => {
+        drawImage: rs.fn(),
+        getImageData: rs.fn((_x: number, _y: number, width: number, height: number) => {
             return {
                 width,
                 height,
@@ -24,7 +24,7 @@ const createCanvasContext = () => {
 const mockCanvasCreation = (contexts: Array<CanvasRenderingContext2D | null>) => {
     const originalCreateElement = document.createElement.bind(document);
 
-    return vi.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
+    return rs.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
         if (tagName !== 'canvas') {
             return originalCreateElement(tagName as keyof HTMLElementTagNameMap);
         }
@@ -33,13 +33,13 @@ const mockCanvasCreation = (contexts: Array<CanvasRenderingContext2D | null>) =>
         return {
             width: 0,
             height: 0,
-            getContext: vi.fn(() => context),
+            getContext: rs.fn(() => context),
         } as unknown as HTMLCanvasElement;
     }) as typeof document.createElement);
 };
 
 afterEach(() => {
-    vi.restoreAllMocks();
+    rs.restoreAllMocks();
 });
 
 describe('canRasteriseAtFullSize', () => {

@@ -14,7 +14,7 @@ const getMockedWheelPointerEvent = (data: Partial<PointerEvent<HTMLDivElement>>)
 
 describe('useWheelPanning', () => {
     it('initialize with default values', () => {
-        const { result } = renderHook(() => useWheelPanning(vi.fn()));
+        const { result } = renderHook(() => useWheelPanning(rs.fn()));
         expect(result.current.isGrabbing).toBe(false);
         expect(typeof result.current.onPointerDown).toBe('function');
         expect(typeof result.current.onPointerMove).toBe('function');
@@ -22,7 +22,7 @@ describe('useWheelPanning', () => {
     });
 
     it('set isGrabbing to true on pointer down', () => {
-        const { result } = renderHook(() => useWheelPanning(vi.fn()));
+        const { result } = renderHook(() => useWheelPanning(rs.fn()));
         act(() => {
             result.current.onPointerDown(getMockedWheelPointerEvent({ clientX: 10, clientY: 20 }));
         });
@@ -31,9 +31,9 @@ describe('useWheelPanning', () => {
     });
 
     it('update position on pointer move while panning', async () => {
-        const mockedSetPosition = vi.fn();
+        const mockedSetPosition = rs.fn();
 
-        const { result } = renderHook(() => useWheelPanning(vi.fn()));
+        const { result } = renderHook(() => useWheelPanning(rs.fn()));
 
         act(() => {
             result.current.onPointerDown(getMockedWheelPointerEvent({ clientX: 10, clientY: 10 }));
@@ -46,7 +46,7 @@ describe('useWheelPanning', () => {
     });
 
     it('set isPanning to false on pointer up', () => {
-        const mockedSetPanning = vi.fn();
+        const mockedSetPanning = rs.fn();
         const { result } = renderHook(() => useWheelPanning(mockedSetPanning));
         act(() => {
             result.current.onPointerDown(getMockedWheelPointerEvent({ clientX: 10, clientY: 20 }));

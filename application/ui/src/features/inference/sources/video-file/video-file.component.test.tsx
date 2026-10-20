@@ -12,7 +12,7 @@ import { VideoFile } from './video-file.component';
 
 describe('VideoFile', () => {
     const renderApp = (props: Parameters<typeof VideoFile>[0] = {}) => {
-        const handleSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+        const handleSubmit = rs.fn((event: FormEvent) => event.preventDefault());
 
         render(
             <Form validationBehavior='native' onSubmit={handleSubmit}>
@@ -33,7 +33,7 @@ describe('VideoFile', () => {
     };
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('renders the path input pre-filled from defaultState', () => {
@@ -157,7 +157,7 @@ describe('VideoFile', () => {
         expect(handleSubmit).toHaveBeenCalled();
     });
     it('shows the transfer progress and lets the user cancel it', async () => {
-        const onCancelUpload = vi.fn();
+        const onCancelUpload = rs.fn();
         renderApp({ uploadProgress: { bytesSent: 500, bytesTotal: 2000 }, onCancelUpload });
 
         expect(screen.getByRole('progressbar', { name: 'Upload progress' })).toHaveAttribute('aria-valuenow', '25');
@@ -175,7 +175,7 @@ describe('VideoFile', () => {
     });
 
     it('hides the cancel button once the transfer has completed', () => {
-        const onCancelUpload = vi.fn();
+        const onCancelUpload = rs.fn();
         renderApp({ uploadProgress: { bytesSent: 2000, bytesTotal: 2000 }, onCancelUpload });
 
         expect(screen.getByRole('progressbar', { name: 'Upload progress' })).toHaveAttribute('aria-valuenow', '100');

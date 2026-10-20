@@ -127,7 +127,7 @@ Never invent ad-hoc `uv`/`docker` commands when a `just` recipe already exists; 
 
 1. **Write Code:** Follow the conventions of the component you're editing (see `AGENTS.md` and the per-component guides). Keep changes minimal and scoped to what's needed.
 
-2. **Add Tests:** If your code includes new functionality, add corresponding tests (`pytest` for `library`/`application/backend`, Vitest/Playwright for `application/ui`) to maintain coverage and reliability.
+2. **Add Tests:** If your code includes new functionality, add corresponding tests (`pytest` for `library`/`application/backend`, Rstest/Playwright for `application/ui`) to maintain coverage and reliability.
 
 3. **Update Documentation:** If you've changed APIs or added new features, update the relevant documentation (`README.md`, `application/docs/`, `library/README.md`, or docstrings) in the same change set.
 

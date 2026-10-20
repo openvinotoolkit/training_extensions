@@ -11,8 +11,8 @@ const makeVideoRef = (overrides: Partial<HTMLVideoElement> = {}) => {
     return {
         current: {
             currentTime: 0,
-            play: vi.fn().mockResolvedValue(undefined),
-            pause: vi.fn(),
+            play: rs.fn().mockResolvedValue(undefined),
+            pause: rs.fn(),
             ...overrides,
         } as unknown as HTMLVideoElement,
     };
@@ -26,8 +26,8 @@ const renderControls = ({
     frameNumber = 0,
     step = STEP,
     videoRef = makeVideoRef(),
-    selectVideoFrame = vi.fn(),
-    changeCurrentFrameIndex = vi.fn(),
+    selectVideoFrame = rs.fn(),
+    changeCurrentFrameIndex = rs.fn(),
 } = {}) => {
     const videoFrame = getMockedVideoFrame({
         fps: FPS,
@@ -62,7 +62,7 @@ describe('useVideoControls', () => {
         });
 
         it('sets isPlaying back to false if videoRef.play() rejects', async () => {
-            const videoRef = makeVideoRef({ play: vi.fn().mockRejectedValue(new Error('AbortError')) });
+            const videoRef = makeVideoRef({ play: rs.fn().mockRejectedValue(new Error('AbortError')) });
             const { result } = renderControls({ videoRef });
 
             await act(async () => {
@@ -103,8 +103,8 @@ describe('useVideoControls', () => {
         });
 
         it('snaps to the nearest step-aligned frame on pause', async () => {
-            const selectVideoFrame = vi.fn();
-            const changeCurrentFrameIndex = vi.fn();
+            const selectVideoFrame = rs.fn();
+            const changeCurrentFrameIndex = rs.fn();
             const videoRef = makeVideoRef();
 
             const { result } = renderControls({
@@ -128,7 +128,7 @@ describe('useVideoControls', () => {
 
         it('does nothing when videoRef.current is null', () => {
             const videoRef = { current: null };
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             // @ts-expect-error - testing current null edge case
             const { result } = renderControls({ videoRef, selectVideoFrame });
 
@@ -142,8 +142,8 @@ describe('useVideoControls', () => {
 
     describe('nextFrame', () => {
         it('calls selectVideoFrame with the next frame number when not playing', () => {
-            const selectVideoFrame = vi.fn();
-            const changeCurrentFrameIndex = vi.fn();
+            const selectVideoFrame = rs.fn();
+            const changeCurrentFrameIndex = rs.fn();
             const videoRef = makeVideoRef();
             const step = 60;
             const frameNumber = 0;
@@ -166,8 +166,8 @@ describe('useVideoControls', () => {
         });
 
         it('advances videoRef.currentTime when playing instead of selecting a frame', async () => {
-            const selectVideoFrame = vi.fn();
-            const changeCurrentFrameIndex = vi.fn();
+            const selectVideoFrame = rs.fn();
+            const changeCurrentFrameIndex = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({
                 frameNumber: 0,
@@ -195,7 +195,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when already at the last frame', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = makeVideoRef();
             // last valid frame for step=1 is FRAME_COUNT - 1 = 599
             const { result } = renderControls({ frameNumber: FRAME_COUNT - 1, videoRef, selectVideoFrame });
@@ -208,7 +208,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when videoRef.current is null', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = { current: null };
             // @ts-expect-error - testing current null edge case
             const { result } = renderControls({ videoRef, selectVideoFrame });
@@ -223,8 +223,8 @@ describe('useVideoControls', () => {
 
     describe('previousFrame', () => {
         it('calls selectVideoFrame with the previous frame number when not playing', () => {
-            const selectVideoFrame = vi.fn();
-            const changeCurrentFrameIndex = vi.fn();
+            const selectVideoFrame = rs.fn();
+            const changeCurrentFrameIndex = rs.fn();
             const videoRef = makeVideoRef();
             const step = 1;
             const frameNumber = 5;
@@ -248,8 +248,8 @@ describe('useVideoControls', () => {
         });
 
         it('rewinds videoRef.currentTime when playing instead of selecting a frame', async () => {
-            const selectVideoFrame = vi.fn();
-            const changeCurrentFrameIndex = vi.fn();
+            const selectVideoFrame = rs.fn();
+            const changeCurrentFrameIndex = rs.fn();
             const ONE_SECOND = 1;
             const currentTime = 10;
             const step = 1;
@@ -280,7 +280,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when already at the first frame', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({ frameNumber: 0, videoRef, selectVideoFrame });
 
@@ -292,7 +292,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when videoRef.current is null', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = { current: null };
             // @ts-expect-error - testing current null edge case
             const { result } = renderControls({ frameNumber: 5, videoRef, selectVideoFrame });
@@ -307,8 +307,8 @@ describe('useVideoControls', () => {
 
     describe('goto', () => {
         it('seeks to the given frame when not playing', () => {
-            const selectVideoFrame = vi.fn();
-            const changeCurrentFrameIndex = vi.fn();
+            const selectVideoFrame = rs.fn();
+            const changeCurrentFrameIndex = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({ videoRef, selectVideoFrame, changeCurrentFrameIndex });
 
@@ -322,7 +322,7 @@ describe('useVideoControls', () => {
         });
 
         it('pauses and seeks when called while playing', async () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({ videoRef, selectVideoFrame });
 
@@ -340,7 +340,7 @@ describe('useVideoControls', () => {
         });
 
         it('snaps to the nearest step-aligned frame', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({ frameNumber: 0, step: 60, videoRef, selectVideoFrame });
 
@@ -352,7 +352,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when the frame number is out of range (>= totalFrames)', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({ videoRef, selectVideoFrame });
 
@@ -364,7 +364,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when the frame number is negative', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = makeVideoRef();
             const { result } = renderControls({ videoRef, selectVideoFrame });
 
@@ -376,7 +376,7 @@ describe('useVideoControls', () => {
         });
 
         it('does nothing when videoRef.current is null', () => {
-            const selectVideoFrame = vi.fn();
+            const selectVideoFrame = rs.fn();
             const videoRef = { current: null };
             // @ts-expect-error - testing current null edge case
             const { result } = renderControls({ videoRef, selectVideoFrame });

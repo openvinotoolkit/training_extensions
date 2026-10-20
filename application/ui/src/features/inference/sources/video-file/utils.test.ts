@@ -5,13 +5,14 @@ import { API_BASE_URL } from '@/api';
 import { createI18nInstance } from '@/i18n';
 import { HttpResponse, http as mswHttp } from 'msw';
 
+import * as actualTusUpload from '../../../../api/tus-upload' with { rstest: 'importActual' };
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { getVideoFileInitialConfig, prepareVideoFileFormData, videoFileBodyFormatter } from './utils';
 
-vi.mock('../../../../api/tus-upload', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../../../../api/tus-upload')>()),
-    transferFile: vi.fn(async () => '00000000-0000-4000-8000-000000000001'),
+rs.mock('../../../../api/tus-upload', () => ({
+    ...actualTusUpload,
+    transferFile: rs.fn(async () => '00000000-0000-4000-8000-000000000001'),
 }));
 
 const buildFormData = (fields: Record<string, string | Blob>): FormData => {

@@ -3,18 +3,19 @@
 
 import { act, waitFor } from '@testing-library/react';
 import { wrap } from 'comlink';
+import * as actualComlink from 'comlink' with { rstest: 'importActual' };
 
 import { renderHook } from '../../../../test-utils/render';
 import { useSSIM } from './use-ssim.hook';
 
-vi.mock('comlink', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('comlink')>()),
-    wrap: vi.fn(),
+rs.mock('comlink', () => ({
+    ...actualComlink,
+    wrap: rs.fn(),
 }));
 
 class FakeWorker {
     static instances: FakeWorker[] = [];
-    terminate = vi.fn();
+    terminate = rs.fn();
 
     constructor() {
         FakeWorker.instances.push(this);
@@ -30,8 +31,8 @@ const toolMatch = (x: number, y: number) => ({
     confidence: 0.95,
 });
 
-const mockWorker = (executeSSIM: ReturnType<typeof vi.fn>) => {
-    vi.mocked(wrap).mockReturnValue({ build: () => Promise.resolve({ executeSSIM }) } as never);
+const mockWorker = (executeSSIM: ReturnType<typeof rs.fn>) => {
+    rs.mocked(wrap).mockReturnValue({ build: () => Promise.resolve({ executeSSIM }) } as never);
 };
 
 const flushPromises = () => act(() => new Promise((resolve) => setTimeout(resolve, 0)));
@@ -39,15 +40,15 @@ const flushPromises = () => act(() => new Promise((resolve) => setTimeout(resolv
 describe('useSSIM', () => {
     beforeEach(() => {
         FakeWorker.instances = [];
-        vi.stubGlobal('Worker', FakeWorker);
+        rs.stubGlobal('Worker', FakeWorker);
     });
 
     afterEach(() => {
-        vi.unstubAllGlobals();
+        rs.unstubAllGlobals();
     });
 
     it('replaces the worker and keeps the template when a run fails', async () => {
-        const executeSSIM = vi.fn().mockRejectedValue(new Error('worker crashed'));
+        const executeSSIM = rs.fn().mockRejectedValue(new Error('worker crashed'));
         mockWorker(executeSSIM);
 
         const { result } = renderHook(() => useSSIM('rectangle'));
@@ -70,8 +71,8 @@ describe('useSSIM', () => {
     });
 
     it('rebuilds the worker on the next run when the first build failed', async () => {
-        const executeSSIM = vi.fn().mockResolvedValue([]);
-        vi.mocked(wrap)
+        const executeSSIM = rs.fn().mockResolvedValue([]);
+        rs.mocked(wrap)
             .mockReturnValueOnce({ build: () => Promise.reject(new Error('wasm failed')) } as never)
             .mockReturnValue({ build: () => Promise.resolve({ executeSSIM }) } as never);
 
@@ -89,7 +90,7 @@ describe('useSSIM', () => {
     });
 
     it('converts the matches to polygons when the shape type is polygon', async () => {
-        mockWorker(vi.fn().mockResolvedValue([toolMatch(60, 60)]));
+        mockWorker(rs.fn().mockResolvedValue([toolMatch(60, 60)]));
 
         const { result } = renderHook(() => useSSIM('polygon'));
 
@@ -105,7 +106,7 @@ describe('useSSIM', () => {
 
     it('ignores the result of a run that was reset while in flight', async () => {
         const { promise, resolve } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
-        mockWorker(vi.fn().mockReturnValue(promise));
+        mockWorker(rs.fn().mockReturnValue(promise));
 
         const { result } = renderHook(() => useSSIM('rectangle'));
 
@@ -130,7 +131,7 @@ describe('useSSIM', () => {
 
     it('ignores the result of a run that was superseded by a newer one', async () => {
         const { promise: firstRun, resolve: resolveFirstRun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
-        const executeSSIM = vi
+        const executeSSIM = rs
             .fn()
             .mockReturnValueOnce(firstRun)
             .mockResolvedValueOnce([toolMatch(60, 60)]);
@@ -159,7 +160,7 @@ describe('useSSIM', () => {
         const { promise: firstRun, reject: rejectFirstRun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
         const { promise: secondRun, resolve: resolveSecondRun } =
             Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
-        mockWorker(vi.fn().mockReturnValueOnce(firstRun).mockReturnValueOnce(secondRun));
+        mockWorker(rs.fn().mockReturnValueOnce(firstRun).mockReturnValueOnce(secondRun));
 
         const { result } = renderHook(() => useSSIM('rectangle'));
 
@@ -186,7 +187,7 @@ describe('useSSIM', () => {
 
     it('does not replace the worker when a run rejects after a reset', async () => {
         const { promise, reject } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
-        mockWorker(vi.fn().mockReturnValue(promise));
+        mockWorker(rs.fn().mockReturnValue(promise));
 
         const { result } = renderHook(() => useSSIM('rectangle'));
 
@@ -208,7 +209,7 @@ describe('useSSIM', () => {
     });
 
     it('reruns the last template with the given overrides', async () => {
-        const executeSSIM = vi.fn().mockResolvedValue([toolMatch(60, 60)]);
+        const executeSSIM = rs.fn().mockResolvedValue([toolMatch(60, 60)]);
         mockWorker(executeSSIM);
 
         const { result } = renderHook(() => useSSIM('rectangle'));
@@ -239,7 +240,7 @@ describe('useSSIM', () => {
     });
 
     it('limits the previewed shapes to the selected number of items', async () => {
-        mockWorker(vi.fn().mockResolvedValue([toolMatch(40, 40), toolMatch(70, 70)]));
+        mockWorker(rs.fn().mockResolvedValue([toolMatch(40, 40), toolMatch(70, 70)]));
 
         const { result } = renderHook(() => useSSIM('rectangle'));
 
@@ -261,7 +262,7 @@ describe('useSSIM', () => {
 
     it('keeps the selected number of items and the preview while re-running', async () => {
         const { promise: rerunResult, resolve: resolveRerun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
-        const executeSSIM = vi
+        const executeSSIM = rs
             .fn()
             .mockResolvedValueOnce([toolMatch(40, 40), toolMatch(70, 70)])
             .mockReturnValueOnce(rerunResult);
@@ -296,7 +297,7 @@ describe('useSSIM', () => {
 
     it('clears the previous preview when running a new template', async () => {
         const { promise: secondRun } = Promise.withResolvers<ReturnType<typeof toolMatch>[]>();
-        const executeSSIM = vi
+        const executeSSIM = rs
             .fn()
             .mockResolvedValueOnce([toolMatch(60, 60)])
             .mockReturnValueOnce(secondRun);

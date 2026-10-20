@@ -8,7 +8,7 @@ import { render } from 'test-utils/render';
 import { TaskSelection } from './task-selection.component';
 
 describe('TaskSelection', () => {
-    const App = ({ selectedTask = 'detection', setSelectedTask = vi.fn() }) => {
+    const App = ({ selectedTask = 'detection', setSelectedTask = rs.fn() }) => {
         return <TaskSelection selectedTask={selectedTask as TaskType} setSelectedTask={setSelectedTask} />;
     };
 
@@ -32,7 +32,7 @@ describe('TaskSelection', () => {
     });
 
     it('selects a task when the whole element is clicked', () => {
-        const mockSetSelectedTask = vi.fn();
+        const mockSetSelectedTask = rs.fn();
         render(<App setSelectedTask={mockSetSelectedTask} />);
 
         const segOption = screen.getByLabelText('Task option: Instance Segmentation');
@@ -42,7 +42,7 @@ describe('TaskSelection', () => {
     });
 
     it('selects a task when the radio element is clicked', () => {
-        const mockSetSelectedTask = vi.fn();
+        const mockSetSelectedTask = rs.fn();
         render(<App setSelectedTask={mockSetSelectedTask} />);
 
         const classRadio = screen.getByLabelText('classification');

@@ -16,14 +16,14 @@ import { IpCamera } from '../ip-camera/ip-camera.component';
 import { getIpCameraInitialConfig, ipCameraBodyFormatter } from '../ip-camera/utils';
 import { EditSource } from './edit-source.component';
 
-vi.mock('../hooks/use-source-mutation.hook');
-vi.mock('../../../../hooks/api/pipeline.hook');
+rs.mock('../hooks/use-source-mutation.hook');
+rs.mock('../../../../hooks/api/pipeline.hook');
 
 describe('EditIpCamera', () => {
     const { t } = createI18nInstance({ lng: 'en' });
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         server.use(http.post('/api/sources/{source_id}:test', () => HttpResponse.json({ reachable: true })));
     });
 
@@ -35,12 +35,12 @@ describe('EditIpCamera', () => {
         auth_required: true,
     };
 
-    const renderApp = (mockOnSaved = vi.fn(), isConnected = false) => {
+    const renderApp = (mockOnSaved = rs.fn(), isConnected = false) => {
         render(
             <EditSource
                 config={getIpCameraInitialConfig(t)}
                 onSaved={mockOnSaved}
-                onBackToList={vi.fn()}
+                onBackToList={rs.fn()}
                 componentFields={(state: IPCameraSourceConfig) => <IpCamera defaultState={state} />}
                 bodyFormatter={ipCameraBodyFormatter}
                 isConnected={isConnected}
@@ -49,12 +49,12 @@ describe('EditIpCamera', () => {
     };
 
     it('calls connectToPipelineMutation after successful "Save & Connect" submit', async () => {
-        const mockOnSaved = vi.fn();
-        const mockSourceMutation = vi.fn().mockResolvedValue(updatedConfig.id);
-        const mockConnectToPipeline = vi.fn().mockResolvedValue(undefined);
+        const mockOnSaved = rs.fn();
+        const mockSourceMutation = rs.fn().mockResolvedValue(updatedConfig.id);
+        const mockConnectToPipeline = rs.fn().mockResolvedValue(undefined);
 
-        vi.mocked(useConnectSourceToPipeline).mockReturnValue(mockConnectToPipeline);
-        vi.mocked(useSourceMutation).mockReturnValue(mockSourceMutation);
+        rs.mocked(useConnectSourceToPipeline).mockReturnValue(mockConnectToPipeline);
+        rs.mocked(useSourceMutation).mockReturnValue(mockSourceMutation);
 
         renderApp(mockOnSaved);
 
@@ -75,12 +75,12 @@ describe('EditIpCamera', () => {
     });
 
     it('does not call connectToPipelineMutation after successful "Save" submit', async () => {
-        const mockOnSaved = vi.fn();
-        const mockSourceMutation = vi.fn().mockResolvedValue(updatedConfig.id);
-        const mockConnectToPipeline = vi.fn().mockResolvedValue(undefined);
+        const mockOnSaved = rs.fn();
+        const mockSourceMutation = rs.fn().mockResolvedValue(updatedConfig.id);
+        const mockConnectToPipeline = rs.fn().mockResolvedValue(undefined);
 
-        vi.mocked(useConnectSourceToPipeline).mockReturnValue(mockConnectToPipeline);
-        vi.mocked(useSourceMutation).mockReturnValue(mockSourceMutation);
+        rs.mocked(useConnectSourceToPipeline).mockReturnValue(mockConnectToPipeline);
+        rs.mocked(useSourceMutation).mockReturnValue(mockSourceMutation);
 
         renderApp(mockOnSaved);
 
@@ -101,19 +101,19 @@ describe('EditIpCamera', () => {
     });
 
     it('hides "Save & Connect" button when already connected', () => {
-        vi.mocked(useConnectSourceToPipeline).mockReturnValue(vi.fn());
-        vi.mocked(useSourceMutation).mockReturnValue(vi.fn());
+        rs.mocked(useConnectSourceToPipeline).mockReturnValue(rs.fn());
+        rs.mocked(useSourceMutation).mockReturnValue(rs.fn());
 
-        renderApp(vi.fn(), true);
+        renderApp(rs.fn(), true);
 
         expect(screen.queryByRole('button', { name: /Save & Connect/i })).not.toBeInTheDocument();
     });
 
     it('shows "Save & Connect" button when not connected', () => {
-        vi.mocked(useConnectSourceToPipeline).mockReturnValue(vi.fn());
-        vi.mocked(useSourceMutation).mockReturnValue(vi.fn());
+        rs.mocked(useConnectSourceToPipeline).mockReturnValue(rs.fn());
+        rs.mocked(useSourceMutation).mockReturnValue(rs.fn());
 
-        renderApp(vi.fn(), false);
+        renderApp(rs.fn(), false);
 
         expect(screen.getByRole('button', { name: /Save & Connect/i })).toBeInTheDocument();
     });

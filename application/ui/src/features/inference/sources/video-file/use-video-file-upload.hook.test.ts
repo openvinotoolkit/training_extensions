@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { uploadSourceVideo } from '@/api';
+import * as actualApi from '@/api' with { rstest: 'importActual' };
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { useVideoFileUpload } from './use-video-file-upload.hook';
 
-vi.mock('@/api', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('@/api')>()),
-    uploadSourceVideo: vi.fn(),
+rs.mock('@/api', () => ({
+    ...actualApi,
+    uploadSourceVideo: rs.fn(),
 }));
 
 const buildFormData = (): FormData => {
@@ -22,7 +23,7 @@ const buildFormData = (): FormData => {
 describe('useVideoFileUpload', () => {
     it('exposes the transfer progress while uploading and resets it afterwards', async () => {
         let finish: (() => void) | undefined;
-        vi.mocked(uploadSourceVideo).mockImplementation(
+        rs.mocked(uploadSourceVideo).mockImplementation(
             async (_file, options) =>
                 new Promise((resolve) => {
                     options?.onProgress?.(4);
@@ -48,7 +49,7 @@ describe('useVideoFileUpload', () => {
     });
 
     it('aborts the transfer when cancelled', async () => {
-        vi.mocked(uploadSourceVideo).mockImplementation(
+        rs.mocked(uploadSourceVideo).mockImplementation(
             async (_file, options) =>
                 new Promise((_resolve, reject) => {
                     options?.onProgress?.(1);
@@ -75,7 +76,7 @@ describe('useVideoFileUpload', () => {
 
     it('aborts the transfer when unmounted', async () => {
         let signal: AbortSignal | undefined;
-        vi.mocked(uploadSourceVideo).mockImplementation(
+        rs.mocked(uploadSourceVideo).mockImplementation(
             async (_file, options) =>
                 new Promise(() => {
                     signal = options?.signal;

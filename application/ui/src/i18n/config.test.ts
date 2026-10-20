@@ -1,8 +1,6 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { afterEach, describe, expect, it } from 'vitest';
-
 import { createI18nInstance, LANGUAGE_STORAGE_KEY } from './config';
 import { resources } from './locales';
 

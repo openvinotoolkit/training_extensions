@@ -11,28 +11,28 @@ import { server } from '../../../msw-node-setup';
 import { useWebRTCConnection } from '../stream/web-rtc-connection-provider';
 import { TogglePipelineButton } from './toggle-pipeline-button.component';
 
-vi.mock('../stream/web-rtc-connection-provider');
+rs.mock('../stream/web-rtc-connection-provider');
 
-const mockStopStream = vi.fn().mockResolvedValue(undefined);
+const mockStopStream = rs.fn().mockResolvedValue(undefined);
 
 describe('TogglePipelineButton', () => {
     beforeEach(() => {
-        vi.mocked(useWebRTCConnection).mockReturnValue({
+        rs.mocked(useWebRTCConnection).mockReturnValue({
             status: 'idle',
-            start: vi.fn(),
+            start: rs.fn(),
             stop: mockStopStream,
             webRTCConnectionRef: { current: null },
         });
     });
 
     afterEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('enables pipeline when currently idle', async () => {
-        vi.mocked(useWebRTCConnection).mockReturnValue({
+        rs.mocked(useWebRTCConnection).mockReturnValue({
             status: 'connected',
-            start: vi.fn(),
+            start: rs.fn(),
             stop: mockStopStream,
             webRTCConnectionRef: { current: null },
         });
@@ -78,9 +78,9 @@ describe('TogglePipelineButton', () => {
     });
 
     it('stops stream when pipeline is disabled and stream is active', async () => {
-        vi.mocked(useWebRTCConnection).mockReturnValue({
+        rs.mocked(useWebRTCConnection).mockReturnValue({
             status: 'connected',
-            start: vi.fn(),
+            start: rs.fn(),
             stop: mockStopStream,
             webRTCConnectionRef: { current: null },
         });

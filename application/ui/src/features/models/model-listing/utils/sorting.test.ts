@@ -355,7 +355,7 @@ describe('sortModels', () => {
 
     describe('default (unknown sort)', () => {
         it('returns the original models array and logs an error for an unknown sort option', () => {
-            const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            const errorSpy = rs.spyOn(console, 'error').mockImplementation(() => undefined);
 
             const models = [getMockedModel({ id: 'a' }), getMockedModel({ id: 'b' })];
             // Cast to bypass TypeScript's exhaustive check — tests the runtime default branch

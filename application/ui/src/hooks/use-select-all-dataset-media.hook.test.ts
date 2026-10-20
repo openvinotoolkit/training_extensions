@@ -15,7 +15,7 @@ const getQueryFromRequest = (request: Request) => new URL(request.url).searchPar
 
 describe('useSelectAllDatasetMedia', () => {
     afterEach(() => {
-        vi.restoreAllMocks();
+        rs.restoreAllMocks();
     });
 
     it('resolves the whole dataset in a single request, and reports which ids are images', async () => {
@@ -97,7 +97,7 @@ describe('useSelectAllDatasetMedia', () => {
     });
 
     it('discards the response when the filters change during the request', async () => {
-        const filterOptions = vi
+        const filterOptions = rs
             .spyOn(datasetMediaFilterOptionsHook, 'useDatasetMediaFilterOptions')
             .mockReturnValue({ subsets: ['training'] });
 

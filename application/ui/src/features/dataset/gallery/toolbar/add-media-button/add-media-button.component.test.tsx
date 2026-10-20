@@ -9,7 +9,7 @@ import { AddMediaButton } from './add-media-button.component';
 
 describe('AddMediaButton', () => {
     it('calls onFilesSelected correctly', () => {
-        const mockOnFilesSelected = vi.fn();
+        const mockOnFilesSelected = rs.fn();
         const mockFile = new File(['file content'], 'test-image.jpg', {
             type: 'image/jpeg',
             lastModified: Date.now(),
@@ -24,7 +24,7 @@ describe('AddMediaButton', () => {
     });
 
     it('sets the expected accepted file extensions', () => {
-        render(<AddMediaButton onFileUpload={vi.fn()} />);
+        render(<AddMediaButton onFileUpload={rs.fn()} />);
 
         const input = screen.getByTestId('upload-media-input');
 
@@ -32,21 +32,21 @@ describe('AddMediaButton', () => {
     });
 
     it('opens file picker when button is clicked', () => {
-        const mockOnFilesSelected = vi.fn();
+        const mockOnFilesSelected = rs.fn();
 
         render(<AddMediaButton onFileUpload={mockOnFilesSelected} />);
 
         const button = screen.getByRole('button', { name: /Upload media/ });
         const input = screen.getByTestId('upload-media-input') as HTMLInputElement;
 
-        const clickSpy = vi.spyOn(input, 'click');
+        const clickSpy = rs.spyOn(input, 'click');
         fireEvent.click(button);
 
         expect(clickSpy).toHaveBeenCalled();
     });
 
     it('disables button when isDisabled prop is true', () => {
-        render(<AddMediaButton onFileUpload={vi.fn()} isDisabled />);
+        render(<AddMediaButton onFileUpload={rs.fn()} isDisabled />);
 
         const button = screen.getByRole('button', { name: /Upload media/ });
 

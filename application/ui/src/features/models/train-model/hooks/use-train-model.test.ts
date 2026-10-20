@@ -5,13 +5,13 @@ import type { ConfigurableParameter, ConfigurableParameterGroup } from '@/api/ty
 import { act, waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import { renderHook } from 'test-utils/render';
-import { vi } from 'vitest';
 
 import { getMockedJob } from '../../../../../mocks/mock-job';
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { findGroupByKey } from '../../model-listing/model-training-parameters/utils';
 import { deepReplaceParameters } from '../advanced-settings/utils';
+import * as actualTrainModelProvider from '../train-model-provider.component' with { rstest: 'importActual' };
 import {
     CURRENT_DATASET_SOURCE_ID,
     getRevisionSourceId,
@@ -37,23 +37,22 @@ const DEFAULT_STATE: Partial<TrainModelContextProps> = {
     ],
 };
 
-const mockTrainModelState = vi.hoisted(() => vi.fn(() => DEFAULT_STATE));
+const mockTrainModelState = rs.hoisted(() => rs.fn(() => DEFAULT_STATE));
 
-vi.mock('../train-model-provider.component', async () => {
-    const actualImport = await vi.importActual('../train-model-provider.component');
+rs.mock('../train-model-provider.component', () => {
     return {
-        ...actualImport,
+        ...actualTrainModelProvider,
         useTrainModelState: mockTrainModelState,
     };
 });
 
-vi.mock('hooks/use-project-identifier.hook', () => ({
+rs.mock('hooks/use-project-identifier.hook', () => ({
     useProjectIdentifier: () => 'project-123',
 }));
 
 const mockedJob = getMockedJob({ job_id: 'job-abc' });
 
-const registerSuccessfulTrainHandler = (trainSpy: () => void = vi.fn<() => void>()) => {
+const registerSuccessfulTrainHandler = (trainSpy: () => void = rs.fn<() => void>()) => {
     server.use(
         http.post('/api/jobs', () => {
             trainSpy();
@@ -91,13 +90,13 @@ describe('useTrainModel', () => {
         it('does not call any API when model architecture is not selected', async () => {
             mockTrainModelState.mockReturnValue({ ...DEFAULT_STATE, resolvedModelArchitectureId: null });
 
-            const trainSpy = vi.fn();
+            const trainSpy = rs.fn();
             registerSuccessfulTrainHandler(trainSpy);
 
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             // Give the async path a chance to fire — it should not.
@@ -108,13 +107,13 @@ describe('useTrainModel', () => {
         it('does not call any API when training device is not selected', async () => {
             mockTrainModelState.mockReturnValue({ ...DEFAULT_STATE, selectedTrainingDevice: null });
 
-            const trainSpy = vi.fn();
+            const trainSpy = rs.fn();
             registerSuccessfulTrainHandler(trainSpy);
 
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             await new Promise((resolve) => setTimeout(resolve, 50));
@@ -124,10 +123,10 @@ describe('useTrainModel', () => {
 
     describe('direct training', () => {
         it('starts training immediately when not in advanced settings mode', async () => {
-            const trainSpy = vi.fn();
+            const trainSpy = rs.fn();
             registerSuccessfulTrainHandler(trainSpy);
 
-            const onSuccess = vi.fn();
+            const onSuccess = rs.fn();
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
@@ -148,10 +147,10 @@ describe('useTrainModel', () => {
                 defaultTrainingConfiguration: mockedTrainingConfiguration,
             });
 
-            const trainSpy = vi.fn();
+            const trainSpy = rs.fn();
             registerSuccessfulTrainHandler(trainSpy);
 
-            const onSuccess = vi.fn();
+            const onSuccess = rs.fn();
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
@@ -203,7 +202,7 @@ describe('useTrainModel', () => {
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             await waitFor(() => expect(capturedBody).toBeDefined());
@@ -249,7 +248,7 @@ describe('useTrainModel', () => {
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             await waitFor(() => expect(capturedBody).toBeDefined());
@@ -274,7 +273,7 @@ describe('useTrainModel', () => {
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             await waitFor(() => expect(capturedBody).toBeDefined());
@@ -331,7 +330,7 @@ describe('useTrainModel', () => {
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             await waitFor(() => expect(callOrder).toEqual(['config-update', 'train']));
@@ -341,7 +340,7 @@ describe('useTrainModel', () => {
             registerSuccessfulConfigUpdateHandler();
             registerSuccessfulTrainHandler();
 
-            const onSuccess = vi.fn();
+            const onSuccess = rs.fn();
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
@@ -354,7 +353,7 @@ describe('useTrainModel', () => {
         it('does not call onSuccess when the config update fails', async () => {
             registerFailingConfigUpdateHandler();
 
-            const onSuccess = vi.fn();
+            const onSuccess = rs.fn();
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
@@ -369,7 +368,7 @@ describe('useTrainModel', () => {
             registerSuccessfulConfigUpdateHandler();
             registerFailingTrainHandler();
 
-            const onSuccess = vi.fn();
+            const onSuccess = rs.fn();
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
@@ -397,7 +396,7 @@ describe('useTrainModel', () => {
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             // Wait for two PATCH calls: original update + rollback
@@ -422,7 +421,7 @@ describe('useTrainModel', () => {
             const { result } = renderHook(() => useTrainModel());
 
             act(() => {
-                result.current.trainModel({ onSuccess: vi.fn() });
+                result.current.trainModel({ onSuccess: rs.fn() });
             });
 
             await waitFor(() => expect(capturedConfigBody).toBeDefined());

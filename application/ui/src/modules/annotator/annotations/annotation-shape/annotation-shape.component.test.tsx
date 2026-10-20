@@ -6,13 +6,13 @@ import { getMockedAnnotation } from 'mocks/mock-annotation';
 import { getMockedAnnotationLabel } from 'mocks/mock-labels';
 import { render } from 'test-utils/render';
 
+import * as actualLabels from '../../../../shared/labels' with { rstest: 'importActual' };
 import type { Annotation, AnnotationLabel, AnnotationLabelRef, Polygon, Rect } from '../../../../shared/types';
 import { AnnotationShape } from './annotation-shape.component';
 
-vi.mock('../../../../shared/labels', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../../../../shared/labels')>();
+rs.mock('../../../../shared/labels', () => {
     return {
-        ...actual,
+        ...actualLabels,
         useLabelResolver: () => ({
             getLabel: () => undefined,
             resolveAnnotationLabel: (ref: AnnotationLabelRef): AnnotationLabel | undefined => {

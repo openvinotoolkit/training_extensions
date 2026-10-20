@@ -10,18 +10,18 @@ import { delay, HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { http } from '../../../../api/utils';
+import * as actualLoadImageQuery from '../../../../modules/annotator/hooks/use-load-image-query.hook' with {
+    rstest: 'importActual',
+};
 import { server } from '../../../../msw-node-setup';
 import { type SelectableModel } from '../../../../shared/selectable-model';
 import { SubsetMediaDialog } from './subset-media-dialog.component';
 
 const MEDIA_SIZE = 100;
 
-vi.mock('../../../../modules/annotator/hooks/use-load-image-query.hook', async (importOriginal) => {
-    const actual =
-        await importOriginal<typeof import('../../../../modules/annotator/hooks/use-load-image-query.hook')>();
-
+rs.mock('../../../../modules/annotator/hooks/use-load-image-query.hook', () => {
     return {
-        ...actual,
+        ...actualLoadImageQuery,
         useLoadImageQuery: () => ({
             data: new ImageData(new Uint8ClampedArray(4 * MEDIA_SIZE * MEDIA_SIZE), MEDIA_SIZE, MEDIA_SIZE),
             isSuccess: true,
@@ -67,9 +67,9 @@ const renderApp = ({ selectedModel }: { selectedModel?: SelectableModel } = { se
     return render(
         <SubsetMediaDialog
             item={item}
-            onClose={vi.fn()}
+            onClose={rs.fn()}
             selectedModel={selectedModel}
-            onSelectNextMediaItem={vi.fn()}
+            onSelectNextMediaItem={rs.fn()}
         />
     );
 };

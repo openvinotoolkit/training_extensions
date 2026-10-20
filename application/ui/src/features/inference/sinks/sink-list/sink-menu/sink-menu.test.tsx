@@ -15,14 +15,14 @@ describe('SinkMenu', () => {
         id = 'id-test',
         name = 'name test',
         isConnected = false,
-        onEdit = vi.fn(),
-        onTest = vi.fn(),
+        onEdit = rs.fn(),
+        onTest = rs.fn(),
     }: Partial<SinkMenuProps>) => {
         render(<SinkMenu id={id} name={name} isConnected={isConnected} onEdit={onEdit} onTest={onTest} />);
     };
 
     it('test connection', async () => {
-        const onTest = vi.fn().mockResolvedValue(true);
+        const onTest = rs.fn().mockResolvedValue(true);
         renderApp({ onTest });
 
         await userEvent.click(screen.getByRole('button', { name: /sink menu/i }));
@@ -32,7 +32,7 @@ describe('SinkMenu', () => {
     });
 
     it('edit', async () => {
-        const mockedOnEdit = vi.fn();
+        const mockedOnEdit = rs.fn();
 
         renderApp({ onEdit: mockedOnEdit });
 
@@ -45,7 +45,7 @@ describe('SinkMenu', () => {
     describe('remove', () => {
         const name = 'test-name';
         const configRequests = (status = 204) => {
-            const pipelinePatchSpy = vi.fn();
+            const pipelinePatchSpy = rs.fn();
 
             server.use(
                 http.patch('/api/projects/{project_id}/pipeline', () => {
@@ -140,7 +140,7 @@ describe('SinkMenu', () => {
         const name = 'test-name';
 
         it('successfully disconnects', async () => {
-            const pipelinePatchSpy = vi.fn();
+            const pipelinePatchSpy = rs.fn();
 
             server.use(
                 http.patch('/api/projects/{project_id}/pipeline', async ({ request }) => {

@@ -11,20 +11,21 @@ import { render } from 'test-utils/render';
 import { http } from '../../../api/utils';
 import { server } from '../../../msw-node-setup';
 import { EMPTY_LABEL_ID } from '../../../shared/labels';
+import * as actualLabels from '../../../shared/labels' with { rstest: 'importActual' };
 import type { AnnotationLabel, AnnotationLabelRef } from '../../../shared/types';
 import { AnnotationShapeWithLabels } from './annotation-shape-with-labels.component';
 
-const mockDeleteAnnotations = vi.fn();
-const mockUpdateAnnotations = vi.fn();
-const mockSetSelectedLabelId = vi.fn();
+const mockDeleteAnnotations = rs.fn();
+const mockUpdateAnnotations = rs.fn();
+const mockSetSelectedLabelId = rs.fn();
 
-vi.mock('../annotation-visibility-provider.component', () => ({
+rs.mock('../annotation-visibility-provider.component', () => ({
     useAnnotationVisibility: () => ({
         isVisible: true,
     }),
 }));
 
-vi.mock('../annotation-document-provider.component', () => ({
+rs.mock('../annotation-document-provider.component', () => ({
     useAnnotationCommands: () => ({
         updateAnnotations: mockUpdateAnnotations,
         deleteAnnotations: mockDeleteAnnotations,
@@ -32,7 +33,7 @@ vi.mock('../annotation-document-provider.component', () => ({
     useIsAnnotatorReadOnly: () => false,
 }));
 
-vi.mock('../annotator-labels-provider.component', () => ({
+rs.mock('../annotator-labels-provider.component', () => ({
     useAnnotatorLabels: () => ({
         labels: [],
         selectedLabel: null,
@@ -41,7 +42,7 @@ vi.mock('../annotator-labels-provider.component', () => ({
     }),
 }));
 
-vi.mock('../selected-media-item-provider.component', () => ({
+rs.mock('../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({
         mediaItem: {
             width: 100,
@@ -50,10 +51,9 @@ vi.mock('../selected-media-item-provider.component', () => ({
     }),
 }));
 
-vi.mock('../../../shared/labels', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../../../shared/labels')>();
+rs.mock('../../../shared/labels', () => {
     return {
-        ...actual,
+        ...actualLabels,
         useLabelResolver: () => ({
             getLabel: () => undefined,
             resolveAnnotationLabel: (ref: AnnotationLabelRef): AnnotationLabel | undefined => {
@@ -80,7 +80,7 @@ describe('AnnotationShapeWithLabels', () => {
             })
         );
 
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('updates a full-image annotation to have no labels when removing its last label', async () => {

@@ -8,13 +8,13 @@ import { getMockedLogEntry } from 'mocks/mock-log-entry';
 import { LogEntry } from './log-entry.component';
 import { LogRecord } from './log-types';
 
-const mockCopy = vi.fn();
+const mockCopy = rs.fn();
 
-vi.mock('hooks/use-clipboard/use-clipboard.hook', () => ({
+rs.mock('hooks/use-clipboard/use-clipboard.hook', () => ({
     useClipboard: () => ({ copy: mockCopy }),
 }));
 
-vi.mocked(useClipboard);
+rs.mocked(useClipboard);
 
 const renderLogEntry = (overrides: Partial<LogRecord> = {}) => {
     const entry = getMockedLogEntry(overrides);

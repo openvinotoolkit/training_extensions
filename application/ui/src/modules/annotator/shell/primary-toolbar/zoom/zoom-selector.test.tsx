@@ -2,33 +2,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useZoom } from '@/components/zoom/zoom.provider';
+import * as actualZoom from '@/components/zoom/zoom.provider' with { rstest: 'importActual' };
 import { fireEvent, screen } from '@testing-library/react';
 import { render } from 'test-utils/render';
 
 import { ZoomSelector } from './zoom-selector.component';
 
-const mockedOnZoomChange = vi.fn();
+const mockedOnZoomChange = rs.fn();
 
-vi.mock(import('@/components/zoom/zoom.provider'), async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual,
-        useSetZoom: () => ({
-            setZoom: vi.fn(),
-            fitToScreen: vi.fn(),
-            onZoomChange: mockedOnZoomChange,
-        }),
-        useZoom: vi.fn(),
-    };
-});
+rs.mock('@/components/zoom/zoom.provider', () => ({
+    ...actualZoom,
+    useSetZoom: () => ({
+        setZoom: rs.fn(),
+        fitToScreen: rs.fn(),
+        onZoomChange: mockedOnZoomChange,
+    }),
+    useZoom: rs.fn(),
+}));
 
 describe('ZoomSelector', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('displays the correct zoom value', () => {
-        vi.mocked(useZoom).mockReturnValue({
+        rs.mocked(useZoom).mockReturnValue({
             scale: 0.21,
             maxZoomIn: 0,
             hasAnimation: false,
@@ -41,7 +39,7 @@ describe('ZoomSelector', () => {
     });
 
     it('calls onZoomChange when zoom in button is clicked', () => {
-        vi.mocked(useZoom).mockReturnValue({
+        rs.mocked(useZoom).mockReturnValue({
             scale: 0.5,
             maxZoomIn: 2,
             hasAnimation: false,
@@ -56,7 +54,7 @@ describe('ZoomSelector', () => {
     });
 
     it('calls onZoomChange when zoom out button is clicked', () => {
-        vi.mocked(useZoom).mockReturnValue({
+        rs.mocked(useZoom).mockReturnValue({
             scale: 1,
             maxZoomIn: 2,
             hasAnimation: false,
@@ -71,7 +69,7 @@ describe('ZoomSelector', () => {
     });
 
     it('disables zoom in button at max zoom in', () => {
-        vi.mocked(useZoom).mockReturnValue({
+        rs.mocked(useZoom).mockReturnValue({
             scale: 2,
             maxZoomIn: 2,
             hasAnimation: false,
@@ -85,7 +83,7 @@ describe('ZoomSelector', () => {
     });
 
     it('disables zoom out button at max zoom out', () => {
-        vi.mocked(useZoom).mockReturnValue({
+        rs.mocked(useZoom).mockReturnValue({
             scale: 0.1,
             maxZoomIn: 2,
             hasAnimation: false,

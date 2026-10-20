@@ -5,19 +5,19 @@ type MockEventSource = {
     onopen: ((event: Event) => void) | null;
     onmessage: ((event: MessageEvent) => void) | null;
     onerror: ((event: Event) => void) | null;
-    close: ReturnType<typeof vi.fn>;
+    close: ReturnType<typeof rs.fn>;
     url: string;
     readyState: number;
 };
 
 let mockEventSourceInstances: MockEventSource[] = [];
 
-export const MockEventSourceConstructor = vi.fn().mockImplementation(function (url: string) {
+export const MockEventSourceConstructor = rs.fn().mockImplementation(function (url: string) {
     const instance: MockEventSource = {
         onopen: null,
         onmessage: null,
         onerror: null,
-        close: vi.fn(),
+        close: rs.fn(),
         url,
         readyState: 0,
     };
@@ -50,4 +50,4 @@ export const resetMockEventSource = () => {
     MockEventSourceConstructor.mockClear();
 };
 
-vi.stubGlobal('EventSource', MockEventSourceConstructor);
+rs.stubGlobal('EventSource', MockEventSourceConstructor);

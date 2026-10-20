@@ -56,7 +56,7 @@ const renderApp = ({
                 mediaItem={mediaItem}
                 image={image}
                 subset={'training'}
-                onClose={vi.fn()}
+                onClose={rs.fn()}
                 mode={mode}
                 onModeChange={onModeChange}
                 isLoading={isLoading}
@@ -86,7 +86,7 @@ describe('ReadOnlyAnnotator', () => {
     });
 
     it('switches to prediction mode through the toggle', async () => {
-        const onModeChange = vi.fn();
+        const onModeChange = rs.fn();
 
         renderApp({ onModeChange });
 
@@ -96,7 +96,7 @@ describe('ReadOnlyAnnotator', () => {
     });
 
     it('hides the media navigation when there is no adjacent item', async () => {
-        renderApp({ onModeChange: vi.fn(), onSelectNextMediaItem: undefined });
+        renderApp({ onModeChange: rs.fn(), onSelectNextMediaItem: undefined });
 
         expect(await screen.findByRole('button', { name: 'Close' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Next media item' })).not.toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('ReadOnlyAnnotator', () => {
     });
 
     it('navigates to the next media item and disables the previous one', async () => {
-        const onSelectNextMediaItem = vi.fn();
+        const onSelectNextMediaItem = rs.fn();
 
         renderApp({ onSelectNextMediaItem });
 
@@ -118,9 +118,9 @@ describe('ReadOnlyAnnotator', () => {
     it('shows a loading overlay and blocks navigation while the media item is loading', async () => {
         renderApp({
             mode: 'prediction',
-            onModeChange: vi.fn(),
-            onSelectPreviousMediaItem: vi.fn(),
-            onSelectNextMediaItem: vi.fn(),
+            onModeChange: rs.fn(),
+            onSelectPreviousMediaItem: rs.fn(),
+            onSelectNextMediaItem: rs.fn(),
             isLoading: true,
         });
 

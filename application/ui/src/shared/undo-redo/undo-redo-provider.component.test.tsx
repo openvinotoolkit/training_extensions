@@ -111,8 +111,8 @@ describe('UndoRedoProvider', () => {
     });
 
     it('throws when a tool history is registered outside the provider', () => {
-        vi.spyOn(console, 'error').mockImplementation(() => {});
-        const history = { canUndo: false, canRedo: false, undo: vi.fn(), redo: vi.fn() };
+        rs.spyOn(console, 'error').mockImplementation(() => {});
+        const history = { canUndo: false, canRedo: false, undo: rs.fn(), redo: rs.fn() };
 
         expect(() => renderHook(() => useRegisterToolHistory(history))).toThrow(
             'useRegisterToolHistory must be used within an UndoRedoProvider'

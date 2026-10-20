@@ -8,14 +8,15 @@ import { act, screen, waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import { renderHook } from 'test-utils/render';
 
+import * as actualTus from '../../../../api/tus-upload' with { rstest: 'importActual' };
 import { http } from '../../../../api/utils';
 import { server } from '../../../../msw-node-setup';
 import { prepareVideoFileFormData, videoFileBodyFormatter } from '../video-file/utils';
 import { useSourceAction } from './use-source-action.hook';
 
-vi.mock('../../../../api/tus-upload', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../../../../api/tus-upload')>()),
-    transferFile: vi.fn(async () => '00000000-0000-4000-8000-000000000001'),
+rs.mock('../../../../api/tus-upload', () => ({
+    ...actualTus,
+    transferFile: rs.fn(async () => '00000000-0000-4000-8000-000000000001'),
 }));
 
 const mockedConfig: ImagesFolderSourceConfig = {
@@ -70,6 +71,10 @@ const renderApp = async ({
 };
 
 describe('useSourceAction', () => {
+    beforeEach(() => {
+        server.use(http.post('/api/sources/{source_id}:test', () => HttpResponse.json({ reachable: true })));
+    });
+
     it('return initial config', () => {
         const { result } = renderHook(() =>
             useSourceAction({ config: mockedConfig, isNewSource: true, bodyFormatter })
@@ -177,7 +182,7 @@ describe('useSourceAction', () => {
             const prepareFormData = async () => {
                 throw { detail: 'upload failed' };
             };
-            const bodyFormatterSpy = vi.fn(bodyFormatter);
+            const bodyFormatterSpy = rs.fn(bodyFormatter);
 
             const { result } = renderHook(() =>
                 useSourceAction({

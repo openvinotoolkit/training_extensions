@@ -17,7 +17,7 @@ describe('EditProjectNameDialog', () => {
     it('disables save button when name is empty', async () => {
         render(
             <EditProjectNameDialog
-                onClose={vi.fn()}
+                onClose={rs.fn()}
                 isOpen={true}
                 projectId={projectId}
                 projectName={projectName}
@@ -35,7 +35,7 @@ describe('EditProjectNameDialog', () => {
     it('disables save button when name is unchanged', () => {
         render(
             <EditProjectNameDialog
-                onClose={vi.fn()}
+                onClose={rs.fn()}
                 isOpen={true}
                 projectId={projectId}
                 projectName={projectName}
@@ -47,7 +47,7 @@ describe('EditProjectNameDialog', () => {
     });
 
     it('successfully updates project name and shows success toast', async () => {
-        const onClose = vi.fn();
+        const onClose = rs.fn();
         const newName = 'Updated Project Name';
 
         server.use(
@@ -78,7 +78,7 @@ describe('EditProjectNameDialog', () => {
     });
 
     it('shows error toast when updating project name fails', async () => {
-        const onClose = vi.fn();
+        const onClose = rs.fn();
         const newName = 'Updated Project Name';
         const errorMessage = 'Failed to update project 2';
 
@@ -114,7 +114,7 @@ describe('EditProjectNameDialog', () => {
 
         render(
             <EditProjectNameDialog
-                onClose={vi.fn()}
+                onClose={rs.fn()}
                 isOpen={true}
                 projectId={projectId}
                 projectName={projectName}
@@ -134,7 +134,7 @@ describe('EditProjectNameDialog', () => {
 
         render(
             <EditProjectNameDialog
-                onClose={vi.fn()}
+                onClose={rs.fn()}
                 isOpen={true}
                 projectId={projectId}
                 projectName={projectName}
@@ -151,7 +151,7 @@ describe('EditProjectNameDialog', () => {
     it('enables save button when a valid new name is entered', () => {
         render(
             <EditProjectNameDialog
-                onClose={vi.fn()}
+                onClose={rs.fn()}
                 isOpen={true}
                 projectId={projectId}
                 projectName={projectName}

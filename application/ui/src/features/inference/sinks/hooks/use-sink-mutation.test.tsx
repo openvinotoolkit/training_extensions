@@ -21,7 +21,7 @@ const mockedSource: LocalFolderSinkConfig = {
 describe('useSinkMutation', () => {
     it('creates a new sink and return its resource id', async () => {
         const newResourceId = 'resource-id-123';
-        const testSinkSpy = vi.fn();
+        const testSinkSpy = rs.fn();
         const { result } = renderHook(() => useSinkMutation(true));
 
         server.use(
@@ -49,7 +49,7 @@ describe('useSinkMutation', () => {
     });
 
     it('update a source item and returns its resource id', async () => {
-        const testSinkSpy = vi.fn();
+        const testSinkSpy = rs.fn();
         const { result } = renderHook(() => useSinkMutation(false));
 
         server.use(

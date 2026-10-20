@@ -7,10 +7,10 @@ import { render } from 'test-utils/render';
 
 import { SSIMOptions } from './ssim-options.component';
 
-const mockAccept = vi.fn();
-const mockReject = vi.fn();
-const mockSetNumberOfItems = vi.fn();
-const mockSetAutoMergeDuplicates = vi.fn();
+const mockAccept = rs.fn();
+const mockReject = rs.fn();
+const mockSetNumberOfItems = rs.fn();
+const mockSetAutoMergeDuplicates = rs.fn();
 let mockState = { hasPreview: false, isProcessing: false, toolState: { matches: [] as unknown[], threshold: 0 } };
 
 const withPreview = (numberOfMatches: number, threshold: number) => ({
@@ -19,7 +19,7 @@ const withPreview = (numberOfMatches: number, threshold: number) => ({
     toolState: { matches: Array.from({ length: numberOfMatches }), threshold },
 });
 
-vi.mock('./ssim-state-provider.component', () => ({
+rs.mock('./ssim-state-provider.component', () => ({
     useSSIMState: () => ({
         ...mockState,
         accept: mockAccept,
@@ -32,7 +32,7 @@ vi.mock('./ssim-state-provider.component', () => ({
 
 describe('SSIMOptions', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         mockState = { hasPreview: false, isProcessing: false, toolState: { matches: [], threshold: 0 } };
     });
 
@@ -64,7 +64,7 @@ describe('SSIMOptions', () => {
 
     it('handles Enter and Escape before other listeners can submit or close the annotator', async () => {
         mockState = withPreview(3, 2);
-        const documentKeyDown = vi.fn();
+        const documentKeyDown = rs.fn();
         document.addEventListener('keydown', documentKeyDown);
 
         render(<SSIMOptions />);

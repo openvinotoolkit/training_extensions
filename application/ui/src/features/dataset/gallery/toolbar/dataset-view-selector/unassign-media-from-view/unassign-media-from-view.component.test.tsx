@@ -21,7 +21,7 @@ const getSearchParams = () => new URLSearchParams(screen.getByTestId('search-par
 
 const renderUnassignMediaFromView = ({
     selectedMediaIds = ['m1', 'm2'],
-    resetSelectedMediaIds = vi.fn(),
+    resetSelectedMediaIds = rs.fn(),
     route = '/projects/123?datasetViewId=collection-one',
 }: {
     selectedMediaIds?: string[];
@@ -84,7 +84,7 @@ describe('UnassignMediaFromView', () => {
             )
         );
 
-        const resetSelectedMediaIds = vi.fn();
+        const resetSelectedMediaIds = rs.fn();
         const user = userEvent.setup();
         renderUnassignMediaFromView({ selectedMediaIds: ['m1', 'm2'], resetSelectedMediaIds });
 

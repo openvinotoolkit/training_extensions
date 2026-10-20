@@ -112,7 +112,7 @@ npm run update-spec        # Download fresh spec from backend, then regenerate
 ### Testing
 
 ```bash
-npm run test:unit          # Unit tests (Vitest + jsdom)
+npm run test:unit          # Unit tests (Rstest + jsdom)
 npm run test:unit:watch    # Watch mode
 npm run test:unit:coverage # Coverage report (v8)
 npm run test:component     # Component tests (Playwright + MSW)
@@ -188,7 +188,7 @@ The application is built on four main pillars:
 
 #### Testing & CI/CD
 
-- **Vitest** - Fast unit and integration testing
+- **Rstest** - Fast unit and integration testing
 - **Playwright** - Component and end-to-end testing with shared MSW configuration for auto-mocking REST endpoints
 - **Testing Library** - User-centric React component testing; follow [guiding principles](https://testing-library.com/docs/guiding-principles) for accessibility
 - **MSW + OpenAPI** - Mock Service Worker with OpenAPI specs to simulate API responses in tests

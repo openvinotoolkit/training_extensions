@@ -8,6 +8,9 @@ import { getMockedVideoFrame } from 'mocks/mock-media';
 import { render } from 'test-utils/render';
 
 import { EMPTY_LABEL_ID } from '../../../../shared/labels';
+import * as actualLabels from '../../../../shared/labels' with { rstest: 'importActual' };
+import * as actualPredictionsSetup from '../../predictions-setup-provider.component' with { rstest: 'importActual' };
+import * as actualVideoFramesPredictions from '../api/use-video-frames-predictions' with { rstest: 'importActual' };
 import { VideoToolbar } from './video-toolbar.component';
 
 const mockVideoFrame = getMockedVideoFrame({
@@ -21,58 +24,58 @@ const mockVideoFrame = getMockedVideoFrame({
 const MOCKED_VIDEO_PLAYER_CONTEXT = {
     videoFrame: mockVideoFrame,
     step: 1,
-    changeStep: vi.fn(),
+    changeStep: rs.fn(),
     isMuted: false,
-    toggleMute: vi.fn(),
+    toggleMute: rs.fn(),
     playbackRate: 1,
-    changePlaybackRate: vi.fn(),
+    changePlaybackRate: rs.fn(),
     videoControls: {
         isPlaying: false,
-        play: vi.fn(),
-        pause: vi.fn(),
-        goto: vi.fn(),
-        previousFrame: vi.fn(),
-        nextFrame: vi.fn(),
+        play: rs.fn(),
+        pause: rs.fn(),
+        goto: rs.fn(),
+        previousFrame: rs.fn(),
+        nextFrame: rs.fn(),
         canSelectPreviousFrame: true,
         canSelectNextFrame: true,
     },
 };
 
-vi.mock('../video-player-provider.component', () => ({
+rs.mock('../video-player-provider.component', () => ({
     useVideoPlayer: () => MOCKED_VIDEO_PLAYER_CONTEXT,
     useVideoPlayerContext: () => MOCKED_VIDEO_PLAYER_CONTEXT,
 }));
 
-vi.mock('../../../../shared/labels', async (importOriginal) => ({
-    ...(await importOriginal()),
+rs.mock('../../../../shared/labels', () => ({
+    ...actualLabels,
     useProjectLabelsWithEmptyLabel: () => [
         getMockedLabel({ id: 'label-1', name: 'Cat' }),
         getMockedLabel({ id: EMPTY_LABEL_ID, name: 'No object' }),
     ],
 }));
 
-vi.mock('../../selected-media-item-provider.component', () => ({
+rs.mock('../../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({
         mediaItem: getMockedVideoFrame(),
     }),
 }));
 
-vi.mock('../../predictions-setup-provider.component', async (importOriginal) => ({
-    ...(await importOriginal()),
+rs.mock('../../predictions-setup-provider.component', () => ({
+    ...actualPredictionsSetup,
     usePredictionSetup: () => ({
         selectedDevice: 'cpu',
-        changeSelectedDevice: vi.fn(),
+        changeSelectedDevice: rs.fn(),
 
         selectedModelId: 'model-1',
         selectedModel: { id: 'variant-1', name: 'Test Model [FP32]', modelId: 'model-1' },
-        changeSelectedModelId: vi.fn(),
+        changeSelectedModelId: rs.fn(),
         selectableModels: [{ id: 'variant-1', name: 'Test Model [FP32]', modelId: 'model-1' }],
     }),
 }));
 
-vi.mock('../api/use-video-frames-predictions', async (importOriginal) => ({
-    ...(await importOriginal()),
-    usePrefetchVideoFramesPredictions: vi.fn(),
+rs.mock('../api/use-video-frames-predictions', () => ({
+    ...actualVideoFramesPredictions,
+    usePrefetchVideoFramesPredictions: rs.fn(),
 }));
 
 const toggleToolbar = async () => {

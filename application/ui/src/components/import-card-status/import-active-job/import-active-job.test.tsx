@@ -14,7 +14,7 @@ import { server } from '../../../msw-node-setup';
 import { ImportActiveJob } from './import-active-job.component';
 
 describe('ImportActiveJob', () => {
-    const renderApp = (job: PrepareImportDatasetJob, mockedDeleteEntry = vi.fn()) => {
+    const renderApp = (job: PrepareImportDatasetJob, mockedDeleteEntry = rs.fn()) => {
         server.use(
             http.get('/api/projects/{project_id}', () => {
                 return HttpResponse.json(getMockedProject({ id: 'project-123' }));
@@ -36,7 +36,7 @@ describe('ImportActiveJob', () => {
     };
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('shows message and progress for running jobs', async () => {
@@ -60,7 +60,7 @@ describe('ImportActiveJob', () => {
     });
 
     it('removes from local storage when job is cancelled successfully', async () => {
-        const mockedDeleteEntry = vi.fn();
+        const mockedDeleteEntry = rs.fn();
         server.use(
             http.post('/api/jobs/{job_id}:cancel', () => {
                 return HttpResponse.json(null, { status: 204 });

@@ -43,7 +43,7 @@ describe('FailedJobRow', () => {
         render(
             <FailedJobRow
                 job={failedJob}
-                onDismiss={vi.fn()}
+                onDismiss={rs.fn()}
                 datasetRevisions={[]}
                 modelArchitectures={[modelArchitecture]}
             />
@@ -64,7 +64,7 @@ describe('FailedJobRow', () => {
     });
 
     it('calls onDismiss when the dismiss button is pressed', async () => {
-        const mockDismiss = vi.fn();
+        const mockDismiss = rs.fn();
 
         render(
             <FailedJobRow

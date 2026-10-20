@@ -19,37 +19,37 @@ let mockMediaItem = { id: 'media-1' } as Media;
 let mockTaskType = 'detection';
 let mockMode: AnnotatorMode = 'annotation';
 let mockShapes: Shape[] = [];
-const mockReset = vi.fn();
-const mockUpdateToolState = vi.fn();
-const mockRerun = vi.fn();
-const mockAddAndSelectAnnotations = vi.fn();
+const mockReset = rs.fn();
+const mockUpdateToolState = rs.fn();
+const mockRerun = rs.fn();
+const mockAddAndSelectAnnotations = rs.fn();
 
-vi.mock('../../tool-provider.component', () => ({
-    useTool: () => ({ activeTool: mockActiveTool, setActiveTool: vi.fn() }),
+rs.mock('../../tool-provider.component', () => ({
+    useTool: () => ({ activeTool: mockActiveTool, setActiveTool: rs.fn() }),
 }));
 
-vi.mock('../../selected-media-item-provider.component', () => ({
+rs.mock('../../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({ mediaItem: mockMediaItem }),
 }));
 
-vi.mock('../../annotation-document-provider.component', () => ({
+rs.mock('../../annotation-document-provider.component', () => ({
     useAnnotations: () => ({ mode: mockMode }),
 }));
 
-vi.mock('../../annotator-labels-provider.component', () => ({
+rs.mock('../../annotator-labels-provider.component', () => ({
     useAnnotatorLabels: () => ({ selectedLabel: label }),
 }));
 
-vi.mock('../use-add-and-select-annotations.hook', () => ({
+rs.mock('../use-add-and-select-annotations.hook', () => ({
     useAddAndSelectAnnotations: () => ({ addAndSelectAnnotations: mockAddAndSelectAnnotations }),
 }));
 
-vi.mock('hooks/use-project-task.hook', () => ({
+rs.mock('hooks/use-project-task.hook', () => ({
     useProjectTask: () => mockTaskType,
 }));
 
-vi.mock('./use-ssim.hook', () => ({
-    useSSIM: vi.fn(() => ({
+rs.mock('./use-ssim.hook', () => ({
+    useSSIM: rs.fn(() => ({
         reset: mockReset,
         updateToolState: mockUpdateToolState,
         rerun: mockRerun,
@@ -81,7 +81,7 @@ const renderTree = () => (
 
 describe('SSIMStateProvider', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         mockActiveTool = 'ssim';
         mockMediaItem = { id: 'media-1' } as Media;
         mockTaskType = 'detection';
