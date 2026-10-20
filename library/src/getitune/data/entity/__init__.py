@@ -4,6 +4,15 @@
 """Module for getitune data entities."""
 
 from .base import ImageInfo, ImageType
+from .polygons import (
+    clip_polygons,
+    concat_polygons,
+    empty_polygons,
+    pad_polygons,
+    polygons_from_object_array,
+    scale_polygons,
+)
+from .rasterization import rasterize, rasterize_crop
 from .sample import (
     BaseSample,
     Prediction,
@@ -30,4 +39,12 @@ __all__ = [
     "TileBatchSegDataEntity",
     "TileDetDataEntity",
     "TileSegDataEntity",
+    "clip_polygons",
+    "concat_polygons",
+    "empty_polygons",
+    "pad_polygons",
+    "polygons_from_object_array",
+    "rasterize",
+    "rasterize_crop",
+    "scale_polygons",
 ]
