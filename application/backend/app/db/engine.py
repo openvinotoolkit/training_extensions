@@ -31,6 +31,8 @@ def set_sqlite_pragma(dbapi_connection: Connection, _: Any) -> None:
     # https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.close()
 
 
