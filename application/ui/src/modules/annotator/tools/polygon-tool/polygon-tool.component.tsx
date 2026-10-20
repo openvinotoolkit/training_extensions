@@ -7,6 +7,7 @@ import { useZoom } from '@/components/zoom/zoom.provider';
 import { isPointOverPoint, isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { isEmpty } from 'lodash-es';
 
+import { isLeftButton } from '../../../../shared/buttons-utils';
 import { Point } from '../../../../shared/types';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
@@ -112,6 +113,12 @@ export const PolygonTool = () => {
 
     const onPointerUp = (event: PointerEvent<SVGSVGElement>) => {
         event.currentTarget.releasePointerCapture(event.pointerId);
+
+        // The right button only erases, it must not close the polygon
+        if (!isLeftButton(event)) {
+            setMode(PolygonMode.Polygon);
+            return;
+        }
 
         setPointFromEvent((point: Point): void => {
             // finish the drawing while releasing the button inside the area of starting point
