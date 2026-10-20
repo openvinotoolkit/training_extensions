@@ -3,6 +3,8 @@
 
 from collections.abc import Callable, Sequence
 
+from loguru import logger
+
 from app.models import Sink, SinkType
 
 from .dispatchers import Dispatcher, FolderDispatcher, MqttDispatcher, WebhookDispatcher
@@ -19,12 +21,18 @@ class DispatchService:
 
     @classmethod
     def get_destination(cls, output_config: Sink) -> Dispatcher | None:
-        # TODO handle exceptions: if some output cannot be initialized, exclude it and raise a warning
         factory = cls._dispatcher_registry.get(output_config.sink_type)
         if factory is None:
             raise ValueError(f"Unrecognized sink type: {output_config.sink_type}")
 
-        return factory(output_config)
+        try:
+            return factory(output_config)
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize dispatcher for sink type {output_config.sink_type}: {e}. "
+                "Excluding it and continuing."
+            )
+            return None
 
     @classmethod
     def get_destinations(cls, output_configs: Sequence[Sink]) -> list[Dispatcher]:
