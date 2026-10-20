@@ -1,11 +1,12 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { env } from 'onnxruntime-web';
+// Shared across mock instances: rs.resetModules() also re-evaluates mock factories.
+const { env } = rs.hoisted(() => ({ env: { wasm: {} as { wasmBinary?: ArrayBufferLike } } }));
 
-vi.mock('onnxruntime-web', () => ({ env: { wasm: {} } }));
-vi.mock('@geti-ui/smart-tools/utils', () => ({ setOpenCVSourceUrl: vi.fn() }));
-vi.mock('@geti-ui/smart-tools/segment-anything', () => ({
+rs.mock('onnxruntime-web', () => ({ env }));
+rs.mock('@geti-ui/smart-tools/utils', () => ({ setOpenCVSourceUrl: rs.fn() }));
+rs.mock('@geti-ui/smart-tools/segment-anything', () => ({
     SegmentAnythingModels: { decoder: '/static/assets/decoder.onnx' },
 }));
 
@@ -35,31 +36,31 @@ const respond = (url: string, signal: AbortSignal | null | undefined, stall: boo
 };
 
 const mockNetwork = (stallingUrl?: string) => {
-    const networkFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+    const networkFetch = rs.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
         respond(toUrl(input), init?.signal, toUrl(input) === stallingUrl)
     );
 
-    vi.stubGlobal('fetch', networkFetch);
+    rs.stubGlobal('fetch', networkFetch);
 
     return networkFetch;
 };
 
 const loadModule = async () => {
-    vi.resetModules();
+    rs.resetModules();
 
     return import('./segment-anything-assets');
 };
 
 describe('segment anything assets', () => {
     beforeEach(() => {
-        vi.stubEnv('ASSET_PREFIX', '');
+        rs.stubEnv('ASSET_PREFIX', '');
         env.wasm.wasmBinary = undefined;
     });
 
     afterEach(() => {
-        vi.useRealTimers();
-        vi.unstubAllGlobals();
-        vi.unstubAllEnvs();
+        rs.useRealTimers();
+        rs.unstubAllGlobals();
+        rs.unstubAllEnvs();
     });
 
     it('serves prefetched assets from memory until they are released', async () => {
@@ -84,7 +85,7 @@ describe('segment anything assets', () => {
     });
 
     it('fails a download only after no data arrives for the stall timeout', async () => {
-        vi.useFakeTimers();
+        rs.useFakeTimers();
         mockNetwork(ORT_WASM_URL);
 
         const { prefetchSegmentAnythingAssets } = await loadModule();
@@ -93,10 +94,10 @@ describe('segment anything assets', () => {
             `No data received for 30s while downloading ${ORT_WASM_URL}`
         );
 
-        await vi.advanceTimersByTimeAsync(STALL_TIMEOUT_MS - 1);
+        await rs.advanceTimersByTimeAsync(STALL_TIMEOUT_MS - 1);
         expect(env.wasm.wasmBinary).toBeUndefined();
 
-        await vi.advanceTimersByTimeAsync(1);
+        await rs.advanceTimersByTimeAsync(1);
         await rejection;
     });
 });
