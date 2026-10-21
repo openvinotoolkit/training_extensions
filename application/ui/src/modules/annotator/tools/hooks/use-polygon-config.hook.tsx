@@ -3,12 +3,11 @@
 
 import { PointerEvent, RefObject, useEffect, useMemo, useRef } from 'react';
 
-import { clampPointBetweenImage, getIntersectionPoint } from '@geti-ui/smart-tools/utils';
+import { clampPointBetweenImage } from '@geti-ui/smart-tools/utils';
 import { differenceWith, isEmpty, isEqual, isNil } from 'lodash-es';
 
 import { Point, Polygon } from '../../../../shared/types';
 import { usePolygonState } from '../polygon-tool/polygon-state-provider.component';
-import { deleteSegments, ERASER_FIELD_DEFAULT_RADIUS } from '../polygon-tool/utils';
 import { convertToolShapeToGetiShape, getRelativePoint, isImageOversized } from '../utils';
 import { useIntelligentScissorsWorker } from './use-intelligent-scissors-worker.hook';
 
@@ -80,19 +79,6 @@ export const usePolygonConfig = ({
         callback(getPointerRelativePosition(event));
     };
 
-    const onPointerMoveRemove = setPointFromEvent((newPoint: Point) => {
-        const intersectionPoint = getIntersectionPoint(
-            Math.ceil(ERASER_FIELD_DEFAULT_RADIUS / zoom),
-            newPoint,
-            segments.flat()
-        );
-
-        if (!intersectionPoint) return;
-
-        setLassoSegment([]);
-        setSegments(deleteSegments(intersectionPoint));
-    });
-
     const resetTool = (): void => {
         undoRedoActions.reset();
 
@@ -111,7 +97,6 @@ export const usePolygonConfig = ({
         setSegments,
         optimizePolygonOrSegments,
         resetTool,
-        onPointerMoveRemove,
         setPointFromEvent,
     };
 };

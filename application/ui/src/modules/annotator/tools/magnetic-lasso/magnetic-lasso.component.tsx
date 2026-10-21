@@ -22,7 +22,7 @@ import {
     getToolIcon,
     isCloseMode,
     isPolygonReadyToClose,
-    leftRightMouseButtonHandler,
+    leftMouseButtonHandler,
     PolygonMode,
     START_POINT_FIELD_DEFAULT_RADIUS,
     START_POINT_FIELD_FOCUS_RADIUS,
@@ -59,7 +59,6 @@ export const MagneticLasso = () => {
         setSegments,
         resetTool,
         optimizePolygonOrSegments,
-        onPointerMoveRemove,
         setPointFromEvent,
     } = usePolygonConfig({ image, zoom, canvasRef });
 
@@ -166,7 +165,7 @@ export const MagneticLasso = () => {
         worker?.buildMap(point);
     };
 
-    const onPointerDown = leftRightMouseButtonHandler(
+    const onPointerDown = leftMouseButtonHandler(
         setPointFromEvent((point: Point): void => {
             if (isLoading.current) {
                 return;
@@ -177,14 +176,7 @@ export const MagneticLasso = () => {
             if (!buildMapPoint.current || !isEqual(buildMapPoint.current, point)) {
                 setBuildMapAndSegment(point);
             }
-        }),
-        () => {
-            setMode(PolygonMode.Eraser);
-
-            isLoading.current = false;
-            buildMapPoint.current = null;
-            worker?.cleanPoints();
-        }
+        })
     );
 
     const onPointerMove = throttle(
@@ -232,12 +224,10 @@ export const MagneticLasso = () => {
         isFreeDrawing.current = false;
     });
 
-    // The right button only erases, it must not add points nor close the polygon
+    // Only the left button draws, other buttons must not add points nor close the polygon
     const onPointerUp = (event: PointerEvent<SVGSVGElement>): void => {
         if (isLeftButton(event)) {
             onLeftPointerUp(event);
-        } else {
-            setMode(PolygonMode.MagneticLasso);
         }
     };
 
@@ -248,8 +238,8 @@ export const MagneticLasso = () => {
             aria-label={'polygon tool'}
             onPointerUp={onPointerUp}
             onPointerDown={onPointerDown}
-            onPointerMove={mode === PolygonMode.Eraser ? onPointerMoveRemove : onPointerMove}
-            onPointerLeave={mode === PolygonMode.Eraser ? onPointerMoveRemove : onPointerMove}
+            onPointerMove={onPointerMove}
+            onPointerLeave={onPointerMove}
             style={{ cursor: `url(${toolIcon.cursorUrl}) ${toolIcon.offset}, auto` }}
         >
             {polygon !== null && !isEmpty(polygon.points) && (

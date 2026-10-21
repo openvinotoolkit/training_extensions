@@ -6,19 +6,9 @@ const BUTTON_LEFT = {
     buttons: 1,
 };
 
-const BUTTON_RIGHT = {
-    button: 2,
-    buttons: 2,
-};
-
 const BUTTON_WHEEL = {
     button: 1,
     buttons: 4,
-};
-
-const BUTTON_ERASER = {
-    button: 5,
-    buttons: 32,
 };
 
 export type MouseButton = {
@@ -35,8 +25,4 @@ export const isLeftButton = (button: MouseButton): boolean => {
 
 export const isWheelButton = (button: MouseButton): boolean => {
     return isButton(button, BUTTON_WHEEL);
-};
-
-export const isEraserOrRightButton = (button: MouseButton): boolean => {
-    return isButton(button, BUTTON_ERASER) || isButton(button, BUTTON_RIGHT);
 };
