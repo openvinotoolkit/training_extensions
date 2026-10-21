@@ -23,7 +23,7 @@ pytestmark = pytest.mark.benchmark
 def report_dir(pytestconfig: pytest.Config) -> Path:
     """Directory that collects the Phase 0 JSON artifacts."""
     root = pytestconfig.getoption("--output-root") or ".benchmarks"
-    path = Path(root) / "phase0"
+    path = Path(root) / "phase3"
     path.mkdir(parents=True, exist_ok=True)
     return path
 

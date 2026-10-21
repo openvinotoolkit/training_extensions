@@ -27,6 +27,7 @@ from datumaro.experimental.fields import (
 )
 from torchvision import tv_tensors
 
+from getitune.data.entity import polygons_from_object_array
 from getitune.data.entity.base import ImageInfo
 from getitune.data.entity.polygons import empty_polygons
 from getitune.data.entity.utils import (
@@ -45,6 +46,7 @@ from getitune.data.entity.validation import (
 )
 
 if TYPE_CHECKING:
+    import numpy as np
     from torchvision.tv_tensors import BoundingBoxes, Mask
 
 
@@ -174,10 +176,7 @@ def _init_instance_seg(sample: BaseSample, *, with_masks: bool) -> None:
     if sample.polygons is None:
         sample.polygons = empty_polygons(shape)
     elif not isinstance(sample.polygons, tv_tensors.KeyPoints):
-        sample.polygons = tv_tensors.KeyPoints(
-            torch.as_tensor(sample.polygons, dtype=torch.float32),
-            canvas_size=shape,
-        )
+        sample.polygons = polygons_from_object_array(sample.polygons, shape)
     if with_masks and sample.masks is None:
         sample.masks = tv_tensors.Mask(torch.zeros((0, *shape), dtype=torch.uint8))
 
@@ -204,7 +203,7 @@ class InstanceSegmentationSample(BaseSample):
     # conversion is not supported in Datumaro), then convert in __post_init__
     bboxes: tv_tensors.BoundingBoxes | torch.Tensor = bbox_field(dtype=pl.Float32())
     masks: tv_tensors.Mask | None = instance_mask_field(dtype=pl.UInt8())
-    polygons: tv_tensors.KeyPoints | None = polygon_field(dtype=pl.Float32())
+    polygons: tv_tensors.KeyPoints | np.ndarray | None = polygon_field(dtype=pl.Float32())
     label: torch.Tensor | None = label_field(dtype=pl.UInt8(), is_list=True)
     dm_image_info: DmImageInfo = image_info_field()
 
@@ -226,7 +225,7 @@ class InstanceSegmentationPolygonSample(BaseSample):
     subset: Subset = subset_field()
     image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), channels_first=True)
     bboxes: tv_tensors.BoundingBoxes | torch.Tensor = bbox_field(dtype=pl.Float32())
-    polygons: tv_tensors.KeyPoints | None = polygon_field(dtype=pl.Float32())
+    polygons: tv_tensors.KeyPoints | np.ndarray | None = polygon_field(dtype=pl.Float32())
     label: torch.Tensor | None = label_field(dtype=pl.UInt8(), is_list=True)
     dm_image_info: DmImageInfo = image_info_field()
 

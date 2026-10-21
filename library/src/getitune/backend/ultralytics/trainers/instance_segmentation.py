@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from copy import copy
-from functools import partial
 from typing import Any, ClassVar
 
 import torch
@@ -31,7 +30,7 @@ class SegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ultralytic
     """
 
     _task_kind: ClassVar[str] = "segment"
-    _collate_fn = partial(instance_seg_collate_fn, mask_ratio=MASK_RATIO)
+    _collate_fn = staticmethod(instance_seg_collate_fn)
 
     def preprocess_batch(self, batch: dict[str, Any]) -> dict[str, Any]:
         """Preprocess batch for training: move to device and downsample masks.
