@@ -19,9 +19,14 @@ import yaml
 from torchvision import tv_tensors
 from ultralytics.utils.metrics import ClassifyMetrics, DetMetrics, SegmentMetrics
 
-from getitune.backend.ultralytics.data.geometry import scale_boxes_to_letterbox, scale_masks_to_letterbox
+from getitune.backend.ultralytics.data.geometry import (
+    scale_boxes_to_letterbox,
+    scale_masks_to_letterbox,
+    scale_points_to_letterbox,
+)
 from getitune.backend.ultralytics.tools.configurator import Configurator
 from getitune.data.entity.base import ImageInfo
+from getitune.data.entity.rasterization import rasterize
 from getitune.data.entity.sample import Prediction, SampleBatch
 from getitune.data.module import DataModule
 from getitune.data.utils.structures.mask.mask_util import encode_rle
@@ -526,6 +531,46 @@ class UltralyticsEngine(Engine):
         results = validator(model=self._model.yolo.model)
         return self._translate_metrics(results)
 
+    @staticmethod
+    def _target_mask_rles(batch: SampleBatch, index: int, imgsz: int) -> list[dict] | None:
+        """RLE-encode one sample's GT masks in letterbox coordinates.
+
+        Test subsets use ``resize_targets=False``, so GT lives in original
+        image coordinates while predictions are in the letterbox-padded model
+        space. Both carriers are handled:
+
+        * ``polygons`` — scaled, then rasterized **once** directly at
+          ``imgsz``.  No full-resolution mask is ever materialised, which is
+          the point of the polygon pipeline.
+        * ``masks`` — dense fallback for subsets resolved to
+          ``annotation_format="mask"``; resized and centre-padded as before.
+
+        Args:
+            batch: The collated sample batch.
+            index: Index of the sample within the batch.
+            imgsz: Square model input size.
+
+        Returns:
+            One RLE dict per instance, or ``None`` when the sample carries no
+            mask geometry.
+        """
+        polygons = batch.polygons
+        if polygons is not None and index < len(polygons) and polygons[index].shape[0] > 0:
+            coords = polygons[index]
+            ori_h, ori_w = coords.canvas_size
+            scaled = scale_points_to_letterbox(coords, ori_h, ori_w, imgsz)
+            masks = rasterize(scaled, canvas_size=(imgsz, imgsz), dtype=torch.bool)
+            return [encode_rle(m) for m in masks]
+
+        masks_batch = batch.masks
+        if masks_batch is not None and index < len(masks_batch):
+            target_masks = masks_batch[index].data  # (N, ori_h, ori_w)
+            mask_ori_h, mask_ori_w = target_masks.shape[-2:]
+            scaled_masks = scale_masks_to_letterbox(target_masks, mask_ori_h, mask_ori_w, imgsz)
+            return [encode_rle(m) for m in scaled_masks]
+
+        return None
+
     def _test_with_torchmetrics(
         self,
         metric_callable: Callable[[LabelInfo], Metric | MetricCollection],
@@ -543,10 +588,10 @@ class UltralyticsEngine(Engine):
         - **Instance segmentation**: predictions additionally contain ``masks``
           as RLE-encoded dicts, matching ``MaskRLEMeanAveragePrecision`` format.
 
-        Target bounding boxes and masks from the DataModule are in original
+        Target bounding boxes and polygons/masks from the DataModule are in original
         image coordinates (``resize_targets=False``), while YOLO predictions
         are in the letterbox-padded model input space.  This method transforms
-        both boxes and masks into the prediction coordinate space before
+        both boxes and polygons/masks into the prediction coordinate space before
         metric update.
 
         Args:
@@ -630,11 +675,9 @@ class UltralyticsEngine(Engine):
                     tgt_dict["boxes"] = boxes
                 if batch.labels is not None and i < len(batch.labels):
                     tgt_dict["labels"] = batch.labels[i].to(device).long()
-                if batch.masks is not None and i < len(batch.masks):
-                    target_masks = batch.masks[i].data  # (N, ori_h, ori_w)
-                    mask_ori_h, mask_ori_w = target_masks.shape[-2:]
-                    scaled_masks = scale_masks_to_letterbox(target_masks, mask_ori_h, mask_ori_w, imgsz)
-                    tgt_dict["masks"] = [encode_rle(m) for m in scaled_masks]
+                mask_rles = self._target_mask_rles(batch, i, imgsz)
+                if mask_rles is not None:
+                    tgt_dict["masks"] = mask_rles
                 target_list.append(tgt_dict)
 
             metric.update(preds=preds_list, target=target_list)

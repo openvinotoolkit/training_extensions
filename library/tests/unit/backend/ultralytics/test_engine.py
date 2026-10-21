@@ -935,3 +935,82 @@ class TestInstSegTorchmetrics:
 
         assert "masks" not in preds_arg[0]
         assert "masks" not in targets_arg[0]
+
+
+def _decode_rle(rle: dict) -> torch.Tensor:
+    """Inverse of ``encode_rle`` — column-major runs, starting with background.
+
+    Local to the tests on purpose: the production code only ever encodes, so
+    adding a decoder to ``mask_util`` would be untested surface area.
+    """
+    h, w = rle["size"]
+    flat = torch.zeros(h * w, dtype=torch.bool)
+    pos, value = 0, False
+    for count in rle["counts"]:
+        flat[pos : pos + count] = value
+        pos += count
+        value = not value
+    return flat.reshape(w, h).t()  # undo the column-major ravel
+
+
+class TestTargetMaskRles:
+    """GT mask encoding must work from either annotation carrier."""
+
+    @staticmethod
+    def _square_polygons(canvas: tuple[int, int]) -> tv_tensors.KeyPoints:
+        ring = torch.tensor([[[0.0, 0.0], [320.0, 0.0], [320.0, 320.0], [0.0, 320.0]]])
+        return tv_tensors.KeyPoints(ring, canvas_size=canvas)  # pyrefly: ignore[no-matching-overload]
+
+    @staticmethod
+    def _batch(
+        *,
+        polygons: list[tv_tensors.KeyPoints] | None = None,
+        masks: list[tv_tensors.Mask] | None = None,
+    ) -> SampleBatch:
+        # ``images`` is unused by the encoder but required by SampleBatch.
+        return SampleBatch(images=torch.zeros(1, 3, 8, 8), polygons=polygons, masks=masks)
+
+    def test_polygon_path_rasterizes_at_letterbox_size(self) -> None:
+        batch = self._batch(polygons=[self._square_polygons((640, 640))])
+
+        rles = UltralyticsEngine._target_mask_rles(batch, 0, imgsz=640)
+
+        assert rles is not None
+        assert len(rles) == 1
+        # Square image: no padding, scale 1 — the RLE must decode to the same
+        # region the polygon describes.
+        decoded = _decode_rle(rles[0])
+        assert decoded.shape == (640, 640)
+        assert bool(decoded[0, 0])
+        assert not bool(decoded[639, 639])
+
+    def test_polygon_path_accounts_for_centre_padding(self) -> None:
+        # ori 320x1280 -> scale = min(640/320, 640/1280) = 0.5, pad_x = 0,
+        # pad_y = (640 - 320*0.5) / 2 = 240. The 320x320 polygon therefore
+        # lands at x in [0, 160), y in [240, 400).
+        batch = self._batch(polygons=[self._square_polygons((320, 1280))])
+
+        rles = UltralyticsEngine._target_mask_rles(batch, 0, imgsz=640)
+
+        assert rles is not None
+        decoded = _decode_rle(rles[0])
+
+        assert not bool(decoded[0, 0])  # top padding band
+        assert not bool(decoded[239, 10])  # last row above the content
+        assert bool(decoded[300, 10])  # inside the shifted content
+        assert not bool(decoded[300, 200])  # right of the scaled width (160)
+        assert not bool(decoded[500, 10])  # below the content
+
+    def test_falls_back_to_dense_masks(self) -> None:
+        mask = torch.zeros((1, 640, 640), dtype=torch.bool)
+        mask[0, :320, :320] = True
+        batch = self._batch(masks=[tv_tensors.Mask(mask)])
+
+        rles = UltralyticsEngine._target_mask_rles(batch, 0, imgsz=640)
+
+        assert rles is not None
+        assert len(rles) == 1
+
+    def test_returns_none_without_geometry(self) -> None:
+        batch = self._batch()
+        assert UltralyticsEngine._target_mask_rles(batch, 0, imgsz=640) is None

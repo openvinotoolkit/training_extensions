@@ -15,7 +15,7 @@ from torch.utils.data import Dataset as TorchDataset
 from getitune.data.dataset.base import VisionDataset
 from getitune.data.entity.base import ImageInfo
 
-from .geometry import build_ratio_pad, xyxy_abs_to_xywh_norm
+from .geometry import build_ratio_pad, points_abs_to_norm, rescale_points_to_tensor_space, xyxy_abs_to_xywh_norm
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +124,42 @@ class UltralyticsDatasetAdapter(TorchDataset):
             )
         return np.zeros((0, 4), dtype=np.float32)
 
+    def _extract_segments(
+        self,
+        sample: object,
+        img: torch.Tensor,
+        padding: tuple[int, int, int, int],
+    ) -> torch.Tensor | None:
+        """Return ``(N, P_max, 2)`` normalised polygons, or ``None`` if absent.
+
+        Mirrors :meth:`_extract_bboxes` exactly — same canvas, same
+        ``scale_factor``/``padding`` — so boxes and polygons stay in one frame.
+        NaN padding and ring separators are preserved for the collate stage.
+        """
+        polygons = getattr(sample, "polygons", None)
+        if polygons is None or getattr(polygons, "ndim", 0) != 3 or polygons.shape[0] == 0:
+            return None
+
+        _, tensor_h, tensor_w = img.shape
+        img_info: ImageInfo | None = getattr(sample, "img_info", None)
+        canvas = getattr(polygons, "canvas_size", None)
+        canvas_size = tuple(canvas) if canvas is not None else (tensor_h, tensor_w)
+
+        coords = torch.as_tensor(polygons.data if hasattr(polygons, "data") else polygons)
+        if canvas_size != (tensor_h, tensor_w):
+            coords = rescale_points_to_tensor_space(
+                coords,
+                tensor_h=tensor_h,
+                tensor_w=tensor_w,
+                canvas_size=canvas_size,
+                scale_factor=img_info.scale_factor if img_info is not None else None,
+                padding=padding,
+            )
+        else:
+            coords = coords.detach().to(torch.float32)
+
+        return points_abs_to_norm(coords, img_w=tensor_w, img_h=tensor_h).contiguous()
+
     @staticmethod
     def _extract_cls(sample: object) -> np.ndarray:
         """Return ``(N, 1)`` float32 class array from a sample."""
@@ -157,8 +193,26 @@ class UltralyticsDatasetAdapter(TorchDataset):
     def _getitem_segment(self, sample: object, img: torch.Tensor) -> dict[str, Any]:
         """Return a sample dict for instance segmentation.
 
-        Builds the same fields as detection plus ``masks`` (overlap index map)
-        and ``sem_masks`` (per-pixel class labels) required by YOLO-seg's loss.
+        Builds the same fields as detection plus **one** of two annotation
+        carriers, in priority order:
+
+        * ``segments`` — ``(N, P_max, 2)`` normalised, NaN-padded polygons.
+          Preferred. No rasterization happens here; the collate stage
+          rasterizes once, directly at the resolution the loss consumes.
+        * ``masks`` + ``sem_masks`` — dense fallback for subsets resolved to
+          ``annotation_format="mask"``, and for images with no instances
+          (where there is no polygon geometry to emit).
+
+        Downstream consumers must branch on which key is present rather than
+        assuming ``masks``.
+
+        Args:
+            sample: The raw getitune instance-segmentation sample.
+            img: Pre-validated CHW float32 image tensor.
+
+        Returns:
+            Ultralytics sample dict with geometry fields, ``cls``, ``bboxes``,
+            and either ``segments`` or ``masks``/``sem_masks``.
         """
         ori_shape, resized_shape, padding, ratio_pad = self._extract_geometry(sample, img)
         bboxes_xywh = self._extract_bboxes(sample, img, padding)
@@ -174,6 +228,13 @@ class UltralyticsDatasetAdapter(TorchDataset):
             "resized_shape": resized_shape,
             "ratio_pad": ratio_pad,
         }
+
+        segments = self._extract_segments(sample, img, padding)
+        if segments is not None:
+            # Polygon-native path: no rasterization here. The collate stage
+            # rasterizes once, directly at the resolution the loss consumes.
+            result["segments"] = segments
+            return result
 
         masks_raw = getattr(sample, "masks", None)
         if masks_raw is not None and len(masks_raw) > 0:

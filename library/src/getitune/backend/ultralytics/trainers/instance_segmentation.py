@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from copy import copy
+from functools import partial
 from typing import Any, ClassVar
 
 import torch
@@ -13,14 +14,11 @@ import torch.nn.functional as f
 from ultralytics.models.yolo.segment import SegmentationTrainer as _UltralyticsSegmentationTrainer
 from ultralytics.models.yolo.segment import SegmentationValidator as _UltralyticsSegmentationValidator
 
-from getitune.backend.ultralytics.data.collate import instance_seg_collate_fn
+from getitune.backend.ultralytics.data.collate import MASK_RATIO, instance_seg_collate_fn
 from getitune.backend.ultralytics.plugins.xpu_mixin import XPUAwareTrainerMixin
 from getitune.backend.ultralytics.validators.instance_segmentation import SegmentationValidator
 
 from .base import GetiTuneBaseTrainer
-
-# Ultralytics default mask downsample ratio (proto output = input_size / MASK_RATIO).
-_MASK_RATIO = 4
 
 
 class SegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _UltralyticsSegmentationTrainer):
@@ -33,7 +31,7 @@ class SegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ultralytic
     """
 
     _task_kind: ClassVar[str] = "segment"
-    _collate_fn = staticmethod(instance_seg_collate_fn)
+    _collate_fn = partial(instance_seg_collate_fn, mask_ratio=MASK_RATIO)
 
     def preprocess_batch(self, batch: dict[str, Any]) -> dict[str, Any]:
         """Preprocess batch for training: move to device and downsample masks.
@@ -48,6 +46,13 @@ class SegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ultralytic
         Masks are in **overlap index map** format ``(B, H, W)`` where pixel
         values 1..N identify instance ownership (0 = background).
 
+        On the polygon path the collate already rasterizes directly at that
+        resolution, so this method is a no-op for masks — the resample below
+        only fires for the dense-mask fallback (``annotation_format="mask"``),
+        or when ``mask_ratio=1`` is used to keep full-resolution GT. Resizing
+        an index map is lossy (nearest interpolation can drop thin instances
+        entirely), so not doing it is both faster and more accurate.
+
         During training we downsample masks to proto resolution (nearest
         interpolation to preserve index values).  Validation keeps full-res
         masks — the validator handles resizing independently.
@@ -57,29 +62,31 @@ class SegmentationTrainer(GetiTuneBaseTrainer, XPUAwareTrainerMixin, _Ultralytic
 
         batch = self._move_batch_to_device(batch)
 
-        # Downsample overlap index maps to match proto head output resolution.
-        if "masks" in batch and batch["masks"].numel() > 0:
-            masks = batch["masks"]  # (B, H, W), uint8 overlap index map
-            mask_h, mask_w = masks.shape[1], masks.shape[2]
-            imgsz = batch["img"].shape[2:]  # (H, W) of input image
-            target_h, target_w = imgsz[0] // _MASK_RATIO, imgsz[1] // _MASK_RATIO
+        masks = batch.get("masks")
+        if masks is None or masks.numel() == 0:
+            return batch
 
-            if mask_h != target_h or mask_w != target_w:
-                # Nearest-neighbor preserves integer index values.
-                masks = f.interpolate(
-                    masks.unsqueeze(1).float(),
-                    size=(target_h, target_w),
-                    mode="nearest",
-                ).squeeze(1)
-                batch["masks"] = masks.to(torch.uint8)
+        img_h, img_w = batch["img"].shape[2:]
+        target_h, target_w = img_h // MASK_RATIO, img_w // MASK_RATIO
 
-                # Downsample semantic masks to the same spatial resolution.
-                if "sem_masks" in batch:
-                    batch["sem_masks"] = f.interpolate(
-                        batch["sem_masks"].unsqueeze(1).float(),
-                        size=(target_h, target_w),
-                        mode="nearest",
-                    ).squeeze(1)
+        if masks.shape[1] == target_h and masks.shape[2] == target_w:
+            # Already at target resolution; nothing to do.
+            return batch
+
+        # Nearest-neighbour preserves the integer instance indices.
+        batch["masks"] = (
+            f.interpolate(masks.unsqueeze(1).float(), size=(target_h, target_w), mode="nearest")
+            .squeeze(1)
+            .to(torch.uint8)
+        )
+
+        # Downsample semantic masks to the same spatial resolution.
+        if "sem_masks" in batch:
+            batch["sem_masks"] = f.interpolate(
+                batch["sem_masks"].unsqueeze(1).float(),
+                size=(target_h, target_w),
+                mode="nearest",
+            ).squeeze(1)
 
         return batch
 

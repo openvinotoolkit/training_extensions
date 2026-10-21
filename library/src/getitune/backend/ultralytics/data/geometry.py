@@ -10,6 +10,36 @@ import torch
 import torch.nn.functional as f
 
 
+def tensor_space_affine(
+    tensor_h: int,
+    tensor_w: int,
+    canvas_size: tuple[int, int],
+    scale_factor: tuple[float, float] | None = None,
+    padding: tuple[int, int, int, int] = (0, 0, 0, 0),
+) -> tuple[float, float, float, float]:
+    """Return ``(scale_x, scale_y, offset_x, offset_y)`` mapping canvas -> tensor space.
+
+    Single source of truth for the letterbox transform: ``rescale_bboxes_to_tensor_space``
+    and :func:`rescale_points_to_tensor_space` must apply the *same* mapping, or a
+    sample's boxes and its polygons end up in different coordinate frames.
+
+    Args:
+        tensor_h: Height of the model input tensor.
+        tensor_w: Width of the model input tensor.
+        canvas_size: ``(H, W)`` the annotations currently live in.
+        scale_factor: ``(scale_h, scale_w)`` from ``ImageInfo``, if known.
+        padding: ``(left, top, right, bottom)`` letterbox padding.
+
+    Returns:
+        ``(scale_x, scale_y, offset_x, offset_y)``.
+    """
+    if scale_factor is not None:
+        scale_h, scale_w = scale_factor
+        return float(scale_w), float(scale_h), float(padding[0]), float(padding[1])
+    canvas_h, canvas_w = canvas_size
+    return tensor_w / canvas_w, tensor_h / canvas_h, 0.0, 0.0
+
+
 def xyxy_abs_to_xywh_norm(
     bboxes: torch.Tensor | np.ndarray,
     img_w: int,
@@ -88,17 +118,43 @@ def rescale_bboxes_to_tensor_space(
     if bboxes.size == 0:
         return np.zeros((0, 4), dtype=np.float32)
 
-    if scale_factor is not None:
-        scale_h, scale_w = scale_factor
-        pad_left, pad_top = padding[0], padding[1]
-        bboxes[:, 0::2] = bboxes[:, 0::2] * scale_w + pad_left
-        bboxes[:, 1::2] = bboxes[:, 1::2] * scale_h + pad_top
-    else:
-        canvas_h, canvas_w = canvas_size
-        bboxes[:, 0::2] *= tensor_w / canvas_w
-        bboxes[:, 1::2] *= tensor_h / canvas_h
-
+    sx, sy, ox, oy = tensor_space_affine(tensor_h, tensor_w, canvas_size, scale_factor, padding)
+    bboxes[:, 0::2] = bboxes[:, 0::2] * sx + ox
+    bboxes[:, 1::2] = bboxes[:, 1::2] * sy + oy
     return bboxes
+
+
+def rescale_points_to_tensor_space(
+    coords: torch.Tensor,
+    tensor_h: int,
+    tensor_w: int,
+    canvas_size: tuple[int, int],
+    scale_factor: tuple[float, float] | None = None,
+    padding: tuple[int, int, int, int] = (0, 0, 0, 0),
+) -> torch.Tensor:
+    """Map ``(..., 2)`` xy coordinates from canvas space into tensor pixel space.
+
+    NaN entries (polygon padding and ring separators) pass through unchanged,
+    since an affine map propagates NaN.
+
+    Args:
+        coords: ``(..., 2)`` float tensor of ``(x, y)`` coordinates.
+        tensor_h: Height of the model input tensor.
+        tensor_w: Width of the model input tensor.
+        canvas_size: ``(H, W)`` the coordinates currently live in.
+        scale_factor: ``(scale_h, scale_w)`` applied during resize.
+        padding: ``(left, top, right, bottom)`` letterbox padding.
+
+    Returns:
+        ``(..., 2)`` float32 tensor in tensor pixel coordinates.
+    """
+    out = coords.detach().to(torch.float32).clone()
+    if out.numel() == 0:
+        return out
+    sx, sy, ox, oy = tensor_space_affine(tensor_h, tensor_w, canvas_size, scale_factor, padding)
+    out[..., 0] = out[..., 0] * sx + ox
+    out[..., 1] = out[..., 1] * sy + oy
+    return out
 
 
 def build_ratio_pad(
@@ -180,6 +236,25 @@ def scale_masks_to_letterbox(masks: torch.Tensor, ori_h: int, ori_w: int, imgsz:
     return result
 
 
+def letterbox_affine(ori_h: int, ori_w: int, imgsz: int) -> tuple[float, float, float]:
+    """Return ``(scale, pad_x, pad_y)`` for an aspect-preserving centre-padded resize.
+
+    Single source of truth for the test-time letterbox: boxes, polygons, and
+    any future carrier must share it, or GT geometries land in different
+    frames and the metric silently degrades instead of failing.
+
+    Args:
+        ori_h: Original image height.
+        ori_w: Original image width.
+        imgsz: Square model input size.
+
+    Returns:
+        ``(scale, pad_x, pad_y)`` — multiply then add.
+    """
+    scale = min(imgsz / ori_h, imgsz / ori_w)
+    return scale, (imgsz - ori_w * scale) / 2.0, (imgsz - ori_h * scale) / 2.0
+
+
 def scale_boxes_to_letterbox(boxes: torch.Tensor, ori_h: int, ori_w: int, imgsz: int) -> torch.Tensor:
     """Transform bounding boxes from original image coords to letterbox-padded coords.
 
@@ -200,12 +275,43 @@ def scale_boxes_to_letterbox(boxes: torch.Tensor, ori_h: int, ori_w: int, imgsz:
     """
     if boxes.numel() == 0:
         return boxes
-    scale = min(imgsz / ori_h, imgsz / ori_w)
-    pad_x = (imgsz - ori_w * scale) / 2.0
-    pad_y = (imgsz - ori_h * scale) / 2.0
+    scale, pad_x, pad_y = letterbox_affine(ori_h, ori_w, imgsz)
     scaled = boxes.clone()
-    scaled[:, 0] = boxes[:, 0] * scale + pad_x
-    scaled[:, 1] = boxes[:, 1] * scale + pad_y
-    scaled[:, 2] = boxes[:, 2] * scale + pad_x
-    scaled[:, 3] = boxes[:, 3] * scale + pad_y
+    scaled[:, 0::2] = boxes[:, 0::2] * scale + pad_x
+    scaled[:, 1::2] = boxes[:, 1::2] * scale + pad_y
     return scaled
+
+
+def scale_points_to_letterbox(coords: torch.Tensor, ori_h: int, ori_w: int, imgsz: int) -> torch.Tensor:
+    """Transform ``(..., 2)`` xy coordinates from original image coords to letterbox coords.
+
+    The polygon analogue of :func:`scale_boxes_to_letterbox`.  NaN padding and
+    ring separators pass through unchanged, so the result can be handed
+    straight to ``rasterize``.
+
+    Args:
+        coords: ``(..., 2)`` float tensor of ``(x, y)`` in original coords.
+        ori_h: Original image height.
+        ori_w: Original image width.
+        imgsz: Square model input size.
+
+    Returns:
+        ``(..., 2)`` float32 tensor in letterbox coords.
+    """
+    out = coords.detach().to(torch.float32).clone()
+    if out.numel() == 0:
+        return out
+    scale, pad_x, pad_y = letterbox_affine(ori_h, ori_w, imgsz)
+    out[..., 0] = out[..., 0] * scale + pad_x
+    out[..., 1] = out[..., 1] * scale + pad_y
+    return out
+
+
+def points_abs_to_norm(coords: torch.Tensor, img_w: int, img_h: int) -> torch.Tensor:
+    """Normalise ``(..., 2)`` pixel coordinates to ``[0, 1]`` (Ultralytics ``segments``)."""
+    out = coords.clone()
+    if out.numel() == 0:
+        return out
+    out[..., 0] /= img_w
+    out[..., 1] /= img_h
+    return out

@@ -229,6 +229,50 @@ def test_optimizer_step_updates_fp32_ema_from_bf16_model() -> None:
     assert torch.allclose(ema.ema.state_dict()["weight"], expected)
 
 
+def test_segmentation_trainer_skips_resample_for_proto_resolution_masks() -> None:
+    """Polygon-path masks already arrive at imgsz/4 and must be passed through untouched."""
+    trainer = object.__new__(SegmentationTrainer)
+    trainer._datamodule = MagicMock()
+    trainer._use_getitune_data = True
+    trainer.device = torch.device("cpu")
+    trainer.args = IterableSimpleNamespace(mask_ratio=4)
+
+    masks = torch.randint(0, 3, (2, 16, 16), dtype=torch.uint8)
+    batch = {
+        "img": torch.rand(2, 3, 64, 64),
+        "masks": masks.clone(),
+        "sem_masks": torch.rand(2, 16, 16),
+    }
+
+    result = trainer.preprocess_batch(batch)
+
+    # Identity, not merely same-shape: a nearest resample to the same size
+    # would still pass a shape assertion but would prove the guard is dead.
+    assert torch.equal(result["masks"], masks)
+    assert result["masks"].dtype == torch.uint8
+
+
+def test_segmentation_trainer_downsamples_dense_fallback_masks() -> None:
+    """The dense-mask fallback still needs the resample to proto resolution."""
+    trainer = object.__new__(SegmentationTrainer)
+    trainer._datamodule = MagicMock()
+    trainer._use_getitune_data = True
+    trainer.device = torch.device("cpu")
+    trainer.args = IterableSimpleNamespace(mask_ratio=4)
+
+    masks = torch.zeros((1, 64, 64), dtype=torch.uint8)
+    masks[0, :32, :32] = 1
+    batch = {"img": torch.rand(1, 3, 64, 64), "masks": masks, "sem_masks": torch.zeros(1, 64, 64)}
+
+    result = trainer.preprocess_batch(batch)
+
+    assert result["masks"].shape == (1, 16, 16)
+    assert result["sem_masks"].shape == (1, 16, 16)
+    assert result["masks"].dtype == torch.uint8
+    assert result["masks"][0, 0, 0] == 1  # index values survive nearest
+    assert result["masks"][0, 15, 15] == 0
+
+
 class TestClearMemory:
     """Tests for the optimized _clear_memory override in GetiTuneBaseTrainer."""
 
