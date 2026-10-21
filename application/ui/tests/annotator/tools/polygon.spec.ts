@@ -95,6 +95,31 @@ test.describe('Polygon', () => {
         });
     });
 
+    test('right-clicking does not close the polygon', async ({ page, polygonTool, annotatorPage }) => {
+        await page.goto(`/projects/${mockedDetectionProject.id}/dataset/item-1`);
+        await polygonTool.selectPolygonTool();
+        await polygonTool.drawPolygon(polygonShape, { asLasso: false, finishShape: false });
+
+        const relative = await withRelative(page);
+        const start = relative(polygonShape.points[0].x, polygonShape.points[0].y);
+
+        await test.step('Right-click on the starting point', async () => {
+            await page.mouse.move(start.x, start.y, { steps: 5 });
+            await page.mouse.click(start.x, start.y, { button: 'right' });
+
+            await expect(page.getByLabel('new polygon')).toBeVisible();
+            expect(await annotatorPage.getAnnotationsListItems('annotation polygon')).toHaveLength(0);
+        });
+
+        await test.step('Left-click on the starting point closes the shape', async () => {
+            await page.mouse.click(start.x, start.y);
+
+            await expect(async () => {
+                expect(await annotatorPage.getAnnotationsListItems('annotation polygon')).toHaveLength(1);
+            }).toPass();
+        });
+    });
+
     test('undo/redo behaviour', async ({ page, polygonTool }) => {
         const partialShape: Polygon = {
             type: 'polygon',

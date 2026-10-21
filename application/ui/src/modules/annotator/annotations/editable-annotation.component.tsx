@@ -6,6 +6,7 @@ import { ReactNode, RefObject, useRef } from 'react';
 import { useZoom } from '@/components/zoom/zoom.provider';
 import { useEventListener } from 'hooks/event-listener.hook';
 
+import { isLeftButton } from '../../../shared/buttons-utils';
 import { useAnnotator } from '../annotator-provider.component';
 import { useSelectedAnnotations } from '../select-annotation-provider.component';
 import { useTool } from '../tool-provider.component';
@@ -31,7 +32,7 @@ const useUnselectAnnotationOnOutsideClick = (ref: RefObject<SVGGElement | null>)
                 return;
             }
 
-            if (event.ctrlKey) {
+            if (event.ctrlKey || !isLeftButton(event)) {
                 return;
             }
 

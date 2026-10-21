@@ -7,6 +7,7 @@ import { useZoom } from '@/components/zoom/zoom.provider';
 import { isPointOverPoint, isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { isEmpty } from 'lodash-es';
 
+import { isLeftButton } from '../../../../shared/buttons-utils';
 import { Point } from '../../../../shared/types';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
@@ -19,7 +20,7 @@ import {
     getToolIcon,
     isCloseMode,
     isPolygonReadyToClose,
-    leftRightMouseButtonHandler,
+    leftMouseButtonHandler,
     PolygonMode,
     removeEmptySegments,
     START_POINT_FIELD_DEFAULT_RADIUS,
@@ -49,7 +50,6 @@ export const PolygonTool = () => {
         setSegments,
         optimizePolygonOrSegments,
         resetTool,
-        onPointerMoveRemove,
         setPointFromEvent,
     } = usePolygonConfig({ image, zoom, canvasRef: ref });
 
@@ -81,37 +81,31 @@ export const PolygonTool = () => {
         }
     };
 
-    const onPointerDown = leftRightMouseButtonHandler(
-        (event) => {
-            event.currentTarget.setPointerCapture(event.pointerId);
+    const onPointerDown = leftMouseButtonHandler((event) => {
+        event.currentTarget.setPointerCapture(event.pointerId);
 
-            setPointFromEvent((point: Point) => {
-                setMode(PolygonMode.Polygon);
+        setPointFromEvent((point: Point) => {
+            setMode(PolygonMode.Polygon);
 
-                isPointerDown.current = true;
+            isPointerDown.current = true;
 
-                if (canPathBeClosed(point)) {
-                    isPointerDown.current = false;
+            if (canPathBeClosed(point)) {
+                isPointerDown.current = false;
 
-                    return;
-                }
+                return;
+            }
 
-                setSegments(removeEmptySegments(lassoSegment, [point]), true);
-                setLassoSegment([]);
-                pendingHistoryCommit.current = true;
-            })(event);
-        },
-        (event) => {
-            if (isEmpty(segments)) return;
-
-            event.currentTarget.setPointerCapture(event.pointerId);
-
-            setMode(PolygonMode.Eraser);
-        }
-    );
+            setSegments(removeEmptySegments(lassoSegment, [point]), true);
+            setLassoSegment([]);
+            pendingHistoryCommit.current = true;
+        })(event);
+    });
 
     const onPointerUp = (event: PointerEvent<SVGSVGElement>) => {
         event.currentTarget.releasePointerCapture(event.pointerId);
+
+        // Only the left button draws, other buttons must not add points nor close the polygon
+        if (!isLeftButton(event)) return;
 
         setPointFromEvent((point: Point): void => {
             // finish the drawing while releasing the button inside the area of starting point
@@ -162,8 +156,8 @@ export const PolygonTool = () => {
             aria-label={'polygon tool'}
             onPointerUp={onPointerUp}
             onPointerDown={onPointerDown}
-            onPointerMove={mode === PolygonMode.Eraser ? onPointerMoveRemove : onPointerMove}
-            onPointerLeave={mode === PolygonMode.Eraser ? onPointerMoveRemove : onPointerMove}
+            onPointerMove={onPointerMove}
+            onPointerLeave={onPointerMove}
             style={{ cursor: `url(${toolIcon.cursorUrl}) ${toolIcon.offset}, auto` }}
         >
             {polygon !== null && !isEmpty(polygon.points) && (

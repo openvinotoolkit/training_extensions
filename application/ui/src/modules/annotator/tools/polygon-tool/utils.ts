@@ -4,7 +4,6 @@
 import { PointerEvent, SVGProps } from 'react';
 
 import type { Label } from '@/api/types';
-import eraserToolCursor from '@/assets/icons/cursor/eraser-tool.png';
 import lassoClosingCursor from '@/assets/icons/cursor/lasso-closing.png';
 import lassoDrawingCursor from '@/assets/icons/cursor/lasso-drawing.png';
 import magneticLassoClosingCursor from '@/assets/icons/cursor/magnetic-lasso-closing.png';
@@ -12,9 +11,9 @@ import magneticLassoDrawingCursor from '@/assets/icons/cursor/magnetic-lasso-dra
 import polygonClosingCursor from '@/assets/icons/cursor/polygon-closing.png';
 import polygonDrawingCursor from '@/assets/icons/cursor/polygon-drawing.png';
 import { isPolygonValid } from '@geti-ui/smart-tools/utils';
-import { isEmpty, isEqual, isNil, negate } from 'lodash-es';
+import { isEmpty, isNil, negate } from 'lodash-es';
 
-import { isEraserOrRightButton, isLeftButton, type MouseButton } from '../../../../shared/buttons-utils';
+import { isLeftButton } from '../../../../shared/buttons-utils';
 import { Point, Polygon as PolygonType } from '../../../../shared/types';
 import { DEFAULT_ANNOTATION_STYLES } from '../../utils';
 import { PointerType } from '../utils';
@@ -25,7 +24,6 @@ export interface ShapeStyle<T> {
 }
 
 export enum PolygonMode {
-    Eraser = 'eraser',
     Lasso = 'lasso',
     LassoClose = 'lassoClose',
     Polygon = 'polygon',
@@ -35,7 +33,6 @@ export enum PolygonMode {
 }
 
 enum PointerIcons {
-    Eraser = 'eraser-tool',
     Lasso = 'lasso-drawing',
     LassoClose = 'lasso-closing',
     Polygon = 'polygon-drawing',
@@ -45,7 +42,6 @@ enum PointerIcons {
 }
 
 enum PointerIconsOffset {
-    Eraser = '15 15',
     Lasso = '0 0',
     LassoClose = '0 0',
     Polygon = '0 0',
@@ -59,11 +55,6 @@ const TOOL_ICON: Record<PolygonMode, { icon: PointerIcons; offset: PointerIconsO
         icon: PointerIcons.Lasso,
         offset: PointerIconsOffset.Lasso,
         cursorUrl: lassoDrawingCursor,
-    },
-    [PolygonMode.Eraser]: {
-        icon: PointerIcons.Eraser,
-        offset: PointerIconsOffset.Eraser,
-        cursorUrl: eraserToolCursor,
     },
     [PolygonMode.Polygon]: {
         icon: PointerIcons.Polygon,
@@ -92,11 +83,8 @@ const TOOL_ICON: Record<PolygonMode, { icon: PointerIcons; offset: PointerIconsO
     },
 };
 
-export const ERASER_FIELD_DEFAULT_RADIUS = 5;
 export const START_POINT_FIELD_DEFAULT_RADIUS = 6;
 export const START_POINT_FIELD_FOCUS_RADIUS = 8;
-
-const isDifferent = negate(isEqual);
 
 export const drawingStyles = (defaultLabel: Label | null): typeof DEFAULT_ANNOTATION_STYLES => {
     if (defaultLabel === null) {
@@ -121,33 +109,14 @@ export const getToolIcon = (polygonMode: PolygonMode | null) => {
 type PointerSVGElement = PointerEvent<SVGElement>;
 type CallbackPointerVoid = (event: PointerSVGElement) => void;
 
-const mouseButtonEventValidation =
-    (callback: CallbackPointerVoid) => (predicate: (button: MouseButton) => boolean) => (event: PointerSVGElement) => {
+export const leftMouseButtonHandler =
+    (callback: CallbackPointerVoid): CallbackPointerVoid =>
+    (event: PointerSVGElement): void => {
         event.preventDefault();
 
-        if (event.pointerType === PointerType.Touch) return;
+        if (event.pointerType === PointerType.Touch || !isLeftButton(event)) return;
 
-        const button = {
-            button: event.button,
-            buttons: event.buttons,
-        };
-
-        if (predicate(button)) {
-            callback(event);
-        }
-    };
-
-const leftMouseButtonHandler = (callback: CallbackPointerVoid): CallbackPointerVoid =>
-    mouseButtonEventValidation(callback)(isLeftButton);
-
-const rightMouseButtonHandler = (callback: CallbackPointerVoid): CallbackPointerVoid =>
-    mouseButtonEventValidation(callback)(isEraserOrRightButton);
-
-export const leftRightMouseButtonHandler =
-    (leftCallback: CallbackPointerVoid, rightCallback: CallbackPointerVoid) =>
-    (event: PointerSVGElement): void => {
-        leftMouseButtonHandler(leftCallback)(event);
-        rightMouseButtonHandler(rightCallback)(event);
+        callback(event);
     };
 
 export const removeEmptySegments =
@@ -156,14 +125,6 @@ export const removeEmptySegments =
         const validSegments = newSegments.filter(negate(isEmpty));
 
         return isEmpty(validSegments) ? [...prevSegments] : [...prevSegments, ...validSegments];
-    };
-
-export const deleteSegments =
-    (intersectionPoint: Point) =>
-    (segments: Point[][]): Point[][] => {
-        return segments
-            .map((segment: Point[]) => segment.filter((point: Point) => isDifferent(point, intersectionPoint)))
-            .filter(negate(isEmpty));
     };
 
 export const isCloseMode = (mode: PolygonMode | null) => {
