@@ -557,6 +557,10 @@ cache to OS-conventional per-user directories (resolved via Tauri's
 Set `DATA_DIR`, `LOG_DIR`, or `MPLCONFIGDIR` in the environment to override
 any of them (the Rust shell only fills in what's missing).
 
+The backend API has no authentication, so the shell always binds it to
+`127.0.0.1` (`HOST`), regardless of the inherited environment. It is never
+reachable from other machines on the network.
+
 ### Cleanup / uninstall
 
 The OS uninstaller / drag-to-trash only removes the app itself. To wipe

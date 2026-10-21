@@ -127,6 +127,9 @@ fn apply_default_env(command: &mut Command, app: &AppHandle) {
     let cors_origins = "tauri://localhost,https://tauri.localhost";
     command.env("CORS_ORIGINS", cors_origins);
 
+    // The API is unauthenticated: never listen beyond loopback, even if the inherited env sets HOST.
+    command.env("HOST", "127.0.0.1");
+
     // Resolve OS-conventional per-user dirs via Tauri (driven by the bundle
     // identifier in `tauri.conf.json`). These live outside the install prefix
     // so they survive reinstalls — same convention as Chrome/VSCode.

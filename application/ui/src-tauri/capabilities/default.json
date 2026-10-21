@@ -7,10 +7,7 @@
         "core:default",
         "dialog:allow-open",
         "dialog:allow-save",
-        {
-            "identifier": "fs:allow-write-file",
-            "allow": [{ "path": "$HOME/**" }]
-        },
+        "fs:allow-write-file",
         {
             "identifier": "opener:allow-open-url",
             "allow": [
