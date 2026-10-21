@@ -272,7 +272,11 @@ fn recreate_main_window(app: &AppHandle) {
         return;
     };
 
-    RECREATE_PENDING.store(true, Ordering::SeqCst);
+    // ProcessFailed arrives in bursts; a repeat must not cancel the pending rebuild.
+    if RECREATE_PENDING.swap(true, Ordering::SeqCst) {
+        log::info!("Main window recreation already pending, ignoring");
+        return;
+    }
     if let Err(e) = window.destroy() {
         RECREATE_PENDING.store(false, Ordering::SeqCst);
         log::error!("Failed to destroy the failed window; cannot recover: {e}");
