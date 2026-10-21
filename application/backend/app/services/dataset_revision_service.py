@@ -114,7 +114,7 @@ class DatasetRevisionService(BaseSessionManagedService):
         Returns:
             Dataset: The dataset revision as a Datumaro dataset.
         """
-        from datumaro.experimental.export_import import import_dataset
+        from app.datumaro_converter import import_dataset
 
         dataset_revision = self.get_dataset_revision(project_id, dataset_revision_id)
         if dataset_revision.files_deleted:

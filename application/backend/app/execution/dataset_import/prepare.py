@@ -5,9 +5,10 @@ from pathlib import Path
 from uuid import UUID
 
 from datumaro.experimental.categories import HierarchicalLabelCategories
-from datumaro.experimental.export_import import export_dataset, import_dataset
+from datumaro.experimental.export_import import export_dataset
 from loguru import logger
 
+from app.datumaro_converter import import_dataset
 from app.execution.base import Execution, ExecutionErr, step
 from app.models.jobs import PrepareDatasetForImportJobParams
 

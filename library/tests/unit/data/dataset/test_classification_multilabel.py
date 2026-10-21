@@ -4,8 +4,13 @@ from __future__ import annotations
 
 from unittest.mock import Mock
 
+import polars as pl
 import torch
 from datumaro.experimental import Dataset
+from datumaro.experimental.categories import LabelCategories
+from datumaro.experimental.fields import ImageInfo as DmImageInfo
+from datumaro.experimental.fields import Subset
+from torchvision import tv_tensors
 
 from getitune.data.dataset.classification import MultilabelClsDataset
 from getitune.data.entity.sample import ClassificationMultiLabelSample
@@ -93,3 +98,32 @@ class TestMultilabelClsDataset:
             "class_2": [1, 3],
             "class_3": [2],
         }
+
+
+class TestMultilabelClsDatasetLabelRange:
+    """Test that multi-label class indices are not limited to the UInt8 range."""
+
+    def test_label_field_is_uint16(self) -> None:
+        assert ClassificationMultiLabelSample.label.dtype == pl.UInt16()  # type: ignore[attr-defined]
+
+    def test_labels_above_255(self) -> None:
+        num_classes = 300
+        labels = [[0, 255], [256, num_classes - 1]]
+        categories = {"label": LabelCategories(labels=tuple(f"class_{i}" for i in range(num_classes)))}
+        dm_dataset = Dataset(ClassificationMultiLabelSample, categories=categories)  # type: ignore[arg-type]
+        for sample_labels in labels:
+            dm_dataset.append(
+                ClassificationMultiLabelSample(
+                    image=tv_tensors.Image(torch.zeros(3, 8, 8, dtype=torch.uint8)),
+                    label=torch.tensor(sample_labels, dtype=torch.uint16),
+                    dm_image_info=DmImageInfo(width=8, height=8),
+                    subset=Subset.TRAINING,
+                ),
+            )
+        dataset = MultilabelClsDataset(dm_subset=dm_dataset, transforms=[])
+        assert dataset.num_classes == num_classes
+        for idx, sample_labels in enumerate(labels):
+            onehot = dataset[idx].label  # type: ignore[attr-defined]
+            assert onehot.shape == (num_classes,)
+            assert onehot.nonzero().flatten().tolist() == sample_labels
+        assert dataset.get_idx_list_per_classes() == {0: [0], 255: [0], 256: [1], num_classes - 1: [1]}

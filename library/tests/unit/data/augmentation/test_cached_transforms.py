@@ -23,6 +23,8 @@ def _make_det_sample(
     h: int = 64,
     w: int = 64,
     n_boxes: int = 2,
+    label_dtype: torch.dtype = torch.long,
+    label_offset: int = 0,
 ) -> InstanceSegmentationSample:
     """Create a minimal instance-seg sample for testing (always has masks)."""
     image = torch.rand(3, h, w)
@@ -30,7 +32,7 @@ def _make_det_sample(
     for i in range(n_boxes):
         x1, y1 = 5 + i * 10, 5 + i * 10
         bboxes[i] = torch.tensor([x1, y1, x1 + 20, y1 + 20])
-    labels = torch.arange(n_boxes, dtype=torch.long)
+    labels = torch.arange(label_offset, label_offset + n_boxes).to(label_dtype)
     masks_t = torch.zeros(n_boxes, h, w, dtype=torch.uint8)
     for i in range(n_boxes):
         x1, y1 = int(bboxes[i, 0]), int(bboxes[i, 1])
@@ -436,3 +438,32 @@ class TestCloneForCache:
         # Verify cloned (not the same tensor)
         assert cached.image.data_ptr() != sample.image.data_ptr()
         assert cached.masks.data_ptr() != sample.masks.data_ptr()
+
+
+# =====================================================================
+# Label dtype tests (labels are stored as uint16 to support > 256 classes)
+# =====================================================================
+_MIXED_LABEL_DTYPES = [torch.uint16, torch.uint8, torch.long]
+
+
+class TestCachedTransformsLabelDtypes:
+    """CachedMosaic/CachedMixUp must handle uint16 labels above 255 and mixed label dtypes."""
+
+    @pytest.mark.parametrize("transform_cls", [CachedMosaic, CachedMixUp])
+    def test_uint16_labels_above_255(self, transform_cls: type[CachedMosaic | CachedMixUp]) -> None:
+        transform = transform_cls(img_scale=(32, 32), p=1.0, max_cached_images=20)
+        for _ in range(5):
+            result = transform(_make_det_sample(h=32, w=32, n_boxes=2, label_dtype=torch.uint16, label_offset=299))
+        assert result.label.dtype == torch.long
+        assert result.label.shape[0] == result.bboxes.shape[0]
+        assert set(result.label.tolist()) <= {299, 300}
+
+    @pytest.mark.parametrize("transform_cls", [CachedMosaic, CachedMixUp])
+    def test_mixed_label_dtypes(self, transform_cls: type[CachedMosaic | CachedMixUp]) -> None:
+        """Samples with different label dtypes (e.g. tiling fallback) must not break concatenation."""
+        transform = transform_cls(img_scale=(32, 32), p=1.0, max_cached_images=20)
+        for i in range(6):
+            label_dtype = _MIXED_LABEL_DTYPES[i % len(_MIXED_LABEL_DTYPES)]
+            result = transform(_make_det_sample(h=32, w=32, n_boxes=2, label_dtype=label_dtype))
+        assert result.label.dtype == torch.long
+        assert result.label.shape[0] == result.bboxes.shape[0]

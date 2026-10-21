@@ -210,7 +210,9 @@ class TileDataset(VisionDataset):
                             canvas_size=shape,
                             dtype=torch.float32,
                         )
-                        transformed.label = torch.zeros(0, dtype=torch.long)
+                        # Keep the sample's label dtype so later concatenation (e.g. Mosaic/MixUp)
+                        # does not mix dtypes; torch cannot promote uint16 with other integer types.
+                        transformed.label = torch.zeros(0, dtype=transformed.label.dtype)
                     tile_entities.append(transformed)
                 return tile_entities
 

@@ -1,9 +1,10 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 from unittest.mock import MagicMock, call
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import numpy as np
+import polars as pl
 import pytest
 from datumaro.experimental import LazyImage
 
@@ -19,114 +20,8 @@ from app.datumaro_converter import (
     SampleMode,
     convert_dataset,
 )
-from app.models import (
-    DatasetItem,
-    DatasetItemAnnotation,
-    DatasetItemSubset,
-    FullImage,
-    Image,
-    Label,
-    LabelReference,
-    MediaType,
-    Point,
-    Polygon,
-    Rectangle,
-    Shape,
-    Task,
-    TaskType,
-)
+from app.models import DatasetItemSubset, Image, MediaType, Task, TaskType
 from app.models.media import ImageFormat
-
-
-@pytest.fixture
-def fxt_project_labels():
-    project_id = uuid4()
-    return [
-        Label(id=uuid4(), project_id=project_id, name="cat", color="#00FF00", hotkey="c"),
-        Label(id=uuid4(), project_id=project_id, name="dog", color="#FF0000", hotkey="d"),
-    ]
-
-
-@pytest.fixture
-def fxt_dataset_item():
-    def _create_dataset_item(
-        project_id: UUID,
-        annotation_data: list[DatasetItemAnnotation] | None = None,
-    ) -> DatasetItem:
-        return DatasetItem(
-            id=uuid4(),
-            project_id=project_id,
-            annotation_data=annotation_data or [],
-            subset=DatasetItemSubset.TRAINING,
-            subset_assigned_at=None,
-            user_reviewed=False,
-            prediction_model_id=None,
-        )
-
-    return _create_dataset_item
-
-
-@pytest.fixture
-def fxt_dataset_item_annotation():
-    def _create_dataset_item_annotation(labels: list[str], shape: Shape) -> DatasetItemAnnotation:
-        return DatasetItemAnnotation(labels=[LabelReference(id=UUID(label)) for label in labels], shape=shape)
-
-    return _create_dataset_item_annotation
-
-
-@pytest.fixture
-def fxt_detection_dataset_item(fxt_dataset_item, fxt_dataset_item_annotation):
-    def _create_detection_dataset_item(
-        project_id: UUID, label: str, x: int, y: int, width: int, height: int
-    ) -> DatasetItem:
-        return fxt_dataset_item(
-            project_id=project_id,
-            annotation_data=[
-                fxt_dataset_item_annotation(labels=[label], shape=Rectangle(x=x, y=y, width=width, height=height))
-            ],
-        )
-
-    return _create_detection_dataset_item
-
-
-@pytest.fixture
-def fxt_classification_dataset_item(fxt_dataset_item, fxt_dataset_item_annotation):
-    def _create_classification_dataset_item(project_id: UUID, label: str) -> DatasetItem:
-        return fxt_dataset_item(
-            project_id=project_id,
-            annotation_data=[fxt_dataset_item_annotation(labels=[label], shape=FullImage())],
-        )
-
-    return _create_classification_dataset_item
-
-
-@pytest.fixture
-def fxt_multilabel_classification_dataset_item(fxt_dataset_item, fxt_dataset_item_annotation):
-    def _create_classification_dataset_item(project_id: UUID, labels: list[str]) -> DatasetItem:
-        return fxt_dataset_item(
-            project_id=project_id,
-            annotation_data=[fxt_dataset_item_annotation(labels=labels, shape=FullImage())],
-        )
-
-    return _create_classification_dataset_item
-
-
-@pytest.fixture
-def fxt_instance_segmentation_dataset_item(fxt_dataset_item, fxt_dataset_item_annotation):
-    def _create_instance_segmentation_dataset_item(
-        project_id: UUID, annotations: list[tuple[str, list[list[int]]]]
-    ) -> DatasetItem:
-        return fxt_dataset_item(
-            project_id=project_id,
-            annotation_data=[
-                fxt_dataset_item_annotation(
-                    labels=[label], shape=Polygon(points=[Point(x=p[0], y=p[1]) for p in coords])
-                )
-                for (label, coords) in annotations
-            ],
-        )
-
-    return _create_instance_segmentation_dataset_item
 
 
 @pytest.mark.parametrize(
@@ -237,6 +132,15 @@ def test_convert_multiclass_classification_dataset(
     )
     assert get_media_path.call_count == 2
     get_media_path.assert_has_calls([call(media)] * 2)
+
+
+@pytest.mark.parametrize("sample_mode", [SampleMode.TRAINING, SampleMode.IMPORT_EXPORT])
+def test_convert_dataset_label_index_above_uint8(fxt_task_name, sample_mode, fxt_task_dataset) -> None:
+    """Class indices above 255 must survive conversion (projects with more than 256 labels)."""
+    dataset, expected_labels = fxt_task_dataset(fxt_task_name, label_indices=[255, 256, 299], sample_mode=sample_mode)
+    label_dtype = dataset.df["label"].dtype
+    assert (label_dtype.inner if isinstance(label_dtype, pl.List) else label_dtype) == pl.UInt16()
+    assert [np.atleast_1d(dataset[i].label).tolist() for i in range(len(dataset))] == expected_labels
 
 
 @pytest.mark.parametrize(

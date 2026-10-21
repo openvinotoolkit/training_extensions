@@ -28,7 +28,7 @@ def fxt_imbalanced_dataset() -> VisionDataset:
         dm_dataset.append(
             ClassificationSample(
                 image=tv_tensors.Image(torch.zeros(3, 10, 10, dtype=torch.uint8)),
-                label=torch.tensor(0, dtype=torch.uint8),
+                label=torch.tensor(0, dtype=torch.uint16),
                 dm_image_info=DmImageInfo(width=10, height=10),
                 subset=Subset.TRAINING,
             ),
@@ -37,7 +37,7 @@ def fxt_imbalanced_dataset() -> VisionDataset:
         dm_dataset.append(
             ClassificationSample(
                 image=tv_tensors.Image(torch.zeros(3, 10, 10, dtype=torch.uint8)),
-                label=torch.tensor(1, dtype=torch.uint8),
+                label=torch.tensor(1, dtype=torch.uint16),
                 dm_image_info=DmImageInfo(width=10, height=10),
                 subset=Subset.TRAINING,
             ),
