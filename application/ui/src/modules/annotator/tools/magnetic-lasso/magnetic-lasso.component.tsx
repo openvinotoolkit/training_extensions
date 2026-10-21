@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { PointerEvent, useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 import { toast } from '@/components/toast/toast.component';
 import { useZoom } from '@/components/zoom/zoom.provider';
@@ -10,7 +10,6 @@ import { isPointOverPoint, isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { useMutation } from '@tanstack/react-query';
 import { isEmpty, isEqual, throttle } from 'lodash-es';
 
-import { isLeftButton } from '../../../../shared/buttons-utils';
 import { Point } from '../../../../shared/types';
 import { isNonEmptyArray } from '../../../../shared/util';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
@@ -200,36 +199,31 @@ export const MagneticLasso = () => {
         250
     );
 
-    const onLeftPointerUp = setPointFromEvent((point: Point): void => {
-        const canBeClosed = canPathBeClosed(point);
+    const onPointerUp = leftMouseButtonHandler(
+        setPointFromEvent((point: Point): void => {
+            const canBeClosed = canPathBeClosed(point);
 
-        if (isFreeDrawingAndPathCannotBeClosed(canBeClosed)) {
-            setBuildMapAndSegment(point);
-        }
+            if (isFreeDrawingAndPathCannotBeClosed(canBeClosed)) {
+                setBuildMapAndSegment(point);
+            }
 
-        if (canBeClosed) {
-            complete();
-            resetTool();
+            if (canBeClosed) {
+                complete();
+                resetTool();
 
-            isLoading.current = false;
-            worker?.cleanPoints();
-            pendingHistoryCommit.current = false;
-        } else if (pendingHistoryCommit.current) {
-            setSegments((prev) => prev);
-            pendingHistoryCommit.current = false;
-        }
+                isLoading.current = false;
+                worker?.cleanPoints();
+                pendingHistoryCommit.current = false;
+            } else if (pendingHistoryCommit.current) {
+                setSegments((prev) => prev);
+                pendingHistoryCommit.current = false;
+            }
 
-        setMode(PolygonMode.MagneticLasso);
-        isPointerDown.current = false;
-        isFreeDrawing.current = false;
-    });
-
-    // Only the left button draws, other buttons must not add points nor close the polygon
-    const onPointerUp = (event: PointerEvent<SVGSVGElement>): void => {
-        if (isLeftButton(event)) {
-            onLeftPointerUp(event);
-        }
-    };
+            setMode(PolygonMode.MagneticLasso);
+            isPointerDown.current = false;
+            isFreeDrawing.current = false;
+        })
+    );
 
     return (
         <SvgToolCanvas

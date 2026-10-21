@@ -11,7 +11,7 @@ const BUTTON_WHEEL = {
     buttons: 4,
 };
 
-export type MouseButton = {
+type MouseButton = {
     button: number;
     buttons: number;
 };
