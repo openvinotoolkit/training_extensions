@@ -9,16 +9,16 @@ const getMockedRef = (element: HTMLDivElement | null) => {
     return { current: element } as unknown as React.RefObject<HTMLDivElement>;
 };
 describe('useGetTargetPosition', () => {
-    const mockCallback = vi.fn();
+    const mockCallback = rs.fn();
 
     beforeEach(() => {
-        vi.useFakeTimers();
-        vi.clearAllMocks();
-        vi.clearAllTimers();
+        rs.useFakeTimers();
+        rs.clearAllMocks();
+        rs.clearAllTimers();
     });
 
     afterEach(() => {
-        vi.useRealTimers();
+        rs.useRealTimers();
     });
 
     it('should not call callback when container is not provided', () => {
@@ -31,7 +31,7 @@ describe('useGetTargetPosition', () => {
             })
         );
 
-        vi.advanceTimersByTime(500);
+        rs.advanceTimersByTime(500);
 
         expect(mockCallback).not.toHaveBeenCalled();
     });
@@ -67,7 +67,7 @@ describe('useGetTargetPosition', () => {
             })
         );
 
-        vi.advanceTimersByTime(500);
+        rs.advanceTimersByTime(500);
 
         expect(mockCallback).toHaveBeenCalledWith(expectedScrollPos);
     });
@@ -87,7 +87,7 @@ describe('useGetTargetPosition', () => {
             })
         );
 
-        vi.advanceTimersByTime(500);
+        rs.advanceTimersByTime(500);
 
         expect(mockCallback).toHaveBeenCalledWith(0);
     });
@@ -103,7 +103,7 @@ describe('useGetTargetPosition', () => {
                 })
             );
 
-            vi.advanceTimersByTime(500);
+            rs.advanceTimersByTime(500);
 
             expect(mockCallback).not.toHaveBeenCalled();
         });

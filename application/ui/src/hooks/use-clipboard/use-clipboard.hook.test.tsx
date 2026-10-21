@@ -5,21 +5,21 @@ import { renderHook } from '@testing-library/react';
 
 import { useClipboard } from './use-clipboard.hook';
 
-const mockwriteText = vi.fn();
+const mockwriteText = rs.fn();
 Object.assign(navigator, {
     clipboard: {
         writeText: mockwriteText,
     },
 });
 
-const mockedToast = vi.fn();
-vi.mock('../../components/toast/toast.component', () => ({
+const mockedToast = rs.fn();
+rs.mock('../../components/toast/toast.component', () => ({
     toast: (params: unknown) => mockedToast(params),
 }));
 
 describe('useClipboard', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('Copy and shows a info notification message', async () => {

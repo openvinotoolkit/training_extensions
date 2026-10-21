@@ -1,6 +1,8 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { Activity } from 'react';
+
 import { toast } from '@/components/toast/toast.component';
 import { Trans, useTranslation } from '@/i18n';
 import { Button, ButtonGroup, Content, Dialog, Divider, Flex, Footer, Heading, InlineAlert, Text } from '@geti-ui/ui';
@@ -86,7 +88,12 @@ export const TrainModelDialog = ({ onClose }: TrainModelDialogProps) => {
 
             <Content>
                 <TrainModelDialogLayout>
-                    {isAdvancedSettingsMode ? <AdvancedSettings /> : <BasicTrainModelContent />}
+                    <Activity mode={isAdvancedSettingsMode ? 'hidden' : 'visible'}>
+                        <BasicTrainModelContent />
+                    </Activity>
+                    <Activity mode={isAdvancedSettingsMode ? 'visible' : 'hidden'}>
+                        <AdvancedSettings />
+                    </Activity>
                 </TrainModelDialogLayout>
             </Content>
 

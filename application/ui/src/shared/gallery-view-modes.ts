@@ -6,5 +6,3 @@ import { ViewModes } from '@geti-ui/ui';
 // View modes used by media galleries. ViewModes.DETAILS is intentionally
 // excluded because none of the galleries render a details/list view.
 export type GalleryViewMode = ViewModes.LARGE | ViewModes.MEDIUM | ViewModes.SMALL;
-
-export const GALLERY_VIEW_MODES: GalleryViewMode[] = [ViewModes.LARGE, ViewModes.MEDIUM, ViewModes.SMALL];

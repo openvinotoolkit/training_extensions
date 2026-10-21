@@ -73,7 +73,10 @@ class BsSearchAlgo:
             self._bs_try_history[bs] = max_memory_reserved
 
         logger.debug(
-            f"Adapting Batch size => bs : {bs}, OOM : {oom}, memory usage : {max_memory_reserved / self._total_mem}%",
+            "Adapting Batch size => bs : %s, OOM : %s, memory usage : %s%%",
+            bs,
+            oom,
+            max_memory_reserved / self._total_mem,
         )
 
         return oom, max_memory_reserved

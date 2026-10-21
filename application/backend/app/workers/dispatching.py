@@ -50,7 +50,7 @@ class DispatchingWorker(BaseThreadWorker):
         self._destinations: list[Dispatcher] = []
 
         self._sink, self._destinations = self._load_sink()
-        logger.info(f"Active sink set to {self._sink}")
+        logger.info("Active sink set to {}", self._sink)
         event_bus.subscribe(
             [EventType.SINK_CHANGED, EventType.PIPELINE_STATUS_CHANGED],
             self._reload_sink,
@@ -96,7 +96,7 @@ class DispatchingWorker(BaseThreadWorker):
 
     def _reload_sink(self) -> None:
         self._sink, self._destinations = self._load_sink()
-        logger.info(f"Active sink set to {self._sink}")
+        logger.info("Active sink set to {}", self._sink)
 
     def _report_sink_error(self, sink: Sink, message: str) -> None:
         """Publish an ERROR sink status (skipped when no sink is configured)."""

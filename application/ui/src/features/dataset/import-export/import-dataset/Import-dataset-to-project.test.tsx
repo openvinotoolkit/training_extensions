@@ -8,6 +8,7 @@ import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
 
 import { getMockedPrepareImportDatasetJob } from '../../../../../mocks/mock-job';
+import * as actualTus from '../../../../api/tus-upload' with { rstest: 'importActual' };
 import { http } from '../../../../api/utils';
 import { useImportDatasetToProject } from '../../../../hooks/storage/use-import-dataset-to-project.hook';
 import { server } from '../../../../msw-node-setup';
@@ -17,25 +18,25 @@ import {
 } from '../../providers/export-import-dataset-dialog-provider.component';
 import { ImportDatasetToProject } from './Import-dataset-to-project.component';
 
-vi.mock('../../../../api/tus-upload', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('../../../../api/tus-upload')>()),
-    transferFile: vi.fn(async () => '00000000-0000-4000-8000-000000000001'),
+rs.mock('../../../../api/tus-upload', () => ({
+    ...actualTus,
+    transferFile: rs.fn(async () => '00000000-0000-4000-8000-000000000001'),
 }));
 
-vi.mock('../../../../hooks/storage/use-import-dataset-to-project.hook');
+rs.mock('../../../../hooks/storage/use-import-dataset-to-project.hook');
 
 describe('ImportDatasetToProject', () => {
     const mockedStagedDatasetId = 'staged-dataset-123';
     const mockedPrepareImportDatasetJob = getMockedPrepareImportDatasetJob({});
 
-    const renderApp = (data: null | { id: string; fileName: string }, mockedAppendImportEntry = vi.fn()) => {
-        vi.mocked(useImportDatasetToProject).mockReturnValue({
-            getImportEntry: vi.fn().mockReturnValue(data),
-            getAllImportEntries: vi.fn(),
+    const renderApp = (data: null | { id: string; fileName: string }, mockedAppendImportEntry = rs.fn()) => {
+        rs.mocked(useImportDatasetToProject).mockReturnValue({
+            getImportEntry: rs.fn().mockReturnValue(data),
+            getAllImportEntries: rs.fn(),
             appendImportEntry: mockedAppendImportEntry,
-            deleteImportEntry: vi.fn(),
-            updateImportEntryStep: vi.fn(),
-            updateImportEntry: vi.fn(),
+            deleteImportEntry: rs.fn(),
+            updateImportEntryStep: rs.fn(),
+            updateImportEntry: rs.fn(),
         });
 
         server.use(
@@ -87,7 +88,7 @@ describe('ImportDatasetToProject', () => {
     };
 
     it("appends import entry with 'preparing' step after file upload", async () => {
-        const mockedAppendImportEntry = vi.fn();
+        const mockedAppendImportEntry = rs.fn();
         const file = new File(['file content'], 'test.zip', { type: 'application/zip' });
 
         renderApp(null, mockedAppendImportEntry);

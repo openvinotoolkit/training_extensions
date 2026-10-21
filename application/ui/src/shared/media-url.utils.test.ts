@@ -11,9 +11,9 @@ import {
     getVideoFrameThumbnailUrl,
 } from './media-url.utils';
 
-const mocks = vi.hoisted(() => ({ apiBaseUrl: '' }));
+const mocks = rs.hoisted(() => ({ apiBaseUrl: '' }));
 
-vi.mock('../api/client', () => ({
+rs.mock('../api/client', () => ({
     get API_BASE_URL() {
         return mocks.apiBaseUrl;
     },

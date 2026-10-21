@@ -5,7 +5,6 @@ import * as toastModule from '@/components/toast/toast.component';
 import { act, waitFor } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import { renderHook } from 'test-utils/render';
-import { vi } from 'vitest';
 
 import { getMockedJob, getMockedQuantizeJob } from '../../../../mocks/mock-job';
 import { http } from '../../../api/utils';
@@ -180,7 +179,7 @@ describe('useStreamJobStatus', () => {
     });
 
     it('shows a toast when job status is FAILED', async () => {
-        const toastSpy = vi.spyOn(toastModule, 'toast');
+        const toastSpy = rs.spyOn(toastModule, 'toast');
         const failedJob = getMockedJob({ status: 'FAILED' });
 
         renderHook(() => useStreamJobStatus(failedJob.job_id, PROJECT_ID));

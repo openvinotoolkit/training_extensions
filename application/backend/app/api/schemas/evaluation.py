@@ -136,7 +136,7 @@ class EvaluationView(BaseModel):
         for raw_name, value in metrics.items():
             api_metric_name = RAW_METRICS_TO_API_METRICS.get(raw_name.lower(), None)
             if api_metric_name is None:
-                logger.debug(f"Skipping metric '{raw_name}' as it does not have a mapping to a user-friendly name.")
+                logger.debug("Skipping metric '{}' as it does not have a mapping to a user-friendly name.", raw_name)
                 continue
             primary = api_metric_name == primary_metric_name
             metric_views.append(MetricView(name=api_metric_name, value=value, primary=primary))

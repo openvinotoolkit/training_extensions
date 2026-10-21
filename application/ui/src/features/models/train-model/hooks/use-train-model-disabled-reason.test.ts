@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { renderHook } from 'test-utils/render';
-import { vi } from 'vitest';
 
+import * as actualTrainModelProvider from '../train-model-provider.component' with { rstest: 'importActual' };
 import {
     CURRENT_DATASET_SOURCE_ID,
     getRevisionSourceId,
@@ -12,9 +12,9 @@ import {
 } from '../train-model-provider.component';
 import { useTrainModelDisabledReason } from './use-train-model-disabled-reason';
 
-const mockUseGetDatasetItems = vi.hoisted(() => vi.fn());
+const mockUseGetDatasetItems = rs.hoisted(() => rs.fn());
 
-vi.mock('hooks/use-get-dataset-items.hook', () => ({
+rs.mock('hooks/use-get-dataset-items.hook', () => ({
     useGetDatasetItems: mockUseGetDatasetItems,
 }));
 
@@ -30,12 +30,11 @@ const CURRENT_DATASET_STATE: Partial<TrainModelContextProps> = {
     ],
 };
 
-const mockTrainModelState = vi.hoisted(() => vi.fn());
+const mockTrainModelState = rs.hoisted(() => rs.fn());
 
-vi.mock('../train-model-provider.component', async () => {
-    const actualImport = await vi.importActual('../train-model-provider.component');
+rs.mock('../train-model-provider.component', () => {
     return {
-        ...actualImport,
+        ...actualTrainModelProvider,
         useTrainModelState: mockTrainModelState,
     };
 });

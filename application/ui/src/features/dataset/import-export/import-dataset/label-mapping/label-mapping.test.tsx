@@ -21,7 +21,7 @@ const projectLabels = [
 
 describe('LabelMapping', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     const renderApp = (stagedDatasetId: string, datasetLabels: string[] = []) => {

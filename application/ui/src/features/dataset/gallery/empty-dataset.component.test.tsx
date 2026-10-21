@@ -9,12 +9,12 @@ import { render } from 'test-utils/render';
 
 import { EmptyDataset } from './empty-dataset.component';
 
-vi.mock('./toolbar/media-upload.component', () => ({
+rs.mock('./toolbar/media-upload.component', () => ({
     MediaUpload: () => <button>Upload media</button>,
 }));
 
-vi.mock('../providers/export-import-dataset-dialog-provider.component', () => ({
-    useImportDatasetDialogState: () => ({ datasetImportDialogState: { open: vi.fn() } }),
+rs.mock('../providers/export-import-dataset-dialog-provider.component', () => ({
+    useImportDatasetDialogState: () => ({ datasetImportDialogState: { open: rs.fn() } }),
 }));
 
 const SearchParamsSpy = () => {

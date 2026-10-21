@@ -30,29 +30,29 @@ const labelB = getMockedLabel({ id: 'label-b', name: 'Dog', color: '#00ff00' });
 const labelC = getMockedLabel({ id: EMPTY_LABEL_ID, name: 'No object', color: '#FFF' });
 const labels = [labelA, labelB, labelC];
 
-vi.mock('../../../../video-player-provider.component', () => ({
+rs.mock('../../../../video-player-provider.component', () => ({
     useVideoPlayer: () => ({
         videoFrame: mockVideoFrame,
         videoRef: { current: null },
         isMuted: false,
-        toggleMute: vi.fn(),
+        toggleMute: rs.fn(),
         playbackRate: 1,
-        changePlaybackRate: vi.fn(),
-        videoControls: { play: vi.fn(), pause: vi.fn() },
-        changeCurrentFrameIndex: vi.fn(),
+        changePlaybackRate: rs.fn(),
+        videoControls: { play: rs.fn(), pause: rs.fn() },
+        changeCurrentFrameIndex: rs.fn(),
         step: 1,
-        changeStep: vi.fn(),
+        changeStep: rs.fn(),
     }),
 }));
 
-vi.mock('../../../../../predictions-setup-provider.component', () => ({
+rs.mock('../../../../../predictions-setup-provider.component', () => ({
     usePredictionSetup: () => ({
         selectedDevice: 'cpu',
-        changeSelectedDevice: vi.fn(),
+        changeSelectedDevice: rs.fn(),
 
         selectedModelId: MODEL_ID,
         selectedModel: { id: MODEL_ID, name: 'Model 1 [FP32]', modelId: 'model-base-1' },
-        changeSelectedModelId: vi.fn(),
+        changeSelectedModelId: rs.fn(),
         selectableModels: [{ id: MODEL_ID, name: 'Model 1 [FP32]', modelId: 'model-base-1' }],
     }),
 }));
@@ -68,7 +68,7 @@ const renderSegment = (overrides: Partial<Parameters<typeof VideoFrameSegment>[0
             isLastFrame={false}
             isSelectedFrame={false}
             showTicks={true}
-            onClick={vi.fn()}
+            onClick={rs.fn()}
             {...overrides}
         />
     );
@@ -76,6 +76,12 @@ const renderSegment = (overrides: Partial<Parameters<typeof VideoFrameSegment>[0
 
 describe('VideoFrameSegment', () => {
     describe('shared behaviour (mode-independent)', () => {
+        beforeEach(() => {
+            server.use(
+                http.get('/api/projects/{project_id}/dataset/media/{media_id}/frames', () => HttpResponse.json([]))
+            );
+        });
+
         describe('selected frame overlay', () => {
             it('renders the overlay when isSelectedFrame is true', () => {
                 renderSegment({ isSelectedFrame: true });
@@ -106,7 +112,7 @@ describe('VideoFrameSegment', () => {
 
         describe('click interaction', () => {
             it('calls onClick with the frame number when the segment is clicked', () => {
-                const mockOnClick = vi.fn();
+                const mockOnClick = rs.fn();
                 renderSegment({ onClick: mockOnClick, frameNumber: 120, showTicks: true });
 
                 fireEvent.click(screen.getByText('120f'));

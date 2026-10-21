@@ -571,9 +571,9 @@ class PretrainedInit:
                 checkpoint = load_from_http(self.checkpoint)
             if checkpoint is not None:
                 load_checkpoint_to_model(module, checkpoint)
-                logger.info(f"load model from: {self.checkpoint}")
+                logger.info("load model from: %s", self.checkpoint)
         else:
-            logger.info(f"load {self.prefix} in model from: {self.checkpoint}")
+            logger.info("load %s in model from: %s", self.prefix, self.checkpoint)
             with torch.serialization.safe_globals(PRETRAINED_SAFE_GLOBALS):
                 checkpoint = torch.load(self.checkpoint, map_location=self.map_location)
             state_dict = checkpoint.get("state_dict", checkpoint)

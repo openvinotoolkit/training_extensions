@@ -135,7 +135,7 @@ describe('RunningJobRow', () => {
     });
 
     it('renders Cancel button when onCancel is provided and job is running', async () => {
-        const mockCancel = vi.fn();
+        const mockCancel = rs.fn();
         const job = getMockedTrainJob({
             metadata: {
                 project: { id: '123' },
@@ -169,7 +169,7 @@ describe('RunningJobRow', () => {
     });
 
     it('disables Cancel button when job is not running', async () => {
-        const mockCancel = vi.fn();
+        const mockCancel = rs.fn();
         const job = getMockedTrainJob({
             metadata: {
                 project: { id: '123' },

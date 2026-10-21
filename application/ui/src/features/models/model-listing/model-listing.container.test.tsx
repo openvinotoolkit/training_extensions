@@ -5,6 +5,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getMockedDatasetRevision } from 'mocks/mock-dataset-revision';
 import { getMockedModel, getMockedModelArchitecture } from 'mocks/mock-model';
+import { getMockedPipeline } from 'mocks/mock-pipeline';
 import { getMockedProject } from 'mocks/mock-project';
 import { HttpResponse } from 'msw';
 import { render } from 'test-utils/render';
@@ -58,6 +59,14 @@ describe('ModelListingContainer', () => {
             http.get('/api/jobs', () => HttpResponse.json([])),
             http.get('/api/projects/{project_id}/dataset_revisions', () =>
                 HttpResponse.json([getMockedDatasetRevision({ id: 'dataset-revision-1', name: 'Dataset Revision 1' })])
+            ),
+            http.get('/api/projects/{project_id}/pipeline', () =>
+                HttpResponse.json(getMockedPipeline({ status: 'idle' }))
+            ),
+            http.get('/api/projects/{project_id}/dataset/views', () => HttpResponse.json([])),
+            http.get('/api/system/devices/training', () => HttpResponse.json([{ type: 'cpu', name: 'CPU' }])),
+            http.get('/api/model_architectures/{architecture_id}', () =>
+                HttpResponse.json(getMockedModelArchitecture({ id: 'Object_Detection_YOLOX_X' }))
             )
         );
     });

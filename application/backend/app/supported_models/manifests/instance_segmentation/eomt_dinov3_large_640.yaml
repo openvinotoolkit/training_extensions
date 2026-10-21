@@ -1,5 +1,5 @@
 id: instance-segmentation-eomt-dinov3-large-640
-name: EoMT-DINOv3-Large-640
+name: EoMT-DINOv3-L
 license:
   name: DINOv3 License
   url: https://ai.meta.com/resources/models-and-libraries/dinov3-license
@@ -10,7 +10,7 @@ pretrained_weights:
 description: "EoMT-DINOv3-Large uses a DINOv3 ViT-L encoder for efficient instance segmentation without a task-specific decoder."
 stats:
   gigaflops: 1335.9
-  trainable_parameters: 314.978385
+  trainable_parameters: 315.0
   benchmark_metrics:
     coco_map_50_95: 45.9
 capabilities:

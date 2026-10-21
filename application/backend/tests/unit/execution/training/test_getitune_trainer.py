@@ -788,6 +788,7 @@ class TestGetiTuneTrainerPrepareModel:
 class TestGetiTuneTrainerTrainModel:
     """Tests for the GetiTuneTrainer.train_model method."""
 
+    @pytest.mark.parametrize("backend", ["lightning", "huggingface"])
     @pytest.mark.parametrize(
         "geti_device,getitune_device",
         [
@@ -804,6 +805,7 @@ class TestGetiTuneTrainerTrainModel:
         tmp_path: Path,
         geti_device: DeviceInfo,
         getitune_device: str,
+        backend: str,
         add_precision: bool,
     ):
         """Test successful model training."""
@@ -833,6 +835,7 @@ class TestGetiTuneTrainerTrainModel:
 
         # Create training configuration
         training_config: dict[str, Any] = {
+            "backend": backend,
             "model": {
                 "class_path": "getitune.backend.lightning.models.detection.yolox.YOLOXModel",
                 "init_args": {
@@ -923,6 +926,7 @@ class TestGetiTuneTrainerTrainModel:
         assert engine_call_kwargs["data"] == mock_datamodule
         assert engine_call_kwargs["work_dir"] == getitune_trainer._data_dir / f"getitune-workspace-{model_id}"
         assert "checkpoint" not in engine_call_kwargs
+        assert "device_index" not in engine_call_kwargs
 
         # Verify training was started
         mock_getitune_engine.train.assert_called_once()
@@ -932,10 +936,10 @@ class TestGetiTuneTrainerTrainModel:
             assert train_call_kwargs["precision"] == "32"
         else:
             assert "precision" not in train_call_kwargs
-        if geti_device.type == DeviceType.CPU or geti_device.index is None:
-            assert "devices" not in train_call_kwargs
-        else:
+        if geti_device.type is not DeviceType.CPU and geti_device.index is not None:
             assert train_call_kwargs["devices"] == [geti_device.index]
+        else:
+            assert "devices" not in train_call_kwargs
         assert "callbacks" in train_call_kwargs
 
         # Verify return values
@@ -1090,7 +1094,7 @@ class TestGetiTuneTrainerTrainModel:
             assert training_config["model"]["init_args"]["pretrained_weights"] == weights_path
 
         train_kwargs = engine.train.call_args.kwargs
-        assert "devices" not in train_kwargs
+        assert train_kwargs["devices"] == [0]
         assert train_kwargs["batch"] == 2
         assert len(train_kwargs["callbacks"]) == 1
         progress_callback = train_kwargs["callbacks"][0]

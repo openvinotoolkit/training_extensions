@@ -55,8 +55,8 @@ describe('LoadingImportDataset', () => {
             error: 'Dataset validation failed: missing required fields',
         });
 
-        const mockedDeleteImportEntry = vi.fn();
-        renderApp({ job, onSuccess: vi.fn(), deleteEntry: mockedDeleteImportEntry });
+        const mockedDeleteImportEntry = rs.fn();
+        renderApp({ job, onSuccess: rs.fn(), deleteEntry: mockedDeleteImportEntry });
 
         expect(await screen.findByText('Import failed due to validation error')).toBeVisible();
 
@@ -74,7 +74,7 @@ describe('LoadingImportDataset', () => {
             message: 'Preparing dataset for import',
         });
 
-        renderApp({ job, fileName, onSuccess: vi.fn(), deleteEntry: vi.fn() });
+        renderApp({ job, fileName, onSuccess: rs.fn(), deleteEntry: rs.fn() });
 
         expect(await screen.findByText(`${fileName} file is being processed for import`)).toBeVisible();
         expect(await screen.findByText('56%')).toBeVisible();
@@ -84,8 +84,8 @@ describe('LoadingImportDataset', () => {
         const fileName = 'dataset.zip';
         const job = getMockedPrepareImportDatasetJob({ status: 'DONE' });
 
-        const mockedOnSuccess = vi.fn();
-        const mockedDeleteImportEntry = vi.fn();
+        const mockedOnSuccess = rs.fn();
+        const mockedDeleteImportEntry = rs.fn();
         renderApp({ job, fileName, onSuccess: mockedOnSuccess, deleteEntry: mockedDeleteImportEntry });
 
         await waitFor(() => {
@@ -97,8 +97,8 @@ describe('LoadingImportDataset', () => {
     });
 
     it('deletes entry without calling onSuccess when job query fails', async () => {
-        const mockedOnSuccess = vi.fn();
-        const mockedDeleteImportEntry = vi.fn();
+        const mockedOnSuccess = rs.fn();
+        const mockedDeleteImportEntry = rs.fn();
 
         renderApp({
             job: { job_id: '123', detail: 'Job not found' } as unknown as Job,

@@ -3,6 +3,7 @@
 
 import { ReactNode } from 'react';
 
+import * as actualUi from '@geti-ui/ui' with { rstest: 'importActual' };
 import { ViewModes } from '@geti-ui/ui';
 import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -17,18 +18,17 @@ import { MediaUploadProvider } from '../providers/media-upload-provider.componen
 import { SelectedDataProvider, useSelectedData } from '../providers/selected-data-provider.component';
 import { Gallery } from './gallery.component';
 
-const uploadMediaMock = vi.fn();
+const uploadMediaMock = rs.fn();
 
 let dropFiles: (files: File[]) => void = () => {};
 
-vi.mock('../../../shared/drop-zone.utils', () => ({
+rs.mock('../../../shared/drop-zone.utils', () => ({
     getFilesFromDropEvent: ({ files }: { files: File[] }) => Promise.resolve(files),
 }));
 
-vi.mock('@geti-ui/ui', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('@geti-ui/ui')>();
+rs.mock('@geti-ui/ui', () => {
     return {
-        ...actual,
+        ...actualUi,
         // Virtualized items are laid out from measurements jsdom does not provide, so they never render
         Virtualizer: ({ children }: { children: ReactNode }) => <>{children}</>,
         AriaDropZone: ({
@@ -44,20 +44,20 @@ vi.mock('@geti-ui/ui', async (importOriginal) => {
     };
 });
 
-vi.mock('../api/use-media-upload', () => ({
+rs.mock('../api/use-media-upload', () => ({
     useMediaUpload: () => ({
         uploadMedia: uploadMediaMock,
     }),
 }));
 
-vi.mock('./hooks/use-select-dataset-item.hook', () => ({
+rs.mock('./hooks/use-select-dataset-item.hook', () => ({
     useSelectDatasetItem: () => ({
         selectedMediaItem: null,
-        onSelectedMediaItemChange: vi.fn(),
+        onSelectedMediaItemChange: rs.fn(),
     }),
 }));
 
-vi.mock('hooks/use-project-identifier.hook', () => ({
+rs.mock('hooks/use-project-identifier.hook', () => ({
     useProjectIdentifier: () => 'project-123',
 }));
 
@@ -78,7 +78,7 @@ describe('Gallery drag-and-drop upload', () => {
                         isPending={false}
                         hasActiveFilter={false}
                         isFetchingNextPage={false}
-                        fetchNextPage={vi.fn()}
+                        fetchNextPage={rs.fn()}
                         isMediaItemReviewedById={() => false}
                     />
                 </SelectedDataProvider>
@@ -122,7 +122,7 @@ describe('Gallery item deletion and selection', () => {
                     isPending={false}
                     hasActiveFilter={false}
                     isFetchingNextPage={false}
-                    fetchNextPage={vi.fn()}
+                    fetchNextPage={rs.fn()}
                     isMediaItemReviewedById={() => false}
                 />
             </>

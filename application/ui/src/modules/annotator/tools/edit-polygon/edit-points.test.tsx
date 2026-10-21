@@ -31,15 +31,15 @@ describe('EditPoints', () => {
     };
 
     it('deletes a single point', async () => {
-        const mockRemovePoints = vi.fn();
+        const mockRemovePoints = rs.fn();
 
         renderEditPoints(
             <EditPoints
                 zoom={1}
                 shape={polygon}
-                addPoint={vi.fn()}
-                onComplete={vi.fn()}
-                moveAnchorTo={vi.fn()}
+                addPoint={rs.fn()}
+                onComplete={rs.fn()}
+                moveAnchorTo={rs.fn()}
                 removePoints={mockRemovePoints}
             />
         );
@@ -57,15 +57,15 @@ describe('EditPoints', () => {
     });
 
     it('selects and deletes multiple points', async () => {
-        const mockRemovePoints = vi.fn();
+        const mockRemovePoints = rs.fn();
 
         renderEditPoints(
             <EditPoints
                 zoom={1}
                 shape={polygon}
-                addPoint={vi.fn()}
-                onComplete={vi.fn()}
-                moveAnchorTo={vi.fn()}
+                addPoint={rs.fn()}
+                onComplete={rs.fn()}
+                moveAnchorTo={rs.fn()}
                 removePoints={mockRemovePoints}
             />
         );

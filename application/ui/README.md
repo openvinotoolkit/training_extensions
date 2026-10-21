@@ -40,9 +40,9 @@ npm start            # Start dev server at http://localhost:3000
 npm run server       # Start backend (Hypercorn, HTTP/2 + TLS) at https://localhost:7860 (separate terminal, requires `uv` and `just`)
 ```
 
-The backend serves HTTP/2 over TLS using a self-signed certificate, auto-generated on first run into `application/backend/data/certs/` (see `just gen-certs`). Your browser/OS may need to trust this cert, or you can accept the self-signed warning when visiting `https://localhost:7860` directly.
+The backend serves HTTP/2 over TLS using a self-signed certificate, auto-generated on first run into `application/backend/data/certs/` (see `just gen-certs`).
 
-The dev server proxies API requests to `PUBLIC_API_BASE_URL` (set in `.env.development`, defaults to `https://localhost:7860`). The `PUBLIC_` prefix is required for Rsbuild client exposure.
+The dev/preview server proxies `/api` and `/health` to `API_PROXY_TARGET` (set in `.env.development`, defaults to `https://localhost:7860`) and accepts the self-signed certificate, so the browser only talks to the dev server and no certificate warning has to be accepted. This also works when the UI is opened from another machine (e.g. `npm run start -- --host 0.0.0.0`). Setting `PUBLIC_API_BASE_URL` instead makes the browser call that backend URL directly (proxy disabled); the browser must then trust its certificate and the backend's `CORS_ORIGINS` must include the UI origin.
 While the backend is running on `localhost:7860`, use `npm run update-spec` to download a fresh OpenAPI spec and regenerate types.
 
 ```bash
@@ -64,7 +64,7 @@ npm run preview      # Preview production build
 │   ├── api/                 # OpenAPI client (openapi-fetch + openapi-react-query)
 │   ├── assets/              # Images, illustrations, icons
 │   ├── components/          # Reusable UI components
-│   ├── constants/           # Route paths (static-path), shared domain types
+│   ├── constants/           # Route paths (React Router generatePath helpers), shared domain types
 │   ├── features/            # Domain features (see below)
 │   │   ├── dataset/         # Data collection, gallery, media preview
 │   │   ├── inference/       # Live inference, WebRTC streaming
@@ -112,7 +112,7 @@ npm run update-spec        # Download fresh spec from backend, then regenerate
 ### Testing
 
 ```bash
-npm run test:unit          # Unit tests (Vitest + jsdom)
+npm run test:unit          # Unit tests (Rstest + jsdom)
 npm run test:unit:watch    # Watch mode
 npm run test:unit:coverage # Coverage report (v8)
 npm run test:component     # Component tests (Playwright + MSW)
@@ -145,7 +145,10 @@ the report with `npx playwright show-report`.
 ### Internationalization
 
 The UI uses i18next and react-i18next for internationalization. English is the
-default, fallback, and currently the only supported language.
+default and fallback language. Translation catalogs live in `src/i18n/locales/`
+and are registered in `src/i18n/locales.ts`; currently supported languages are
+English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), Dutch (`nl`),
+Polish (`pl`), Portuguese (`pt`) and Chinese (`zh-CN`, `zh-HK`, `zh-MO`, `zh-TW`).
 
 ### Code Quality
 
@@ -185,7 +188,7 @@ The application is built on four main pillars:
 
 #### Testing & CI/CD
 
-- **Vitest** - Fast unit and integration testing
+- **Rstest** - Fast unit and integration testing
 - **Playwright** - Component and end-to-end testing with shared MSW configuration for auto-mocking REST endpoints
 - **Testing Library** - User-centric React component testing; follow [guiding principles](https://testing-library.com/docs/guiding-principles) for accessibility
 - **MSW + OpenAPI** - Mock Service Worker with OpenAPI specs to simulate API responses in tests

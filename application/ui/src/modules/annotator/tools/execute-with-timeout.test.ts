@@ -1,17 +1,15 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { executeWithTimeout } from './execute-with-timeout';
 
 describe('executeWithTimeout', () => {
     beforeEach(() => {
-        vi.useFakeTimers();
+        rs.useFakeTimers();
     });
 
     afterEach(() => {
-        vi.useRealTimers();
+        rs.useRealTimers();
     });
 
     it('returns resolved value before timeout', async () => {
@@ -25,7 +23,7 @@ describe('executeWithTimeout', () => {
         const promise = executeWithTimeout(neverResolvingPromise, 'SAM decoder', 10);
         const rejectionExpectation = expect(promise).rejects.toThrow(/SAM decoder timed out after 10ms/i);
 
-        await vi.advanceTimersByTimeAsync(11);
+        await rs.advanceTimersByTimeAsync(11);
 
         await rejectionExpectation;
     });

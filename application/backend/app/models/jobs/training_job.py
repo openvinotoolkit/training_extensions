@@ -55,7 +55,7 @@ class TrainingJob(ProjectJob[TrainingJobParams]):
         """Copy the training log and clean up the getitune workspace upon job completion."""
         log_path = self.log_dir / self.log_file
         if not log_path.exists():
-            logger.warning(f"Log file {log_path} does not exist")
+            logger.warning("Log file {} does not exist", log_path)
         else:
             new_path = (
                 self.data_dir
@@ -73,17 +73,17 @@ class TrainingJob(ProjectJob[TrainingJobParams]):
         workspace_dir = self.data_dir / f"getitune-workspace-{self.params.model_id}"
         try:
             shutil.rmtree(workspace_dir)
-            logger.info(f"Cleaned up getitune workspace directory at {workspace_dir}")
+            logger.info("Cleaned up getitune workspace directory at {}", workspace_dir)
         except FileNotFoundError:
             # Directory was never created or already removed; treat as a no-op.
             pass
         except Exception as cleanup_exc:
-            logger.error(f"Failed to clean up getitune workspace directory at {workspace_dir}: {cleanup_exc}")
+            logger.error("Failed to clean up getitune workspace directory at {}: {}", workspace_dir, cleanup_exc)
 
         try:
             self._reconcile_stuck_training_status()
         except Exception as reconcile_exc:
-            logger.error(f"Failed to verify the training status for model {self.params.model_id}: {reconcile_exc}")
+            logger.error("Failed to verify the training status for model {}: {}", self.params.model_id, reconcile_exc)
 
     def _reconcile_stuck_training_status(self) -> None:
         """Force training_status to FAILED if the trainer process died without updating it (e.g. a crash/kill)."""
@@ -110,6 +110,7 @@ class TrainingJob(ProjectJob[TrainingJobParams]):
                         training_finished_at=datetime.now(UTC),
                     )
                     logger.warning(
-                        f"Model {self.params.model_id} was left at {found_status} after job completion; "
-                        "forced to FAILED"
+                        "Model {} was left at {} after job completion; forced to FAILED",
+                        self.params.model_id,
+                        found_status,
                     )

@@ -18,13 +18,13 @@ import { useImportJobStatus } from './use-import-job-status.hook';
 
 describe('useImportJobStatus', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
         resetMockEventSource();
     });
 
     it('calls onSuccess when job finishes successfully', async () => {
-        const onError = vi.fn();
-        const onSuccess = vi.fn();
+        const onError = rs.fn();
+        const onSuccess = rs.fn();
 
         server.use(
             http.get('/api/jobs/{job_id}', ({ params }) => {
@@ -44,9 +44,33 @@ describe('useImportJobStatus', () => {
         expect(onError).not.toHaveBeenCalled();
     });
 
+    it('does not call onSuccess again when its callback changes', async () => {
+        const firstOnSuccess = rs.fn();
+        let onSuccess = firstOnSuccess;
+
+        server.use(
+            http.get('/api/jobs/{job_id}', ({ params }) => {
+                return HttpResponse.json(getMockedPrepareImportDatasetJob({ job_id: params.job_id, status: 'DONE' }), {
+                    status: 200,
+                });
+            })
+        );
+
+        const { rerender } = renderHook(() => useImportJobStatus({ jobId: 'job-callback', onSuccess }));
+
+        await waitFor(() => {
+            expect(firstOnSuccess).toHaveBeenCalledOnce();
+        });
+
+        onSuccess = rs.fn();
+        rerender();
+
+        expect(onSuccess).not.toHaveBeenCalled();
+    });
+
     it('calls onError when job fails', async () => {
-        const onError = vi.fn();
-        const onSuccess = vi.fn();
+        const onError = rs.fn();
+        const onSuccess = rs.fn();
 
         server.use(
             http.get('/api/jobs/{job_id}', ({ params }) => {
@@ -68,8 +92,8 @@ describe('useImportJobStatus', () => {
     });
 
     it('handles running status without calling callbacks', async () => {
-        const onError = vi.fn();
-        const onSuccess = vi.fn();
+        const onError = rs.fn();
+        const onSuccess = rs.fn();
 
         server.use(
             http.get('/api/jobs/{job_id}', ({ params }) => {
@@ -95,8 +119,8 @@ describe('useImportJobStatus', () => {
     });
 
     it('does not poll when jobId is not provided', () => {
-        const onError = vi.fn();
-        const onSuccess = vi.fn();
+        const onError = rs.fn();
+        const onSuccess = rs.fn();
 
         const { result } = renderHook(() => useImportJobStatus({ jobId: undefined, onSuccess, onError }));
 
@@ -121,7 +145,7 @@ describe('useImportJobStatus', () => {
             })
         );
 
-        const onSuccess = vi.fn();
+        const onSuccess = rs.fn();
         const { result } = renderHook(() => useImportJobStatus({ jobId: 'job-sse', onSuccess }));
 
         await waitFor(() => {

@@ -12,13 +12,13 @@ const getResetButton = () => screen.getByRole('button', { name: 'Reset confidenc
 
 describe('ConfidenceThreshold', () => {
     it('renders the provided value', () => {
-        render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={vi.fn()} />);
+        render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={rs.fn()} />);
 
         expect(getInput()).toHaveValue('0.65');
     });
 
     it('calls onChange when the value is committed in the numeric input', async () => {
-        const onChange = vi.fn();
+        const onChange = rs.fn();
         render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={onChange} />);
 
         await userEvent.clear(getInput());
@@ -29,7 +29,7 @@ describe('ConfidenceThreshold', () => {
     });
 
     it('does not call onChange while the user is still typing', async () => {
-        const onChange = vi.fn();
+        const onChange = rs.fn();
         render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={onChange} />);
 
         await userEvent.clear(getInput());
@@ -39,7 +39,7 @@ describe('ConfidenceThreshold', () => {
     });
 
     it('commits the numeric input when Enter is pressed', async () => {
-        const onChange = vi.fn();
+        const onChange = rs.fn();
         render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={onChange} />);
 
         await userEvent.clear(getInput());
@@ -49,7 +49,7 @@ describe('ConfidenceThreshold', () => {
     });
 
     it('restores the default value when reset is pressed', async () => {
-        const onChange = vi.fn();
+        const onChange = rs.fn();
         render(<ConfidenceThreshold value={0.8} defaultValue={0.65} onChange={onChange} />);
 
         await userEvent.click(getResetButton());
@@ -58,7 +58,7 @@ describe('ConfidenceThreshold', () => {
     });
 
     it('disables reset when the value already equals the default', () => {
-        render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={vi.fn()} />);
+        render(<ConfidenceThreshold value={0.65} defaultValue={0.65} onChange={rs.fn()} />);
 
         expect(getResetButton()).toBeDisabled();
     });

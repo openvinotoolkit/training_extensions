@@ -92,9 +92,6 @@ const blurActiveInput = (isFocused: boolean): void => {
     }
 };
 
-// TODO: Update highlighted frames and buffers
-const NO_HIGHLIGHTED_FRAMES: number[] = [];
-
 export const VideoPlayerSlider = ({
     ref,
     videoFrame,
@@ -162,7 +159,6 @@ export const VideoPlayerSlider = ({
                     blurActiveInput(true);
                 }}
                 step={step}
-                highlightedFrames={NO_HIGHLIGHTED_FRAMES}
                 isLastFrame={isLastFrame}
                 sizePerSquare={sizePerSquare}
                 leftOffset={frameOffset}

@@ -1,5 +1,5 @@
 {
-    "include": ["src", "tests", "rsbuild.config.ts", "vitest.config.ts", "playwright.config.ts", "mocks"],
+    "include": ["src", "tests", "rsbuild.config.ts", "rstest.config.ts", "playwright.config.ts", "mocks"],
     "compilerOptions": {
         "target": "esnext",
         "lib": ["dom", "dom.iterable", "esnext"],
@@ -16,7 +16,7 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "types": ["vitest/globals"],
+        "types": ["@rstest/core/globals"],
         "paths": {
             "test-utils/*": ["./src/test-utils/*"],
             "hooks/*": ["./src/hooks/*"],

@@ -1,31 +1,32 @@
 // Copyright (C) 2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { path } from 'static-path';
+import { generatePath, type PathParam } from 'react-router';
 
-const root = path('/');
-const projects = root.path('/projects');
-const project = projects.path('/:projectId');
-const inference = projects.path('/:projectId/inference');
-const dataset = projects.path('/:projectId/dataset');
-const datasetItem = dataset.path('/:datasetItemId');
-const videoFrame = datasetItem.path('/:frameNumber');
-const models = projects.path('/:projectId/models');
+type RoutePath<Pattern extends string> = {
+    (params: { [Param in PathParam<Pattern>]: string }): string;
+    pattern: Pattern;
+};
+
+const route = <Pattern extends string>(pattern: Pattern): RoutePath<Pattern> =>
+    Object.assign((params: { [Param in PathParam<Pattern>]: string }) => generatePath<string>(pattern, params), {
+        pattern,
+    });
 
 export const paths = {
-    root,
+    root: route('/'),
     project: {
-        index: projects,
-        new: projects.path('/new'),
-        details: project,
-        inference,
+        index: route('/projects'),
+        new: route('/projects/new'),
+        details: route('/projects/:projectId'),
+        inference: route('/projects/:projectId/inference'),
         dataset: {
-            index: dataset,
+            index: route('/projects/:projectId/dataset'),
             item: {
-                index: datasetItem,
-                frame: videoFrame,
+                index: route('/projects/:projectId/dataset/:datasetItemId'),
+                frame: route('/projects/:projectId/dataset/:datasetItemId/:frameNumber'),
             },
         },
-        models,
+        models: route('/projects/:projectId/models'),
     },
 };

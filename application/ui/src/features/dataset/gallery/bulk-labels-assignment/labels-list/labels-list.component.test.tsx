@@ -24,7 +24,7 @@ const ControlledLabelsList = ({
     initialSelected = new Set<string>(),
     labels: labelsProp = labels,
     isMultiple = false,
-    onSelectedLabelsChange = vi.fn(),
+    onSelectedLabelsChange = rs.fn(),
 }: {
     initialSelected?: Set<string>;
     labels?: Label[];
@@ -130,7 +130,7 @@ describe('LabelsList', () => {
 
     describe('single-select mode', () => {
         it('calls onSelectedLabelsChange with the clicked label id', () => {
-            const onSelectedLabelsChange = vi.fn();
+            const onSelectedLabelsChange = rs.fn();
             render(<ControlledLabelsList isMultiple={false} onSelectedLabelsChange={onSelectedLabelsChange} />);
 
             const catLabel = getLabelItem('Cat');
@@ -154,7 +154,7 @@ describe('LabelsList', () => {
 
     describe('multi-select mode', () => {
         it('allows selecting multiple labels', () => {
-            const onSelectedLabelsChange = vi.fn();
+            const onSelectedLabelsChange = rs.fn();
             render(<ControlledLabelsList isMultiple onSelectedLabelsChange={onSelectedLabelsChange} />);
 
             const catLabel = getLabelItem('Cat');
@@ -177,7 +177,7 @@ describe('LabelsList', () => {
 
     describe('empty label selection logic', () => {
         it('selects only the empty label when it is selected and no other label was already selected', () => {
-            const onSelectedLabelsChange = vi.fn();
+            const onSelectedLabelsChange = rs.fn();
             render(
                 <ControlledLabelsList
                     isMultiple
@@ -194,7 +194,7 @@ describe('LabelsList', () => {
         });
 
         it('deselects the empty label when a regular label is added to an empty-label-only selection', () => {
-            const onSelectedLabelsChange = vi.fn();
+            const onSelectedLabelsChange = rs.fn();
             render(
                 <ControlledLabelsList
                     isMultiple
@@ -212,7 +212,7 @@ describe('LabelsList', () => {
         });
 
         it('deselects non-empty labels when the empty label gets selected', () => {
-            const onSelectedLabelsChange = vi.fn();
+            const onSelectedLabelsChange = rs.fn();
 
             render(
                 <ControlledLabelsList

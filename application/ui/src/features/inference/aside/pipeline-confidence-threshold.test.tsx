@@ -15,7 +15,7 @@ import { PipelineConfidenceThreshold } from './pipeline-confidence-threshold.com
 const getInput = () => screen.getByRole('textbox', { name: 'Change Confidence threshold' });
 
 const renderApp = (pipeline: Pipeline) => {
-    const pipelinePatchSpy = vi.fn();
+    const pipelinePatchSpy = rs.fn();
 
     server.use(
         http.get('/api/projects/{project_id}/pipeline', () => HttpResponse.json(pipeline)),

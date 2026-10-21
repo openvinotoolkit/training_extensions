@@ -72,7 +72,7 @@ class ClassificationSampleFactory(SampleFactory[MulticlassClassificationSample])
         label_index = self._label_index.get_index(annotation.labels[0].id)
 
         if label_index is None:
-            logger.warning(f"Label not found for dataset item {dataset_item.id}")
+            logger.warning("Label not found for dataset item {}", dataset_item.id)
             return None
 
         return self.__create_sample_for_mode(

@@ -26,6 +26,8 @@ export const HOTKEYS = {
     selectNextAnnotation: 'tab',
     submitAlternative: 'enter',
     submit: `${CTRL_OR_COMMAND_KEY}+s`,
+    acceptToolResult: 'enter',
+    rejectToolResult: 'escape',
     previousMedia: 'arrowup, arrowleft',
     nextMedia: 'arrowdown, arrowright',
 } as const;

@@ -4,9 +4,9 @@
 import { ExportDatasetConfig } from '@/components/export-dataset-config-dialog/export-dataset-config.component';
 import { useTranslation } from '@/i18n';
 import { Button, Item, Key, Menu, MenuTrigger } from '@geti-ui/ui';
-import { useOverlayTriggerState } from '@react-stately/overlays';
 import { useOptionalDatasetViewsQuery } from 'hooks/api/dataset-views.hook';
 import { ENTIRE_DATASET_VIEW_ID, useDatasetViewId } from 'hooks/use-dataset-view-id.hook';
+import { useOverlayTriggerState } from 'react-stately';
 
 import { useImportDatasetDialogState } from '../providers/export-import-dataset-dialog-provider.component';
 import { MainDatasetStatistics } from './export-dataset/dataset-statistics.component';

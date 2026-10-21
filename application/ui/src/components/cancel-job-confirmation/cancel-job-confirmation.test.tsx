@@ -13,16 +13,16 @@ describe('CancelJobConfirmation', () => {
     const jobId = 'test-job-id';
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
-    const renderApp = (mockedOnRemove = vi.fn()) => {
+    const renderApp = (mockedOnRemove = rs.fn()) => {
         render(<CancelJobConfirmation jobId={jobId} onRemove={mockedOnRemove} />);
     };
 
     it('calls cancel API and removes job from localStorage on successful cancel', async () => {
-        const cancelSpy = vi.fn();
-        const mockedOnRemove = vi.fn();
+        const cancelSpy = rs.fn();
+        const mockedOnRemove = rs.fn();
 
         server.use(
             http.post('/api/jobs/{job_id}:cancel', () => {
@@ -43,7 +43,7 @@ describe('CancelJobConfirmation', () => {
     });
 
     it('removes job from localStorage when job not found error occurs', async () => {
-        const mockedOnRemove = vi.fn();
+        const mockedOnRemove = rs.fn();
 
         server.use(
             http.post('/api/jobs/{job_id}:cancel', () =>

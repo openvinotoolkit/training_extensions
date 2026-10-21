@@ -15,22 +15,22 @@ import { ImportTaskSelection } from './import-task-selection.component';
 const mockedStagedDatasetId = 'staged-dataset-123';
 const mockedProject = getMockedProject({ id: 'id-1', name: 'Project 1' });
 
-const getImportEntrySpy = vi.fn();
-const updateImportEntrySpy = vi.fn();
-const setCurrentStepSpy = vi.fn();
+const getImportEntrySpy = rs.fn();
+const updateImportEntrySpy = rs.fn();
+const setCurrentStepSpy = rs.fn();
 
-vi.mock('hooks/storage/use-import-dataset-as-new-project.hook', () => ({
+rs.mock('hooks/storage/use-import-dataset-as-new-project.hook', () => ({
     useImportDatasetAsNewProject: () => ({
-        getAllImportEntries: vi.fn(),
-        appendImportEntry: vi.fn(),
-        deleteImportEntry: vi.fn(),
-        updateImportEntryStep: vi.fn(),
+        getAllImportEntries: rs.fn(),
+        appendImportEntry: rs.fn(),
+        deleteImportEntry: rs.fn(),
+        updateImportEntryStep: rs.fn(),
         updateImportEntry: updateImportEntrySpy,
         getImportEntry: getImportEntrySpy,
     }),
 }));
 
-vi.mock('../../../providers/import-dataset-dialog-provider.component', () => ({
+rs.mock('../../../providers/import-dataset-dialog-provider.component', () => ({
     useImportDatasetDialog: () => ({
         setCurrentStep: setCurrentStepSpy,
     }),
@@ -38,7 +38,7 @@ vi.mock('../../../providers/import-dataset-dialog-provider.component', () => ({
 
 describe('ImportTaskSelection', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     const renderApp = ({

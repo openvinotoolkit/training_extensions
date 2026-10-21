@@ -79,8 +79,9 @@ class OVSegmentationModel(OVModel):
         self.async_inference = False
         self.model = SemanticSegmentationTiler(self.model, execution_mode=execution_mode)
         log.info(
-            f"Enable tiler with tile size: {self.model.tile_size} \
-                and overlap: {self.model.tiles_overlap}",
+            "Enable tiler with tile size: %s                 and overlap: %s",
+            self.model.tile_size,
+            self.model.tiles_overlap,
         )
 
     def _customize_outputs(

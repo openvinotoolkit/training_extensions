@@ -3,14 +3,14 @@
 
 import { ReactNode, useRef } from 'react';
 
-import { useOverlayTriggerState } from '@react-stately/overlays';
 import { render, screen } from '@testing-library/react';
+import { useOverlayTriggerState } from 'react-stately';
 
 import { CursorContextMenu } from './cursor-context-menu.component';
 
 describe('CursorContextMenu', () => {
     const renderApp = ({
-        onOpen = vi.fn(),
+        onOpen = rs.fn(),
         isOpen = false,
         children = <div>Menu Content</div>,
     }: {

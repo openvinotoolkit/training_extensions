@@ -7,7 +7,7 @@ import polylabel from 'polylabel';
 
 import { EMPTY_LABEL_ID } from '../../../shared/labels';
 import type { Annotation } from '../../../shared/types';
-import { useAnnotationCommands, useIsAnnotatorReadOnly } from '../annotation-actions-provider.component';
+import { useAnnotationCommands, useIsAnnotatorReadOnly } from '../annotation-document-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { useAnnotatorLabels } from '../annotator-labels-provider.component';
 import { AnnotationLabels } from './annotation-labels/annotation-labels.component';

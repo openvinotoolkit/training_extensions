@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { QuantizeJob, TrainJob } from '@/api/types';
-import dayjs from 'dayjs';
-import durationPlugin from 'dayjs/plugin/duration';
-
-dayjs.extend(durationPlugin);
 
 export type ModelJob = TrainJob | QuantizeJob;
 
@@ -58,10 +54,13 @@ export const sortJobs = (jobs: ModelJob[]): ModelJob[] => jobs.toSorted((a, b) =
 export const formatElapsed = (job: ModelJob): string => {
     if (!job.started_at) return '—';
 
-    const elapsed = dayjs.duration(Math.max(0, dayjs(job.finished_at ?? undefined).diff(job.started_at)));
-    const hours = Math.floor(elapsed.asHours());
+    const finishedAt = job.finished_at ? new Date(job.finished_at).getTime() : Date.now();
+    const elapsedSeconds = Math.floor(Math.max(0, finishedAt - new Date(job.started_at).getTime()) / 1000);
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
 
-    if (hours >= 1) return `${hours}h ${elapsed.format('m[m] s[s]')}`;
-    if (elapsed.asMinutes() >= 1) return elapsed.format('m[m] s[s]');
-    return elapsed.format('s[s]');
+    if (hours >= 1) return `${hours}h ${minutes}m ${seconds}s`;
+    if (minutes >= 1) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
 };

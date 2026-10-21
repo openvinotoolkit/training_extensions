@@ -13,6 +13,7 @@ import { useProjectIdentifier } from 'hooks/use-project-identifier.hook';
 import { getQueryKey } from '../../../query-client/query-client';
 import { useDismissedJobs } from '../../storage/use-dismissed-jobs.hook';
 import { useSSE } from '../../use-sse.hook';
+import { PROJECTS_QUERY_KEY } from '../project.hook';
 import { isJobFailed, isQuantizeJob, isTrainJob } from '../util';
 
 const TERMINAL_STATUSES: string[] = ['DONE', 'FAILED', 'CANCELLED'];
@@ -55,6 +56,7 @@ export const useStreamJobStatus = (jobId: string | undefined, projectId: string 
                 return;
             }
 
+            queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
             queryClient.invalidateQueries({
                 queryKey: getQueryKey([
                     'get',

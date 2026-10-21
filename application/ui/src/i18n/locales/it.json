@@ -102,7 +102,12 @@
         "models": "Modelli",
         "modelsDescription": "Pagina dei modelli per visualizzare i tuoi modelli",
         "inference": "Inferenza",
-        "inferenceDescription": "Pagina di inferenza che mostra l'inferenza in tempo reale sul tuo progetto"
+        "inferenceDescription": "Pagina di inferenza che mostra l'inferenza in tempo reale sul tuo progetto",
+        "help": {
+            "documentation": "Documentazione utente",
+            "whatsNew": "Novità",
+            "reportIssue": "Segnala un problema"
+        }
     },
     "dataset": {
         "validation": {
@@ -605,7 +610,9 @@
             "createNewProject": "Crea nuovo progetto",
             "createProjectFromDataset": "Crea progetto da un dataset",
             "card": {
-                "created": "Creato: {{date}}"
+                "created": "Creato: {{date}}",
+                "models_one": "{{count}} modello",
+                "models_other": "{{count}} modelli"
             },
             "menu": {
                 "enablePipeline": "Abilita pipeline",
@@ -620,7 +627,9 @@
             },
             "filters": {
                 "searchPlaceholder": "Cerca progetti",
-                "taskType": "Filtra per tipo di attività"
+                "taskType": "Filtra per tipo di attività",
+                "models": "Filtra per modelli",
+                "withTrainedModels": "Con modelli addestrati"
             },
             "noMatches": {
                 "title": "Nessun progetto corrisponde ai tuoi filtri",
@@ -801,6 +810,12 @@
                 "error": "Errore nello strumento Assistente di rilevamento: {{message}}",
                 "operations": {
                     "workerBuild": "Compilazione worker dell'Assistente di rilevamento"
+                },
+                "options": {
+                    "accept": "Accetta",
+                    "reject": "Rifiuta",
+                    "numberOfItems": "Numero di elementi",
+                    "autoMergeDuplicates": "Unisci automaticamente i duplicati"
                 }
             }
         },
@@ -1132,7 +1147,11 @@
         },
         "meta": {
             "started": "Avviato {{time}}",
-            "elapsed": "Tempo trascorso: {{time}}"
+            "elapsed": "Tempo trascorso: {{time}}",
+            "duration": "Durata {{time}}",
+            "finished": "Completato {{time}}",
+            "failed": "Non riuscito {{time}}",
+            "cancelled": "Annullato {{time}}"
         },
         "emptyState": {
             "all": "Nessun processo",

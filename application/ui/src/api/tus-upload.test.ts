@@ -9,7 +9,7 @@ import {
     type HttpResponse as TusHttpResponse,
     type UploadOptions,
 } from 'tus-js-client';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as actualTus from 'tus-js-client' with { rstest: 'importActual' };
 
 import { server } from '../msw-node-setup';
 import { API_BASE_URL } from './client';
@@ -28,23 +28,21 @@ type FakeUpload = {
     resumeFromPreviousUpload: (previousUpload: PreviousUpload) => void;
 };
 
-const tus = vi.hoisted(() => ({
+const tus = rs.hoisted(() => ({
     instances: [] as FakeUpload[],
     previousUploads: [] as PreviousUpload[],
     onStart: (_upload: FakeUpload): void => undefined,
 }));
 
-vi.mock('tus-js-client', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('tus-js-client')>();
-
+rs.mock('tus-js-client', () => {
     class Upload implements FakeUpload {
         url: string | null = null;
-        start = vi.fn(() => tus.onStart(this));
-        abort = vi.fn(async (_shouldTerminate?: boolean) => undefined);
-        resumeFromPreviousUpload = vi.fn((previousUpload: PreviousUpload) => {
+        start = rs.fn(() => tus.onStart(this));
+        abort = rs.fn(async (_shouldTerminate?: boolean) => undefined);
+        resumeFromPreviousUpload = rs.fn((previousUpload: PreviousUpload) => {
             this.url = previousUpload.uploadUrl;
         });
-        findPreviousUploads = vi.fn(async () => tus.previousUploads);
+        findPreviousUploads = rs.fn(async () => tus.previousUploads);
 
         constructor(
             public file: File,
@@ -54,7 +52,7 @@ vi.mock('tus-js-client', async (importOriginal) => {
         }
     }
 
-    return { ...actual, Upload };
+    return { ...actualTus, Upload };
 });
 
 const completeTransfer = (upload: FakeUpload): void => {
@@ -106,7 +104,7 @@ describe('resumable upload', () => {
 
     it('transfers the file with TUS, reports progress and consumes the completed upload', async () => {
         const { consumed, deleted } = mockEndpoints();
-        const onProgress = vi.fn();
+        const onProgress = rs.fn();
 
         await expect(uploadDatasetArchive(file, { onProgress })).resolves.toMatchObject({ id: 'staged-1' });
 

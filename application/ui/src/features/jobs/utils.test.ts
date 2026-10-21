@@ -110,12 +110,12 @@ describe('sortJobs', () => {
 
 describe('formatElapsed', () => {
     beforeEach(() => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2026-01-01T01:00:00.000000+00:00'));
+        rs.useFakeTimers();
+        rs.setSystemTime(new Date('2026-01-01T01:00:00.000000+00:00'));
     });
 
     afterEach(() => {
-        vi.useRealTimers();
+        rs.useRealTimers();
     });
 
     it('returns "—" for a job that has not started', () => {

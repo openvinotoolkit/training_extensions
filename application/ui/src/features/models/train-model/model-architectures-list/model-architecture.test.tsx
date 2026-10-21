@@ -17,7 +17,7 @@ type OnSelectedModelArchitectureIdChange = (modelArchitectureId: string | null) 
 
 const renderModelArchitecture = ({
     selectedModelArchitectureId = null,
-    onSelectedModelArchitectureIdChange = vi.fn<OnSelectedModelArchitectureIdChange>(),
+    onSelectedModelArchitectureIdChange = rs.fn<OnSelectedModelArchitectureIdChange>(),
     modelArchitecture = getMockedModelArchitecture(),
 }: {
     selectedModelArchitectureId?: string | null;
@@ -43,7 +43,7 @@ const renderModelArchitecture = ({
 
 const renderDetailedModelArchitecture = ({
     selectedModelArchitectureId = null,
-    onSelectedModelArchitectureIdChange = vi.fn<OnSelectedModelArchitectureIdChange>(),
+    onSelectedModelArchitectureIdChange = rs.fn<OnSelectedModelArchitectureIdChange>(),
     modelArchitecture = getMockedModelArchitecture(),
 }: {
     selectedModelArchitectureId?: string | null;
@@ -92,7 +92,7 @@ describe('ModelArchitecture', () => {
 
     it('calls onSelectedModelArchitectureIdChange with the architecture id when clicked', async () => {
         const user = userEvent.setup();
-        const onSelectedModelArchitectureIdChange = vi.fn();
+        const onSelectedModelArchitectureIdChange = rs.fn();
 
         renderModelArchitecture({ onSelectedModelArchitectureIdChange });
 

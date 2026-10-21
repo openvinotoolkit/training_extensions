@@ -14281,10 +14281,10 @@
       "severity": "error"
     },
     {
-      "line": 119,
-      "column": 45,
-      "stop_line": 119,
-      "stop_column": 65,
+      "line": 120,
+      "column": 13,
+      "stop_line": 120,
+      "stop_column": 33,
       "path": "src/getitune/backend/openvino/models/detection.py",
       "code": -2,
       "name": "missing-attribute",
@@ -14293,10 +14293,10 @@
       "severity": "error"
     },
     {
-      "line": 120,
-      "column": 31,
-      "stop_line": 120,
-      "stop_column": 55,
+      "line": 121,
+      "column": 13,
+      "stop_line": 121,
+      "stop_column": 37,
       "path": "src/getitune/backend/openvino/models/detection.py",
       "code": -2,
       "name": "missing-attribute",
@@ -14509,10 +14509,10 @@
       "severity": "error"
     },
     {
-      "line": 86,
-      "column": 45,
-      "stop_line": 86,
-      "stop_column": 65,
+      "line": 87,
+      "column": 13,
+      "stop_line": 87,
+      "stop_column": 33,
       "path": "src/getitune/backend/openvino/models/instance_segmentation.py",
       "code": -2,
       "name": "missing-attribute",
@@ -14521,10 +14521,10 @@
       "severity": "error"
     },
     {
-      "line": 87,
-      "column": 31,
-      "stop_line": 87,
-      "stop_column": 55,
+      "line": 88,
+      "column": 13,
+      "stop_line": 88,
+      "stop_column": 37,
       "path": "src/getitune/backend/openvino/models/instance_segmentation.py",
       "code": -2,
       "name": "missing-attribute",
@@ -14797,10 +14797,10 @@
       "severity": "error"
     },
     {
-      "line": 82,
-      "column": 45,
-      "stop_line": 82,
-      "stop_column": 65,
+      "line": 83,
+      "column": 13,
+      "stop_line": 83,
+      "stop_column": 33,
       "path": "src/getitune/backend/openvino/models/segmentation.py",
       "code": -2,
       "name": "missing-attribute",
@@ -14809,10 +14809,10 @@
       "severity": "error"
     },
     {
-      "line": 83,
-      "column": 31,
-      "stop_line": 83,
-      "stop_column": 55,
+      "line": 84,
+      "column": 13,
+      "stop_line": 84,
+      "stop_column": 37,
       "path": "src/getitune/backend/openvino/models/segmentation.py",
       "code": -2,
       "name": "missing-attribute",

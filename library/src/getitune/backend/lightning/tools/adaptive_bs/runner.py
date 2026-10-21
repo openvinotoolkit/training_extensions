@@ -99,7 +99,7 @@ def _train_model(bs: int, engine: LightningEngine, **train_args) -> None:
     engine.datamodule.val_subset.batch_size = bs
     engine.datamodule.test_subset.batch_size = bs
     train_args["adaptive_bs"] = "None"
-    print(f"Runnning training trial with bs = {bs} ...")
+    logger.info("Running training trial with bs = %s ...", bs)
     engine.train(callbacks=_register_callback(), **train_args)
 
 
@@ -118,5 +118,7 @@ def _apply_new_batch_size(engine: LightningEngine, new_batch_size: int) -> None:
     engine.datamodule.val_subset.batch_size = new_batch_size
     engine.datamodule.test_subset.batch_size = new_batch_size
     new_lr = engine.model.optimizer_callable.optimizer_kwargs["lr"] * sqrt(new_batch_size / origin_bs)  # type: ignore[attr-defined]
-    print(f"new batch size = {new_batch_size} with learning rate = {new_lr} is set for the training and validation.")
+    logger.info(
+        "new batch size = %s with learning rate = %s is set for training and validation.", new_batch_size, new_lr
+    )
     engine.model.optimizer_callable.optimizer_kwargs["lr"] = new_lr  # type: ignore[attr-defined]

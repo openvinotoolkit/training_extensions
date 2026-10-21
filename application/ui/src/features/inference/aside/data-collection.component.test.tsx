@@ -13,7 +13,7 @@ import { DataCollection } from './data-collection.component';
 
 describe('DataCollection capture rate fields', () => {
     const renderApp = () => {
-        const pipelinePatchSpy = vi.fn();
+        const pipelinePatchSpy = rs.fn();
 
         server.use(
             http.get('/api/projects/{project_id}/pipeline', () => {
@@ -55,7 +55,7 @@ describe('DataCollection capture rate fields', () => {
     };
 
     beforeEach(() => {
-        vi.resetAllMocks();
+        rs.resetAllMocks();
     });
 
     it('renders Frames and Seconds fields for capture rate', async () => {

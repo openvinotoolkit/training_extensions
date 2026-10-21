@@ -8,7 +8,7 @@ import type { SortDescriptor } from '../types';
 import { ColumnHeader } from './column-header.component';
 
 describe('ColumnHeader', () => {
-    const renderColumnHeader = (sortBy: SortDescriptor, onSortChange = vi.fn()) => {
+    const renderColumnHeader = (sortBy: SortDescriptor, onSortChange = rs.fn()) => {
         render(<ColumnHeader label={'Total size'} sortKey={'size'} sortBy={sortBy} onSortChange={onSortChange} />);
 
         return onSortChange;

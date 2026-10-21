@@ -7,7 +7,6 @@ import type { NumberConfigurableParameter, TrainingConfiguration } from '@/api/t
 import { fireEvent, screen, Screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from 'test-utils/render';
-import { describe } from 'vitest';
 
 import { getStep } from '../../components/number-parameter-field/utils';
 import { isBoolEnableParameterGroup, isNumberParameter } from '../../utils';
@@ -153,7 +152,7 @@ describe('LearningParameters', () => {
             }
         });
 
-        it.each(enableGroupParameters.map((p) => [p.name, p]))(
+        it.each(enableGroupParameters.map((p) => [p.name, p] as const))(
             'updates and resets enable group: %s',
             (_name, parameter) => {
                 render(<App learningParameters={parametersWithoutInputSizeParameters} />);

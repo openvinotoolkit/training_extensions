@@ -104,7 +104,12 @@
         "modelsDescription": "模型頁面，用於瀏覽模型",
         "inference": "推理",
         "inferenceDescription": "推理頁面，用於檢視項目的即時推理效果",
-        "preferences": "偏好設定"
+        "preferences": "偏好設定",
+        "help": {
+            "documentation": "用戶文件",
+            "whatsNew": "新功能",
+            "reportIssue": "報告問題"
+        }
     },
     "dataset": {
         "validation": {
@@ -607,7 +612,9 @@
             "createNewProject": "新增項目",
             "createProjectFromDataset": "從數據集建立",
             "card": {
-                "created": "建立於：{{date}}"
+                "created": "建立於：{{date}}",
+                "models_one": "{{count}} 個模型",
+                "models_other": "{{count}} 個模型"
             },
             "menu": {
                 "enablePipeline": "啟用管線",
@@ -622,7 +629,9 @@
             },
             "filters": {
                 "searchPlaceholder": "搜尋項目",
-                "taskType": "依工作類型篩選"
+                "taskType": "依工作類型篩選",
+                "models": "依模型篩選",
+                "withTrainedModels": "有已訓練模型"
             },
             "noMatches": {
                 "title": "沒有符合條件的項目",
@@ -803,6 +812,12 @@
                 "error": "檢測助手工具發生錯誤：{{message}}",
                 "operations": {
                     "workerBuild": "檢測助手工作進程建置"
+                },
+                "options": {
+                    "accept": "接受",
+                    "reject": "拒絕",
+                    "numberOfItems": "項目數量",
+                    "autoMergeDuplicates": "自動合併重複項"
                 }
             }
         },
@@ -1134,7 +1149,11 @@
         },
         "meta": {
             "started": "開始於 {{time}}",
-            "elapsed": "已用時間 {{time}}"
+            "elapsed": "已用時間 {{time}}",
+            "duration": "持續時間 {{time}}",
+            "finished": "完成於 {{time}}",
+            "failed": "失敗於 {{time}}",
+            "cancelled": "取消於 {{time}}"
         },
         "emptyState": {
             "all": "此類別中沒有工作",

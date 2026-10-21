@@ -29,12 +29,14 @@ const projects = [
         name: 'Alpha Project',
         created_at: '2026-01-01T10:00:00Z',
         task: { exclusive_labels: true, labels: [], task_type: 'detection' },
+        model_counts: { trained_models: 2 },
     }),
     getMockedProject({
         id: 'project-2',
         name: 'Beta Project',
         created_at: '2026-06-01T10:00:00Z',
         task: { exclusive_labels: true, labels: [], task_type: 'classification' },
+        model_counts: { trained_models: 0 },
     }),
     getMockedProject({
         id: 'project-3',
@@ -47,6 +49,7 @@ const projects = [
         name: 'Gamma Project',
         created_at: '2026-02-01T10:00:00Z',
         task: { exclusive_labels: true, labels: [], task_type: 'classification' },
+        model_counts: { trained_models: 1 },
     }),
     getMockedProject({
         id: 'project-5',
@@ -240,6 +243,28 @@ describe('ProjectList', () => {
             expect(screen.getByRole('heading', { name: 'Gamma Project' })).toBeInTheDocument();
             expect(screen.queryByRole('heading', { name: 'Alpha Project' })).not.toBeInTheDocument();
             expect(screen.queryByRole('heading', { name: 'Zeta Project' })).not.toBeInTheDocument();
+        });
+
+        it('filters projects with at least one trained model', async () => {
+            const user = userEvent.setup();
+            renderProjectList();
+
+            expect(await screen.findByRole('heading', { name: 'Alpha Project' })).toBeInTheDocument();
+
+            const trainedModelsCheckbox = screen.getByRole('checkbox', { name: 'With trained models' });
+            await user.click(trainedModelsCheckbox);
+
+            expect(trainedModelsCheckbox).toBeChecked();
+            expect(await screen.findByText('2 of 8 projects')).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'Alpha Project' })).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'Gamma Project' })).toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'Beta Project' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'Zeta Project' })).not.toBeInTheDocument();
+
+            await user.click(screen.getByRole('checkbox', { name: 'Classification' }));
+
+            expect(await screen.findByText('1 of 8 projects')).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'Gamma Project' })).toBeInTheDocument();
         });
 
         it('filters projects by both name search and task type together', async () => {
@@ -438,6 +463,20 @@ describe('ProjectList', () => {
             expect(screen.queryByRole('button', { name: /sort/i })).not.toBeInTheDocument();
         });
 
+        it('shows the language selector and help menu but not the jobs button', async () => {
+            render(
+                <ImportDatasetDialogProvider>
+                    <ProjectList jobsButton={<button>Jobs</button>} />
+                </ImportDatasetDialogProvider>,
+                { route: '/projects', path: '/projects' }
+            );
+
+            expect(await screen.findByLabelText('empty list')).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
+            expect(screen.getByRole('button', { name: 'Help' })).toBeVisible();
+            expect(screen.queryByRole('button', { name: 'Jobs' })).not.toBeInTheDocument();
+        });
+
         it('shows the Geti intro and the workflow steps', async () => {
             renderProjectList();
 
@@ -458,7 +497,12 @@ describe('ProjectList', () => {
 
     describe('create project card', () => {
         it('renders create new project and create project from dataset buttons', async () => {
-            server.use(http.get('/api/projects', () => HttpResponse.json(projects)));
+            server.use(
+                http.get('/api/projects', () => HttpResponse.json(projects)),
+                http.get('/api/projects/{project_id}/pipeline', () =>
+                    HttpResponse.json(getMockedPipeline({ status: 'idle' }))
+                )
+            );
 
             renderProjectList();
 

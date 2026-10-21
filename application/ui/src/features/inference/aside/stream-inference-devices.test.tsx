@@ -22,7 +22,7 @@ const mockDevices = [
 
 describe('StreamInferenceDevices', () => {
     const renderApp = (status = 200, devicesResponse = mockDevices, pipelineResponse = mockPipeline) => {
-        const pipelinePatchSpy = vi.fn();
+        const pipelinePatchSpy = rs.fn();
 
         server.use(
             http.get('/api/system/devices/inference', () => HttpResponse.json(devicesResponse)),
@@ -46,7 +46,7 @@ describe('StreamInferenceDevices', () => {
     };
 
     beforeEach(() => {
-        vi.resetAllMocks();
+        rs.resetAllMocks();
     });
 
     it('displays current device selection', async () => {

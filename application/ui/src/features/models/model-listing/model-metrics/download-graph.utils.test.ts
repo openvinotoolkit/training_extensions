@@ -1,21 +1,19 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { vi } from 'vitest';
-
 import { downloadSvgAsImage } from './download-graph.utils';
 
 describe('downloadSvgAsImage', () => {
     let mockSvg: SVGSVGElement;
-    let createObjectURLSpy: ReturnType<typeof vi.fn>;
-    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
-    let anchorClickSpy: ReturnType<typeof vi.fn>;
+    let createObjectURLSpy: ReturnType<typeof rs.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof rs.fn>;
+    let anchorClickSpy: ReturnType<typeof rs.fn>;
     let mockContext2D: CanvasRenderingContext2D;
 
     beforeEach(() => {
         // Mock SVG Element and its getBBox
         mockSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        mockSvg.getBBox = vi.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 100 });
+        mockSvg.getBBox = rs.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 100 });
 
         // Add a child to test applyInlineStyles recursion
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -23,7 +21,7 @@ describe('downloadSvgAsImage', () => {
         mockSvg.appendChild(rect);
 
         // Mock getComputedStyle
-        vi.spyOn(window, 'getComputedStyle').mockImplementation((_node) => {
+        rs.spyOn(window, 'getComputedStyle').mockImplementation((_node) => {
             return {
                 getPropertyValue: (prop: string) => {
                     if (prop === '--test-color') return '#123456';
@@ -34,28 +32,28 @@ describe('downloadSvgAsImage', () => {
         });
 
         // Mock URL methods
-        createObjectURLSpy = vi.fn().mockReturnValue('blob:test-url');
+        createObjectURLSpy = rs.fn().mockReturnValue('blob:test-url');
         global.URL.createObjectURL = createObjectURLSpy as unknown as typeof URL.createObjectURL;
-        revokeObjectURLSpy = vi.fn();
+        revokeObjectURLSpy = rs.fn();
         global.URL.revokeObjectURL = revokeObjectURLSpy as unknown as typeof URL.revokeObjectURL;
 
         // Mock canvas context
         mockContext2D = {
             fillStyle: '',
-            fillRect: vi.fn(),
-            drawImage: vi.fn(),
+            fillRect: rs.fn(),
+            drawImage: rs.fn(),
         } as unknown as CanvasRenderingContext2D;
 
         // Mock document.createElement to handle canvas and anchor
-        anchorClickSpy = vi.fn();
+        anchorClickSpy = rs.fn();
         const originalCreateElement = document.createElement.bind(document);
-        vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
+        rs.spyOn(document, 'createElement').mockImplementation((tagName) => {
             if (tagName === 'canvas') {
                 return {
                     width: 0,
                     height: 0,
-                    getContext: vi.fn().mockReturnValue(mockContext2D),
-                    toDataURL: vi.fn().mockReturnValue('data:image/png;base64,test'),
+                    getContext: rs.fn().mockReturnValue(mockContext2D),
+                    toDataURL: rs.fn().mockReturnValue('data:image/png;base64,test'),
                 } as unknown as HTMLCanvasElement;
             }
             if (tagName === 'a') {
@@ -82,7 +80,7 @@ describe('downloadSvgAsImage', () => {
     });
 
     afterEach(() => {
-        vi.restoreAllMocks();
+        rs.restoreAllMocks();
     });
 
     it('should successfully clone SVG, draw to canvas, and trigger download', async () => {

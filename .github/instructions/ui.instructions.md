@@ -33,7 +33,7 @@ applyTo: "application/ui/**"
 
 ## Testing
 
-- Unit tests next to source as `*.test.ts(x)` (Vitest).
+- Unit tests next to source as `*.test.ts(x)` (Rstest).
 - Component / E2E under `tests/` (Playwright).
 - Mocks in `mocks/` — reuse existing handlers. New API endpoints need a
   corresponding mock handler.

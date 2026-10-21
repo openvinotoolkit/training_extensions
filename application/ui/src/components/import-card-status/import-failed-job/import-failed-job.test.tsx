@@ -14,7 +14,7 @@ import { server } from '../../../msw-node-setup';
 import { ImportFailedJob } from './import-failed-job.component';
 
 describe('ImportFailedJob', () => {
-    const renderApp = (job: PrepareImportDatasetJob, mockedDeleteEntry = vi.fn()) => {
+    const renderApp = (job: PrepareImportDatasetJob, mockedDeleteEntry = rs.fn()) => {
         server.use(
             http.get('/api/projects/{project_id}', () => {
                 return HttpResponse.json(getMockedProject({ id: 'project-123' }));
@@ -37,11 +37,11 @@ describe('ImportFailedJob', () => {
     };
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('removes from local storage when close button is clicked', async () => {
-        const mockedDeleteEntry = vi.fn();
+        const mockedDeleteEntry = rs.fn();
         renderApp(getMockedPrepareImportDatasetJob({ status: 'FAILED' }), mockedDeleteEntry);
 
         const closeButton = await screen.findByRole('button', { name: 'close import dataset status' });

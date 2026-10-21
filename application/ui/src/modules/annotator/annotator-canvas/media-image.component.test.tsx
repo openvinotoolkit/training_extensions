@@ -7,7 +7,7 @@ import { render } from 'test-utils/render';
 
 import { MediaImage } from './media-image.component';
 
-vi.mock('../video-player/video-frame.component', () => ({
+rs.mock('../video-player/video-frame.component', () => ({
     VideoFrame: () => <div data-testid='video-frame' />,
 }));
 

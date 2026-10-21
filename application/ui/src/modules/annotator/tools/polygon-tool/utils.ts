@@ -14,7 +14,7 @@ import polygonDrawingCursor from '@/assets/icons/cursor/polygon-drawing.png';
 import { isPolygonValid } from '@geti-ui/smart-tools/utils';
 import { isEmpty, isEqual, isNil, negate } from 'lodash-es';
 
-import { isEraserOrRightButton, isLeftButton } from '../../../../shared/buttons-utils';
+import { isEraserOrRightButton, isLeftButton, type MouseButton } from '../../../../shared/buttons-utils';
 import { Point, Polygon as PolygonType } from '../../../../shared/types';
 import { DEFAULT_ANNOTATION_STYLES } from '../../utils';
 import { PointerType } from '../utils';
@@ -120,11 +120,6 @@ export const getToolIcon = (polygonMode: PolygonMode | null) => {
 
 type PointerSVGElement = PointerEvent<SVGElement>;
 type CallbackPointerVoid = (event: PointerSVGElement) => void;
-
-export interface MouseButton {
-    button: number;
-    buttons: number;
-}
 
 const mouseButtonEventValidation =
     (callback: CallbackPointerVoid) => (predicate: (button: MouseButton) => boolean) => (event: PointerSVGElement) => {

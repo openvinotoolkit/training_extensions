@@ -12,8 +12,8 @@ import { server } from '../../../../../msw-node-setup';
 import { downloadFile } from '../../../../../platform/download-file';
 import { ModelActions } from './model-actions.component';
 
-vi.mock('../../../../../platform/download-file', () => ({
-    downloadFile: vi.fn(),
+rs.mock('../../../../../platform/download-file', () => ({
+    downloadFile: rs.fn(),
 }));
 
 const mockModel = getMockedModel({
@@ -34,7 +34,7 @@ const mockModel = getMockedModel({
 
 describe('ModelActions', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('should render menu with all items', async () => {

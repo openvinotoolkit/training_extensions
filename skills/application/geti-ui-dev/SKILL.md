@@ -1,6 +1,6 @@
 ---
 name: geti-ui-dev
-description: Develop and validate changes in `application/ui/` for the React and TypeScript frontend. Use when touching `application/ui/src/**`, frontend tests, RSBuild or Vitest config, Playwright setup, package scripts, or generated API typings under `src/api`. Helps with Node and npm requirements, install and build commands, lint, typecheck, test workflows, and coordination with backend OpenAPI changes.
+description: Develop and validate changes in `application/ui/` for the React and TypeScript frontend. Use when touching `application/ui/src/**`, frontend tests, RSBuild or Rstest config, Playwright setup, package scripts, or generated API typings under `src/api`. Helps with Node and npm requirements, install and build commands, lint, typecheck, test workflows, and coordination with backend OpenAPI changes.
 ---
 
 # Geti UI Development
@@ -26,7 +26,7 @@ description: Develop and validate changes in `application/ui/` for the React and
 
 - Use `npm run format:check` for Prettier verification.
 - Use `npm run lint`, `npm run cyclic-deps-check`, and `npm run type-check` for normal code changes.
-- Use `npm run test:unit` or `npm run test:unit:coverage` for logic and component behavior covered by Vitest.
+- Use `npm run test:unit` or `npm run test:unit:coverage` for logic and component behavior covered by Rstest.
 - Use `npm run test:component` or `npm run test:e2e` only when the task reaches Playwright coverage.
 - Use `npm run build` before finishing broader UI changes.
 

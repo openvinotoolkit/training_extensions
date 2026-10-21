@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 
-import { useOverlayTriggerState } from '@react-stately/overlays';
+import { useOverlayTriggerState } from 'react-stately';
 
 import { ProjectActionMetadata } from '../list/menu-actions/menu-actions.component';
 

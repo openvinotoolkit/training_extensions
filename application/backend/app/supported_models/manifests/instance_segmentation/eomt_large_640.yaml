@@ -1,5 +1,5 @@
 id: instance-segmentation-eomt-large-640
-name: EoMT-Large-640
+name: EoMT-L
 license:
   name: MIT
   url: https://choosealicense.com/licenses/mit
@@ -9,8 +9,8 @@ pretrained_weights:
   revision: a43666870d47a7010bfea2c4554f7ca829714558
 description: "EoMT-Large is an encoder-only mask transformer on a plain ViT-L backbone for efficient instance segmentation without a task-specific decoder."
 stats:
-  gigaflops: 1071.51269888
-  trainable_parameters: 316.641361
+  gigaflops: 1071.5
+  trainable_parameters: 316.6
   benchmark_metrics:
     coco_map_50_95: 45.9
 capabilities:

@@ -41,68 +41,12 @@ import { ResetButton } from './reset-button.component';
 
 import classes from './parameters.module.scss';
 
-type ParametersProps = {
-    parameters: TrainingConfigurationParameter[];
+type SharedParametersProps = {
     onChange: (parameter: ConfigurableParameter, groupKeys?: string[]) => void;
     isReadOnly?: boolean;
     isDisabled?: boolean;
     marginStart?: DimensionValue;
     parentGroupKeys?: string[];
-};
-
-type ParametersGroupProps = {
-    parametersGroup: ConfigurableParameterGroup;
-    onChange: (parameter: ConfigurableParameter, groupKeys?: string[]) => void;
-    isReadOnly?: boolean;
-    isDisabled?: boolean;
-    marginStart?: DimensionValue;
-    parentGroupKeys?: string[];
-};
-
-type ParametersEnableGroupProps = {
-    parameters: ParametersEnableGroupParameters;
-    onChange: (parameter: ConfigurableParameter, groupKeys?: string[]) => void;
-    isReadOnly: boolean;
-    isDisabled?: boolean;
-    parentGroupKeys?: string[];
-};
-
-type ParameterProps = {
-    header: string;
-    description: string;
-    parameter: ConfigurableParameter;
-    onChange: (parameter: ConfigurableParameter) => void;
-    isDisabled?: boolean;
-    marginStart?: DimensionValue;
-    isReadOnly: boolean;
-    isGroupHeader?: boolean;
-};
-
-type SingleParameterProps = {
-    id?: string;
-    header: string;
-    description: string;
-    parameter: ConfigurableParameter;
-    onChange: (parameter: ConfigurableParameter) => void;
-    isDisabled?: boolean;
-    marginStart?: DimensionValue;
-    isReadOnly: boolean;
-};
-
-type ParameterFieldProps = {
-    parameter: ConfigurableParameter;
-    onChange: (parameter: ConfigurableParameter) => void;
-    isDisabled?: boolean;
-};
-
-type ParameterLayoutProps = {
-    header: string;
-    description: string;
-    onReset?: () => void;
-    children: ReactNode;
-    marginStart?: DimensionValue;
-    isGroupHeader?: boolean;
-    ariaLabel?: string;
 };
 
 type ParameterNameProps = {
@@ -113,25 +57,29 @@ type ParameterNameProps = {
     isGroupHeader?: boolean;
 };
 
-const ParameterContextualHelp = ({ text }: { text: string }) => {
-    return (
+const ParameterName = ({ name, description, marginStart, gridColumn, isGroupHeader = false }: ParameterNameProps) => (
+    <Text
+        marginStart={marginStart}
+        gridColumn={gridColumn}
+        UNSAFE_className={isGroupHeader ? classes.parameterGroupHeader : classes.parameterName}
+    >
+        {name}
         <ContextualHelp variant='info'>
             <Content>
-                <Text>{text}</Text>
+                <Text>{description}</Text>
             </Content>
         </ContextualHelp>
-    );
-};
+    </Text>
+);
 
-const ParameterName = ({ name, description, marginStart, gridColumn, isGroupHeader = false }: ParameterNameProps) => {
-    const parameterNameClass = isGroupHeader ? classes.parameterGroupHeader : classes.parameterName;
-
-    return (
-        <Text marginStart={marginStart} gridColumn={gridColumn} UNSAFE_className={parameterNameClass}>
-            {name}
-            <ParameterContextualHelp text={description} />
-        </Text>
-    );
+type ParameterLayoutProps = {
+    header: string;
+    description: string;
+    onReset?: () => void;
+    children: ReactNode;
+    marginStart?: DimensionValue;
+    isGroupHeader?: boolean;
+    ariaLabel?: string;
 };
 
 const ParameterLayout = ({
@@ -157,6 +105,37 @@ const ParameterLayout = ({
             <View gridColumn={'2/3'}>{children}</View>
             {isFunction(onReset) && <ResetButton onPress={onReset} aria-label={`Reset ${resetAriaLabel}`} />}
         </>
+    );
+};
+
+type ParametersContainerProps = {
+    children: ReactNode;
+    isReadOnly?: boolean;
+    columnGap?: DimensionValue;
+    rowGap?: DimensionValue;
+    id?: string;
+};
+
+const ParametersContainer = ({
+    children,
+    isReadOnly,
+    columnGap = 'size-150',
+    rowGap = 'size-350',
+    id,
+}: ParametersContainerProps) => {
+    const columns = isReadOnly ? ['size-3000', '1fr'] : ['size-3000', minmax(0, '1fr'), 'size-400'];
+
+    return (
+        <Grid
+            columns={columns}
+            columnGap={columnGap}
+            rowGap={rowGap}
+            alignItems={'center'}
+            gridColumn={'1/-1'}
+            data-testid={id}
+        >
+            {children}
+        </Grid>
     );
 };
 
@@ -259,6 +238,7 @@ export const NumberEnumParameterField = ({
 
     return (
         <Picker
+            isDisabled={isDisabled}
             items={items}
             selectedKey={parameter.value.toString()}
             onSelectionChange={(key) => key !== null && handleChange(key)}
@@ -273,6 +253,12 @@ export const NumberEnumParameterField = ({
     );
 };
 
+type ParameterFieldProps = {
+    parameter: ConfigurableParameter;
+    onChange: (parameter: ConfigurableParameter) => void;
+    isDisabled?: boolean;
+};
+
 const ParameterField = ({ parameter, onChange, isDisabled }: ParameterFieldProps) => {
     if (isEnumStringParameter(parameter)) {
         return <StringEnumParameterField parameter={parameter} onChange={onChange} isDisabled={isDisabled} />;
@@ -283,19 +269,12 @@ const ParameterField = ({ parameter, onChange, isDisabled }: ParameterFieldProps
     }
 
     if (isNumberParameter(parameter)) {
-        const handleChange = (value: number) => {
-            onChange({
-                ...parameter,
-                value,
-            });
-        };
-
         return (
             <NumberParameterField
                 value={parameter.value}
                 minValue={parameter.min_value ?? null}
                 maxValue={parameter.max_value ?? null}
-                onChange={handleChange}
+                onChange={(value) => onChange({ ...parameter, value })}
                 type={parameter.value_type}
                 isDisabled={isDisabled}
                 name={parameter.name}
@@ -304,19 +283,12 @@ const ParameterField = ({ parameter, onChange, isDisabled }: ParameterFieldProps
     }
 
     if (parameter.value_type === 'float_range') {
-        const handleChange = (value: [number, number]) => {
-            onChange({
-                ...parameter,
-                value,
-            });
-        };
-
         return (
             <RangeParameterField
                 value={parameter.value}
                 maxValue={parameter.max_value}
                 minValue={parameter.min_value}
-                onChange={handleChange}
+                onChange={(value) => onChange({ ...parameter, value })}
                 isDisabled={isDisabled}
                 name={parameter.name}
             />
@@ -324,24 +296,28 @@ const ParameterField = ({ parameter, onChange, isDisabled }: ParameterFieldProps
     }
 
     if (parameter.value_type === 'bool') {
-        const handleChange = (value: boolean) => {
-            onChange({
-                ...parameter,
-                value,
-            });
-        };
-
         return (
             <BooleanParameterField
                 value={parameter.value}
                 header={parameter.name}
-                onChange={handleChange}
+                onChange={(value) => onChange({ ...parameter, value })}
                 isDisabled={isDisabled}
             />
         );
     }
 
     return null;
+};
+
+type ParameterProps = {
+    header: string;
+    description: string;
+    parameter: ConfigurableParameter;
+    onChange: (parameter: ConfigurableParameter) => void;
+    isDisabled?: boolean;
+    marginStart?: DimensionValue;
+    isReadOnly: boolean;
+    isGroupHeader?: boolean;
 };
 
 export const Parameter = ({
@@ -375,63 +351,53 @@ export const Parameter = ({
     );
 };
 
-const ParametersContainer = ({
-    children,
-    isReadOnly,
-    columnGap = 'size-150',
-    rowGap = 'size-350',
-    id,
-}: {
-    children: ReactNode;
-    isReadOnly?: boolean;
-    columnGap?: DimensionValue;
-    rowGap?: DimensionValue;
-    id?: string;
-}) => {
-    const columns = isReadOnly ? ['size-3000', '1fr'] : ['size-3000', minmax(0, '1fr'), 'size-400'];
+const createTestId = (keys: string[] | undefined, parameterKey: string) =>
+    keys === undefined ? undefined : [...keys, parameterKey].join('-');
 
-    return (
-        <Grid
-            columns={columns}
-            columnGap={columnGap}
-            rowGap={rowGap}
-            alignItems={'center'}
-            gridColumn={'1/-1'}
-            data-testid={id}
-        >
-            {children}
-        </Grid>
-    );
+type SingleParameterProps = Omit<ParameterProps, 'header' | 'description' | 'isGroupHeader'> & { id?: string };
+
+const SingleParameter = ({ id, parameter, onChange, isReadOnly, isDisabled, marginStart }: SingleParameterProps) => (
+    <ParametersContainer id={id} isReadOnly={isReadOnly}>
+        <Parameter
+            header={parameter.name}
+            description={parameter.description}
+            parameter={parameter}
+            onChange={onChange}
+            isReadOnly={isReadOnly}
+            isDisabled={isDisabled}
+            marginStart={marginStart}
+        />
+    </ParametersContainer>
+);
+
+type ParametersEnableGroupProps = Omit<SharedParametersProps, 'marginStart'> & {
+    group: ParametersEnableGroupParameters;
+    isReadOnly: boolean;
 };
 
+// A group whose first parameter is a boolean that enables/disables the remaining ones
 const ParametersEnableGroup = ({
-    parameters,
+    group,
     onChange,
     isReadOnly,
     isDisabled,
     parentGroupKeys = [],
 }: ParametersEnableGroupProps) => {
-    const currentGroupKeys = [...parentGroupKeys, parameters.key];
-
-    const handleChange = (parameter: ConfigurableParameter) => {
-        onChange(parameter, currentGroupKeys);
-    };
-
-    const [enableParameter, ...configurableParameters] = parameters.parameters;
+    const groupKeys = [...parentGroupKeys, group.key];
+    const [enableParameter, ...configurableParameters] = group.parameters;
 
     return (
         <View UNSAFE_className={classes.parameterGroupContainer}>
             <ParametersContainer
-                key={parameters.key}
                 rowGap={configurableParameters.length > 0 ? 'size-100' : 'size-0'}
                 isReadOnly={isReadOnly}
-                id={createTestId(parentGroupKeys, parameters.key)}
+                id={createTestId(parentGroupKeys, group.key)}
             >
                 <Parameter
-                    header={parameters.name}
-                    description={parameters.description}
+                    header={group.name}
+                    description={group.description}
                     parameter={enableParameter}
-                    onChange={handleChange}
+                    onChange={(parameter) => onChange(parameter, groupKeys)}
                     isReadOnly={isReadOnly}
                     isDisabled={isDisabled}
                     isGroupHeader
@@ -441,45 +407,29 @@ const ParametersEnableGroup = ({
                     parameters={configurableParameters}
                     onChange={onChange}
                     isReadOnly={isReadOnly}
-                    isDisabled={!enableParameter.value}
+                    isDisabled={isDisabled || !enableParameter.value}
                     marginStart={'size-200'}
-                    parentGroupKeys={currentGroupKeys}
+                    parentGroupKeys={groupKeys}
                 />
             </ParametersContainer>
         </View>
     );
 };
 
-const createTestId = (keys: string[] | undefined, parameterKey: string) => {
-    if (keys === undefined) {
-        return undefined;
-    }
-
-    if (keys.length > 0) {
-        return `${keys.join('-')}-${parameterKey}`;
-    }
-
-    return parameterKey;
-};
+type ParametersGroupProps = SharedParametersProps & { group: ConfigurableParameterGroup };
 
 const ParametersGroup = ({
-    parametersGroup,
+    group,
     onChange,
     isReadOnly = false,
     isDisabled,
     marginStart,
     parentGroupKeys = [],
 }: ParametersGroupProps) => {
-    const currentGroupKeys = [...parentGroupKeys, parametersGroup.key];
-
-    const handleChange = (parameter: ConfigurableParameter) => {
-        onChange(parameter, currentGroupKeys);
-    };
-
-    if (isBoolEnableParameterGroup(parametersGroup)) {
+    if (isBoolEnableParameterGroup(group)) {
         return (
             <ParametersEnableGroup
-                parameters={parametersGroup}
+                group={group}
                 onChange={onChange}
                 isReadOnly={isReadOnly}
                 isDisabled={isDisabled}
@@ -490,79 +440,22 @@ const ParametersGroup = ({
 
     return (
         <View UNSAFE_className={classes.parameterGroupContainer}>
-            <Text UNSAFE_className={classes.parameterGroupTitle}>{parametersGroup.name}</Text>
+            <Text UNSAFE_className={classes.parameterGroupTitle}>{group.name}</Text>
             <Flex direction={'column'} gap={'size-300'}>
-                {parametersGroup.parameters.map((parameter) => {
-                    if (isParameter(parameter)) {
-                        return (
-                            <SingleParameter
-                                id={createTestId(currentGroupKeys, parameter.key)}
-                                key={parameter.key}
-                                header={parameter.name}
-                                description={parameter.description}
-                                parameter={parameter}
-                                onChange={handleChange}
-                                isReadOnly={isReadOnly}
-                                isDisabled={isDisabled}
-                                marginStart={marginStart}
-                            />
-                        );
-                    }
-
-                    if (isBoolEnableParameterGroup(parameter)) {
-                        return (
-                            <ParametersEnableGroup
-                                key={parameter.key}
-                                parameters={parameter}
-                                onChange={onChange}
-                                isReadOnly={isReadOnly}
-                                isDisabled={isDisabled}
-                                parentGroupKeys={currentGroupKeys}
-                            />
-                        );
-                    }
-
-                    return (
-                        <ParametersGroup
-                            key={parameter.key}
-                            parametersGroup={parameter}
-                            onChange={onChange}
-                            isReadOnly={isReadOnly}
-                            isDisabled={isDisabled}
-                            marginStart={marginStart}
-                            parentGroupKeys={currentGroupKeys}
-                        />
-                    );
-                })}
+                <Parameters
+                    parameters={group.parameters}
+                    onChange={onChange}
+                    isReadOnly={isReadOnly}
+                    isDisabled={isDisabled}
+                    marginStart={marginStart}
+                    parentGroupKeys={[...parentGroupKeys, group.key]}
+                />
             </Flex>
         </View>
     );
 };
 
-const SingleParameter = ({
-    id,
-    parameter,
-    onChange,
-    isReadOnly,
-    isDisabled,
-    marginStart,
-    header,
-    description,
-}: SingleParameterProps) => {
-    return (
-        <ParametersContainer key={parameter.name} id={id} isReadOnly={isReadOnly}>
-            <Parameter
-                header={header}
-                description={description}
-                parameter={parameter}
-                onChange={onChange}
-                isReadOnly={isReadOnly}
-                isDisabled={isDisabled}
-                marginStart={marginStart}
-            />
-        </ParametersContainer>
-    );
-};
+type ParametersProps = SharedParametersProps & { parameters: TrainingConfigurationParameter[] };
 
 export const Parameters = ({
     parameters,
@@ -571,45 +464,33 @@ export const Parameters = ({
     isDisabled = false,
     marginStart,
     parentGroupKeys,
-}: ParametersProps) => {
-    return (
-        <>
-            {parameters.map((parameter) => {
-                if (isParameter(parameter)) {
-                    const handleChange = (changedParameter: ConfigurableParameter) => {
-                        onChange(changedParameter, parentGroupKeys);
-                    };
-
-                    return (
-                        <SingleParameter
-                            id={createTestId(parentGroupKeys, parameter.key)}
-                            key={parameter.key}
-                            header={parameter.name}
-                            description={parameter.description}
-                            parameter={parameter}
-                            onChange={handleChange}
-                            isReadOnly={isReadOnly}
-                            isDisabled={isDisabled}
-                            marginStart={marginStart}
-                        />
-                    );
-                }
-
-                return (
-                    <ParametersGroup
-                        key={parameter.key}
-                        parametersGroup={parameter}
-                        onChange={onChange}
-                        isReadOnly={isReadOnly}
-                        isDisabled={isDisabled}
-                        marginStart={marginStart}
-                        parentGroupKeys={parentGroupKeys}
-                    />
-                );
-            })}
-        </>
-    );
-};
+}: ParametersProps) => (
+    <>
+        {parameters.map((parameter) =>
+            isParameter(parameter) ? (
+                <SingleParameter
+                    key={parameter.key}
+                    id={createTestId(parentGroupKeys, parameter.key)}
+                    parameter={parameter}
+                    onChange={(changedParameter) => onChange(changedParameter, parentGroupKeys)}
+                    isReadOnly={isReadOnly}
+                    isDisabled={isDisabled}
+                    marginStart={marginStart}
+                />
+            ) : (
+                <ParametersGroup
+                    key={parameter.key}
+                    group={parameter}
+                    onChange={onChange}
+                    isReadOnly={isReadOnly}
+                    isDisabled={isDisabled}
+                    marginStart={marginStart}
+                    parentGroupKeys={parentGroupKeys}
+                />
+            )
+        )}
+    </>
+);
 
 Parameters.Container = ParametersContainer;
 Parameter.Layout = ParameterLayout;

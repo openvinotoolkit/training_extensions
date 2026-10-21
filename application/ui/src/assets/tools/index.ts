@@ -6,3 +6,4 @@ export { default as MagneticLassoImg } from './magnetic-lasso.webp';
 export { default as PolygonImg } from './polygon.webp';
 export { default as SAMDetectionImg } from './sam-detection.webp';
 export { default as SAMSegmentationImg } from './sam-segmentation.webp';
+export { default as SSIMImg } from './ssim.webp';

@@ -6,10 +6,8 @@ import { useEffect } from 'react';
 import { toast } from '@/components/toast/toast.component';
 import { useZoom } from '@/components/zoom/zoom.provider';
 import { useTranslation } from '@/i18n';
-import { useProjectTask } from 'hooks/use-project-task.hook';
 
-import { isDetectionTask } from '../../../../shared/task-type-guards';
-import { useAnnotations } from '../../annotation-actions-provider.component';
+import { useAnnotations } from '../../annotation-document-provider.component';
 import { getFormattedPoints } from '../../annotations/utils';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
 import { useSelectedMediaItem } from '../../selected-media-item-provider.component';
@@ -17,8 +15,7 @@ import { Rectangle } from '../../shapes/rectangle.component';
 import { DEFAULT_ANNOTATION_STYLES } from '../../utils';
 import { DrawingBox } from '../drawing-box-tool/drawing-box.component';
 import { ToolLoading } from '../tool-loading.component';
-import { useAddAndSelectAnnotations } from '../use-add-and-select-annotations.hook';
-import { useSSIM } from './use-ssim.hook';
+import { useSSIMState } from './ssim-state-provider.component';
 
 import classes from './ssim-tool.module.scss';
 
@@ -28,9 +25,7 @@ export const SSIMTool = () => {
     const { roi, image } = useSelectedMediaItem();
     const { annotations } = useAnnotations();
     const { selectedLabel } = useAnnotatorLabels();
-    const { addAndSelectAnnotations } = useAddAndSelectAnnotations();
-    const { runSSIM, reset, toolState, isProcessing, isLoading, isError, error } = useSSIM();
-    const shapeType = isDetectionTask(useProjectTask()) ? 'rectangle' : 'polygon';
+    const { runSSIM, toolState, isProcessing, isLoading, isError, error, autoMergeDuplicates } = useSSIMState();
 
     useEffect(() => {
         if (!isError) {
@@ -45,16 +40,6 @@ export const SSIMTool = () => {
             }),
         });
     }, [isError, error, t]);
-
-    useEffect(() => {
-        if (isProcessing || toolState.shapes.length === 0) {
-            return;
-        }
-
-        // The first shape is the user-drawn template, which is kept as an annotation too.
-        addAndSelectAnnotations(toolState.shapes, selectedLabel ? [selectedLabel] : []);
-        reset();
-    }, [toolState.shapes, isProcessing, addAndSelectAnnotations, selectedLabel, reset]);
 
     if (isLoading) {
         return <ToolLoading message={t('annotator.tools.ssim.loading')} />;
@@ -123,8 +108,7 @@ export const SSIMTool = () => {
                         imageData: image,
                         template,
                         existingAnnotations: annotations.map((annotation) => annotation.shape),
-                        autoMergeDuplicates: true,
-                        shapeType,
+                        autoMergeDuplicates,
                     });
 
                     return [];

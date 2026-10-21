@@ -146,8 +146,10 @@ class UltralyticsModelExporter(ModelExporter):
         openvino.save_model(ov_model, str(save_path), compress_to_fp16=(precision == Precision.FP16))
 
         logger.info(
-            f"Ultralytics OpenVINO export done ({len(ov_model.inputs)} inputs, "
-            f"{len(ov_model.outputs)} outputs) -> {save_path}"
+            "Ultralytics OpenVINO export done (%s inputs, %s outputs) -> %s",
+            len(ov_model.inputs),
+            len(ov_model.outputs),
+            save_path,
         )
 
         self._cleanup_raw_export(raw_path, save_path.parent)
@@ -201,7 +203,7 @@ class UltralyticsModelExporter(ModelExporter):
         save_path = output_dir / f"{base_model_name}.onnx"
         onnx.save(onnx_model, str(save_path))
 
-        logger.info(f"Ultralytics ONNX export done -> {save_path}")
+        logger.info("Ultralytics ONNX export done -> %s", save_path)
 
         if raw_path.resolve() != save_path.resolve():
             raw_path.unlink(missing_ok=True)
@@ -279,7 +281,7 @@ class UltralyticsModelExporter(ModelExporter):
         yaml_path = output_dir / "metadata.yaml"
         with open(yaml_path, "w") as f:  # noqa: PTH123
             yaml.dump(metadata, f, default_flow_style=False, sort_keys=False)
-        logger.info(f"Wrote Ultralytics metadata: {yaml_path}")
+        logger.info("Wrote Ultralytics metadata: %s", yaml_path)
 
     @staticmethod
     def _find_xml_in_export(export_path: Path) -> Path:

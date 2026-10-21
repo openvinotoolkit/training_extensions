@@ -20,11 +20,11 @@ describe('useIsScrolling', () => {
     };
 
     beforeEach(() => {
-        vi.useFakeTimers();
+        rs.useFakeTimers();
     });
 
     afterEach(() => {
-        vi.useRealTimers();
+        rs.useRealTimers();
         document.body.innerHTML = '';
     });
 
@@ -42,7 +42,7 @@ describe('useIsScrolling', () => {
         expect(result.current).toBe(true);
 
         act(() => {
-            vi.advanceTimersByTime(SCROLL_END_FALLBACK_MS - 1);
+            rs.advanceTimersByTime(SCROLL_END_FALLBACK_MS - 1);
         });
 
         expect(result.current).toBe(true);
@@ -54,7 +54,7 @@ describe('useIsScrolling', () => {
         fireEvent.scroll(scrollContainer);
 
         act(() => {
-            vi.advanceTimersByTime(SCROLL_END_FALLBACK_MS);
+            rs.advanceTimersByTime(SCROLL_END_FALLBACK_MS);
         });
 
         expect(result.current).toBe(false);
@@ -66,13 +66,13 @@ describe('useIsScrolling', () => {
         fireEvent.scroll(scrollContainer);
 
         act(() => {
-            vi.advanceTimersByTime(SCROLL_END_FALLBACK_MS - 1);
+            rs.advanceTimersByTime(SCROLL_END_FALLBACK_MS - 1);
         });
 
         fireEvent.scroll(scrollContainer);
 
         act(() => {
-            vi.advanceTimersByTime(SCROLL_END_FALLBACK_MS - 1);
+            rs.advanceTimersByTime(SCROLL_END_FALLBACK_MS - 1);
         });
 
         expect(result.current).toBe(true);
@@ -87,7 +87,7 @@ describe('useIsScrolling', () => {
         expect(result.current).toBe(false);
 
         act(() => {
-            vi.advanceTimersByTime(SCROLL_END_FALLBACK_MS);
+            rs.advanceTimersByTime(SCROLL_END_FALLBACK_MS);
         });
 
         expect(result.current).toBe(false);

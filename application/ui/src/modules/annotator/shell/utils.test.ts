@@ -9,15 +9,15 @@ import { renderHook } from 'test-utils/render';
 import { useVideoPlayerContext } from '../video-player/video-player-provider.component';
 import { getInitialAnnotations, getNextMediaItem, useNextMediaItem, usePlayPauseVideoBySystem } from './utils';
 
-vi.mock('../video-player/video-player-provider.component', () => ({
-    useVideoPlayerContext: vi.fn(),
+rs.mock('../video-player/video-player-provider.component', () => ({
+    useVideoPlayerContext: rs.fn(),
 }));
 
-const mockUseVideoPlayerContext = vi.mocked(useVideoPlayerContext);
+const mockUseVideoPlayerContext = rs.mocked(useVideoPlayerContext);
 
 const createVideoPlayerContext = (isPlaying: boolean) => {
-    const play = vi.fn().mockResolvedValue(undefined);
-    const pause = vi.fn();
+    const play = rs.fn().mockResolvedValue(undefined);
+    const pause = rs.fn();
     return {
         videoControls: { isPlaying, play, pause },
     };
@@ -122,7 +122,7 @@ describe('getNextMediaItem', () => {
 describe('useNextMediaItem', () => {
     beforeEach(() => {
         mockUseVideoPlayerContext.mockReturnValue(null);
-        vi.clearAllMocks();
+        rs.clearAllMocks();
     });
 
     it('returns the next item in the list', () => {

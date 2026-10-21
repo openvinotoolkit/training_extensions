@@ -17,9 +17,9 @@ describe('DatasetViewItemsList', () => {
             <DatasetViewItemsList
                 datasetViews={[VIEW_B, VIEW_A]}
                 selectedDatasetViewId={null}
-                onSelectDatasetView={vi.fn()}
-                onOpenRenameDialog={vi.fn()}
-                onOpenDeleteConfirmationDialog={vi.fn()}
+                onSelectDatasetView={rs.fn()}
+                onOpenRenameDialog={rs.fn()}
+                onOpenDeleteConfirmationDialog={rs.fn()}
             />
         );
 
@@ -33,9 +33,9 @@ describe('DatasetViewItemsList', () => {
             <DatasetViewItemsList
                 datasetViews={[VIEW_A]}
                 selectedDatasetViewId={null}
-                onSelectDatasetView={vi.fn()}
-                onOpenRenameDialog={vi.fn()}
-                onOpenDeleteConfirmationDialog={vi.fn()}
+                onSelectDatasetView={rs.fn()}
+                onOpenRenameDialog={rs.fn()}
+                onOpenDeleteConfirmationDialog={rs.fn()}
             />
         );
 
@@ -51,9 +51,9 @@ describe('DatasetViewItemsList', () => {
             <DatasetViewItemsList
                 datasetViews={[VIEW_A, VIEW_B]}
                 selectedDatasetViewId={VIEW_A.id}
-                onSelectDatasetView={vi.fn()}
-                onOpenRenameDialog={vi.fn()}
-                onOpenDeleteConfirmationDialog={vi.fn()}
+                onSelectDatasetView={rs.fn()}
+                onOpenRenameDialog={rs.fn()}
+                onOpenDeleteConfirmationDialog={rs.fn()}
             />
         );
 
@@ -64,15 +64,15 @@ describe('DatasetViewItemsList', () => {
 
     it('selects a view or returns to the entire dataset when its row is clicked', async () => {
         const user = userEvent.setup();
-        const onSelectDatasetView = vi.fn();
+        const onSelectDatasetView = rs.fn();
 
         render(
             <DatasetViewItemsList
                 datasetViews={[VIEW_A]}
                 selectedDatasetViewId={null}
                 onSelectDatasetView={onSelectDatasetView}
-                onOpenRenameDialog={vi.fn()}
-                onOpenDeleteConfirmationDialog={vi.fn()}
+                onOpenRenameDialog={rs.fn()}
+                onOpenDeleteConfirmationDialog={rs.fn()}
             />
         );
 
@@ -85,9 +85,9 @@ describe('DatasetViewItemsList', () => {
 
     it('opens rename or delete for a view without selecting it', async () => {
         const user = userEvent.setup();
-        const onSelectDatasetView = vi.fn();
-        const onOpenRenameDialog = vi.fn();
-        const onOpenDeleteConfirmationDialog = vi.fn();
+        const onSelectDatasetView = rs.fn();
+        const onOpenRenameDialog = rs.fn();
+        const onOpenDeleteConfirmationDialog = rs.fn();
 
         render(
             <DatasetViewItemsList

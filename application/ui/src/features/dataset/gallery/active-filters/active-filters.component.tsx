@@ -4,7 +4,6 @@
 import type { Label } from '@/api/types';
 import { useTranslation } from '@/i18n';
 import { ActionButton, Divider, Flex } from '@geti-ui/ui';
-import dayjs from 'dayjs';
 import { useDatasetFiltersSearchParams } from 'hooks/use-dataset-filters-search-params.hook';
 import { DATE_TIME_FORMAT, useFormatDate } from 'hooks/use-format-date.hook';
 import { useProjectLabels } from 'hooks/use-project-labels.hook';
@@ -13,8 +12,6 @@ import { capitalize, isEmpty } from 'lodash-es';
 import { SUBSET_LABEL_KEYS } from '../../../../shared/subsets';
 import { isNonEmptyArray } from '../../../../shared/util';
 import { FilterChips } from '../toolbar/media-filtering/filter-chips/filter-chips.component';
-
-const formatFilterDate = (date: string): string => dayjs(date).format('DD/MM/YYYY HH:mm');
 
 export const ActiveFiltersList = () => {
     const { t } = useTranslation();
@@ -71,7 +68,7 @@ export const ActiveFiltersList = () => {
             {startDate !== null && (
                 <FilterChips
                     name={t('dataset.filters.dateRange.from', { date: formatDate(startDate) ?? '-' })}
-                    ariaLabel={`Remove From ${formatFilterDate(startDate)} filter`}
+                    ariaLabel={`Remove From ${formatDate(startDate) ?? '-'} filter`}
                     onClose={() => setStartDate(null)}
                 />
             )}
@@ -79,7 +76,7 @@ export const ActiveFiltersList = () => {
             {endDate !== null && (
                 <FilterChips
                     name={t('dataset.filters.dateRange.to', { date: formatDate(endDate) ?? '-' })}
-                    ariaLabel={`Remove To ${formatFilterDate(endDate)} filter`}
+                    ariaLabel={`Remove To ${formatDate(endDate) ?? '-'} filter`}
                     onClose={() => setEndDate(null)}
                 />
             )}

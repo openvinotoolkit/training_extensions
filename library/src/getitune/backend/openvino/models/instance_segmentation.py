@@ -83,8 +83,9 @@ class OVInstanceSegmentationModel(OVModel):
         self.async_inference = False  # Disable async_inference as tiling has its own implementation
         self.model = InstanceSegmentationTiler(self.model, execution_mode=execution_mode)
         log.info(
-            f"Enable tiler with tile size: {self.model.tile_size} \
-                and overlap: {self.model.tiles_overlap}",
+            "Enable tiler with tile size: %s                 and overlap: %s",
+            self.model.tile_size,
+            self.model.tiles_overlap,
         )
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:

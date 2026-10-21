@@ -17,13 +17,13 @@ describe('connectSSE', () => {
     });
 
     it('creates an EventSource with the correct URL including API base', () => {
-        connectSSE('/api/jobs/123/status', { onMessage: vi.fn() });
+        connectSSE('/api/jobs/123/status', { onMessage: rs.fn() });
 
         expect(MockEventSourceConstructor).toHaveBeenCalledWith(expect.stringContaining('/api/jobs/123/status'));
     });
 
     it('parses and delivers JSON messages via onMessage callback', () => {
-        const onMessage = vi.fn();
+        const onMessage = rs.fn();
         connectSSE<{ value: number }>('/api/test', { onMessage });
         const eventSource = getLastEventSource();
 
@@ -46,8 +46,8 @@ describe('connectSSE', () => {
     });
 
     it('closes the connection and resolves done when the server closes the connection', async () => {
-        const onMessage = vi.fn();
-        const onClose = vi.fn();
+        const onMessage = rs.fn();
+        const onClose = rs.fn();
         const { done } = connectSSE('/api/test', { onMessage, onClose });
         const eventSource = getLastEventSource();
         simulateSSEError(eventSource);
@@ -59,8 +59,8 @@ describe('connectSSE', () => {
     });
 
     it('calls onOpen when the connection is established', () => {
-        const onOpen = vi.fn();
-        connectSSE('/api/test', { onMessage: vi.fn(), onOpen });
+        const onOpen = rs.fn();
+        connectSSE('/api/test', { onMessage: rs.fn(), onOpen });
         const eventSource = getLastEventSource();
 
         simulateSSEOpen(eventSource);
@@ -68,9 +68,9 @@ describe('connectSSE', () => {
     });
 
     it('calls onError and onClose when an error occurs, then resolves done', async () => {
-        const onError = vi.fn();
-        const onClose = vi.fn();
-        const { done } = connectSSE('/api/test', { onMessage: vi.fn(), onError, onClose });
+        const onError = rs.fn();
+        const onClose = rs.fn();
+        const { done } = connectSSE('/api/test', { onMessage: rs.fn(), onError, onClose });
         const eventSource = getLastEventSource();
 
         simulateSSEError(eventSource);
@@ -83,7 +83,7 @@ describe('connectSSE', () => {
     });
 
     it('skips unparseable messages without throwing', () => {
-        const onMessage = vi.fn();
+        const onMessage = rs.fn();
         connectSSE('/api/test', { onMessage });
         const eventSource = getLastEventSource();
 
@@ -92,8 +92,8 @@ describe('connectSSE', () => {
     });
 
     it('close() is idempotent — calling multiple times only triggers onClose once', () => {
-        const onClose = vi.fn();
-        const { close } = connectSSE('/api/test', { onMessage: vi.fn(), onClose });
+        const onClose = rs.fn();
+        const { close } = connectSSE('/api/test', { onMessage: rs.fn(), onClose });
         const eventSource = getLastEventSource();
 
         close();
@@ -105,7 +105,7 @@ describe('connectSSE', () => {
     });
 
     it('manual close() closes the EventSource', async () => {
-        const { close, done } = connectSSE('/api/test', { onMessage: vi.fn() });
+        const { close, done } = connectSSE('/api/test', { onMessage: rs.fn() });
         const eventSource = getLastEventSource();
 
         simulateSSEOpen(eventSource);
@@ -116,7 +116,7 @@ describe('connectSSE', () => {
     });
 
     it('returns the underlying EventSource instance', () => {
-        const { eventSource } = connectSSE('/api/test', { onMessage: vi.fn() });
+        const { eventSource } = connectSSE('/api/test', { onMessage: rs.fn() });
         const lastEventSource = getLastEventSource();
 
         expect(eventSource).toBe(lastEventSource);

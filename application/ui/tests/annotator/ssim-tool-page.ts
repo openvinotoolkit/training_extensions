@@ -26,4 +26,28 @@ export class SSIMToolPage {
         // The drawing canvas only renders once the SSIM worker has finished loading.
         await expect(this.page.getByLabel('tool', { exact: true })).toBeVisible({ timeout: 30000 });
     }
+
+    getOptions() {
+        return this.page.getByRole('group', { name: 'tool options' });
+    }
+
+    getAcceptButton() {
+        return this.getOptions().getByRole('button', { name: 'Accept' });
+    }
+
+    getRejectButton() {
+        return this.getOptions().getByRole('button', { name: 'Reject' });
+    }
+
+    getNumberOfItemsSlider() {
+        return this.getOptions().getByRole('slider', { name: 'Number of items' });
+    }
+
+    getPreviewShapes() {
+        return this.page.getByLabel('ssim preview').getByLabel(/^(template|prediction)$/);
+    }
+
+    async waitForPreview() {
+        await expect(this.getAcceptButton()).toBeEnabled({ timeout: 15000 });
+    }
 }

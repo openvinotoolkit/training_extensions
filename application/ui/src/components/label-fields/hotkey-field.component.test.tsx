@@ -7,7 +7,7 @@ import { render } from 'test-utils/render';
 import { HotkeyField } from './hotkey-field.component';
 
 describe('HotkeyField', () => {
-    const mockOnHotkeyChange = vi.fn();
+    const mockOnHotkeyChange = rs.fn();
 
     const renderHotkeyField = (hotkey: string | null | undefined = null, errorMessage?: string) => {
         render(<HotkeyField hotkey={hotkey} onHotkeyChange={mockOnHotkeyChange} errorMessage={errorMessage} />);

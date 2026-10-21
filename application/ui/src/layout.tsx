@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 
 import { $api } from '@/api';
 import { GetiLogoLink } from '@/components/geti-logo-link/geti-logo-link.component';
+import { HelpMenu } from '@/components/help-menu/help-menu.component';
 import { LanguagesSelector } from '@/components/languages-selector/languages-selector.component';
 import { useTranslation } from '@/i18n';
 import { Divider, Flex, Grid, Item, Loading, TabList, Tabs, View } from '@geti-ui/ui';
@@ -76,6 +77,7 @@ const Header = () => {
                     </Suspense>
 
                     <LanguagesSelector />
+                    <HelpMenu />
                 </Flex>
             </Grid>
         </View>

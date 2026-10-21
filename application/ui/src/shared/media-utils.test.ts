@@ -8,15 +8,15 @@ import { http } from '../api/utils';
 import { server } from '../msw-node-setup';
 import { getImageDataFromTiffUrl, isTiffFormat } from './media-utils';
 
-vi.mock('utif', () => ({
-    decode: vi.fn(),
-    decodeImage: vi.fn(),
-    toRGBA8: vi.fn(),
+rs.mock('utif', () => ({
+    decode: rs.fn(),
+    decodeImage: rs.fn(),
+    toRGBA8: rs.fn(),
 }));
 
 afterEach(() => {
-    vi.resetAllMocks();
-    vi.restoreAllMocks();
+    rs.resetAllMocks();
+    rs.restoreAllMocks();
 });
 
 const TIFF_BINARY_URL = '/api/projects/test-project/dataset/media/test-media/binary';
@@ -47,8 +47,8 @@ describe('getImageDataFromTiffUrl', () => {
                 () => new HttpResponse(fakeBuffer, { headers: { 'Content-Type': 'image/tiff' } })
             )
         );
-        vi.mocked(UTIF.decode).mockReturnValue([fakeTiff]);
-        vi.mocked(UTIF.toRGBA8).mockReturnValue(fakeRgba);
+        rs.mocked(UTIF.decode).mockReturnValue([fakeTiff]);
+        rs.mocked(UTIF.toRGBA8).mockReturnValue(fakeRgba);
 
         const result = await getImageDataFromTiffUrl(TIFF_BINARY_URL);
 
@@ -66,7 +66,7 @@ describe('getImageDataFromTiffUrl', () => {
                 () => new HttpResponse(new ArrayBuffer(0))
             )
         );
-        vi.mocked(UTIF.decode).mockReturnValue([]);
+        rs.mocked(UTIF.decode).mockReturnValue([]);
 
         const result = await getImageDataFromTiffUrl(TIFF_BINARY_URL);
 
@@ -75,7 +75,7 @@ describe('getImageDataFromTiffUrl', () => {
     });
 
     it('returns 1x1 fallback and logs error when fetch fails', async () => {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const consoleSpy = rs.spyOn(console, 'error').mockImplementation(() => undefined);
         server.use(
             http.get('/api/projects/{project_id}/dataset/media/{media_id}/binary', () => {
                 throw new Error('network error');

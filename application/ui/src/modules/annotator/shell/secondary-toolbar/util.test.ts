@@ -3,7 +3,6 @@
 
 import { getMockedAnnotation } from 'mocks/mock-annotation';
 import { getMockedAnnotationLabelRef, getMockedLabel } from 'mocks/mock-labels';
-import { describe, expect, it } from 'vitest';
 
 import { toggleLabel } from './util';
 

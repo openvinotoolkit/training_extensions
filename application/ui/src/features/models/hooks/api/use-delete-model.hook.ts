@@ -3,6 +3,7 @@
 
 import { $api } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
+import { PROJECTS_QUERY_KEY } from 'hooks/api/project.hook';
 
 import { getQueryKey } from '../../../../query-client/query-client';
 
@@ -33,6 +34,7 @@ export const useDeleteModel = () => {
                         { params: { path: { project_id, model_id } } },
                     ]),
                 }),
+                queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY }),
             ]);
         },
     });

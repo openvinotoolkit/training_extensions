@@ -6,34 +6,34 @@ import { getMockedAnnotation } from 'mocks/mock-annotation';
 import { getMockedAnnotationLabel } from 'mocks/mock-labels';
 import { render } from 'test-utils/render';
 
+import * as actualLabels from '../../../shared/labels' with { rstest: 'importActual' };
 import type { Annotation, AnnotationLabel, AnnotationLabelRef } from '../../../shared/types';
 import {
     useAnnotationCommands,
     useAnnotations,
     useIsAnnotatorReadOnly,
-} from '../annotation-actions-provider.component';
+} from '../annotation-document-provider.component';
 import { useAnnotationVisibility } from '../annotation-visibility-provider.component';
 import { useCanvasSettings } from '../shell/primary-toolbar/settings/canvas-settings-provider.component';
 import { ReadOnlyAnnotations } from './read-only-annotations.component';
 
-vi.mock('../annotation-actions-provider.component', () => ({
-    useAnnotations: vi.fn(),
-    useAnnotationCommands: vi.fn(),
-    useIsAnnotatorReadOnly: vi.fn(),
+rs.mock('../annotation-document-provider.component', () => ({
+    useAnnotations: rs.fn(),
+    useAnnotationCommands: rs.fn(),
+    useIsAnnotatorReadOnly: rs.fn(),
 }));
 
-vi.mock('../annotation-visibility-provider.component', () => ({
-    useAnnotationVisibility: vi.fn(),
+rs.mock('../annotation-visibility-provider.component', () => ({
+    useAnnotationVisibility: rs.fn(),
 }));
 
-vi.mock('../shell/primary-toolbar/settings/canvas-settings-provider.component', () => ({
-    useCanvasSettings: vi.fn(),
+rs.mock('../shell/primary-toolbar/settings/canvas-settings-provider.component', () => ({
+    useCanvasSettings: rs.fn(),
 }));
 
-vi.mock('../../../shared/labels', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../../../shared/labels')>();
+rs.mock('../../../shared/labels', () => {
     return {
-        ...actual,
+        ...actualLabels,
         useLabelResolver: () => ({
             getLabel: () => undefined,
             resolveAnnotationLabel: (ref: AnnotationLabelRef): AnnotationLabel | undefined => {
@@ -43,16 +43,16 @@ vi.mock('../../../shared/labels', async (importOriginal) => {
     };
 });
 
-vi.mock('../annotator-labels-provider.component', () => ({
+rs.mock('../annotator-labels-provider.component', () => ({
     useAnnotatorLabels: () => ({
         labels: [],
         selectedLabel: null,
         selectedLabelId: null,
-        setSelectedLabelId: vi.fn(),
+        setSelectedLabelId: rs.fn(),
     }),
 }));
 
-vi.mock('../selected-media-item-provider.component', () => ({
+rs.mock('../selected-media-item-provider.component', () => ({
     useSelectedMediaItem: () => ({
         mediaItem: { width: 800, height: 600 },
         roi: { x: 0, y: 0, width: 800, height: 600 },
@@ -60,7 +60,7 @@ vi.mock('../selected-media-item-provider.component', () => ({
     }),
 }));
 
-vi.mock('../../../components/zoom/zoom.provider', () => ({
+rs.mock('../../../components/zoom/zoom.provider', () => ({
     useZoom: () => ({ scale: 1 }),
 }));
 
@@ -81,21 +81,26 @@ const setupMocks = ({
     isReadOnlyMode = true,
     hideLabels = false,
 }: SetupOptions = {}) => {
-    vi.mocked(useAnnotations).mockReturnValue({ annotations, initialAnnotations: [], initialPredictions: [] });
-    vi.mocked(useIsAnnotatorReadOnly).mockReturnValue(isReadOnlyMode);
-    vi.mocked(useAnnotationCommands).mockReturnValue({
-        updateAnnotations: vi.fn(),
-        deleteAnnotations: vi.fn(),
+    rs.mocked(useAnnotations).mockReturnValue({
+        mode: 'annotation',
+        annotations,
+        initialAnnotations: [],
+        initialPredictions: [],
+    });
+    rs.mocked(useIsAnnotatorReadOnly).mockReturnValue(isReadOnlyMode);
+    rs.mocked(useAnnotationCommands).mockReturnValue({
+        updateAnnotations: rs.fn(),
+        deleteAnnotations: rs.fn(),
     } as unknown as ReturnType<typeof useAnnotationCommands>);
 
-    vi.mocked(useAnnotationVisibility).mockReturnValue({
+    rs.mocked(useAnnotationVisibility).mockReturnValue({
         isFocussed,
         isVisible,
-        toggleVisibility: vi.fn(),
-        toggleFocus: vi.fn(),
+        toggleVisibility: rs.fn(),
+        toggleFocus: rs.fn(),
     });
 
-    vi.mocked(useCanvasSettings).mockReturnValue({
+    rs.mocked(useCanvasSettings).mockReturnValue({
         canvasSettings: {
             hideLabels: { value: hideLabels, defaultValue: false },
             annotationFillOpacity: { value: 1, defaultValue: 1 },
@@ -105,7 +110,7 @@ const setupMocks = ({
             imageSaturation: { value: 0, defaultValue: 0 },
             pixelView: { value: false, defaultValue: false },
         },
-        setCanvasSettings: vi.fn(),
+        setCanvasSettings: rs.fn(),
     });
 };
 

@@ -20,7 +20,7 @@ const mockedSource: USBCameraSourceConfig = {
 describe('useSourceMutation', () => {
     it('creates a new source and return its resource id', async () => {
         const newResourceId = 'resource-id-123';
-        const testSourceSpy = vi.fn();
+        const testSourceSpy = rs.fn();
         const { result } = renderHook(() => useSourceMutation(true));
 
         server.use(
@@ -48,7 +48,7 @@ describe('useSourceMutation', () => {
     });
 
     it('update a source item and returns its resource id', async () => {
-        const testSourceSpy = vi.fn();
+        const testSourceSpy = rs.fn();
         const { result } = renderHook(() => useSourceMutation(false));
 
         server.use(

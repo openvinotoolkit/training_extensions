@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MagneticLasso } from '@/assets/icons';
-import { BoundingBoxImg, MagneticLassoImg, PolygonImg, SAMDetectionImg, SAMSegmentationImg } from '@/assets/tools';
+import {
+    BoundingBoxImg,
+    MagneticLassoImg,
+    PolygonImg,
+    SAMDetectionImg,
+    SAMSegmentationImg,
+    SSIMImg,
+} from '@/assets/tools';
 import { useTranslation } from '@/i18n';
 import { BoundingBox, DetectionTool, Polygon, SegmentAnythingIcon, Selector } from '@geti-ui/ui/icons';
 
@@ -13,10 +20,10 @@ import { useSelectedMediaItem } from '../../selected-media-item-provider.compone
 import { ToolConfig } from '../interface';
 import { canRasteriseAtFullSize } from '../utils';
 
-export const useAvailableTools = (): ToolConfig[] => {
+// All tools for the project's task, regardless of whether the current media item supports them.
+export const useTaskTools = (): ToolConfig[] => {
     const { t } = useTranslation();
     const taskType = useProjectTask();
-    const { mediaItem } = useSelectedMediaItem();
 
     const selectionToolConfig: ToolConfig = {
         type: 'selection',
@@ -93,6 +100,7 @@ export const useAvailableTools = (): ToolConfig[] => {
         label: t('annotator.tools.ssim.label'),
         ariaLabel: 'Detection assistant',
         tooltip: {
+            img: SSIMImg,
             description: t('annotator.tools.ssim.description'),
         },
     };
@@ -111,12 +119,19 @@ export const useAvailableTools = (): ToolConfig[] => {
         ],
     };
 
+    return taskToolConfig[taskType];
+};
+
+export const useAvailableTools = (): ToolConfig[] => {
+    const taskTools = useTaskTools();
+    const { mediaItem } = useSelectedMediaItem();
+
     // Disable smart tools (SAM, magnetic lasso, SSIM) for oversized media.
     if (!canRasteriseAtFullSize(mediaItem.width, mediaItem.height)) {
-        return taskToolConfig[taskType].filter(
+        return taskTools.filter(
             (tool) => tool.type !== 'sam' && tool.type !== 'magnetic-lasso' && tool.type !== 'ssim'
         );
     }
 
-    return taskToolConfig[taskType];
+    return taskTools;
 };
