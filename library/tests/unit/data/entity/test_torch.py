@@ -23,7 +23,7 @@ class TestDetectionSampleNoneAnnotations:
     """Test DetectionSample.__post_init__ converts None fields to empty tensors."""
 
     def test_detection_sample_none_label(self) -> None:
-        """Verify label=None is converted to an empty uint8 tensor and collation works."""
+        """Verify label=None is converted to an empty uint16 tensor and collation works."""
         img_size = (64, 64)
         sample = DetectionSample(
             image=tv_tensors.Image(torch.randint(0, 256, (3, *img_size), dtype=torch.uint8)),
@@ -31,10 +31,10 @@ class TestDetectionSampleNoneAnnotations:
             bboxes=torch.zeros((0, 4), dtype=torch.float32),
             label=None,
         )
-        # label should be converted to an empty tensor with uint8 dtype
+        # label should be converted to an empty tensor with uint16 dtype
         assert isinstance(sample.label, torch.Tensor)
         assert sample.label.shape == (0,)
-        assert sample.label.dtype == torch.uint8
+        assert sample.label.dtype == torch.uint16
 
         # bboxes should be converted to BoundingBoxes
         assert isinstance(sample.bboxes, tv_tensors.BoundingBoxes)
@@ -51,7 +51,7 @@ class TestDetectionSampleNoneAnnotations:
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_size,
             ),
-            label=torch.tensor([1], dtype=torch.uint8),
+            label=torch.tensor([1], dtype=torch.uint16),
         )
         unannotated = DetectionSample(
             image=tv_tensors.Image(torch.rand(3, *img_size, dtype=torch.float32)),
@@ -92,10 +92,10 @@ class TestInstanceSegmentationSampleNoneAnnotations:
             label=None,
             masks=None,
         )
-        # label should be an empty uint8 tensor
+        # label should be an empty uint16 tensor
         assert isinstance(sample.label, torch.Tensor)
         assert sample.label.shape == (0,)
-        assert sample.label.dtype == torch.uint8
+        assert sample.label.dtype == torch.uint16
 
         # masks should be a Mask with shape (0, H, W) matching the image spatial dims
         assert isinstance(sample.masks, tv_tensors.Mask)
@@ -117,7 +117,7 @@ class TestInstanceSegmentationSampleNoneAnnotations:
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_size,
             ),
-            label=torch.tensor([1], dtype=torch.uint8),
+            label=torch.tensor([1], dtype=torch.uint16),
             masks=tv_tensors.Mask(torch.ones((1, *img_size), dtype=torch.uint8)),
         )
         unannotated = InstanceSegmentationSample(

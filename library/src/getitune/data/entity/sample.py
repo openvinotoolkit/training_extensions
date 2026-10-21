@@ -73,7 +73,8 @@ class ClassificationSample(BaseSample):
     subset: Subset = subset_field()
 
     image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), channels_first=True)
-    label: torch.Tensor = label_field(pl.UInt8())
+    # UInt16 so that datasets with more than 256 classes (e.g. ImageNet-1k) can be loaded.
+    label: torch.Tensor = label_field(pl.UInt16())
     dm_image_info: DmImageInfo = image_info_field()
 
     def __post_init__(self) -> None:
@@ -92,7 +93,7 @@ class ClassificationMultiLabelSample(BaseSample):
     """ClassificationMultiLabelSample is a base class for getitune multi label classification items."""
 
     image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), channels_first=True)
-    label: torch.Tensor = label_field(pl.UInt8(), multi_label=True)
+    label: torch.Tensor = label_field(pl.UInt16(), multi_label=True)
     dm_image_info: DmImageInfo = image_info_field()
 
     def __post_init__(self) -> None:
@@ -111,7 +112,7 @@ class DetectionSample(BaseSample):
     """DetectionSample is a base class for getitune detection items."""
 
     image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), format="RGB", channels_first=True)
-    label: torch.Tensor | None = label_field(pl.UInt8(), is_list=True)
+    label: torch.Tensor | None = label_field(pl.UInt16(), is_list=True)
     # Use Union type to allow torch.Tensor from Polars (since tv_tensors.BoundingBoxes
     # conversion is not supported in Datumaro), then convert in __post_init__
     bboxes: tv_tensors.BoundingBoxes | torch.Tensor = bbox_field(dtype=pl.Float32())
@@ -122,7 +123,7 @@ class DetectionSample(BaseSample):
 
         # Handle None fields for images with no annotations
         if self.label is None:
-            self.label = torch.zeros(0, dtype=torch.uint8)
+            self.label = torch.zeros(0, dtype=torch.uint16)
 
         # Ensure bboxes are tv_tensors.BoundingBoxes
         if not isinstance(self.bboxes, tv_tensors.BoundingBoxes):
@@ -173,7 +174,7 @@ class InstanceSegmentationSample(BaseSample):
     # conversion is not supported in Datumaro), then convert in __post_init__
     bboxes: tv_tensors.BoundingBoxes | torch.Tensor = bbox_field(dtype=pl.Float32())
     masks: tv_tensors.Mask | None = instance_mask_field(dtype=pl.UInt8())
-    label: torch.Tensor | None = label_field(dtype=pl.UInt8(), is_list=True)
+    label: torch.Tensor | None = label_field(dtype=pl.UInt16(), is_list=True)
     dm_image_info: DmImageInfo = image_info_field()
 
     def __post_init__(self) -> None:
@@ -181,7 +182,7 @@ class InstanceSegmentationSample(BaseSample):
 
         # Handle None fields for images with no annotations
         if self.label is None:
-            self.label = torch.zeros(0, dtype=torch.uint8)
+            self.label = torch.zeros(0, dtype=torch.uint16)
         if self.masks is None:
             self.masks = tv_tensors.Mask(torch.zeros((0, *shape), dtype=torch.uint8))
 
@@ -211,7 +212,7 @@ class KeypointSample(BaseSample):
 
     subset: Subset = subset_field()
     image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), channels_first=True)
-    label: torch.Tensor = label_field(dtype=pl.UInt8(), is_list=True)
+    label: torch.Tensor = label_field(dtype=pl.UInt16(), is_list=True)
     keypoints: torch.Tensor = keypoints_field()
     dm_image_info: DmImageInfo = image_info_field()
 

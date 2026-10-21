@@ -468,7 +468,8 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
                     all_masks.append(mask_canvas)
 
         mosaic_bboxes = torch.cat(all_bboxes, dim=0)
-        mosaic_labels = torch.cat(all_labels, dim=0)
+        # Cast to long: torch cannot promote uint16 with other integer dtypes in ``cat``.
+        mosaic_labels = torch.cat([label.long() for label in all_labels], dim=0)
 
         if self.bbox_clip_border and mosaic_bboxes.numel() > 0:
             mosaic_bboxes[..., 0::2] = mosaic_bboxes[..., 0::2].clamp(0, mosaic_w)
@@ -915,7 +916,8 @@ class CachedMixUp(CacheableMixin, tvt_v2.Transform):
 
         # concatenate annotations
         mixup_bboxes = torch.cat([inputs.bboxes.float(), cached_bboxes], dim=0)
-        mixup_labels = torch.cat([inputs.label, cached.label], dim=0)
+        # Cast to long: torch cannot promote uint16 with other integer dtypes in ``cat``.
+        mixup_labels = torch.cat([inputs.label.long(), cached.label.long()], dim=0)
 
         # filter degenerate boxes
         if mixup_bboxes.numel() > 0:

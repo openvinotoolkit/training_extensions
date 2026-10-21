@@ -125,7 +125,7 @@ def _build_dataset(
 
             sample = ClassificationSample(
                 image=image,
-                label=torch.tensor(label_idx, dtype=torch.uint8),
+                label=torch.tensor(label_idx, dtype=torch.uint16),
                 dm_image_info=DmImageInfo(width=w, height=h),
                 subset=subset,
             )
