@@ -104,7 +104,7 @@ def _build_dataset() -> Dataset:
                 image = tv_tensors.Image(img_tensor)
                 sample = ClassificationSample(
                     image=image,
-                    label=torch.tensor(label_idx, dtype=torch.uint8),
+                    label=torch.tensor(label_idx, dtype=torch.uint16),
                     dm_image_info=DmImageInfo(width=IMAGE_SIZE, height=IMAGE_SIZE),
                     subset=subset,
                 )

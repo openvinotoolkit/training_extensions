@@ -324,3 +324,25 @@ def test_semantic_collate_fn_stacks_masks() -> None:
     assert collated["semantic_mask"].shape == (2, 16, 16)
     assert collated["semantic_mask"].dtype == torch.int32
     assert collated["im_file"] == ["a.jpg", "b.jpg"]
+
+
+def test_dataset_adapter_handles_uint16_labels_above_255() -> None:
+    """Detection samples store labels as uint16; class indices above 255 must survive conversion."""
+    image = tv_tensors.Image(torch.rand(3, 16, 20, dtype=torch.float32))
+    bboxes = tv_tensors.BoundingBoxes(  # pyrefly: ignore[no-matching-overload]
+        torch.tensor([[2.0, 4.0, 10.0, 12.0], [0.0, 0.0, 4.0, 4.0]], dtype=torch.float32),
+        format=tv_tensors.BoundingBoxFormat.XYXY,
+        canvas_size=(16, 20),
+    )
+    sample = SimpleNamespace(
+        image=image,
+        bboxes=bboxes,
+        label=torch.tensor([255, 299], dtype=torch.uint16),
+        img_info=ImageInfo(img_idx=0, img_shape=(16, 20), ori_shape=(16, 20)),  # pyrefly: ignore[no-matching-overload]
+    )
+    dataset = MagicMock(spec=VisionDataset)
+    dataset.__len__.return_value = 1
+    dataset.__getitem__.return_value = sample
+    result = UltralyticsDatasetAdapter(dataset)[0]
+    assert result["cls"].dtype == np.float32
+    np.testing.assert_array_equal(result["cls"], np.array([[255.0], [299.0]], dtype=np.float32))
