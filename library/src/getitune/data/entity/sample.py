@@ -22,11 +22,13 @@ from datumaro.experimental.fields import (
     keypoints_field,
     label_field,
     mask_field,
+    polygon_field,
     subset_field,
 )
 from torchvision import tv_tensors
 
 from getitune.data.entity.base import ImageInfo
+from getitune.data.entity.polygons import empty_polygons
 from getitune.data.entity.utils import (
     register_pytree_node,
 )
@@ -38,6 +40,7 @@ from getitune.data.entity.validation import (
     validate_keypoints,
     validate_labels,
     validate_masks,
+    validate_polygons,
     validate_scores,
 )
 
@@ -162,6 +165,34 @@ class SegmentationSample(BaseSample):
         )
 
 
+def _init_instance_seg(sample: BaseSample, *, with_masks: bool) -> None:
+    """Shared normalisation for the mask and polygon instance-seg schemas."""
+    shape = (sample.dm_image_info.height, sample.dm_image_info.width)
+
+    if sample.label is None:
+        sample.label = torch.zeros(0, dtype=torch.uint8)
+    if sample.polygons is None:
+        sample.polygons = empty_polygons(shape)
+    elif not isinstance(sample.polygons, tv_tensors.KeyPoints):
+        sample.polygons = tv_tensors.KeyPoints(
+            torch.as_tensor(sample.polygons, dtype=torch.float32),
+            canvas_size=shape,
+        )
+    if with_masks and sample.masks is None:
+        sample.masks = tv_tensors.Mask(torch.zeros((0, *shape), dtype=torch.uint8))
+
+    if not isinstance(sample.bboxes, tv_tensors.BoundingBoxes):
+        bboxes = sample.bboxes if sample.bboxes is not None else torch.zeros((0, 4), dtype=torch.float32)
+        sample.bboxes = tv_tensors.BoundingBoxes(
+            bboxes.reshape(-1, 4),
+            format=tv_tensors.BoundingBoxFormat.XYXY,
+            canvas_size=shape,
+            dtype=torch.float32,
+        )
+
+    sample.img_info = ImageInfo(img_idx=0, img_shape=shape, ori_shape=shape)
+
+
 @register_pytree_node
 @register_sample
 class InstanceSegmentationSample(BaseSample):
@@ -173,35 +204,34 @@ class InstanceSegmentationSample(BaseSample):
     # conversion is not supported in Datumaro), then convert in __post_init__
     bboxes: tv_tensors.BoundingBoxes | torch.Tensor = bbox_field(dtype=pl.Float32())
     masks: tv_tensors.Mask | None = instance_mask_field(dtype=pl.UInt8())
+    polygons: tv_tensors.KeyPoints | None = polygon_field(dtype=pl.Float32())
     label: torch.Tensor | None = label_field(dtype=pl.UInt8(), is_list=True)
     dm_image_info: DmImageInfo = image_info_field()
 
     def __post_init__(self) -> None:
-        shape = (self.dm_image_info.height, self.dm_image_info.width)
+        _init_instance_seg(self, with_masks=True)
 
-        # Handle None fields for images with no annotations
-        if self.label is None:
-            self.label = torch.zeros(0, dtype=torch.uint8)
-        if self.masks is None:
-            self.masks = tv_tensors.Mask(torch.zeros((0, *shape), dtype=torch.uint8))
 
-        # Ensure bboxes are tv_tensors.BoundingBoxes
-        if not isinstance(self.bboxes, tv_tensors.BoundingBoxes):
-            bboxes = self.bboxes if self.bboxes is not None else torch.zeros((0, 4), dtype=torch.float32)
-            # Round-tripping through storage can yield a degenerate (1, 0) empty tensor instead of (0, 4).
-            bboxes = bboxes.reshape(-1, 4)
-            self.bboxes = tv_tensors.BoundingBoxes(
-                bboxes,
-                format=tv_tensors.BoundingBoxFormat.XYXY,
-                canvas_size=shape,
-                dtype=torch.float32,
-            )
+@register_pytree_node
+@register_sample
+class InstanceSegmentationPolygonSample(BaseSample):
+    """Polygon-native instance segmentation schema.
 
-        self.img_info = ImageInfo(
-            img_idx=0,
-            img_shape=shape,
-            ori_shape=shape,
-        )
+    Identical to :class:`InstanceSegmentationSample` **minus the ``masks``
+    field**. Omitting the field is the whole point: ``convert_to_schema`` only
+    rasterizes columns the schema declares, so with this class the eager
+    full-resolution rasterization never happens.
+    """
+
+    subset: Subset = subset_field()
+    image: tv_tensors.Image | torch.Tensor = image_field(dtype=pl.UInt8(), channels_first=True)
+    bboxes: tv_tensors.BoundingBoxes | torch.Tensor = bbox_field(dtype=pl.Float32())
+    polygons: tv_tensors.KeyPoints | None = polygon_field(dtype=pl.Float32())
+    label: torch.Tensor | None = label_field(dtype=pl.UInt8(), is_list=True)
+    dm_image_info: DmImageInfo = image_info_field()
+
+    def __post_init__(self) -> None:
+        _init_instance_seg(self, with_masks=False)
 
 
 @register_pytree_node
@@ -243,6 +273,7 @@ class SampleBatch:
     masks: list[Mask] | None = None
     bboxes: list[BoundingBoxes] | None = None
     keypoints: list[torch.Tensor] | None = None
+    polygons: list[tv_tensors.KeyPoints] | None = None
     imgs_info: Sequence[ImageInfo | None] | None = None
 
     @property
@@ -265,6 +296,8 @@ class SampleBatch:
             validate_bboxes(self.bboxes)
         if self.keypoints is not None:
             validate_keypoints(self.keypoints)
+        if self.polygons is not None:
+            validate_polygons(self.polygons)
         if self.masks is not None:
             validate_masks(self.masks)
         if self.imgs_info is not None:
@@ -291,7 +324,7 @@ class SampleBatch:
             kwargs["images"] = maybe_wrap_tv(self.images)
 
         # Generic handler for all other fields
-        for field in ["labels", "bboxes", "keypoints", "masks"]:
+        for field in ["labels", "bboxes", "keypoints", "masks", "polygons"]:
             value = getattr(self, field)
             if value is not None:
                 kwargs[field] = [maybe_wrap_tv(v) if v is not None else None for v in value]
@@ -362,6 +395,7 @@ class Prediction:
     masks: Mask | None = None
     bboxes: BoundingBoxes | None = None
     keypoints: torch.Tensor | None = None
+    polygons: tv_tensors.KeyPoints | None = None
     scores: torch.Tensor | None = None
     feature_vector: torch.Tensor | None = None
     saliency_map: torch.Tensor | None = None

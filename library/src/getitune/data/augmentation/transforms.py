@@ -19,6 +19,7 @@ from getitune.data.augmentation.kernels import (
     _resize_image_info,
     _resized_crop_image_info,
 )
+from getitune.data.entity import clip_polygons, concat_polygons, empty_polygons, scale_polygons
 from getitune.data.entity.sample import BaseSample
 
 
@@ -223,6 +224,14 @@ class Resize(tvt_v2.Transform):
                     tv_tensors.Mask(resized_masks) if isinstance(masks, tv_tensors.Mask) else resized_masks
                 )
 
+            # Transform polygons (polygon-native instance segmentation)
+            polygons = getattr(sample, "polygons", None)
+            if polygons is not None:
+                out_hw = (new_h + pad_top + pad_bottom, new_w + pad_left + pad_right)
+                sample.polygons = scale_polygons(  # type: ignore[missing-attribute]
+                    polygons, scale_x, scale_y, pad_left, pad_top, canvas_size=out_hw
+                )
+
             # Transform keypoints/points
             keypoints = getattr(sample, "keypoints", None)
             if keypoints is not None and isinstance(keypoints, torch.Tensor):
@@ -397,7 +406,8 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
         inputs: _CachedSample,
         mix_results: list[_CachedSample],
         with_mask: bool,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
+        with_polygon: bool,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
         """Assemble the 4-image mosaic on a 2x canvas.
 
         Returns:
@@ -405,6 +415,7 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
             mosaic_bboxes: (N, 4) XYXY in 2x canvas coords.
             mosaic_labels: (N,) class labels.
             mosaic_masks: (N, 2*H, 2*W) or None.
+            mosaic_polygons: (N, 2*H, 2*W) or None.
         """
         target_h, target_w = self.img_scale
         mosaic_h, mosaic_w = target_h * 2, target_w * 2
@@ -420,6 +431,7 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
         all_bboxes: list[torch.Tensor] = []
         all_labels: list[torch.Tensor] = []
         all_masks: list[torch.Tensor] = []
+        all_polygons: list[torch.Tensor] = []
 
         loc_strs = ("top_left", "top_right", "bottom_left", "bottom_right")
         samples = [inputs, *mix_results]
@@ -450,6 +462,12 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
                 bboxes_i = bboxes_i + bboxes_i.new_tensor([pad_w, pad_h, pad_w, pad_h])
             all_bboxes.append(bboxes_i)
             all_labels.append(sample.label)
+
+            if with_polygon and sample.polygons is not None:
+                poly_i = scale_polygons(sample.polygons, scale, scale, pad_w, pad_h, canvas_size=(mosaic_h, mosaic_w))
+                # Masks inherit the quadrant crop from the paste slice; polygons
+                # must be clipped to the same rect explicitly
+                all_polygons.append(clip_polygons(poly_i, x1_p, y1_p, x2_p, y2_p, canvas_size=(mosaic_h, mosaic_w)))
 
             if with_mask:
                 masks_i = getattr(sample, "masks", None)
@@ -491,23 +509,31 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
         else:
             all_masks_cat = None
 
+        mosaic_polygons = (
+            concat_polygons(all_polygons, (mosaic_h, mosaic_w)) if (with_polygon and all_polygons) else None
+        )
+        if mosaic_polygons is not None and mosaic_bboxes.numel() > 0:
+            mosaic_polygons = tv_tensors.KeyPoints(mosaic_polygons[valid], canvas_size=(mosaic_h, mosaic_w))
+
         mosaic_masks = all_masks_cat if (with_mask and all_masks) else None
-        return mosaic_img.clamp(0, 1), mosaic_bboxes, mosaic_labels, mosaic_masks
+        return mosaic_img.clamp(0, 1), mosaic_bboxes, mosaic_labels, mosaic_masks, mosaic_polygons
 
     def _letterbox_resize(
         self,
         image: torch.Tensor,
         bboxes: torch.Tensor,
         masks: torch.Tensor | None,
+        polygons: torch.Tensor | None,
         target_h: int,
         target_w: int,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor | None]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
         """Resize image with keep-ratio and center padding.
 
         Returns:
             image: (C, target_h, target_w) letterboxed.
             bboxes: (N, 4) XYXY in letterboxed coords.
             masks: (N, target_h, target_w) or None.
+            polygons: (N, target_h, target_w) or None.
         """
         _, orig_h, orig_w = image.shape
         scale = min(target_h / orig_h, target_w / orig_w)
@@ -536,7 +562,10 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
             mask_canvas[:, pad_top : pad_top + new_h, pad_left : pad_left + new_w] = masks
             masks = mask_canvas
 
-        return canvas, bboxes, masks
+        if polygons is not None:
+            polygons = scale_polygons(polygons, scale, scale, pad_left, pad_top, canvas_size=(target_h, target_w))
+
+        return canvas, bboxes, masks, polygons
 
     def _random_perspective_crop(
         self,
@@ -544,9 +573,10 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
         bboxes: torch.Tensor,
         labels: torch.Tensor,
         masks: torch.Tensor | None,
+        polygons: torch.Tensor | None,
         out_h: int,
         out_w: int,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
         """Apply center-based random affine crop.
 
         Reference: https://github.com/Megvii-BaseDetection/YOLOX/blob/main/yolox/data/data_augment.py
@@ -560,11 +590,12 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
             bboxes: (N, 4) XYXY in input pixel coords.
             labels: (N,) class labels.
             masks: (N, in_h, in_w) or None.
+            polygons: (N, in_h, in_w) or None.
             out_h: Output height.
             out_w: Output width.
 
         Returns:
-            Tuple of (output_image, filtered_bboxes, filtered_labels, filtered_masks).
+            Tuple of (output_image, filtered_bboxes, filtered_labels, filtered_masks, filtered_polygons).
         """
         _, in_h, in_w = image.shape
         fill_val = self._fill_val_normalised()
@@ -656,6 +687,28 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
                         antialias=False,
                     )
                 masks = mask_crop[valid]
+            if polygons is not None and polygons.shape[0] == valid.shape[0]:
+                polygons = scale_polygons(
+                    polygons,
+                    effective_sx,
+                    effective_sy,
+                    -x_start * effective_sx,
+                    -y_start * effective_sy,
+                    canvas_size=(out_h, out_w),
+                )
+                # Mask parity: the crop paste writes only
+                # crop[:, dst_y1:dst_y2, dst_x1:dst_x2]; everything else stays
+                # fill_val, so polygons must be clipped to that same rect
+                # mapped into output coords.
+                polygons = clip_polygons(
+                    polygons,
+                    dst_x1 * effective_sx,
+                    dst_y1 * effective_sy,
+                    dst_x2 * effective_sx,
+                    dst_y2 * effective_sy,
+                    canvas_size=(out_h, out_w),
+                )
+                polygons = tv_tensors.KeyPoints(polygons[valid], canvas_size=(out_h, out_w))
         else:
             new_bboxes = bboxes
             # No boxes to filter, but an empty masks tensor (0 instances) must still be
@@ -665,8 +718,10 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
             # pre-crop input size.
             if masks is not None:
                 masks = torch.zeros((masks.shape[0], out_h, out_w), dtype=masks.dtype, device=masks.device)
+            if polygons is not None:
+                polygons = empty_polygons((out_h, out_w))
 
-        return output, new_bboxes, labels, masks
+        return output, new_bboxes, labels, masks, polygons
 
     @typing.no_type_check
     def forward(self, *_inputs: BaseSample) -> BaseSample:
@@ -682,38 +737,43 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
 
         target_h, target_w = self.img_scale
         with_mask = hasattr(inputs, "masks") and inputs.masks is not None
+        with_polygon = not with_mask and getattr(inputs, "polygons", None) is not None
         apply_mosaic = len(self.results_cache) >= 4 and torch.rand(1).item() <= self.prob
 
         if apply_mosaic:
             indices = self.get_indexes(self.results_cache)
             mix_results = [self.results_cache[i] for i in indices]
-            mosaic_img, mosaic_bboxes, mosaic_labels, mosaic_masks = self._build_mosaic(
+            mosaic_img, mosaic_bboxes, mosaic_labels, mosaic_masks, mosaic_polygons = self._build_mosaic(
                 cached_input,
                 mix_results,
                 with_mask,
+                with_polygon,
             )
-            out_img, out_bboxes, out_labels, out_masks = self._random_perspective_crop(
+            out_img, out_bboxes, out_labels, out_masks, out_polygons = self._random_perspective_crop(
                 mosaic_img,
                 mosaic_bboxes,
                 mosaic_labels,
                 mosaic_masks,
+                mosaic_polygons,
                 target_h,
                 target_w,
             )
         else:
             # Non-mosaic path: letterbox resize + same random perspective
-            img_lb, bboxes_lb, masks_lb = self._letterbox_resize(
+            img_lb, bboxes_lb, masks_lb, polygons_lb = self._letterbox_resize(
                 inputs.image,
                 inputs.bboxes,
                 inputs.masks if with_mask else None,
+                inputs.polygons if with_polygon else None,
                 target_h,
                 target_w,
             )
-            out_img, out_bboxes, out_labels, out_masks = self._random_perspective_crop(
+            out_img, out_bboxes, out_labels, out_masks, out_polygons = self._random_perspective_crop(
                 img_lb,
                 bboxes_lb,
                 inputs.label,
                 masks_lb,
+                polygons_lb,
                 target_h,
                 target_w,
             )
@@ -731,6 +791,8 @@ class CachedMosaic(CacheableMixin, tvt_v2.Transform):
                     device=inputs.image.device,
                 ),
             )
+        if with_polygon:
+            inputs.polygons = out_polygons if out_polygons is not None else empty_polygons((target_h, target_w))
         inputs.img_info = _resized_crop_image_info(inputs.img_info, (target_h, target_w))
         return inputs
 
@@ -753,8 +815,8 @@ class CachedMixUp(CacheableMixin, tvt_v2.Transform):
     """Geometry-preserved MixUp augmentation for detection / instance segmentation.
 
     Blends the current image with a cached image using alpha blending without
-    any geometric transformation.  Bounding boxes, labels and masks from both images are
-    concatenated.
+    any geometric transformation.  Bounding boxes, labels and polygons/masks from both
+    images are concatenated.
 
     If the cached image has a different spatial size it is resized to the current
     image size with ``keep_aspect_ratio`` padding so the aspect ratio is preserved.
@@ -883,7 +945,7 @@ class CachedMixUp(CacheableMixin, tvt_v2.Transform):
             return inputs
 
         # Get cached sample (read-only: mixup creates new tensors via interpolation/concat,
-        # never mutates cached.image/bboxes/label/masks in place)
+        # never mutates cached image/bboxes/label/polygons/masks in place)
         cache_idx = self._get_cached_index()
         cached = self.results_cache[cache_idx]
 
@@ -942,6 +1004,18 @@ class CachedMixUp(CacheableMixin, tvt_v2.Transform):
                 )
                 all_masks = ori_masks[all_valid]
             inputs.masks = tv_tensors.Mask(all_masks)
+
+        with_polygon = not with_mask and getattr(inputs, "polygons", None) is not None
+        if with_polygon:
+            cached_poly = getattr(cached, "polygons", None)
+            scale = min(target_h / cached_h, target_w / cached_w)
+            parts = [inputs.polygons]
+            if cached_poly is not None and cached_poly.shape[0] > 0:
+                parts.append(scale_polygons(cached_poly, scale, scale, canvas_size=(target_h, target_w)))
+            all_poly = concat_polygons(parts, (target_h, target_w))
+            if valid.numel() > 0:
+                all_poly = tv_tensors.KeyPoints(all_poly[valid], canvas_size=(target_h, target_w))
+            inputs.polygons = all_poly
 
         # write back
         inputs.image = mixup_img
@@ -1028,9 +1102,10 @@ class FilterBoundingBoxes(tvt_v2.Transform):
         )
         inputs.label = inputs.label[valid]
 
-        # Filter masks if present
         if hasattr(inputs, "masks") and inputs.masks is not None and len(inputs.masks) > 0:
             inputs.masks = tv_tensors.Mask(inputs.masks[valid])
+        if getattr(inputs, "polygons", None) is not None and inputs.polygons.shape[0] > 0:
+            inputs.polygons = tv_tensors.KeyPoints(inputs.polygons[valid], canvas_size=inputs.polygons.canvas_size)
 
         return inputs
 

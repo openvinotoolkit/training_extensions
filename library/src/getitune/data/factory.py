@@ -88,7 +88,11 @@ class DatasetFactory:
             case TaskType.INSTANCE_SEGMENTATION:
                 from .dataset.instance_segmentation import InstanceSegDataset
 
-                return InstanceSegDataset(task_type=task, **common_kwargs)
+                return InstanceSegDataset(
+                    task_type=task,
+                    annotation_format=cfg_subset.annotation_format,
+                    **common_kwargs,
+                )
 
             case TaskType.SEMANTIC_SEGMENTATION:
                 from .dataset.segmentation import SegmentationDataset

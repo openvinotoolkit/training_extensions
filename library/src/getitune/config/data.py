@@ -96,6 +96,7 @@ class SubsetConfig:
         sampler (SamplerConfig): Sampler configuration for the dataloader.
         input_size (tuple[int, int] | None): Input size expected by the model.
             If `$(input_size)` is present in augmentations, it will be replaced with this value.
+        annotation_format: (str): "auto" picks polygons when the subset carries them, otherwise masks
 
     Example:
         ```python
@@ -123,6 +124,7 @@ class SubsetConfig:
     num_workers: int = 2
     sampler: SamplerConfig = field(default_factory=SamplerConfig)
     input_size: tuple[int, int] | None = None
+    annotation_format: str = "auto"
 
     def __post_init__(self) -> None:
         """Normalize nested config objects loaded from recipe dictionaries."""
@@ -130,6 +132,9 @@ class SubsetConfig:
             self.intensity = IntensityConfig(**self.intensity)
         if isinstance(self.sampler, dict):
             self.sampler = SamplerConfig(**self.sampler)
+        if self.annotation_format not in ("auto", "polygon", "mask"):
+            msg = f"annotation_format must be one of 'auto', 'polygon', 'mask'; got {self.annotation_format!r}"
+            raise ValueError(msg)
 
 
 @dataclass

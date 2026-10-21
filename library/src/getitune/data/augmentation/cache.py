@@ -8,7 +8,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import torch
+from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
+
+from getitune.data.entity import scale_polygons
 
 if TYPE_CHECKING:
     from getitune.data.dataset.base import VisionDataset
@@ -24,7 +27,7 @@ class _CachedSample:
     via fast ``Tensor.clone()`` (pure memcpy).
     """
 
-    __slots__ = ("bboxes", "image", "label", "masks")
+    __slots__ = ("bboxes", "image", "label", "masks", "polygons")
 
     def __init__(
         self,
@@ -32,11 +35,13 @@ class _CachedSample:
         bboxes: torch.Tensor,
         label: torch.Tensor,
         masks: torch.Tensor | None = None,
+        polygons: torch.Tensor | None = None,
     ) -> None:
         self.image = image
         self.bboxes = bboxes
         self.label = label
         self.masks = masks
+        self.polygons = polygons
 
 
 def _clone_for_cache(sample: DetectionSample | InstanceSegmentationSample, max_size: int = 1024) -> _CachedSample:
@@ -45,6 +50,13 @@ def _clone_for_cache(sample: DetectionSample | InstanceSegmentationSample, max_s
     Samples within the limit use tensor clones rather than deep-copying the full sample.
     """
     masks = getattr(sample, "masks", None)
+    polygons = getattr(sample, "polygons", None)
+    # Cache exactly one representation, never both. The discriminator is the
+    # presence of `masks`, not of `polygons`: the mask schema normalises
+    # `polygons` to an empty (0, 0, 2) carrier, so testing `polygons is not
+    # None` silently drops the masks of every mask-schema sample.
+    if masks is not None:
+        polygons = None
     label = cast("torch.Tensor", sample.label)
     _, height, width = sample.image.shape
     if max(height, width) > max_size:
@@ -57,6 +69,10 @@ def _clone_for_cache(sample: DetectionSample | InstanceSegmentationSample, max_s
         bboxes = sample.bboxes.float().clone()
         bboxes[:, 0::2] *= new_width / width
         bboxes[:, 1::2] *= new_height / height
+        if polygons is not None:
+            polygons = scale_polygons(
+                polygons, new_width / width, new_height / height, canvas_size=(new_height, new_width)
+            )
         if masks is not None:
             masks = (
                 F.resize(masks, [new_height, new_width], interpolation=F.InterpolationMode.NEAREST, antialias=False)
@@ -67,11 +83,13 @@ def _clone_for_cache(sample: DetectionSample | InstanceSegmentationSample, max_s
         image = sample.image.clone()
         bboxes = sample.bboxes.clone()
         masks = masks.clone() if masks is not None else None
+        polygons = tv_tensors.KeyPoints(polygons.clone(), canvas_size=(height, width)) if polygons is not None else None
     return _CachedSample(
         image=image,
         bboxes=bboxes,
         label=label.clone(),
         masks=masks,
+        polygons=polygons,
     )
 
 

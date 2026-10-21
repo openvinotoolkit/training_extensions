@@ -173,3 +173,33 @@ def validate_feature_vectors(
     if isinstance(first_non_none, torch.Tensor) and first_non_none.ndim != 2:
         msg = "Feature vector must have 2 dimensions"
         raise ValueError(msg)
+
+
+def validate_polygons(polygons_batch: list[torch.Tensor | None]) -> None:
+    """Validate the polygons batch.
+
+    Deliberately separate from ``validate_keypoints``: that validator requires
+    ``(N, 3)`` with an ``x, y, visibility`` triplet bounded to ``[0, 1]``, which
+    a ``(N, P_max, 2)`` polygon tensor satisfies none of. Routing polygons
+    through it would reject every valid sample.
+
+    NaN is the padding sentinel, so non-finite coordinates are expected and
+    must not be rejected here.
+    """
+    if all(poly is None for poly in polygons_batch):
+        return
+    first_non_none = next((p for p in polygons_batch if p is not None), None)
+    if first_non_none is None:
+        return
+    if not isinstance(first_non_none, torch.Tensor):
+        msg = f"Polygons batch must be a list of torch tensors. Got {type(first_non_none)}"
+        raise TypeError(msg)
+    if first_non_none.dtype != torch.float32:
+        msg = f"Polygons batch must have dtype torch.float32. Got {first_non_none.dtype}"
+        raise ValueError(msg)
+    if first_non_none.ndim != 3:
+        msg = f"Polygons batch must have shape (N, P, 2), got {tuple(first_non_none.shape)}"
+        raise ValueError(msg)
+    if first_non_none.shape[-1] != 2:
+        msg = f"Polygons must have 2 coordinates per vertex, got {first_non_none.shape[-1]}"
+        raise ValueError(msg)

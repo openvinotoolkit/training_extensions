@@ -223,7 +223,7 @@ class CPUAugmentationPipeline(nn.Module):
 
     The pipeline supports two types of transforms:
     1. getitune-style transforms: Have a `forward(*DataItem)` signature and handle
-       all data types internally (image, bboxes, masks, etc.)
+       all data types internally (image, bboxes, masks, polygons, etc.)
     2. Native torchvision.v2 transforms: Applied to all tv_tensors extracted
        from the DataItem (image, bboxes, masks, keypoints)
 
@@ -402,6 +402,8 @@ class CPUAugmentationPipeline(nn.Module):
             transformable["image"] = image
         if (img_info := getattr(inputs, "img_info", None)) is not None:
             transformable["img_info"] = img_info
+        if (polygons := getattr(inputs, "polygons", None)) is not None:
+            transformable["polygons"] = polygons
         if (masks := getattr(inputs, "masks", None)) is not None:
             transformable["masks"] = masks
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:

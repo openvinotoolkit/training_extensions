@@ -117,6 +117,7 @@ def _default_collate_fn(items: list[BaseSample]) -> SampleBatch:
         masks=_collect_optional_attr(items, "masks"),
         bboxes=_collect_optional_attr(items, "bboxes"),
         keypoints=_collect_optional_attr(items, "keypoints"),
+        polygons=_collect_optional_attr(items, "polygons"),
         imgs_info=_collect_optional_attr(items, "img_info"),
     )
 

@@ -5,16 +5,40 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING, Callable
 
 from getitune import LabelInfo
-from getitune.data.dataset.base import Transforms, VisionDataset
-from getitune.data.entity.sample import InstanceSegmentationSample
+from getitune.data.dataset.base import Transforms, VisionDataset, _default_collate_fn
+from getitune.data.entity.sample import InstanceSegmentationPolygonSample, InstanceSegmentationSample
 from getitune.data.entity.utils import with_image_dtype
 from getitune.types import TaskType
 
 if TYPE_CHECKING:
     from datumaro.experimental import Dataset
+
+logger = logging.getLogger(__name__)
+
+
+def _resolve_annotation_format(dm_subset: Dataset, requested: str) -> str:
+    """Decide whether to use the polygon-native or mask schema.
+
+    ``"auto"`` inspects the Datumaro schema for a ``polygons`` column and falls
+    back to masks when absent, so mask-only datasets keep working unchanged.
+    """
+    attributes = getattr(getattr(dm_subset, "schema", None), "attributes", None) or {}
+    has_polygons = "polygons" in attributes
+
+    if requested == "mask":
+        return "mask"
+    if requested == "polygon":
+        if not has_polygons:
+            msg = "annotation_format='polygon' requested but the subset has no 'polygons' column."
+            raise ValueError(msg)
+        return "polygon"
+    if not has_polygons:
+        logger.debug("No 'polygons' column found; falling back to the mask schema.")
+    return "polygon" if has_polygons else "mask"
 
 
 class InstanceSegDataset(VisionDataset):
@@ -38,8 +62,13 @@ class InstanceSegDataset(VisionDataset):
         task_type: TaskType = TaskType.INSTANCE_SEGMENTATION,
         max_refetch: int = 1000,
         storage_dtype: str = "uint8",
+        annotation_format: str = "auto",
     ) -> None:
-        sample_type = with_image_dtype(InstanceSegmentationSample, storage_dtype)
+        self.annotation_format = _resolve_annotation_format(dm_subset, annotation_format)
+        base_type = (
+            InstanceSegmentationPolygonSample if self.annotation_format == "polygon" else InstanceSegmentationSample
+        )
+        sample_type = with_image_dtype(base_type, storage_dtype)
         dm_subset = dm_subset.convert_to_schema(sample_type)
         super().__init__(
             dm_subset=dm_subset,
@@ -82,3 +111,13 @@ class InstanceSegDataset(VisionDataset):
             TaskType: The instance segmentation task type.
         """
         return self._task_type
+
+    @property
+    def collate_fn(self) -> Callable:
+        """Collate without rasterizing.
+
+        Polygon-native subsets leave the worker with ``polygons`` set and
+        ``masks`` unset; the GPU stage transforms the polygons and rasterizes
+        once at network resolution.
+        """
+        return _default_collate_fn
