@@ -17,7 +17,14 @@
                 { "url": "https://www.intel.com/*" },
                 { "url": "https://docs.geti.intel.com/*" },
                 { "url": "https://github.com/*" },
-                { "url": "https://www.ultralytics.com/*" }
+                { "url": "https://www.ultralytics.com/*" },
+                { "url": "https://www.apache.org/*" },
+                { "url": "https://spdx.org/*" },
+                { "url": "https://choosealicense.com/*" },
+                { "url": "https://ai.meta.com/*" },
+                { "url": "https://ai.google.dev/*" },
+                { "url": "https://huggingface.co/*" },
+                { "url": "https://developer.apple.com/*" }
             ]
         }
     ]
