@@ -13,6 +13,7 @@ from getitune.backend.lightning.models.instance_segmentation.base import Lightni
 from getitune.backend.lightning.models.instance_segmentation.maskrcnn_tv import MaskRCNNTV
 from getitune.backend.lightning.tools.explain.explain_algo import feature_vector_fn
 from getitune.types.export import TaskLevelExportParameters
+from getitune.types.label import LabelInfo
 
 
 class TestLightningInstanceSegModel:
@@ -76,6 +77,38 @@ class TestLightningInstanceSegModel:
         assert isinstance(parameters, TaskLevelExportParameters)
         assert parameters.task_type == "instance_segmentation"
         assert parameters.nms_execute is False
+
+    @pytest.mark.parametrize("aliased", [True, False])
+    def test_export_parameters_label_info(self, aliased):
+        label_names = ["car", "person"]
+        label_info = LabelInfo(
+            label_names=label_names,
+            label_groups=[label_names if aliased else list(label_names)],
+            label_ids=["0", "1"],
+        )
+        model = MaskRCNNTV(
+            label_info=label_info,
+            model_name="maskrcnn_resnet_50",
+            data_input_params=DataInputParams((224, 224), (0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+            pretrained=False,
+        )
+
+        exported_label_info = model._export_parameters.label_info
+
+        assert exported_label_info.label_names == ["getitune_empty_lbl", "car", "person"]
+        assert exported_label_info.label_ids == ["None", "0", "1"]
+        assert exported_label_info.label_groups == [["getitune_empty_lbl", "car", "person"]]
+        # Original label info must stay untouched
+        assert model.label_info.label_names == ["car", "person"]
+        assert model.label_info.label_ids == ["0", "1"]
+        assert model.label_info.label_groups == [["car", "person"]]
+
+    def test_export_parameters_to_metadata(self, model):
+        # label_info=1 goes through LabelInfo.from_num_classes, where label_groups[0] aliases label_names
+        metadata = model._export_parameters.to_metadata()
+
+        assert metadata[("model_info", "labels")] == "getitune_empty_lbl label_0"
+        assert metadata[("model_info", "label_ids")] == "None 0"
 
     def test_export_parameters_with_nms(self, model):
         model.export_nms = True
