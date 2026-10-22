@@ -1,0 +1,1212 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "Abbrechen",
+            "close": "Schließen",
+            "delete": "Löschen",
+            "goBack": "Zurückgehen",
+            "rename": "Umbenennen",
+            "save": "Speichern",
+            "assign": "Zuweisen",
+            "back": "Zurück",
+            "clear": "Leeren",
+            "clearAll": "Alle leeren",
+            "confirm": "Bestätigen",
+            "connect": "Verbinden",
+            "continue": "Fortfahren",
+            "create": "Erstellen",
+            "disconnect": "Trennen",
+            "dismiss": "Verwerfen",
+            "download": "Herunterladen",
+            "edit": "Bearbeiten",
+            "export": "Exportieren",
+            "hide": "Ausblenden",
+            "next": "Weiter",
+            "refresh": "Aktualisieren",
+            "remove": "Entfernen",
+            "selectAll": "Alle auswählen",
+            "showLess": "Weniger anzeigen",
+            "showMore": "Mehr anzeigen",
+            "skip": "Überspringen",
+            "start": "Starten",
+            "submit": "Absenden",
+            "train": "Trainieren",
+            "upload": "Hochladen",
+            "undo": "Rückgängig",
+            "redo": "Wiederholen",
+            "annotate": "Annotieren",
+            "addAndUse": "Hinzufügen & verwenden",
+            "saveAndConnect": "Speichern & verbinden",
+            "testConnection": "Verbindung testen"
+        },
+        "labels": {
+            "allUppercase": "ALLE",
+            "yes": "Ja",
+            "no": "Nein",
+            "unknown": "Unbekannt",
+            "name": "Name",
+            "architecture": "Architektur",
+            "device": "Gerät",
+            "on": "Ein",
+            "off": "Aus",
+            "noMaximum": "Kein Maximum",
+            "active": "Aktiv",
+            "dataset": "Datensatz",
+            "filters": "Filter",
+            "images": "Bilder",
+            "videos": "Videos",
+            "size": "Größe",
+            "sizeUppercase": "GRÖSSE",
+            "statusUppercase": "STATUS",
+            "settings": "Einstellungen",
+            "training": "Training",
+            "training_subset": "Training",
+            "validation": "Validierung",
+            "validation_subset": "Validierung",
+            "testing": "Test",
+            "unassigned": "Nicht zugewiesen",
+            "trainingLowercase": "Training",
+            "validationLowercase": "Validierung",
+            "testingLowercase": "Test",
+            "frames": "Frames",
+            "seconds": "Sekunden",
+            "every": "alle",
+            "model": "Modell",
+            "jobs": "Jobs",
+            "labels": "Labels",
+            "bytesTransferred": "{{transferred}} von {{total}}"
+        },
+        "viewModes": {
+            "large": "Große Miniaturansichten",
+            "medium": "Mittlere Miniaturansichten",
+            "small": "Kleine Miniaturansichten"
+        },
+        "status": {
+            "pending": "Ausstehend",
+            "running": "Läuft",
+            "done": "Fertig",
+            "cancelled": "Abgebrochen",
+            "uploading": "Wird hochgeladen",
+            "failed": "Fehlgeschlagen",
+            "error": "Fehler",
+            "disconnected": "Getrennt"
+        },
+        "errors": {
+            "unknown": "Ein unbekannter Fehler ist aufgetreten",
+            "unknownDetail": "Unbekannter Fehler"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Geti-Logo",
+        "datasetDescription": "Datenerfassungsseite zur Visualisierung Ihrer Medienelemente",
+        "models": "Modelle",
+        "modelsDescription": "Modellseite zur Visualisierung Ihrer Modelle",
+        "inference": "Inferenz",
+        "inferenceDescription": "Inferenzseite mit Live-Inferenz für Ihr Projekt",
+        "help": {
+            "documentation": "Benutzerdokumentation",
+            "whatsNew": "Neuigkeiten",
+            "reportIssue": "Problem melden"
+        }
+    },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "Eine Ansicht mit diesem Namen existiert bereits.",
+            "invalidDateRange": "Das Enddatum muss nach dem Startdatum liegen"
+        },
+        "views": {
+            "deleted": "Gelöschte Ansicht",
+            "title": "Ansichten",
+            "entireDataset": "Gesamter Datensatz",
+            "assignToExistingView": "Vorhandener Ansicht zuweisen",
+            "assignTo": "Zuweisen zu",
+            "selectView": "Ansicht auswählen",
+            "assignmentNote": "Dieser Vorgang wirkt sich nicht auf andere Medien aus, die dieser Ansicht bereits zugewiesen wurden.",
+            "mediaAssigned_one": "{{count}} Medienelement erfolgreich zugewiesen.",
+            "mediaAssigned_other": "{{count}} Medienelemente erfolgreich zugewiesen.",
+            "openView": "{{viewName}} öffnen",
+            "saveView": "Ansicht speichern",
+            "viewNameLabel": "Name der Ansicht",
+            "renameTitle": "Datensatzansicht umbenennen",
+            "deleteTitle": "Löschbestätigung",
+            "deleteConfirmation": "Möchten Sie die Datensatzansicht „{{viewName}}“ wirklich löschen?",
+            "deleteSuccess": "Die Datensatzansicht „{{viewName}}“ wurde erfolgreich gelöscht.",
+            "unassignFromView": "Zuweisung zu dieser Ansicht aufheben",
+            "selectedMediaCount_one": "{{count}} Medienelement ausgewählt",
+            "selectedMediaCount_other": "{{count}} Medienelemente ausgewählt"
+        },
+        "filters": {
+            "allMedia": "Alle Medien",
+            "withAnnotations": "Medien mit Annotationen",
+            "missingAnnotations": "Medien ohne Annotationen",
+            "subset": "Nach Teilmenge filtern",
+            "searchLabels": "Labels suchen",
+            "labelsSelected_one": "{{count}} Label ausgewählt",
+            "labelsSelected_other": "{{count}} Labels ausgewählt",
+            "toggleAll": "Alle umschalten",
+            "more": "Weitere Filter",
+            "dateRange": {
+                "heading": "Nach Uploaddatum filtern",
+                "startDateLabel": "Startdatum",
+                "endDateLabel": "Enddatum",
+                "from": "Ab {{date}}",
+                "to": "Bis {{date}}"
+            }
+        },
+        "upload": {
+            "queued": "In Warteschlange",
+            "processing": "Wird verarbeitet",
+            "uploaded": "Hochgeladen",
+            "errorTitle": "Uploadfehler",
+            "details": "Uploaddetails",
+            "filename": "DATEINAME",
+            "uploadingSummary_one": "{{total}} Element wird hochgeladen – {{uploaded}} hochgeladen",
+            "uploadingSummary_other": "{{total}} Elemente werden hochgeladen – {{uploaded}} hochgeladen",
+            "uploadingFailedSummary_one": "{{total}} Element wird hochgeladen – {{uploaded}} hochgeladen, {{failed}} fehlgeschlagen",
+            "uploadingFailedSummary_other": "{{total}} Elemente werden hochgeladen – {{uploaded}} hochgeladen, {{failed}} fehlgeschlagen",
+            "uploadedSummary_one": "{{count}} Element hochgeladen",
+            "uploadedSummary_other": "{{count}} Elemente hochgeladen",
+            "failedSummary_one": "{{count}} Element konnte nicht hochgeladen werden",
+            "failedSummary_other": "{{count}} Elemente konnten nicht hochgeladen werden",
+            "mixedSummary_one": "{{uploaded}} Element hochgeladen, {{failed}} fehlgeschlagen",
+            "mixedSummary_other": "{{uploaded}} Elemente hochgeladen, {{failed}} fehlgeschlagen",
+            "mixedCancelledSummary_one": "{{uploaded}} Element hochgeladen, {{failed}} fehlgeschlagen, {{cancelled}} abgebrochen",
+            "mixedCancelledSummary_other": "{{uploaded}} Elemente hochgeladen, {{failed}} fehlgeschlagen, {{cancelled}} abgebrochen",
+            "genericError": "Medien konnten nicht hochgeladen werden.",
+            "uploadMedia": "Medien hochladen",
+            "showDetails": "Details anzeigen",
+            "inProgressToast_one": "{{count}} Element wird hochgeladen ...",
+            "inProgressToast_other": "{{count}} Elemente werden hochgeladen ...",
+            "inProgressSucceededPart": "{{count}} erfolgreich",
+            "inProgressFailedPart": "{{count}} fehlgeschlagen",
+            "cancelAll": "Alle abbrechen",
+            "cancelledSummary_one": "{{count}} Upload abgebrochen",
+            "cancelledSummary_other": "{{count}} Uploads abgebrochen"
+        },
+        "empty": {
+            "noMatches": "Keine Medienelemente entsprechen Ihrem Filter.",
+            "changeFilter": "Entfernen Sie den Filter oder wählen Sie einen neuen aus.",
+            "viewEmpty": "Diese Ansicht enthält keine Medienelemente.",
+            "assignOrBack": "Weisen Sie ihr Medienelemente zu oder kehren Sie zum gesamten Datensatz zurück.",
+            "goToEntireDataset": "Zu {{datasetName}} wechseln",
+            "datasetEmpty": "Ihr Datensatz ist leer.",
+            "uploadToStart": "Laden Sie Ihr erstes Medienelement hoch, um zu beginnen."
+        },
+        "review": {
+            "reviewed": "Geprüft",
+            "forReview": "Zur Prüfung",
+            "selectSubsetPlaceholder": "Teilmenge auswählen"
+        },
+        "statistics": {
+            "label": "Datensatzstatistik",
+            "title": "Datensatzstatistik",
+            "numberOfMedia": "Anzahl der Medien",
+            "annotatedImages": "Annotierte Bilder",
+            "annotatedVideosFrames": "Annotierte Videos / Frames",
+            "numberOfObjectsPerLabel": "Anzahl der Objekte pro Label",
+            "unannotated": "Nicht annotiert",
+            "annotated": "Annotiert",
+            "annotationsChartTooltip": "Annotationen"
+        },
+        "delete": {
+            "title": "Elemente löschen",
+            "mediaItem": "Medienelement löschen",
+            "confirmation_one": "Möchten Sie {{count}} Element wirklich löschen?",
+            "confirmation_other": "Möchten Sie {{count}} Elemente wirklich löschen?",
+            "deletingItems": "Elemente werden gelöscht ...",
+            "deleteError": "Löschen fehlgeschlagen, {{detail}}",
+            "deletedSuccess_one": "{{count}} Element erfolgreich gelöscht",
+            "deletedSuccess_other": "{{count}} Elemente erfolgreich gelöscht"
+        },
+        "bulkLabels": {
+            "title": "Labelzuweisung",
+            "uploadInstructions": "Wählen Sie die Labels aus, die den hochgeladenen Bildern zugewiesen werden sollen, und klicken Sie dann auf „Fortfahren“. Wenn Sie die Bilder lieber später annotieren möchten, wählen Sie „Überspringen“.",
+            "selectedInstructions": "Wählen Sie die Labels aus, die den ausgewählten Bildern zugewiesen werden sollen, und klicken Sie dann auf „Zuweisen“.",
+            "imageOnlyNote": "Die ausgewählten Labels gelten nur für Bilder; Videos (sofern vorhanden) werden ohne Annotationen hochgeladen.",
+            "selectedImagesNote": "Die ausgewählten Labels gelten nur für Bilder; Videos (sofern vorhanden) bleiben unverändert.",
+            "noResults": "Keine Ergebnisse gefunden. Versuchen Sie es mit anderen Suchbegriffen.",
+            "cancelUpload": "Upload abbrechen",
+            "assignLabelTooltip": "Label zuweisen",
+            "assignAllSuccess": "Labels wurden allen {{count}} Bildern erfolgreich zugewiesen",
+            "assignAllFailure": "Labels konnten keinem der {{count}} Bilder zugewiesen werden",
+            "assignPartialSuccess": "Labels wurden {{succeeded}} von {{total}} Bildern zugewiesen ({{failed}} fehlgeschlagen)"
+        },
+        "mediaActions": {
+            "downloadStarted": "Download von {{fileName}} wurde gestartet"
+        },
+        "gallery": {
+            "sort": {
+                "label": "Medien sortieren nach:",
+                "uploadDateDescending": "Uploaddatum (neueste zuerst)",
+                "uploadDateAscending": "Uploaddatum (älteste zuerst)"
+            },
+            "selectedCount": "{{count}} ausgewählt",
+            "totalMediaCount_one": "{{count}} Medienelement",
+            "totalMediaCount_other": "{{count}} Medienelemente",
+            "dropZone": {
+                "title": "Mediendateien hier ablegen",
+                "description": "Bilder und Videos werden in diesen Datensatz hochgeladen."
+            },
+            "mediaInfo": {
+                "annotatedFrames": "Anzahl der annotierten Frames: {{count}}",
+                "totalFrames": "Frames insgesamt: {{count}}"
+            }
+        },
+        "import": {
+            "jobTitle": "Datensatz importieren – {{fileName}} – {{size}}",
+            "processingMessage": "Die Datei {{fileName}} wird für den Import verarbeitet",
+            "technicalDetails": "Technische Details",
+            "preparingJob": "Wird vorbereitet",
+            "stagedFileReadError": "Beim Lesen der bereitgestellten Datei ist ein Fehler aufgetreten",
+            "prepareError": "Bei der Vorbereitung des Imports ist ein Fehler aufgetreten.",
+            "genericError": "Beim Import ist ein Fehler aufgetreten.",
+            "importedSuccess": "Datensatz {{fileName}} {{size}} erfolgreich importiert.",
+            "multipleFilesError": "Das Hinzufügen von Ordnern oder mehreren Dateien ist nicht zulässig. Bitte laden Sie eine einzelne Datei.",
+            "unsupportedFormatError": "Nicht unterstütztes Dateiformat. Bitte laden Sie eine gültige .zip-Datei hoch.",
+            "datasetBeingUploaded": "Datensatz wird hochgeladen",
+            "dropZipHere": "Legen Sie die .zip-Datei des Datensatzes hier ab",
+            "learnMoreFormats": "Mehr über die verschiedenen Formate erfahren",
+            "dialogHeading": "Datensatz importieren",
+            "scanningMessage": "Das Datensatzarchiv wird für den Import gescannt und analysiert ...",
+            "mapLabelsMessage": "Labels für den hochgeladenen Datensatz zuordnen",
+            "deleteStagedFile": {
+                "title": "Bereitgestellte Datei löschen",
+                "confirmation": "Möchten Sie die Datensatzdatei „{{stagedDatasetId}}“ wirklich löschen?"
+            },
+            "formatWarning": {
+                "boundingBoxToPolygon": "Der importierte Datensatz verwendet Begrenzungsrahmen als Annotationen, der Datensatz Ihres Projekts verwendet jedoch Polygone. Die Annotationen werden automatisch in Polygone umgewandelt, damit alles kompatibel bleibt.",
+                "polygonToBoundingBox": "Der importierte Datensatz verwendet Polygone als Annotationen, der Datensatz Ihres Projekts verwendet jedoch Begrenzungsrahmen. Die Annotationen werden automatisch in Begrenzungsrahmen umgewandelt, damit alles kompatibel bleibt."
+            },
+            "labelMapping": {
+                "statisticsHeading": "Statistik des importierten Datensatzes",
+                "heading": "Labelzuordnung – optional",
+                "unmappedNote": "Nicht zugeordnete Elemente werden ohne Label importiert",
+                "datasetLabelsColumn": "Datensatz-Labels",
+                "projectLabelsColumn": "Projekt-Labels",
+                "selectLabelPlaceholder": "Label auswählen",
+                "imagesLabel": "Bilder",
+                "framesLabel": "Frames"
+            }
+        },
+        "export": {
+            "heading": "{{name}} exportieren",
+            "headingDatasetView": "Datensatzansicht exportieren",
+            "datasetView": "Ansicht: {{name}}",
+            "statisticsHeading": "Statistik des exportierten Datensatzes",
+            "settingsHeading": "Exporteinstellungen",
+            "filterByLabel": "Annotationen nach Label filtern",
+            "selectFormat": "Exportformat für den Datensatz auswählen",
+            "learnMoreFormats": "Mehr über Exportformate erfahren",
+            "processing": "Datensatz wird für den Export verarbeitet",
+            "readyForDownload": "Der Datensatz steht zum Download bereit",
+            "downloadStarted": "Download des Datensatzes gestartet",
+            "error": "Fehler: {{error}}",
+            "itemsLabel": "Elemente",
+            "details": {
+                "defaultName": "Datensatz",
+                "format": "Format:",
+                "media": "Medien:",
+                "onlyAnnotated": "Nur Medien mit Annotationen",
+                "labels": "Labels:"
+            },
+            "warnings": {
+                "videos": "Der Export von Videos wird von diesem Datensatzformat nicht unterstützt. Alle annotierten Frames aus Videos werden als Bilder exportiert.",
+                "emptyLabel": "Das ausgewählte Format unterstützt keine leeren Labels (z. B. „{{emptyLabelName}}“). Bilder und Frames, die sie enthalten, werden als nicht annotiert exportiert.",
+                "unsupportedItemsEmptyLabels": "leere Labels",
+                "unsupportedItemsVideos": "Videos",
+                "unsupportedItems": "Um {{items}} zu erhalten, verwenden Sie bitte das Geti-Exportformat.",
+                "subsetNotIncluded": "Der exportierte Datensatz enthält keine Informationen darüber, welche Teilmenge den einzelnen Medien zugewiesen ist."
+            }
+        },
+        "importExport": {
+            "trigger": "Datensatz importieren/exportieren",
+            "exportItem": "Datensatz exportieren"
+        },
+        "revisions": {
+            "createdOn": "Erstellt am {{date}}",
+            "unnamedName": "Datensatz #{{id}}",
+            "notFoundForModel": "Für dieses Modell wurde keine Datensatzrevision gefunden",
+            "filesDeleted": "Die Dateien dieser Datensatzrevision wurden gelöscht.",
+            "noItemsInSubset": "Keine Elemente in dieser Teilmenge",
+            "itemAlt": "Element der Teilmenge {{subset}}",
+            "trainingSubsets": {
+                "test": "Test"
+            },
+            "rename": {
+                "title": "Datensatzrevision umbenennen",
+                "nameLabel": "Name der Datensatzrevision"
+            },
+            "delete": {
+                "title": "Datensatzrevision löschen",
+                "description": "Möchten Sie die Datensatzrevision „{{name}}“ wirklich löschen? Sie können die Modellstatistiken weiterhin einsehen, haben aber keinen Zugriff mehr auf die Dateien des Trainingsdatensatzes."
+            }
+        },
+        "includeUnannotated": "Medien ohne Annotationen einbeziehen"
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "Der Schlüssel darf nicht leer sein",
+            "valueEmpty": "Der Wert darf nicht leer sein"
+        },
+        "connection": {
+            "testing": "Verbindung wird getestet ...",
+            "inUse": "In Verwendung",
+            "unreachable": "Nicht erreichbar",
+            "ready": "Bereit",
+            "saveErrorFallback": "bitte versuchen Sie es erneut",
+            "removeSuccess": "„{{name}}“ wurde erfolgreich entfernt!"
+        },
+        "confidenceThreshold": {
+            "label": "Konfidenzschwelle"
+        },
+        "devices": {
+            "label": "Inferenzgerät"
+        },
+        "sources": {
+            "uploadError": "Die Videodatei konnte nicht hochgeladen werden.",
+            "deleteVideoError": "Die hochgeladene Videodatei konnte nicht gelöscht werden.",
+            "list": {
+                "addSource": "Neue Quelle hinzufügen"
+            },
+            "types": {
+                "usbCamera": "usb-kamera",
+                "ipCamera": "ip-kamera",
+                "videoFile": "videodatei",
+                "imagesFolder": "bilderordner",
+                "disconnected": "getrennt"
+            },
+            "options": {
+                "usbCamera": "USB-Kamera",
+                "ipCamera": "IP-Kamera",
+                "videoFile": "Videodatei"
+            },
+            "add": {
+                "title": "Neue Eingabequelle hinzufügen"
+            },
+            "edit": {
+                "title": "Eingabequelle bearbeiten"
+            },
+            "form": {
+                "createSuccess": "Quellkonfiguration erfolgreich erstellt.",
+                "updateSuccess": "Quellkonfiguration erfolgreich aktualisiert.",
+                "saveError": "Quellkonfiguration konnte nicht gespeichert werden, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Erfolgreich mit „{{name}}“ verbunden.",
+                "disconnectSuccess": "Verbindung zu „{{name}}“ erfolgreich getrennt.",
+                "disablePipelineAndDisconnectSuccess": "Pipeline deaktiviert und Verbindung zu „{{name}}“ erfolgreich getrennt.",
+                "disconnectDialog": {
+                    "title": "{{name}} trennen",
+                    "message": "Durch das Trennen dieser Quelle wird auch die Inferenz-Pipeline deaktiviert. Möchten Sie fortfahren?"
+                }
+            },
+            "settings": {
+                "loading": "Wird geladen ...",
+                "device": "Gerät: {{name}}",
+                "unknownDevice": "Unbekanntes Gerät (ID: {{deviceId}})",
+                "ignoreExistingImages": "Vorhandene Bilder ignorieren: {{value}}",
+                "streamUrl": "Stream-URL: {{url}}",
+                "videoPath": "Videopfad: {{path}}"
+            },
+            "fields": {
+                "imagesFolderPath": "Pfad zum Bilderordner",
+                "ignoreExistingImages": "Vorhandene Bilder ignorieren",
+                "streamUrl": "Stream-URL:",
+                "requireAuthentication": "Authentifizierung erforderlich",
+                "camera": "Kamera",
+                "videoFilePath": "Pfad zur Videodatei",
+                "selectedFile": "Ausgewählt: {{fileName}}",
+                "loopVideo": "Video in Schleife abspielen"
+            },
+            "defaultNames": {
+                "usbCamera": "USB-Kameraquelle",
+                "ipCamera": "IP-Kameraquelle",
+                "videoFile": "Videodateiquelle"
+            }
+        },
+        "sinks": {
+            "types": {
+                "folder": "ordner",
+                "mqtt": "mqtt",
+                "webhook": "webhook",
+                "ros": "ros"
+            },
+            "options": {
+                "folder": "Ordner",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "Neues Ziel hinzufügen"
+            },
+            "edit": {
+                "title": "Ziel bearbeiten"
+            },
+            "form": {
+                "createSuccess": "Zielkonfiguration erfolgreich erstellt.",
+                "updateSuccess": "Zielkonfiguration erfolgreich aktualisiert.",
+                "saveError": "Zielkonfiguration konnte nicht gespeichert werden, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Erfolgreich mit „{{name}}“ verbunden",
+                "disconnectSuccess": "Verbindung zu „{{name}}“ erfolgreich getrennt"
+            },
+            "settings": {
+                "rateLimit": "Ratenbegrenzung: {{value}}",
+                "httpMethod": "HTTP-Methode: {{value}}",
+                "timeout": "Zeitlimit: {{value}}",
+                "webhookUrl": "Webhook-URL: {{value}}",
+                "topic": "Topic: {{value}}",
+                "brokerHost": "Broker-Host: {{value}}",
+                "brokerPort": "Broker-Port: {{value}}",
+                "outputFormats": "Ausgabeformate: ",
+                "outputFormatTypes": {
+                    "imageOriginal": "originalbild",
+                    "imageWithPredictions": "bild mit vorhersagen",
+                    "predictions": "vorhersagen"
+                }
+            },
+            "rateLimit": {
+                "notSet": "Nicht festgelegt",
+                "samplesPerSecond_one": "{{count}} Stichprobe pro Sekunde",
+                "samplesPerSecond_other": "{{count}} Stichproben pro Sekunde",
+                "oneSamplePerSeconds_one": "1 Stichprobe alle {{count}} Sekunde",
+                "oneSamplePerSeconds_other": "1 Stichprobe alle {{count}} Sekunden"
+            },
+            "fields": {
+                "samples": "Stichproben",
+                "outputFormatsLabel": "Ausgabeformate",
+                "outputFormatPredictions": "Vorhersagen",
+                "outputFormatImageOriginal": "Originalbild",
+                "outputFormatImageWithPredictions": "Bild mit Vorhersagen",
+                "folderPath": "Ordnerpfad",
+                "httpMethod": "HTTP-Methode",
+                "timeout": "Zeitlimit",
+                "webhookUrl": "Webhook-URL",
+                "headers": "Header",
+                "topic": "Topic",
+                "brokerHost": "Broker-Host",
+                "brokerPort": "Broker-Port",
+                "authRequired": "Authentifizierung nötig"
+            },
+            "webhook": {
+                "headersHelp": "Fügen Sie beliebig viele Schlüssel-Wert-Paare hinzu. Jedes Paar wird in das Objekt „{{title}}“ aufgenommen.",
+                "keyPlaceholder": "Schlüssel",
+                "valuePlaceholder": "Wert"
+            },
+            "defaultNames": {
+                "localFolder": "Ziel: lokaler Ordner",
+                "webhook": "Ziel: Webhook",
+                "mqtt": "Ziel: MQTT"
+            }
+        },
+        "pipeline": {
+            "activeModel": {
+                "loading": "Modell: ..."
+            },
+            "toggle": {
+                "enabledLabel": "Pipeline aktiviert",
+                "disabledLabel": "Pipeline deaktiviert",
+                "enabledSuccess": "Pipeline erfolgreich aktiviert",
+                "disabledSuccess": "Pipeline erfolgreich deaktiviert"
+            },
+            "configuration": {
+                "sidebarLabel": "Pipeline-Konfiguration",
+                "sourcesTab": "Eingang",
+                "sinksTab": "Ausgang"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "Richtlinie zur Datenerfassung",
+            "maxDatasetSize": {
+                "title": "Maximale Datensatzgröße",
+                "description": "Maximale Anzahl der zu erfassenden Elemente"
+            },
+            "captureRate": {
+                "title": "Erfassungsrate",
+                "description": "Frames erfassen, während der Stream läuft",
+                "toggleLabel": "Automatische Erfassung umschalten"
+            },
+            "confidenceThreshold": {
+                "description": "Frames erfassen, wenn die Konfidenz unter dem Schwellenwert liegt",
+                "sliderLabel": "Schwellenwert"
+            }
+        },
+        "metrics": {
+            "time": "Zeit",
+            "sidebarLabel": "Pipeline-Metriken",
+            "empty": {
+                "title": "Keine Statistiken verfügbar",
+                "description": "Pipeline-Metriken werden hier angezeigt, sobald die Pipeline läuft und Daten verarbeitet."
+            },
+            "throughput": {
+                "title": "Durchsatz",
+                "axisLabel": "Anfragen/s"
+            },
+            "latency": {
+                "title": "Latenz",
+                "axisLabel": "ms"
+            }
+        },
+        "health": {
+            "overall": {
+                "idle": "Inaktiv",
+                "problemsDetected": "Probleme erkannt"
+            },
+            "component": {
+                "healthy": "Fehlerfrei",
+                "finished": "Beendet",
+                "unavailable": "Nicht verfügbar"
+            },
+            "componentLabels": {
+                "source": "Quelle",
+                "sink": "Ziel"
+            }
+        },
+        "stream": {
+            "start": "Stream starten",
+            "enablePipelineToStart": "Aktivieren Sie die Pipeline, um den Stream zu starten",
+            "connectError": "Verbindung zum Stream fehlgeschlagen",
+            "captureFrame": "Frame erfassen",
+            "captureSuccess": "Frame erfasst und dem Datensatz hinzugefügt."
+        },
+        "settings": {
+            "folderPath": "Ordnerpfad: {{path}}",
+            "authRequired": "Authentifizierung erforderlich: {{value}}"
+        }
+    },
+    "project": {
+        "delete": {
+            "confirmation": "Möchten Sie das Projekt „{{projectName}}“ wirklich löschen?",
+            "success": "Projekt erfolgreich gelöscht"
+        },
+        "rename": {
+            "title": "Projektnamen bearbeiten",
+            "success": "Projekt erfolgreich aktualisiert"
+        },
+        "validation": {
+            "nameEmpty": "Der Projektname darf nicht leer sein",
+            "nameExists": "Dieser Projektname existiert bereits"
+        },
+        "panel": {
+            "manageProjects": "Projekte verwalten",
+            "enablePipelineBlocked": {
+                "title": "Pipeline kann nicht aktiviert werden",
+                "message": "Stellen Sie sicher, dass Sie ein Modell und eine Quelle ausgewählt haben, bevor Sie die Pipeline aktivieren."
+            }
+        },
+        "taskTypes": {
+            "detection": "Objekterkennung",
+            "classification": "Klassifizierung",
+            "instanceSegmentation": "Instanzsegmentierung",
+            "multiLabelClassification": "Multi-Label-Klassifizierung",
+            "recommended": "{{taskType}} (empfohlen)"
+        },
+        "list": {
+            "count_one": "{{count}} Projekt",
+            "count_other": "{{count}} Projekte",
+            "countFiltered_one": "{{filtered}} von {{count}} Projekt",
+            "countFiltered_other": "{{filtered}} von {{count}} Projekten",
+            "createNewProject": "Neues Projekt erstellen",
+            "createProjectFromDataset": "Aus Datensatz erstellen",
+            "card": {
+                "created": "Erstellt: {{date}}",
+                "models_one": "{{count}} Modell",
+                "models_other": "{{count}} Modelle"
+            },
+            "menu": {
+                "enablePipeline": "Pipeline aktivieren",
+                "disablePipeline": "Pipeline deaktivieren"
+            },
+            "sort": {
+                "label": "Projekte sortieren nach:",
+                "nameAscending": "Name (A–Z)",
+                "nameDescending": "Name (Z–A)",
+                "createdAtDescending": "Erstellungsdatum (neueste zuerst)",
+                "createdAtAscending": "Erstellungsdatum (älteste zuerst)"
+            },
+            "filters": {
+                "searchPlaceholder": "Projekte suchen",
+                "taskType": "Nach Aufgabentyp filtern",
+                "models": "Nach Modellen filtern",
+                "withTrainedModels": "Mit trainierten Modellen"
+            },
+            "noMatches": {
+                "title": "Keine Projekte entsprechen Ihren Filtern",
+                "description": "Passen Sie Ihre Suche oder die Filter für den Aufgabentyp an, um das Gesuchte zu finden."
+            },
+            "empty": {
+                "intro": "Willkommen bei <name>Geti</name>, einer Vision-KI-Plattform, die Sie durch den <highlight>gesamten Modelllebenszyklus</highlight> führt – von der Datensatzvorbereitung über Training und Optimierung bis zur Bereitstellung."
+            },
+            "workflow": {
+                "addData": "Daten hinzufügen",
+                "optimize": "Optimieren",
+                "runInference": "Inferenz ausführen",
+                "loop": "Beobachten Sie die Vorhersagen und sammeln Sie weitere Daten, um Ihr Modell iterativ zu verfeinern"
+            }
+        },
+        "create": {
+            "taskQuestion": "Welche Art von Aufgabe soll das Modell ausführen?",
+            "labelsQuestion": "Welche Objekte soll das Modell {{verb}} lernen?",
+            "submit": "Projekt erstellen",
+            "tasks": {
+                "detection": {
+                    "title": "Objekterkennung in Bildern",
+                    "description": "Objekte in Ihren Bildern identifizieren und lokalisieren",
+                    "advice": "Am besten geeignet für: Zählen, Tracking",
+                    "verb": "erkennen"
+                },
+                "instanceSegmentation": {
+                    "title": "Instanzsegmentierung von Objekten",
+                    "description": "Bestimmte Regionen oder Formen erkennen und umreißen",
+                    "advice": "Am besten geeignet für: Messungen, ungewöhnliche Formen",
+                    "verb": "segmentieren"
+                },
+                "classification": {
+                    "title": "Bildklassifizierung",
+                    "description": "Ganze Bilder anhand ihres Inhalts kategorisieren",
+                    "advice": "Am besten geeignet für: Filtern, Inhaltsmoderation",
+                    "verb": "klassifizieren"
+                }
+            },
+            "classificationType": {
+                "title": "Welche Art der Klassifizierung soll das Modell verwenden?",
+                "singleLabel": {
+                    "label": "Einzel-Label",
+                    "description": "Ein Label aus sich gegenseitig ausschließenden Labels zuweisen",
+                    "warning": "Erfordert mindestens 2 Labels"
+                },
+                "multiLabel": {
+                    "label": "Multi-Label",
+                    "description": "Ein oder mehrere Labels aus sich nicht gegenseitig ausschließenden Labels zuweisen"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "Mindestens ein Objekt ist erforderlich"
+            },
+            "defaultName": "Projekt #{{number}}"
+        },
+        "import": {
+            "title": "Projekt aus einem Datensatz erstellen – Import",
+            "labelMapping": {
+                "title": "Labelzuordnung"
+            },
+            "preparingMessage": "Datensatzimport als neues Projekt vorbereiten",
+            "taskSelection": {
+                "projectName": "Projektname",
+                "selectTaskPlaceholder": "Aufgabe auswählen",
+                "recommendationHint": "Die empfohlene Auswahl basiert auf der Art der im Datensatz erkannten Annotationen. Wenn Sie einen anderen Typ wählen, werden die Annotationen beim Import automatisch an den ausgewählten Typ angepasst."
+            },
+            "jobsList": {
+                "selectTaskType": "Aufgabentyp auswählen",
+                "mapLabelsButton": "Labels zuordnen"
+            }
+        },
+        "taskType": "Aufgabentyp"
+    },
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "Tastenkürzel",
+            "nameExists": "Dieser Labelname existiert bereits",
+            "hotkeyExists": "Dieses Tastenkürzel wird bereits verwendet"
+        },
+        "editor": {
+            "namePlaceholder": "Labelname",
+            "pin": "Label anheften",
+            "unpin": "Label lösen",
+            "editTrigger": "Labels bearbeiten",
+            "createTrigger": "Label erstellen",
+            "delete": {
+                "title": "Label löschen",
+                "message": "Wenn Sie das Label {{labelName}} entfernen, werden alle Annotationen in Ihrem Datensatz mit diesem Label gelöscht. Bereits trainierte Modelle sind davon jedoch nicht betroffen."
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "Tastenkürzel: {{hotkey}}",
+            "overflowCount": "+ {{count}} weitere"
+        },
+        "empty": {
+            "noLabel": "Kein Label",
+            "noObject": "Kein Objekt"
+        }
+    },
+    "annotator": {
+        "canvas": {
+            "hideLabels": "Labels ausblenden",
+            "pixelView": "Pixelansicht",
+            "annotationFillOpacity": "Deckkraft der Annotationsfüllung",
+            "annotationBorderOpacity": "Deckkraft des Annotationsrands",
+            "imageBrightness": "Bildhelligkeit",
+            "imageContrast": "Bildkontrast",
+            "imageSaturation": "Bildsättigung"
+        },
+        "actions": {
+            "zoomIn": "Vergrößern",
+            "zoomOut": "Verkleinern",
+            "fitToScreen": "An Bildschirm anpassen ({{hotkey}})",
+            "undo": "Rückgängig ({{hotkey}})",
+            "redo": "Wiederholen ({{hotkeys}})",
+            "toggleFocus": "Fokus umschalten",
+            "showAnnotations": "Annotationen anzeigen ({{hotkey}})",
+            "hideAnnotations": "Annotationen ausblenden ({{hotkey}})"
+        },
+        "modes": {
+            "annotation": "Annotation",
+            "prediction": "Vorhersage"
+        },
+        "predictions": {
+            "settingsTitle": "Vorhersageeinstellungen",
+            "confirm": "Vorhersage bestätigen"
+        },
+        "hotkeys": {
+            "alternatives": "{{primary}} oder {{alternative}}",
+            "title": "Tastenkürzel",
+            "submitAnnotationsPredictions": "Annotationen/Vorhersagen absenden",
+            "previousMedia": "Vorheriges Medium",
+            "nextMedia": "Nächstes Medium",
+            "deleteSelectedAnnotation": "Ausgewählte Annotation löschen",
+            "toggleAnnotationsVisibility": "Alle Annotationen ein- oder ausblenden",
+            "selectAllAnnotations": "Alle Annotationen auswählen",
+            "deselectAllAnnotations": "Auswahl aller Annotationen aufheben",
+            "selectNextAnnotation": "Nächste Annotation auswählen",
+            "resetZoom": "Zoom zurücksetzen"
+        },
+        "tools": {
+            "selection": {
+                "label": "Auswahl"
+            },
+            "boundingBox": {
+                "label": "Begrenzungsrahmen",
+                "description": "Zeichnen Sie ein Rechteck oder Quadrat um ein Objekt in einem Bild."
+            },
+            "autoSegmentation": {
+                "label": "Automatische Segmentierung",
+                "detectionDescription": "Bewegen Sie den Mauszeiger über ein Objekt, um ein vorgeschlagenes Rechteck zu sehen, und klicken Sie dann, um die Annotation zu erstellen.",
+                "segmentationDescription": "Bewegen Sie den Mauszeiger über ein Objekt, um ein vorgeschlagenes Polygon zu sehen, und klicken Sie dann, um die Annotation zu erstellen.",
+                "loading": "Bild wird verarbeitet, bitte warten ...",
+                "error": "Fehler im Segment-Anything-Werkzeug: {{message}}",
+                "unknownError": "Unbekannter Fehler, bitte laden Sie die Seite neu.",
+                "timeoutError": "Zeitüberschreitung bei „{{operation}}“ nach {{timeoutMs}} ms. Bitte laden Sie die Seite neu.",
+                "embeddingError": "Das Bild-Embedding konnte nicht abgerufen werden ({{status}}{{statusText}}).",
+                "operations": {
+                    "workerBuild": "SAM-Worker-Build",
+                    "workerInit": "SAM-Worker-Initialisierung",
+                    "decoder": "SAM-Decoder"
+                }
+            },
+            "polygon": {
+                "label": "Polygon",
+                "description": "Klicken Sie, um Punkte nacheinander zu setzen, oder halten Sie die Maustaste gedrückt und ziehen Sie, um freihändig zu zeichnen. Ideal für unregelmäßige Formen, die Pixelgenauigkeit erfordern."
+            },
+            "magneticLasso": {
+                "label": "Magnetisches Lasso",
+                "description": "Fahren Sie an der Kante eines Objekts entlang und klicken Sie regelmäßig, damit sich der Umriss an dessen Grenzen anlegt.",
+                "error": "Die Grenzen der Form konnten nicht ermittelt werden. Könnten Sie es bitte erneut versuchen?"
+            },
+            "ssim": {
+                "label": "Erkennungsassistent",
+                "description": "Zeichnen Sie einen Rahmen um ein Objekt, um ähnliche Objekte im Bild automatisch zu finden und zu annotieren.",
+                "loading": "Erkennungsassistent wird geladen, bitte warten ...",
+                "error": "Fehler im Werkzeug „Erkennungsassistent“: {{message}}",
+                "operations": {
+                    "workerBuild": "Build des Erkennungsassistent-Workers"
+                },
+                "options": {
+                    "accept": "Übernehmen",
+                    "reject": "Ablehnen",
+                    "numberOfItems": "Anzahl der Elemente",
+                    "autoMergeDuplicates": "Duplikate automatisch zusammenführen"
+                }
+            }
+        },
+        "video": {
+            "playback": {
+                "slower": "Langsamer",
+                "slow": "Langsam",
+                "normal": "Normal",
+                "speed": "Wiedergabegeschwindigkeit",
+                "showAllFrames": "Alle Frames anzeigen",
+                "showOneFramePerSecond": "1 Frame pro Sekunde anzeigen"
+            },
+            "frames": {
+                "currentTotal": "Aktueller Frame: {{currentFrame}} / Frames insgesamt: {{totalFrames}}",
+                "thumbnailAlt": "Miniaturansicht für Frame {{frameNumber}}"
+            },
+            "errors": {
+                "network": "Das Video kann aufgrund eines Netzwerkfehlers nicht abgespielt werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.",
+                "unableToPlay": "Das Video kann nicht abgespielt werden, bitte versuchen Sie es erneut.",
+                "unsupportedFormat": "Das Video kann nicht abgespielt werden, bitte versuchen Sie ein anderes Videoformat (mp4/webm)."
+            }
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "Job fehlgeschlagen. Bitte prüfen Sie die Protokolle für Details und versuchen Sie es erneut.",
+            "pending": "Ausstehend ...",
+            "running": "Läuft ...",
+            "stopDialog": {
+                "title": "Job stoppen",
+                "confirmation": "Möchten Sie diesen Job wirklich stoppen?"
+            },
+            "logs": "Protokolle",
+            "startedAt": "Gestartet: {{time}}",
+            "waitingToStart": "Warten auf Start ...",
+            "device": "Gerät: {{device}}"
+        },
+        "detail": {
+            "loadError": "Modelldetails konnten nicht geladen werden",
+            "tabs": {
+                "variants": "Modellvarianten",
+                "metrics": "Modellmetriken",
+                "parameters": "Trainingsparameter",
+                "datasets": "Trainingsdatensätze"
+            }
+        },
+        "metrics": {
+            "noMetrics": "Keine Metriken verfügbar",
+            "loadError": "Trainingsmetriken konnten nicht geladen werden",
+            "evaluationsTitle": "Auswertungen",
+            "noEvaluations": "Metriken der Testauswertung sind nicht verfügbar"
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "Erfolgreich kopiert",
+                "copyError": "Kopieren fehlgeschlagen",
+                "copyPathTooltip": "Klicken, um den Pfad zu kopieren",
+                "showTraceback": "Traceback anzeigen",
+                "levelLabel": "Stufe",
+                "levelHelpTitle": "Minimale Protokollstufe",
+                "levelHelpDescription": "Zeigt Protokolleinträge ab der ausgewählten Stufe an. Wenn Sie beispielsweise WARNING auswählen, werden Einträge der Stufen WARNING, ERROR und CRITICAL angezeigt, während DEBUG und INFO ausgeblendet werden.",
+                "searchPlaceholder": "Protokolle durchsuchen ...",
+                "connectionStatus": {
+                    "connecting": "Verbindung wird hergestellt ...",
+                    "connected": "Live",
+                    "error": "Verbindungsfehler"
+                },
+                "entriesCount": "{{filtered}} / {{total}} Einträge",
+                "noEntries": "Keine Protokolleinträge",
+                "noMatchingEntries": "Keine passenden Protokolleinträge",
+                "scrollToBottom": "Nach unten scrollen",
+                "dialogTitle": "Trainingsprotokolle",
+                "loadError": "Protokolle konnten nicht geladen werden: {{message}}",
+                "noJobOrModel": "Kein Job und kein Modell angegeben",
+                "fetchError": "Modellprotokolle konnten nicht abgerufen werden: {{status}} {{statusText}}",
+                "downloadStarted": "Download der Trainingsprotokolle gestartet"
+            },
+            "parameters": {
+                "noParameters": "Keine Parameter.",
+                "learningParameters": "LERNPARAMETER",
+                "filters": "FILTER",
+                "augmentations": "AUGMENTIERUNGEN",
+                "intensityMapping": "INTENSITÄTSZUORDNUNG"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "Top-1-Acc auf ImageNet",
+                    "mapOnCoco": "mAP auf COCO",
+                    "map50OnCoco": "mAP50 auf COCO"
+                },
+                "card": {
+                    "numberOfParameters": "Anzahl der Parameter: {{count}} Millionen",
+                    "gigaflops": "Gigaflops: {{value}}"
+                },
+                "sort": {
+                    "label": "Modelle sortieren nach:",
+                    "nameAsc": "Name (A bis Z)",
+                    "nameDesc": "Name (Z bis A)",
+                    "speedAsc": "Geschwindigkeit (schnellste zuerst)",
+                    "speedDesc": "Geschwindigkeit (langsamste zuerst)",
+                    "accuracyAsc": "Genauigkeit (niedrigste zuerst)",
+                    "accuracyDesc": "Genauigkeit (höchste zuerst)"
+                },
+                "timm": {
+                    "heading": "TIMM-Modellkonfiguration",
+                    "architectureFamilyLabel": "Architekturfamilie",
+                    "selectArchitecturePlaceholder": "Architektur auswählen",
+                    "modelVariantLabel": "Modellvariante",
+                    "selectVariantPlaceholder": "Variante auswählen",
+                    "pretrainedWeightsLabel": "Vortrainierte Gewichte",
+                    "selectWeightsPlaceholder": "Gewichte auswählen",
+                    "parameters": "Parameter: {{count}} Millionen",
+                    "gigaflops": "GigaFlops: {{value}}"
+                }
+            },
+            "devices": {
+                "selectLabel": "Trainingsgerät auswählen"
+            },
+            "setup": {
+                "trigger": "Modell trainieren",
+                "dialog": {
+                    "title": "Wählen Sie ein Modell zum Trainieren aus",
+                    "disabledReasonTitle": "Warum kann ich das Training nicht starten?",
+                    "advancedSettings": "Erweiterte Einstellungen"
+                },
+                "toast": {
+                    "trainingStarted": "Modelltraining erfolgreich gestartet.",
+                    "trainingStartedWithLink": "Modelltraining erfolgreich gestartet. <modelsLink>Öffnen Sie den Modellbildschirm, um den Fortschritt zu sehen.</modelsLink>"
+                },
+                "selectDataset": {
+                    "label": "Datensatz auswählen",
+                    "useEntireDataset": "Gesamten Datensatz verwenden",
+                    "helpTitle": "Auswahl eines Datensatzes",
+                    "helpDescription": "Wählen Sie die Daten für das Training aus. Wählen Sie „Gesamten Datensatz verwenden“, um mit der neuesten Version aller Daten zu trainieren (das, was Sie auf der Seite „Datensatz“ sehen). Wählen Sie eine Datensatzansicht, um nur mit den dieser Ansicht zugewiesenen Medien zu trainieren. Wählen Sie eine Datensatzrevision, um mit genau denselben Daten (Medien und Annotationen) wie ein anderes Modell zu trainieren.",
+                    "sections": {
+                        "views": "Datensatzansichten",
+                        "revisions": "Datensatzrevisionen"
+                    }
+                },
+                "selectModel": {
+                    "label": "Eingabegewichte auswählen",
+                    "defaultPretrainedWeights": "Standardmäßige vortrainierte Gewichte",
+                    "helpTitle": "Auswahl der Eingabegewichte",
+                    "helpDescription": "Wählen Sie ein vorhandenes Modell aus, um es weiter zu verfeinern, oder wählen Sie „Standardmäßige vortrainierte Gewichte“, um ein neues Modell ausgehend von öffentlich verfügbaren Gewichten zu verfeinern, die auf großen öffentlichen Datensätzen vortrainiert wurden."
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "Um ein Modell zu trainieren, müssen Sie mindestens 3 Elemente in Ihrem Datensatz annotieren. Für bessere Ergebnisse empfehlen wir jedoch, deutlich mehr zu annotieren.",
+                "notEnoughAnnotationsInView": "Um ein Modell zu trainieren, müssen Sie mindestens 3 Elemente in der ausgewählten Datensatzansicht annotieren. Für bessere Ergebnisse empfehlen wir jedoch, deutlich mehr zu annotieren.",
+                "emptySubsetsReason": "Um ein Modell zu trainieren, muss jede Teilmenge (Training, Validierung, Test) mindestens ein Element enthalten. Diese Bedingung ist derzeit nicht erfüllbar, da {{subsetClause}} und {{assignmentDetail}}.",
+                "emptySubsetClause_one": "die Teilmenge {{list}} leer ist",
+                "emptySubsetClause_other": "die Teilmengen {{list}} leer sind",
+                "reviewedOnly_one": "noch {{count}} geprüftes Element zur Zuweisung übrig ist",
+                "reviewedOnly_other": "noch {{count}} geprüfte Elemente zur Zuweisung übrig sind",
+                "unannotatedOnly_one": "es {{count}} Element gibt, das noch annotiert werden muss, bevor es zugewiesen werden kann",
+                "unannotatedOnly_other": "es {{count}} Elemente gibt, die noch annotiert werden müssen, bevor sie zugewiesen werden können",
+                "mixedReviewedClause_one": "es {{count}} geprüftes Element gibt, das zur Zuweisung bereit ist",
+                "mixedReviewedClause_other": "es {{count}} geprüfte Elemente gibt, die zur Zuweisung bereit sind",
+                "mixedUnannotatedClause_one": "{{count}} Element, das noch annotiert werden muss, bevor es zugewiesen werden kann",
+                "mixedUnannotatedClause_other": "{{count}} Elemente, die noch annotiert werden müssen, bevor sie zugewiesen werden können",
+                "mixedAssignmentDetail": "{{reviewedClause}} und {{unannotatedClause}}",
+                "noUnassignedItems": "keine nicht zugewiesenen Elemente zur Neuverteilung verfügbar sind"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "Datenverwaltung"
+                },
+                "notAvailable": "Die Trainingskonfiguration ist nicht verfügbar."
+            },
+            "learning": {
+                "title": "Lernparameter",
+                "tagDefault": "Standard",
+                "tagModified": "Geändert",
+                "inputSize": "Eingabegröße"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "Trainings-Teilmengen",
+                    "description": "Geben Sie die Verteilung der annotierten Stichproben an, die noch KEINER Teilmenge zugewiesen wurden. Beachten Sie, dass Stichproben aus früheren Trainingsdurchläufen bereits einer Teilmenge zugeordnet sind und diese unverändert bleibt, um Datenkontamination und Verzerrungen bei der Auswertung zu vermeiden.",
+                    "unavailableTitle": "Ungültige Konfiguration der Trainings-Teilmengen",
+                    "unavailableDescription": "Die Trainings-Teilmengen enthalten nicht genügend Medienelemente für eine konfigurierbare Aufteilung zwischen Trainings-, Validierungs- und Test-Teilmenge.",
+                    "unavailableHint": "Bitte fügen Sie weitere Medienelemente hinzu, damit jede Teilmenge mindestens ein Element enthält.",
+                    "datasetSamples": "Datensatz: {{count}} Stichproben",
+                    "assignedSamples": "Zugewiesen: {{count}}",
+                    "unassignedSamples": "Nicht zugewiesen: {{count}}",
+                    "distributionLabel": "Verteilung für neue Stichproben",
+                    "resultingDistribution": "Resultierende Datensatzverteilung:",
+                    "totalLabel": "Gesamt:",
+                    "mediaItemsLabel": "Medienelemente"
+                },
+                "filters": {
+                    "noMinimum": "Kein Minimum",
+                    "unlimited": "Unbegrenzt"
+                },
+                "augmentation": {
+                    "title": "Datenaugmentierung"
+                },
+                "tiling": {
+                    "title": "Kachelung",
+                    "description": "Kachelung ist eine Technik, die hochauflösende Bilder in kleinere Kacheln unterteilt und die Genauigkeit bei der Erkennung kleiner Objekte verbessern kann.",
+                    "modeLabel": "Kachelungsmodus",
+                    "modes": {
+                        "automatic": "Automatisch",
+                        "custom": "Benutzerdefiniert"
+                    },
+                    "offDescription": "Das Modell verarbeitet das gesamte Bild als Einheit, ohne es in kleinere Kacheln zu unterteilen. Dieser Ansatz ist unkompliziert, kann jedoch bei der Erkennung kleiner Objekte in hochauflösenden Bildern an seine Grenzen stoßen, da das Modell feinere Details übersehen könnte",
+                    "automaticDescription": "Das bedeutet, dass das System die Parameter automatisch anhand der Bildauflösung und der Annotationsgröße festlegt."
+                },
+                "intensityMapping": {
+                    "title": "Intensitätszuordnung"
+                }
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "Gruppieren nach",
+            "groupByDataset": "Gruppieren nach: Datensatz",
+            "groupByArchitecture": "Gruppieren nach: Architektur",
+            "hideFailedModels": "Fehlgeschlagene Modelle ausblenden",
+            "showFailedModels": "Fehlgeschlagene Modelle anzeigen",
+            "searchPlaceholder": "Modelle suchen ...",
+            "noModelsFound": "Keine Modelle gefunden",
+            "empty": {
+                "title": "Noch keine Modelle.",
+                "description": "Trainieren Sie Ihr erstes Modell, um zu beginnen."
+            },
+            "deletedWeightsBadge": "Gewichte gelöscht",
+            "fineTunedFrom": "Verfeinert aus",
+            "columns": {
+                "trained": "Trainiert",
+                "totalSize": "Gesamtgröße"
+            }
+        },
+        "performance": {
+            "metrics": {
+                "accuracy": "Treffergenauigkeit",
+                "precision": "Präzision",
+                "recall": "Trefferquote",
+                "fMeasure": "F-Maß"
+            },
+            "categories": {
+                "balance": "Ausgewogenheit",
+                "speed": "Geschwindigkeit",
+                "accuracy": "Genauigkeit"
+            }
+        },
+        "variants": {
+            "empty": "Keine Modellvarianten verfügbar.",
+            "columns": {
+                "precision": "PRÄZISION"
+            },
+            "quantizedInfo": {
+                "title": "Quantisiert mit NNCF PTQ",
+                "maxAccuracyDrop": "Max. Genauigkeitsverlust: {{value}}",
+                "calibrationDatasetSize": "Größe des Kalibrierungsdatensatzes: {{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "Download des Modells gestartet"
+        },
+        "optimize": {
+            "description": "Optimieren Sie das FP16-Modell mit OpenVINO NNCF (über INT8-Quantisierung)",
+            "contextualHelp": "OpenVINO NNCF (Neural Network Compression Framework) reduziert mittels INT8-Quantisierung die Modellgröße und beschleunigt die Inferenz bei minimalen Auswirkungen auf die Genauigkeit",
+            "start": "Quantisierung starten",
+            "dialogTitle": "Quantisierung",
+            "subheading": "Modell auf INT8 quantisieren",
+            "jobStarted": "Quantisierungsjob gestartet.",
+            "recommendedCalibrationSize": "Empfohlene Größe des Kalibrierungsdatensatzes: zwischen 200 und 500 Medienelementen",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "Max. Genauigkeitsverlust (%)",
+                    "help": {
+                        "paragraph1": "Maximal zulässiger Rückgang der Validierungsgenauigkeit.",
+                        "paragraph2": "Beachten Sie, dass eine genauigkeitsbewusste Quantisierung sehr lange dauern kann, wenn der maximal zulässige Verlust gering ist.",
+                        "paragraph3": "Beachten Sie außerdem, dass die endgültige Testgenauigkeit unter dem angegebenen Schwellenwert für die Validierungsgenauigkeit liegen kann, insbesondere bei relativ kleinen Datensätzen."
+                    }
+                },
+                "maxIterations": {
+                    "label": "Max. Anzahl an Iterationen",
+                    "help": {
+                        "paragraph1": "Maximale Anzahl an Iterationen der genauigkeitsbewussten Quantisierung.",
+                        "paragraph2": "Die genauigkeitsbewusste Quantisierung entfernt iterativ Modellschichten aus dem Quantisierungsbereich, bis das Kriterium für den maximalen Genauigkeitsverlust erfüllt ist. Eine Begrenzung der Iterationen kann die Quantisierungsdauer von Modellen mit vielen Schichten deutlich verkürzen.",
+                        "paragraph3": "Dieser Parameter wird nur verwendet, wenn ein maximaler Genauigkeitsverlust festgelegt ist."
+                    }
+                },
+                "calibrationSize": {
+                    "label": "Max. Kalibrierungsgröße",
+                    "help": "Die Kalibrierungsstichproben werden zufällig aus dem Datensatz ausgewählt",
+                    "useFullDataset": "Vollständigen Datensatz verwenden"
+                }
+            }
+        },
+        "actions": {
+            "deleteWeights": "Gewichte löschen",
+            "deleteModel": "Modell löschen",
+            "viewLogs": "Trainingsprotokolle anzeigen",
+            "deleteWeightsDescription": "Möchten Sie die Gewichte des Modells „{{modelName}}“ wirklich löschen?",
+            "deleteModelDescription": "Möchten Sie das Modell „{{modelName}}“ wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+            "renameDialog": {
+                "title": "Modell umbenennen",
+                "nameLabel": "Modellname"
+            }
+        },
+        "columns": {
+            "modelName": "Modellname"
+        }
+    },
+    "jobs": {
+        "allProjects": "Alle Projekte",
+        "currentProjectLabel": "{{name}} (aktuell)",
+        "projectsSection": "Projekte",
+        "tabs": {
+            "all": "Alle",
+            "finished": "Abgeschlossen"
+        },
+        "status": {
+            "pending": "In Warteschlange",
+            "cancelling": "Wird abgebrochen",
+            "done": "Fertiggestellt"
+        },
+        "type": {
+            "quantize": "Optimierung"
+        },
+        "columns": {
+            "type": "Typ"
+        },
+        "cancel": {
+            "title": "Job abbrechen",
+            "confirmation": "Möchten Sie den Job {{jobId}} wirklich abbrechen?"
+        },
+        "meta": {
+            "started": "Gestartet {{time}}",
+            "elapsed": "Verstrichen {{time}}",
+            "duration": "Dauer {{time}}",
+            "finished": "Abgeschlossen {{time}}",
+            "failed": "Fehlgeschlagen {{time}}",
+            "cancelled": "Abgebrochen {{time}}"
+        },
+        "emptyState": {
+            "all": "Keine Jobs",
+            "running": "Keine laufenden Jobs",
+            "finished": "Keine abgeschlossenen Jobs",
+            "scheduled": "Keine Jobs in der Warteschlange",
+            "cancelled": "Keine abgebrochenen Jobs",
+            "failed": "Keine fehlgeschlagenen Jobs"
+        },
+        "actions": {
+            "viewLogs": "Protokolle anzeigen"
+        }
+    },
+    "license": {
+        "label": "Lizenz: ",
+        "agreement": {
+            "title": "Lizenzvereinbarungen",
+            "intro": "Bitte prüfen und akzeptieren Sie die folgenden Lizenzen, um Geti weiterhin zu nutzen.",
+            "progress": "{{current}} von {{total}}",
+            "required": "Erforderlich",
+            "optional": "Optional",
+            "fullLicense": "Vollständige Lizenz lesen",
+            "previous": "Vorherige",
+            "accept": "Akzeptieren und fortfahren"
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "Wird geladen ... Bitte warten."
+        },
+        "serverError": {
+            "heading": "Serverfehler"
+        },
+        "errorPage": {
+            "badRequest": "Der Server kann oder will die aktuelle Anfrage nicht verarbeiten.",
+            "forbidden": "Sie haben keine Berechtigung, auf diese Seite zuzugreifen.",
+            "notFound": "Diese Seite existiert nicht!",
+            "unauthorized": "Sie sind nicht berechtigt, dies zu sehen",
+            "serverError": "Auf dem Server ist ein Fehler aufgetreten; Ihre Anfrage konnte nicht abgeschlossen werden.",
+            "serviceUnavailable": "Unsere API scheint nicht erreichbar zu sein",
+            "goHome": "Zurück zur Startseite"
+        },
+        "notifications": {
+            "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+            "networkError": "Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+            "uploadTransferError": "Die Dateiübertragung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "Datei konnte nicht heruntergeladen werden"
+        },
+        "saveDialog": {
+            "allFiles": "Alle Dateien",
+            "fileTypeFilter": "{{extension}}-Datei"
+        }
+    }
+}

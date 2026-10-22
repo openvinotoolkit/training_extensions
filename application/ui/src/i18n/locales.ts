@@ -3,6 +3,7 @@
 
 import type { Resource } from 'i18next';
 
+import de from './locales/de.json';
 import en from './locales/en.json';
 import es from './locales/es.json';
 import fr from './locales/fr.json';
@@ -20,6 +21,7 @@ type Catalog = typeof en;
 
 export const resources: Resource = {
     [DEFAULT_LANGUAGE]: { translation: en },
+    de: { translation: de satisfies Catalog },
     es: { translation: es satisfies Catalog },
     fr: { translation: fr satisfies Catalog },
     it: { translation: it satisfies Catalog },
