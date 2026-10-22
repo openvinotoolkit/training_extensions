@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+import { API_BASE_URL } from '@/api';
 import { useTranslation } from '@/i18n';
 import {
     ActionButton,
@@ -16,7 +17,8 @@ import {
 } from '@geti-ui/ui';
 import { CloseSemiBold, DownloadIcon } from '@geti-ui/ui/icons';
 
-import { useDownloadModelLogs, useModelLogs } from './hooks/use-model-logs.hook';
+import { downloadFile } from '../../platform/download-file';
+import { useModelLogs } from './hooks/use-model-logs.hook';
 import { useStreamJobLogs } from './hooks/use-stream-job-logs.hook';
 import { LogViewer } from './log-viewer.component';
 
@@ -65,20 +67,22 @@ const HistoricalModelLogs = ({ projectId, modelId }: { projectId: string; modelI
 export const TrainingLogsDialog = ({ jobId, modelId, projectId, isJobActive }: TrainingLogsDialogProps) => {
     const { t } = useTranslation();
     const dialogContainer = useDialogContainer();
-    const { downloadModelLogs, isDownloading } = useDownloadModelLogs(projectId, String(modelId));
+
+    const downloadLogs = () => {
+        const [path, name] = jobId
+            ? [`/api/jobs/${jobId}/logs`, `job-logs-${jobId}.log`]
+            : [`/api/projects/${projectId}/models/${modelId}/logs`, `training-logs-${modelId}.log`];
+
+        downloadFile(`${API_BASE_URL}${path}?format=text`, name, t('models.training.logs.downloadStarted'));
+    };
 
     return (
         <Dialog aria-label={'Training logs'} UNSAFE_className={classes.dialog}>
             <Heading>{t('models.training.logs.dialogTitle')}</Heading>
             <Header>
                 <Flex alignItems={'center'} gap={'size-100'} marginStart={'auto'}>
-                    {modelId && (
-                        <ActionButton
-                            isQuiet
-                            onPress={downloadModelLogs}
-                            aria-label={'Download logs'}
-                            isDisabled={isDownloading}
-                        >
+                    {(jobId || modelId) && (
+                        <ActionButton isQuiet onPress={downloadLogs} aria-label={'Download logs'}>
                             <DownloadIcon />
                         </ActionButton>
                     )}

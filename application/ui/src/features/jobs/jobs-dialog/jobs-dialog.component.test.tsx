@@ -13,8 +13,13 @@ import { render } from 'test-utils/render';
 import { http } from '../../../api/utils';
 import { paths } from '../../../constants/paths';
 import { server } from '../../../msw-node-setup';
+import { downloadFile } from '../../../platform/download-file';
 import { ALL_PROJECTS, type ModelJob } from '../utils';
 import { JobsDialog } from './jobs-dialog.component';
+
+rs.mock('../../../platform/download-file', () => ({
+    downloadFile: rs.fn(),
+}));
 
 const ARCH_ID = 'Object_Detection_Deim_DFine_L';
 const PROJECT_A = getMockedProject({ id: 'project-a', name: 'Alpha' });
@@ -264,6 +269,22 @@ describe('JobsDialog', () => {
         await waitFor(() => expect(screen.queryByText('Training Logs')).not.toBeInTheDocument());
         expect(screen.getByRole('button', { name: /Filter jobs by project/ })).toHaveTextContent('All projects');
         expect(screen.getByRole('tab', { name: /^Running\b/, selected: true })).toBeInTheDocument();
+    });
+
+    it('downloads the job logs as plain text from the logs dialog', async () => {
+        mockJobs([trainJob({ job_id: 'running', status: 'RUNNING', started_at: '2026-01-01T00:00:00Z' })]);
+        renderDialog();
+
+        await screen.findByText('running model');
+        await openJobActions('running model');
+        await userEvent.click(screen.getByRole('menuitem', { name: 'View logs' }));
+        await userEvent.click(await screen.findByRole('button', { name: 'Download logs' }));
+
+        expect(downloadFile).toHaveBeenCalledWith(
+            expect.stringMatching(/\/api\/jobs\/running\/logs\?format=text$/),
+            'job-logs-running.log',
+            'Training logs download started'
+        );
     });
 
     it('shows finished-job metadata and view logs only', async () => {
