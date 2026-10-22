@@ -1,6 +1,7 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import logging
 import os
 from collections.abc import Generator
@@ -10,6 +11,32 @@ from loguru import logger
 
 from .config import LogConfig
 from .handlers import InterceptHandler
+
+MALFORMED_LOG_LINE = "[MALFORMED LOG LINE]\n"
+
+
+def extract_log_text(line: str) -> str:
+    """Extract the human-readable text from a serialized (NDJSON) loguru log record.
+
+    Args:
+        line: A single line of a log file written by a loguru sink with ``serialize=True``.
+
+    Returns:
+        str: The formatted ``text`` field of the record (including the trailing newline),
+            an empty string for blank lines or records without text, or a placeholder
+            if the line is not valid JSON.
+    """
+    if not line.strip():
+        return ""
+    try:
+        entry = json.loads(line)
+    except json.JSONDecodeError as e:
+        logger.warning("Failed to parse log line: {}", e)
+        return MALFORMED_LOG_LINE
+    if not isinstance(entry, dict):
+        return MALFORMED_LOG_LINE
+    text = entry.get("text", "")
+    return text if isinstance(text, str) else ""
 
 
 @contextmanager

@@ -244,14 +244,21 @@ within the backend process, so do not share one uploads directory between severa
 
 ## Jobs
 
-| Method | Path                    | Payload             | Return       | Description                                        |
-| ------ | ----------------------- | ------------------- | ------------ | -------------------------------------------------- |
-| `POST` | `/api/jobs`             | job type and params | job id       | Create and submit a new job                        |
-| `GET`  | `/api/jobs`             | -                   | list of jobs | List the jobs in a project (scheduled or running)  |
-| `GET`  | `/api/jobs/<id>`        | -                   | job info     | Get info about a specific job                      |
-| `POST` | `/api/jobs/<id>:cancel` | -                   | -            | Cancel a job                                       |
-| `GET`  | `/api/jobs/<id>/status` | -                   | job status   | Stream real-time status updates for a specific job |
-| `GET`  | `/api/jobs/<id>/logs`   | -                   | job logs     | Stream real-time log output for a specific job     |
+| Method | Path                    | Payload             | Return       | Description                                                                                                     |
+| ------ | ----------------------- | ------------------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/jobs`             | job type and params | job id       | Create and submit a new job                                                                                     |
+| `GET`  | `/api/jobs`             | -                   | list of jobs | List the jobs in a project (scheduled or running)                                                               |
+| `GET`  | `/api/jobs/<id>`        | -                   | job info     | Get info about a specific job                                                                                   |
+| `POST` | `/api/jobs/<id>:cancel` | -                   | -            | Cancel a job                                                                                                    |
+| `GET`  | `/api/jobs/<id>/status` | -                   | job status   | Stream real-time status updates for a specific job                                                              |
+| `GET`  | `/api/jobs/<id>/logs`   | -                   | job logs     | Stream real-time log output (SSE, default) or download it (supports Accept: text/plain or application/x-ndjson) |
+
+Job logs can be downloaded as a human-readable text file (only the formatted text of each record) or as the raw
+NDJSON log file by setting the `Accept` header:
+
+```bash
+curl -k -H "Accept: text/plain" -o job.log https://localhost:7860/api/jobs/<id>/logs
+```
 
 Job types:
 
