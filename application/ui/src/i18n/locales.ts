@@ -10,6 +10,7 @@ import it from './locales/it.json';
 import nl from './locales/nl.json';
 import pl from './locales/pl.json';
 import pt from './locales/pt.json';
+import ru from './locales/ru.json';
 import zhCN from './locales/zh-CN.json';
 import zhHK from './locales/zh-HK.json';
 import zhMO from './locales/zh-MO.json';
@@ -26,6 +27,7 @@ export const resources: Resource = {
     nl: { translation: nl satisfies Catalog },
     pl: { translation: pl satisfies Catalog },
     pt: { translation: pt satisfies Catalog },
+    ru: { translation: ru satisfies Catalog },
     'zh-CN': { translation: zhCN satisfies Catalog },
     'zh-HK': { translation: zhHK satisfies Catalog },
     'zh-MO': { translation: zhMO satisfies Catalog },
