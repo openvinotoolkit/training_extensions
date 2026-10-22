@@ -266,11 +266,13 @@ class LightningInstanceSegModel(PretrainedWeightsMixin, LightningModel):
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
+        empty_lbl = "getitune_empty_lbl"
         modified_label_info = copy.deepcopy(self.label_info)
         # Instance segmentation needs to add empty label to satisfy MAPI wrapper requirements
-        modified_label_info.label_names.insert(0, "getitune_empty_lbl")
-        modified_label_info.label_ids.insert(0, "None")
-        modified_label_info.label_groups[0].insert(0, "getitune_empty_lbl")
+        # Rebuild lists (not in-place insert) since label_names and label_groups[0] may alias.
+        modified_label_info.label_names = [empty_lbl, *self.label_info.label_names]
+        modified_label_info.label_ids = ["None", *self.label_info.label_ids]
+        modified_label_info.label_groups = [[empty_lbl, *self.label_info.label_groups[0]]]
 
         return super()._export_parameters.wrap(
             model_type="MaskRCNN",
