@@ -4,11 +4,11 @@
 import asyncio
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 import aiofiles
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from loguru import logger
 from sse_starlette.sse import EventSourceResponse, ServerSentEvent
@@ -302,7 +302,7 @@ async def stream_job_status(
     response_model=None,
     responses={
         status.HTTP_200_OK: {
-            "description": "Real-time log stream (default), or a human-readable log file with `Accept: text/plain`",
+            "description": "Real-time log stream (default), or a human-readable log file with `format=text`",
             "content": {
                 "text/event-stream": {"schema": {"type": "string"}},
                 "text/plain": {"schema": {"type": "string"}},
@@ -315,6 +315,7 @@ async def get_job_logs(
     job_id: JobID,
     job_dir: Annotated[Path, Depends(get_job_dir)],
     job_queue: Annotated[JobQueue, Depends(get_job_queue)],
+    format: Annotated[Literal["text"] | None, Query(description="Download the logs as plain text")] = None,
     accept: Annotated[str | None, Header(description="Accept header to specify the desired response format")] = None,
 ) -> EventSourceResponse | StreamingResponse:
     """
@@ -323,9 +324,9 @@ async def get_job_logs(
     By default, logs are streamed using Server-Sent Events (SSE): the job's log file is read and new
     lines are yielded as they are written, until the job finishes or the client disconnects.
 
-    With `Accept: text/plain`, the logs are instead downloaded as a human-readable text file containing
-    the formatted text of each log record. The download contains the logs written so far, so it can
-    also be used while the job is still running.
+    With `format=text` (or `Accept: text/plain`), the logs are instead downloaded as a human-readable
+    text file containing the formatted text of each log record. The download contains the logs written
+    so far, so it can also be used while the job is still running.
     """
     job = job_queue.get(job_id)
     if not job:
@@ -335,7 +336,7 @@ async def get_job_logs(
     if not log_path.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Log file not found")
 
-    if accept is not None and "text/plain" in accept.lower():
+    if format == "text" or (accept is not None and "text/plain" in accept.lower()):
         return StreamingResponse(
             content=iter_log_text(log_path),
             media_type="text/plain",

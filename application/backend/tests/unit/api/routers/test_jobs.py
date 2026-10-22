@@ -556,8 +556,11 @@ class TestJobEndpoints:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("job_status", [JobStatus.RUNNING, JobStatus.DONE])
+    @pytest.mark.parametrize(
+        "query, headers", [("?format=text", {}), ("", {"Accept": "text/plain"})], ids=["query", "accept-header"]
+    )
     async def test_download_job_logs_as_text(
-        self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue, fxt_job, job_status
+        self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue, fxt_job, job_status, query, headers
     ):
         job_id = uuid4()
         job_dir = tmp_path / "logs" / "jobs"
@@ -577,7 +580,7 @@ class TestJobEndpoints:
 
         fxt_app.dependency_overrides[get_job_dir] = lambda: job_dir
 
-        response = await fxt_async_client.get(f"/api/jobs/{job_id}/logs", headers={"Accept": "text/plain"})
+        response = await fxt_async_client.get(f"/api/jobs/{job_id}/logs{query}", headers=headers)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.headers["content-type"] == "text/plain; charset=utf-8"
@@ -589,7 +592,7 @@ class TestJobEndpoints:
         fxt_jobs_queue.get.return_value = None
         fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path
 
-        response = await fxt_async_client.get(f"/api/jobs/{uuid4()}/logs", headers={"Accept": "text/plain"})
+        response = await fxt_async_client.get(f"/api/jobs/{uuid4()}/logs?format=text")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "job not found" in response.json()["detail"].lower()
@@ -600,7 +603,7 @@ class TestJobEndpoints:
         fxt_jobs_queue.get.return_value = job
         fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path
 
-        response = await fxt_async_client.get(f"/api/jobs/{job.id}/logs", headers={"Accept": "text/plain"})
+        response = await fxt_async_client.get(f"/api/jobs/{job.id}/logs?format=text")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "log file not found" in response.json()["detail"].lower()
