@@ -137,6 +137,41 @@ class TestMediaPredictionServiceUnit:
             Frame(frame_index=5, skip=False),
         ]
 
+    @pytest.mark.parametrize(
+        "inference_keyframe_stride, video_range, expected_inferred_frames",
+        [
+            # Playback: keyframes every 5 video frames, as before
+            (5, VideoRange(start_frame=0, end_frame=12, stride=1), [0, 5, 10, 12]),
+            # Requested frames 2 apart: keyframes every 4 video frames (never more than 5 apart)
+            (5, VideoRange(start_frame=0, end_frame=20, stride=2), [0, 4, 8, 12, 16, 20]),
+            # Requested frames >= keyframe stride apart: every requested frame is inferred
+            (5, VideoRange(start_frame=0, end_frame=12, stride=3), [0, 3, 6, 9, 12]),
+            (5, VideoRange(start_frame=0, end_frame=20, stride=5), [0, 5, 10, 15, 20]),
+            (5, VideoRange(start_frame=7, end_frame=187, stride=30), [7, 37, 67, 97, 127, 157, 187]),
+            # Keyframe stride disabled: every requested frame is inferred
+            (1, VideoRange(start_frame=0, end_frame=3, stride=1), [0, 1, 2, 3]),
+        ],
+        ids=["playback", "stride_2", "stride_3", "stride_5", "timeline_stride_30", "keyframe_stride_1"],
+    )
+    def test_load_frame_range_keyframe_stride_is_in_video_frames(
+        self,
+        inference_keyframe_stride,
+        video_range,
+        expected_inferred_frames,
+        fxt_media_prediction_service,
+        fxt_media_service,
+    ):
+        project = MagicMock(spec=Project)
+        video = MagicMock(spec=Video, id=uuid4())
+        fxt_media_service.search_video_frames_by_video_id_and_indexes.return_value = []
+
+        media_prediction_service = fxt_media_prediction_service(inference_keyframe_stride)
+        result = media_prediction_service._load_frame_range(project=project, video=video, video_range=video_range)
+
+        requested_frames = list(range(video_range.start_frame, video_range.end_frame + 1, video_range.stride))
+        assert [frame.frame_index for frame in result] == requested_frames
+        assert [frame.frame_index for frame in result if not frame.skip] == expected_inferred_frames
+
     def test_load_media(self, fxt_media_prediction_service, fxt_media_service):
         model_id = uuid4()
         image_id = uuid4()

@@ -66,6 +66,15 @@ class MediaPredictionService(BaseSessionManagedService):
     def _is_frame_index_to_infer(index: int, frame_indexes: list[int], inference_keyframe_stride: int) -> bool:
         return index == 0 or index == len(frame_indexes) - 1 or index % inference_keyframe_stride == 0
 
+    @staticmethod
+    def _get_keyframe_position_stride(inference_keyframe_stride: int, range_stride: int) -> int:
+        """
+        Convert the keyframe stride, expressed as a distance in video frames, into a stride over the
+        positions of the requested frames, so that keyframes are never more than
+        `inference_keyframe_stride` video frames apart, regardless of the requested range stride.
+        """
+        return max(1, inference_keyframe_stride // range_stride)
+
     def _load_frame_range(self, project: Project, video: Video, video_range: VideoRange) -> list[Frame]:
         video_frames: list[Frame] = []
 
@@ -73,13 +82,16 @@ class MediaPredictionService(BaseSessionManagedService):
         annotated_frames = self._media_service.search_video_frames_by_video_id_and_indexes(
             project=project, video_id=video.id, frame_indexes=frame_indexes
         )
+        keyframe_position_stride = self._get_keyframe_position_stride(
+            inference_keyframe_stride=self._inference_keyframe_stride, range_stride=video_range.stride
+        )
         for idx, frame_index in enumerate(frame_indexes):
             annotated_frame = next((frame for frame in annotated_frames if frame.frame_index == frame_index), None)
             skip = (
                 not MediaPredictionService._is_frame_index_to_infer(
-                    index=idx, frame_indexes=frame_indexes, inference_keyframe_stride=self._inference_keyframe_stride
+                    index=idx, frame_indexes=frame_indexes, inference_keyframe_stride=keyframe_position_stride
                 )
-                if self._inference_keyframe_stride > 1
+                if keyframe_position_stride > 1
                 else False
             )
             video_frames.append(Frame(frame_index=frame_index, annotated_frame=annotated_frame, skip=skip))
