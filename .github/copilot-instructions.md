@@ -1,12 +1,13 @@
 ## Repository layout
 
-Monorepo with three components — different languages, toolchains, and conventions.
+Monorepo with four components — different languages, toolchains, and conventions.
 
 | Path                   | What it is                                                 | Primary stack                                                    |
 | ---------------------- |------------------------------------------------------------| ---------------------------------------------------------------- |
 | `library/`             | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch 2.10, OpenVINO, Lightning, Datumaro        |
 | `application/backend/` | Geti™ app server (`geti` package).                         | Python 3.14, FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic |
 | `application/ui/`      | Geti™ web/desktop UI.                                      | Node 24.2+, React, TypeScript, rsbuild, Tauri                    |
+| `integrations/geti-mcp/` | `geti-mcp` — MCP (stdio) server over the Geti REST API.  | Python 3.11+, mcp, httpx, Pydantic v2                           |
 
 The application can be built and deployed in three ways:
 
@@ -15,6 +16,8 @@ The application can be built and deployed in three ways:
 3. With server and UI as standalone processes, for development only.
 
 The library is consumed by the backend (`getitune[cpu|xpu|cuda]` extras).
+`integrations/geti-mcp/` is standalone: it talks to the backend only over HTTP and must not
+import the backend package or `getitune`.
 
 ## General rules
 

@@ -50,6 +50,12 @@ and other resources to help you get the most out of Geti.
 > version (Docker or Windows MSIX) while preserving your projects, datasets and models, with automatic rollback
 > if a migration fails.
 
+### Connect an AI assistant
+
+The [Geti MCP server](../integrations/geti-mcp/README.md) lets an AI assistant inspect your projects, start
+training, monitor jobs, and read model results through the REST API. It runs alongside a Geti instance you have
+already installed, is read-only unless you opt in, and works with the desktop app as well as Docker.
+
 <details>
 <summary><strong>Advanced: generate the API spec from source </strong></summary>
 

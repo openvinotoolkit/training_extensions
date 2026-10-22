@@ -1,0 +1,75 @@
+#!/usr/bin/env just --justfile
+import "../../application/recipes.justfile"
+
+default:
+    @just --list --unsorted
+
+# -------------------------------------------------------------------------------------------------
+# Virtual environment management
+# -------------------------------------------------------------------------------------------------
+
+# Create a virtual environment and install dependencies
+venv: install-uv
+    uv sync
+
+# Generate or update the uv lock file
+venv-lock: install-uv
+    uv lock
+
+# -------------------------------------------------------------------------------------------------
+# Linting and formatting
+# -------------------------------------------------------------------------------------------------
+
+# Run linters (ruff + pyrefly)
+lint: ruff pyrefly
+
+# Run ruff for linting and format checking
+ruff: install-uv
+    uv run ruff check --output-format=github
+    uv run ruff format --check
+
+# Run ruff to format the code and apply fixes
+ruff-fix: install-uv
+    uv run ruff check --fix
+    uv run ruff format
+
+# Run pyrefly to detect potential type errors
+pyrefly: install-uv
+    uv run pyrefly check
+
+# -------------------------------------------------------------------------------------------------
+# Testing
+# -------------------------------------------------------------------------------------------------
+
+# Run all tests
+test: test-unit test-integration
+
+# Run unit tests
+test-unit *args: install-uv
+    uv run pytest tests/unit {{ args }}
+
+# Run integration tests (stdio transport + REST contract); no running Geti required
+test-integration *args: install-uv
+    uv run pytest tests/integration {{ args }}
+
+# -------------------------------------------------------------------------------------------------
+# API contract
+# -------------------------------------------------------------------------------------------------
+
+# Refresh the OpenAPI snapshot the contract tests validate against
+update-contract: install-uv
+    #!/usr/bin/env bash
+    set -euo pipefail
+    REPO_ROOT=$(git rev-parse --show-toplevel)
+    spec=$(mktemp -t geti-openapi-XXXXXX.json)
+    trap 'rm -f "$spec"' EXIT
+    (cd "${REPO_ROOT}/application/backend" && just gen-api-spec --output-path "$spec")
+    uv run python tests/assets/build_snapshot.py "$spec"
+
+# -------------------------------------------------------------------------------------------------
+# Running
+# -------------------------------------------------------------------------------------------------
+
+# Run the server over stdio (normally launched by an MCP host, not by hand)
+run *args: install-uv
+    uv run geti-mcp {{ args }}

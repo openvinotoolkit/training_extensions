@@ -1,0 +1,2959 @@
+{
+  "components": {
+    "schemas": {
+      "AnnotationCountsView": {
+        "properties": {
+          "annotated_images": {
+            "default": 0,
+            "type": "integer"
+          },
+          "annotated_video_frames": {
+            "default": 0,
+            "type": "integer"
+          },
+          "annotated_videos": {
+            "default": 0,
+            "type": "integer"
+          },
+          "instances": {
+            "default": 0,
+            "type": "integer"
+          },
+          "instances_per_label": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/InstancesPerLabelView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "BenchmarkMetrics": {
+        "additionalProperties": false,
+        "properties": {
+          "coco_map_50": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coco_map_50_95": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "imagenet_top1_accuracy": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "imagenet_top5_accuracy": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "BoolParameterView": {
+        "properties": {
+          "default_value": {
+            "type": "boolean"
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "default": "",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "const": "parameter",
+            "default": "parameter",
+            "type": "string"
+          },
+          "value": {
+            "type": "boolean"
+          },
+          "value_type": {
+            "const": "bool",
+            "default": "bool",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "value",
+          "default_value"
+        ],
+        "type": "object"
+      },
+      "Capabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "tiling": {
+            "default": false,
+            "type": "boolean"
+          },
+          "xai": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ConfigurableParameterGroupView": {
+        "properties": {
+          "depends_on": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "default": "",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "items": {
+              "anyOf": [
+                {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/BoolParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/StringParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/IntParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FloatParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FloatRangeParameterView"
+                    }
+                  ]
+                },
+                {
+                  "$ref": "#/components/schemas/ConfigurableParameterGroupView"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "type": {
+            "const": "parameter_group",
+            "default": "parameter_group",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "DatasetFilters": {
+        "properties": {
+          "include_unannotated": {
+            "default": true,
+            "type": "boolean"
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "subsets": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DatasetItemSubset"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "DatasetItemAnnotationStatus": {
+        "enum": [
+          "with_annotations",
+          "missing_annotations"
+        ],
+        "type": "string"
+      },
+      "DatasetItemSubset": {
+        "enum": [
+          "unassigned",
+          "training",
+          "validation",
+          "testing"
+        ],
+        "type": "string"
+      },
+      "DatasetStatisticsView": {
+        "properties": {
+          "annotations_counts": {
+            "$ref": "#/components/schemas/AnnotationCountsView"
+          },
+          "media_counts": {
+            "$ref": "#/components/schemas/MediaCountsView"
+          }
+        },
+        "required": [
+          "media_counts",
+          "annotations_counts"
+        ],
+        "type": "object"
+      },
+      "DeviceInfo": {
+        "properties": {
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "memory": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DeviceType"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ],
+        "type": "object"
+      },
+      "DeviceInfoView": {
+        "properties": {
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "memory": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DeviceType"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ],
+        "type": "object"
+      },
+      "DeviceType": {
+        "enum": [
+          "auto",
+          "cpu",
+          "xpu",
+          "cuda"
+        ],
+        "type": "string"
+      },
+      "EvaluationMetricName": {
+        "enum": [
+          "Accuracy",
+          "Precision",
+          "Recall",
+          "F-measure",
+          "mAP",
+          "mAP@0.5",
+          "mAP@0.75",
+          "mAR@1",
+          "mAR@10",
+          "mAR@100"
+        ],
+        "type": "string"
+      },
+      "EvaluationView": {
+        "properties": {
+          "dataset_revision_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricView"
+            },
+            "type": "array"
+          },
+          "subset": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_revision_id",
+          "subset",
+          "metrics"
+        ],
+        "type": "object"
+      },
+      "ExportDatasetMetadata": {
+        "properties": {
+          "dataset_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataset_view_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "export_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "filters": {
+            "$ref": "#/components/schemas/DatasetFilters"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "filters"
+        ],
+        "type": "object"
+      },
+      "ExportDatasetParams": {
+        "properties": {
+          "export_format": {
+            "type": "string"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/DatasetFilters"
+          }
+        },
+        "required": [
+          "export_format"
+        ],
+        "type": "object"
+      },
+      "ExportDatasetRequest": {
+        "properties": {
+          "dataset_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataset_view_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_type": {
+            "const": "export_dataset",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/ExportDatasetParams"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "job_type",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "FloatParameterView": {
+        "properties": {
+          "allowed_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_value": {
+            "type": "number"
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "default": "",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "max_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "min_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "const": "parameter",
+            "default": "parameter",
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "value_type": {
+            "const": "float",
+            "default": "float",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "value",
+          "default_value"
+        ],
+        "type": "object"
+      },
+      "FloatRangeParameterView": {
+        "properties": {
+          "default_value": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "default": "",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "max_value": {
+            "type": "number"
+          },
+          "min_value": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "const": "parameter",
+            "default": "parameter",
+            "type": "string"
+          },
+          "value": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "value_type": {
+            "const": "float_range",
+            "default": "float_range",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "value",
+          "default_value",
+          "min_value",
+          "max_value"
+        ],
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ImageFormat": {
+        "enum": [
+          "jpg",
+          "jpeg",
+          "png",
+          "jfif",
+          "tif",
+          "tiff",
+          "bmp",
+          "webp"
+        ],
+        "type": "string"
+      },
+      "ImageView": {
+        "properties": {
+          "format": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageFormat"
+              },
+              {
+                "$ref": "#/components/schemas/VideoFormat"
+              }
+            ]
+          },
+          "height": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "const": "image",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "id",
+          "type",
+          "format",
+          "width",
+          "height",
+          "size"
+        ],
+        "type": "object"
+      },
+      "ImportDatasetAsNewProjectRequest": {
+        "properties": {
+          "job_type": {
+            "const": "import_dataset_as_new_project",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/ImportDatasetNewParams"
+          },
+          "staged_dataset_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "staged_dataset_id",
+          "job_type",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "ImportDatasetMetadata": {
+        "properties": {
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetFilters"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "labels_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NewProjectParams"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "staged_dataset_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "subset_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/DatasetItemSubset"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "staged_dataset_id"
+        ],
+        "type": "object"
+      },
+      "ImportDatasetNewParams": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/DatasetFilters"
+          },
+          "project": {
+            "$ref": "#/components/schemas/NewProjectParams"
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "type": "object"
+      },
+      "ImportDatasetProjectParams": {
+        "properties": {
+          "include_unannotated": {
+            "default": true,
+            "type": "boolean"
+          },
+          "labels_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ImportDatasetToProjectRequest": {
+        "properties": {
+          "job_type": {
+            "const": "import_dataset_to_project",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/ImportDatasetProjectParams"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "staged_dataset_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "staged_dataset_id",
+          "job_type"
+        ],
+        "type": "object"
+      },
+      "InstancesPerLabelView": {
+        "properties": {
+          "instances": {
+            "default": 0,
+            "type": "integer"
+          },
+          "label_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "label_id"
+        ],
+        "type": "object"
+      },
+      "IntParameterView": {
+        "properties": {
+          "allowed_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_value": {
+            "type": "integer"
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "default": "",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "max_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "min_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "const": "parameter",
+            "default": "parameter",
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          },
+          "value_type": {
+            "const": "int",
+            "default": "int",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "value",
+          "default_value"
+        ],
+        "type": "object"
+      },
+      "JobType": {
+        "enum": [
+          "train",
+          "quantize",
+          "prepare_dataset_for_import",
+          "import_dataset_as_new_project",
+          "import_dataset_to_project",
+          "export_dataset",
+          "stage_dataset"
+        ],
+        "type": "string"
+      },
+      "JobView": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "job_type": {
+            "$ref": "#/components/schemas/JobType"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TrainingMetadata"
+              },
+              {
+                "$ref": "#/components/schemas/QuantizationMetadata"
+              },
+              {
+                "$ref": "#/components/schemas/ImportDatasetMetadata"
+              },
+              {
+                "$ref": "#/components/schemas/ExportDatasetMetadata"
+              }
+            ]
+          },
+          "progress": {
+            "type": "number"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "job_type",
+          "metadata",
+          "status",
+          "progress"
+        ],
+        "type": "object"
+      },
+      "LabelView": {
+        "properties": {
+          "color": {
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+            "type": "string"
+          },
+          "hotkey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "MediaCountsView": {
+        "properties": {
+          "images": {
+            "default": 0,
+            "type": "integer"
+          },
+          "video_frames": {
+            "default": 0,
+            "type": "integer"
+          },
+          "videos": {
+            "default": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "MediaSortBy": {
+        "enum": [
+          "upload_date"
+        ],
+        "type": "string"
+      },
+      "MediaWithPagination": {
+        "properties": {
+          "items": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "image": "#/components/schemas/ImageView",
+                  "video": "#/components/schemas/VideoView",
+                  "video_frame": "#/components/schemas/VideoFrameView"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ImageView"
+                },
+                {
+                  "$ref": "#/components/schemas/VideoView"
+                },
+                {
+                  "$ref": "#/components/schemas/VideoFrameView"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "type": "object"
+      },
+      "MetricView": {
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/EvaluationMetricName"
+          },
+          "primary": {
+            "default": false,
+            "type": "boolean"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object"
+      },
+      "ModelArchitectureView": {
+        "properties": {
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "license": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "stats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelStats"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "support_status": {
+            "$ref": "#/components/schemas/ModelManifestDeprecationStatus"
+          },
+          "task": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "timm_metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimmMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "task",
+          "name",
+          "description",
+          "capabilities",
+          "license",
+          "stats",
+          "support_status"
+        ],
+        "type": "object"
+      },
+      "ModelArchitectures": {
+        "properties": {
+          "model_architectures": {
+            "items": {
+              "$ref": "#/components/schemas/ModelArchitectureView"
+            },
+            "type": "array"
+          },
+          "top_picks": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TopPicks"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "model_architectures",
+          "top_picks"
+        ],
+        "type": "object"
+      },
+      "ModelManifestDeprecationStatus": {
+        "enum": [
+          "active",
+          "deprecated",
+          "obsolete"
+        ],
+        "type": "string"
+      },
+      "ModelMetadata": {
+        "properties": {
+          "architecture": {
+            "type": "string"
+          },
+          "dataset_revision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_revision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "architecture"
+        ],
+        "type": "object"
+      },
+      "ModelStats": {
+        "additionalProperties": false,
+        "properties": {
+          "benchmark_metrics": {
+            "$ref": "#/components/schemas/BenchmarkMetrics"
+          },
+          "gigaflops": {
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "trainable_parameters": {
+            "default": 0.0,
+            "minimum": 0.0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "gigaflops",
+          "benchmark_metrics"
+        ],
+        "type": "object"
+      },
+      "ModelVariantView": {
+        "properties": {
+          "evaluations": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/EvaluationView"
+            },
+            "type": "array"
+          },
+          "files_deleted": {
+            "default": false,
+            "type": "boolean"
+          },
+          "format": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "optimal_confidence_threshold": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "precision": {
+            "type": "string"
+          },
+          "quantization_info": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weights_size": {
+            "default": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "format",
+          "precision"
+        ],
+        "type": "object"
+      },
+      "ModelView": {
+        "properties": {
+          "architecture": {
+            "type": "string"
+          },
+          "files_deleted": {
+            "default": false,
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_revision": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "size": {
+            "type": "integer"
+          },
+          "training_info": {
+            "$ref": "#/components/schemas/TrainingInfo"
+          },
+          "variants": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ModelVariantView"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "architecture",
+          "training_info",
+          "size"
+        ],
+        "type": "object"
+      },
+      "NewProjectParams": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          }
+        },
+        "required": [
+          "name",
+          "task_type"
+        ],
+        "type": "object"
+      },
+      "Pagination": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "offset",
+          "limit",
+          "count",
+          "total"
+        ],
+        "type": "object"
+      },
+      "PrepareDatasetForImportRequest": {
+        "properties": {
+          "job_type": {
+            "const": "prepare_dataset_for_import",
+            "type": "string"
+          },
+          "staged_dataset_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "staged_dataset_id",
+          "job_type"
+        ],
+        "type": "object"
+      },
+      "ProjectMetadata": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ProjectView": {
+        "properties": {
+          "active_pipeline": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "task": {
+            "$ref": "#/components/schemas/TaskView"
+          }
+        },
+        "required": [
+          "name",
+          "task",
+          "id",
+          "active_pipeline",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "QuantizationMetadata": {
+        "properties": {
+          "max_calibration_subset_size": {
+            "type": "integer"
+          },
+          "max_drop": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_num_iterations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model": {
+            "$ref": "#/components/schemas/QuantizationModelMetadata"
+          },
+          "model_variant": {
+            "$ref": "#/components/schemas/QuantizationModelVariantMetadata"
+          },
+          "project": {
+            "$ref": "#/components/schemas/QuantizationProjectMetadata"
+          }
+        },
+        "required": [
+          "project",
+          "model",
+          "model_variant",
+          "max_calibration_subset_size"
+        ],
+        "type": "object"
+      },
+      "QuantizationModelMetadata": {
+        "properties": {
+          "architecture": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "architecture"
+        ],
+        "type": "object"
+      },
+      "QuantizationModelVariantMetadata": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "QuantizationProjectMetadata": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "QuantizationRequest": {
+        "properties": {
+          "job_type": {
+            "const": "quantize",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/QuantizationRequestParams"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "job_type",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "QuantizationRequestParams": {
+        "properties": {
+          "max_calibration_subset_size": {
+            "default": 100,
+            "type": "integer"
+          },
+          "max_drop": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_num_iterations": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 10
+          },
+          "model_architecture_id": {
+            "type": "string"
+          },
+          "model_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id",
+          "model_architecture_id"
+        ],
+        "type": "object"
+      },
+      "SortDirection": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string"
+      },
+      "StageDatasetParams": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/DatasetFilters"
+          }
+        },
+        "type": "object"
+      },
+      "StageDatasetRequest": {
+        "properties": {
+          "dataset_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_type": {
+            "const": "stage_dataset",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/StageDatasetParams"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "job_type"
+        ],
+        "type": "object"
+      },
+      "StringParameterView": {
+        "properties": {
+          "allowed_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_value": {
+            "type": "string"
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "default": "",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "const": "parameter",
+            "default": "parameter",
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "value_type": {
+            "const": "str",
+            "default": "str",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "value",
+          "default_value"
+        ],
+        "type": "object"
+      },
+      "SystemInfoView": {
+        "properties": {
+          "license_accepted": {
+            "type": "boolean"
+          },
+          "platform": {
+            "enum": [
+              "linux",
+              "windows",
+              "macos"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "license_accepted",
+          "platform"
+        ],
+        "type": "object"
+      },
+      "TaskType": {
+        "enum": [
+          "classification",
+          "detection",
+          "instance_segmentation"
+        ],
+        "type": "string"
+      },
+      "TaskView": {
+        "properties": {
+          "exclusive_labels": {
+            "default": false,
+            "type": "boolean"
+          },
+          "labels": {
+            "items": {
+              "$ref": "#/components/schemas/LabelView"
+            },
+            "type": "array"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          }
+        },
+        "required": [
+          "task_type"
+        ],
+        "type": "object"
+      },
+      "TimmMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "family": {
+            "type": "string"
+          },
+          "pretrained_tag": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "family",
+          "variant",
+          "pretrained_tag"
+        ],
+        "type": "object"
+      },
+      "TopPicks": {
+        "properties": {
+          "accuracy": {
+            "type": "string"
+          },
+          "balance": {
+            "type": "string"
+          },
+          "speed": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "balance",
+          "speed",
+          "accuracy"
+        ],
+        "type": "object"
+      },
+      "TrainingConfigurationView": {
+        "properties": {
+          "parameters": {
+            "items": {
+              "anyOf": [
+                {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/BoolParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/StringParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/IntParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FloatParameterView"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FloatRangeParameterView"
+                    }
+                  ]
+                },
+                {
+                  "$ref": "#/components/schemas/ConfigurableParameterGroupView"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "TrainingInfo": {
+        "properties": {
+          "dataset_revision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "device": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeviceInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label_schema_revision": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrainingStatus",
+            "default": "not_started"
+          }
+        },
+        "type": "object"
+      },
+      "TrainingMetadata": {
+        "properties": {
+          "device": {
+            "$ref": "#/components/schemas/DeviceInfoView"
+          },
+          "model": {
+            "$ref": "#/components/schemas/ModelMetadata"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectMetadata"
+          }
+        },
+        "required": [
+          "project",
+          "model",
+          "device"
+        ],
+        "type": "object"
+      },
+      "TrainingRequest": {
+        "properties": {
+          "job_type": {
+            "const": "train",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/TrainingRequestParams"
+          },
+          "project_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "job_type",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "TrainingRequestParams": {
+        "properties": {
+          "dataset_revision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "device": {
+            "type": "string"
+          },
+          "model_architecture_id": {
+            "type": "string"
+          },
+          "parent_model_revision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "device",
+          "model_architecture_id"
+        ],
+        "type": "object"
+      },
+      "TrainingStatus": {
+        "enum": [
+          "not_started",
+          "in_progress",
+          "failed",
+          "successful"
+        ],
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "type": "object"
+          },
+          "input": {},
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "msg": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object"
+      },
+      "VideoFormat": {
+        "enum": [
+          "mp4",
+          "avi",
+          "mkv",
+          "mov",
+          "webm",
+          "m4v"
+        ],
+        "type": "string"
+      },
+      "VideoFrameView": {
+        "properties": {
+          "format": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageFormat"
+              },
+              {
+                "$ref": "#/components/schemas/VideoFormat"
+              }
+            ]
+          },
+          "frame_index": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "const": "video_frame",
+            "type": "string"
+          },
+          "video_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "id",
+          "type",
+          "format",
+          "width",
+          "height",
+          "size",
+          "video_id",
+          "frame_index"
+        ],
+        "type": "object"
+      },
+      "VideoView": {
+        "properties": {
+          "annotated_frame_count": {
+            "type": "integer"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageFormat"
+              },
+              {
+                "$ref": "#/components/schemas/VideoFormat"
+              }
+            ]
+          },
+          "fps": {
+            "type": "number"
+          },
+          "frame_count": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "const": "video",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "id",
+          "type",
+          "format",
+          "width",
+          "height",
+          "size",
+          "fps",
+          "frame_count",
+          "annotated_frame_count",
+          "duration"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Geti",
+    "version": "3.2.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/jobs": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/JobView"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/TrainingRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/QuantizationRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ImportDatasetToProjectRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PrepareDatasetForImportRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ImportDatasetAsNewProjectRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ExportDatasetRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StageDatasetRequest"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "400": {},
+          "404": {},
+          "409": {},
+          "422": {}
+        }
+      }
+    },
+    "/api/jobs/{job_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs/{job_id}:cancel": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "404": {},
+          "409": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/model_architectures": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "task",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelArchitectures"
+                }
+              }
+            }
+          },
+          "422": {}
+        }
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectView"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          },
+          "400": {},
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/dataset/media": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "annotation_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DatasetItemAnnotationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "labels",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "subsets",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/components/schemas/DatasetItemSubset"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/MediaSortBy",
+              "default": "upload_date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_direction",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SortDirection",
+              "default": "desc"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dataset_view_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaWithPagination"
+                }
+              }
+            }
+          },
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/dataset/media/{media_id}/binary": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "raw",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "frame_index",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {},
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/dataset/statistics": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "dataset_view_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetStatisticsView"
+                }
+              }
+            }
+          },
+          "400": {},
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/models": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "dataset_revision_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelView"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          },
+          "400": {},
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/models/{model_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelView"
+                }
+              }
+            }
+          },
+          "400": {},
+          "404": {},
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/training_configuration": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "model_architecture_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingConfigurationView"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/system/devices/training": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceInfoView"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/system/info": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemInfoView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

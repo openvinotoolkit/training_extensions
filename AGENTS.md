@@ -21,10 +21,12 @@
 - `library/`: `getitune` Python package (the Geti training library; source in `src/getitune/`), recipes, and tests. See `library/AGENTS.md`.
 - `application/backend/`: FastAPI backend named `geti`; consumes `../../library` as an editable `uv` source. See `application/backend/AGENTS.md`.
 - `application/ui/`: React 19 + TypeScript + RSBuild frontend. See `application/ui/AGENTS.md`.
+- `integrations/geti-mcp/`: standalone `geti-mcp` Python package, a Model Context Protocol (stdio) server over the Geti REST API. Depends on Geti only over HTTP — not on the backend package or `getitune`. See `integrations/geti-mcp/README.md`.
 - `application/README.md`: overview and entry point for the application; links to the installation guide.
 - `application/docs/`: Markdown docs for the application (installation, upgrade, API, pipeline, jobs, dataset import/export, models, quantization).
 - `library/README.md`: overview and quick-start for the `getitune` library.
 - `library/docs/design/`: design notes for the library; user-facing library docs live on the external documentation website.
+- `integrations/geti-mcp/README.md`: installation, configuration, tool reference, and API compatibility for the MCP server.
 - `README.md`: root-level project overview.
 - `.github/workflows/`: CI source of truth for path-based checks and required jobs.
 
@@ -133,10 +135,19 @@ User-facing skills (using Geti, not changing it):
 - Build API typings from an existing spec with `npm run build:api`.
 - Pull a spec from a running backend with `npm run update-spec` when `https://localhost:7860` is available (the backend serves self-signed TLS).
 
+## Commands: Geti MCP
+
+- Work from `integrations/geti-mcp/`.
+- Create or refresh the environment with `just venv`.
+- Run lint and type checks with `just lint`.
+- Run unit tests with `just test-unit -- <pytest args>` and integration tests with `just test-integration -- <pytest args>`; neither needs a running Geti.
+- Refresh the OpenAPI contract snapshot with `just update-contract` after a backend API change.
+
 ## Cross-Area Rules
 
 - Do not assume commands from one area apply to another; `library`, `application/backend`, and `application/ui` use different runtimes and toolchains.
 - Backend changes can require validating `library/` because `application/backend` depends on the local editable package.
+- Backend REST contract changes can break `integrations/geti-mcp`; refresh its snapshot with `just update-contract` and run its integration tests.
 - Do not hand-edit generated UI OpenAPI typings when regeneration is possible.
 - When backend request or response schemas change, regenerate the UI OpenAPI spec and TypeScript definitions in the same change set.
 - Use `.github/workflows/lib-lint-and-test.yaml`, `.github/workflows/backend-lint-and-test.yaml`, and `.github/workflows/ui-lint-and-test.yaml` as the source of truth for CI expectations if local commands are ambiguous.
