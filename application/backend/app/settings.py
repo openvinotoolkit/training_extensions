@@ -118,10 +118,11 @@ class Settings(BaseSettings):
         default=5,
         alias="INFERENCE_KEYFRAME_STRIDE",
         description=(
-            "This stride value controls which video frames are considered 'key frames' and therefore "
-            "sent to the model for inference, while predictions for other frames are interpolated based "
-            "on key frames. Key frames satisfy the condition frame_index % stride == 0. "
-            "Additionally, the first and last frames are also considered key frames."
+            "Maximum distance, in video frames, between two consecutive 'key frames' of a batch prediction "
+            "request. Only key frames are sent to the model for inference, while predictions for other "
+            "requested frames are copied from the nearest key frame. When the requested frames are already "
+            "at least this many video frames apart, every requested frame is a key frame. "
+            "The first and last requested frames are always key frames."
         ),
         gt=0,
     )
