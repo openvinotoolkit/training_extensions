@@ -585,47 +585,22 @@ class TestJobEndpoints:
         assert response.text == "Training started\nEpoch 1/10\n[MALFORMED LOG LINE]\n"
 
     @pytest.mark.asyncio
-    async def test_download_job_logs_as_ndjson(self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue, fxt_job):
-        job_id = uuid4()
-        job_dir = tmp_path / "logs" / "jobs"
-        job_dir.mkdir(parents=True)
-
-        job = fxt_job(job_id, JobStatus.DONE)
-        fxt_jobs_queue.get.return_value = job
-
-        content = json.dumps({"text": "Training started\n"}) + "\n" + json.dumps({"text": "Epoch 1/10\n"}) + "\n"
-        (job_dir / job.log_file).write_text(content)
-
-        fxt_app.dependency_overrides[get_job_dir] = lambda: job_dir
-
-        response = await fxt_async_client.get(f"/api/jobs/{job_id}/logs", headers={"Accept": "application/x-ndjson"})
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.headers["content-type"] == "application/x-ndjson"
-        assert response.headers["content-disposition"] == f'attachment; filename="{job.log_file}"'
-        assert response.text == content
-
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("accept", ["text/plain", "application/x-ndjson"])
-    async def test_download_job_logs_job_not_found(self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue, accept):
+    async def test_download_job_logs_job_not_found(self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue):
         fxt_jobs_queue.get.return_value = None
         fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path
 
-        response = await fxt_async_client.get(f"/api/jobs/{uuid4()}/logs", headers={"Accept": accept})
+        response = await fxt_async_client.get(f"/api/jobs/{uuid4()}/logs", headers={"Accept": "text/plain"})
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "job not found" in response.json()["detail"].lower()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("accept", ["text/plain", "application/x-ndjson"])
-    async def test_download_job_logs_file_not_found(
-        self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue, fxt_job, accept
-    ):
+    async def test_download_job_logs_file_not_found(self, fxt_app, tmp_path, fxt_async_client, fxt_jobs_queue, fxt_job):
         job = fxt_job(uuid4(), JobStatus.DONE)
         fxt_jobs_queue.get.return_value = job
         fxt_app.dependency_overrides[get_job_dir] = lambda: tmp_path
 
-        response = await fxt_async_client.get(f"/api/jobs/{job.id}/logs", headers={"Accept": accept})
+        response = await fxt_async_client.get(f"/api/jobs/{job.id}/logs", headers={"Accept": "text/plain"})
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "log file not found" in response.json()["detail"].lower()

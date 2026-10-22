@@ -26,7 +26,7 @@ from app.api.schemas.jobs.training import TrainingRequest
 from app.api.validators import JobID
 from app.core.jobs.control_plane import CancellationResult, JobQueue
 from app.core.jobs.models import JobStatus
-from app.core.logging import extract_log_text
+from app.core.logging import iter_log_text
 from app.models import (
     DatasetFormat,
     ExportDatasetJob,
@@ -302,11 +302,10 @@ async def stream_job_status(
     response_model=None,
     responses={
         status.HTTP_200_OK: {
-            "description": "Job logs, either streamed in real time or downloaded as a file",
+            "description": "Real-time log stream (default), or a human-readable log file with `Accept: text/plain`",
             "content": {
-                "text/event-stream": {"description": "Real-time stream of NDJSON log records (default)"},
-                "text/plain": {"description": "Human-readable log file download (text extracted from NDJSON)"},
-                "application/x-ndjson": {"description": "Raw log file download (newline-delimited JSON)"},
+                "text/event-stream": {"schema": {"type": "string"}},
+                "text/plain": {"schema": {"type": "string"}},
             },
         },
         status.HTTP_404_NOT_FOUND: {"description": "Job or log file not found"},
@@ -321,18 +320,12 @@ async def get_job_logs(
     """
     Stream or download the log output of a specific job.
 
-    The response format is selected via the Accept header:
+    By default, logs are streamed using Server-Sent Events (SSE): the job's log file is read and new
+    lines are yielded as they are written, until the job finishes or the client disconnects.
 
-    - `text/plain`: download the logs as a human-readable text file, containing only the
-      formatted text of each log record.
-    - `application/x-ndjson`: download the raw log file, one JSON log record per line.
-    - anything else (e.g. `text/event-stream`): stream the logs using Server-Sent Events (SSE).
-      The stream reads the job's log file and yields new lines as they are written, allowing
-      clients to follow the job's progress in real-time. The stream continues until the job
-      finishes, the client disconnects or an error occurs.
-
-    Downloads return the log content available at the time of the request, so they can also
-    be used while the job is still running.
+    With `Accept: text/plain`, the logs are instead downloaded as a human-readable text file containing
+    the formatted text of each log record. The download contains the logs written so far, so it can
+    also be used while the job is still running.
     """
     job = job_queue.get(job_id)
     if not job:
@@ -342,19 +335,10 @@ async def get_job_logs(
     if not log_path.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Log file not found")
 
-    accept_lower = accept.lower() if accept else ""
-    if "text/plain" in accept_lower:
+    if accept is not None and "text/plain" in accept.lower():
         return StreamingResponse(
-            content=__gen_log_file(log_path, as_text=True),
+            content=iter_log_text(log_path),
             media_type="text/plain",
-            headers={"Content-Disposition": f'attachment; filename="{job.log_file}"'},
-        )
-    if "application/x-ndjson" in accept_lower:
-        # Streamed rather than served via FileResponse: the file may still be growing while the job runs,
-        # which would conflict with a Content-Length computed upfront.
-        return StreamingResponse(
-            content=__gen_log_file(log_path, as_text=False),
-            media_type="application/x-ndjson",
             headers={"Content-Disposition": f'attachment; filename="{job.log_file}"'},
         )
 
@@ -375,16 +359,6 @@ async def __gen_job_updates(job_id: UUID, job_queue: JobQueue) -> AsyncGenerator
         if j.status >= JobStatus.DONE:
             break
         await asyncio.sleep(0.1)
-
-
-async def __gen_log_file(log_path: Path, as_text: bool) -> AsyncGenerator[str]:
-    """Read the current content of a log file, optionally extracting only the human-readable text."""
-    async with aiofiles.open(log_path, encoding="utf-8", errors="replace") as f:
-        async for line in f:
-            if not as_text:
-                yield line
-            elif text := extract_log_text(line):
-                yield text
 
 
 async def __gen_log_stream(job_id: UUID, log_path: Path, job_queue: JobQueue) -> AsyncGenerator[ServerSentEvent]:

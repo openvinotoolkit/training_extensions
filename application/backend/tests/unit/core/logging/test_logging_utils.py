@@ -2,26 +2,30 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+from pathlib import Path
 
-import pytest
-
-from app.core.logging import extract_log_text
+from app.core.logging import iter_log_text
 from app.core.logging.utils import MALFORMED_LOG_LINE
 
 
-class TestExtractLogText:
-    @pytest.mark.parametrize(
-        "line, expected",
-        [
-            (json.dumps({"text": "Training started\n", "record": {}}) + "\n", "Training started\n"),
-            (json.dumps({"record": {}}) + "\n", ""),
-            (json.dumps({"text": None}) + "\n", ""),
-            ("\n", ""),
-            ("", ""),
-            ("not a json line\n", MALFORMED_LOG_LINE),
-            ("[1, 2, 3]\n", MALFORMED_LOG_LINE),
-        ],
-        ids=["text", "missing-text", "non-string-text", "blank-line", "empty", "invalid-json", "non-object-json"],
+def test_iter_log_text(tmp_path: Path) -> None:
+    log_path = tmp_path / "job.log"
+    log_path.write_text(
+        "\n".join(
+            [
+                json.dumps({"text": "Training started\n", "record": {}}),
+                json.dumps({"record": {}}),
+                "not a json line",
+                "[1, 2, 3]",
+                json.dumps({"text": "Epoch 1/10\n", "record": {}}),
+            ]
+        )
+        + "\n"
     )
-    def test_extract_log_text(self, line: str, expected: str) -> None:
-        assert extract_log_text(line) == expected
+
+    assert list(iter_log_text(log_path)) == [
+        "Training started\n",
+        MALFORMED_LOG_LINE,
+        MALFORMED_LOG_LINE,
+        "Epoch 1/10\n",
+    ]

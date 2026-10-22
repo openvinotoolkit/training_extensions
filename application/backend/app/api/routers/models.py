@@ -285,10 +285,10 @@ def get_training_metrics(
     response_model=None,
     responses={
         status.HTTP_200_OK: {
-            "description": "Training logs for the model",
+            "description": "Training logs for the model, as NDJSON (default) or plain text with `Accept: text/plain`",
             "content": {
-                "application/x-ndjson": {"description": "NDJSON format (newline-delimited JSON)"},
-                "text/plain": {"description": "Plain text format (extracted from NDJSON)"},
+                "application/x-ndjson": {"schema": {"type": "string"}},
+                "text/plain": {"schema": {"type": "string"}},
             },
         },
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid project or model ID"},

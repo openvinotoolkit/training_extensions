@@ -4,8 +4,9 @@
 import json
 import logging
 import os
-from collections.abc import Generator
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 
 from loguru import logger
 
@@ -15,28 +16,28 @@ from .handlers import InterceptHandler
 MALFORMED_LOG_LINE = "[MALFORMED LOG LINE]\n"
 
 
-def extract_log_text(line: str) -> str:
-    """Extract the human-readable text from a serialized (NDJSON) loguru log record.
+def iter_log_text(log_path: Path) -> Iterator[str]:
+    """Yield the human-readable text of each record of a serialized (NDJSON) loguru log file.
+
+    Reads the content available at the time of iteration, so it is safe to use on a log file
+    that is still being written to.
 
     Args:
-        line: A single line of a log file written by a loguru sink with ``serialize=True``.
+        log_path: Path to a log file written by a loguru sink with ``serialize=True``.
 
-    Returns:
-        str: The formatted ``text`` field of the record (including the trailing newline),
-            an empty string for blank lines or records without text, or a placeholder
-            if the line is not valid JSON.
+    Yields:
+        str: The formatted ``text`` field of each record (including the trailing newline),
+            or a placeholder for lines that cannot be parsed.
     """
-    if not line.strip():
-        return ""
-    try:
-        entry = json.loads(line)
-    except json.JSONDecodeError as e:
-        logger.warning("Failed to parse log line: {}", e)
-        return MALFORMED_LOG_LINE
-    if not isinstance(entry, dict):
-        return MALFORMED_LOG_LINE
-    text = entry.get("text", "")
-    return text if isinstance(text, str) else ""
+    with log_path.open(encoding="utf-8", errors="replace") as f:
+        for line in f:
+            try:
+                text = json.loads(line).get("text", "")
+            except (json.JSONDecodeError, AttributeError) as e:
+                logger.warning("Failed to parse log line: {}", e)
+                text = MALFORMED_LOG_LINE
+            if text:
+                yield text
 
 
 @contextmanager
