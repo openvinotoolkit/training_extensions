@@ -24,6 +24,7 @@ from getitune.backend.ultralytics.models import (
 from getitune.data.entity.base import ImageInfo
 from getitune.data.entity.sample import SampleBatch
 from getitune.data.module import DataModule
+from getitune.metrics.mean_ap import MaskRLEMeanAPCallable
 from getitune.types.export import ExportFormat
 from getitune.types.label import LabelInfo
 from getitune.types.precision import Precision
@@ -144,6 +145,56 @@ def test_predict_with_datamodule_uses_predict_dataloader(mocker, tmp_path) -> No
 
     datamodule.predict_dataloader.assert_called_once_with()
     assert len(predictions) == 1
+
+
+def test_torchmetrics_eval_tolerates_empty_detections_and_masks(mocker, tmp_path) -> None:
+    """torchmetrics eval must not crash on 'masks' when an image has no detections (GH #7805)."""
+    model = UltralyticsInstSegModel(model_name="yolo26n-seg", label_info=_label_info())
+    datamodule = mocker.MagicMock(spec=DataModule)
+
+    batch_with_gt = SampleBatch(
+        images=tv_tensors.Image(torch.rand(2, 3, 8, 8)),
+        imgs_info=[
+            ImageInfo(img_idx=0, img_shape=(8, 8), ori_shape=(8, 8)),  # pyrefly: ignore[no-matching-overload]
+            ImageInfo(img_idx=1, img_shape=(8, 8), ori_shape=(8, 8)),  # pyrefly: ignore[no-matching-overload]
+        ],
+        labels=[torch.tensor([0]), torch.tensor([1])],
+        masks=[
+            tv_tensors.Mask(torch.randint(0, 2, (1, 8, 8), dtype=torch.uint8)),
+            tv_tensors.Mask(torch.randint(0, 2, (1, 8, 8), dtype=torch.uint8)),
+        ],
+        bboxes=[
+            tv_tensors.BoundingBoxes(  # pyrefly: ignore[no-matching-overload]
+                torch.tensor([[1.0, 1.0, 4.0, 4.0]]), format="XYXY", canvas_size=(8, 8)
+            ),
+            tv_tensors.BoundingBoxes(  # pyrefly: ignore[no-matching-overload]
+                torch.tensor([[2.0, 2.0, 6.0, 6.0]]), format="XYXY", canvas_size=(8, 8)
+            ),
+        ],
+    )
+    batch_no_masks = SampleBatch(
+        images=tv_tensors.Image(torch.rand(1, 3, 8, 8)),
+        imgs_info=[ImageInfo(img_idx=0, img_shape=(8, 8), ori_shape=(8, 8))],  # pyrefly: ignore[no-matching-overload]
+        labels=[torch.tensor([0])],
+        masks=None,
+        bboxes=[
+            tv_tensors.BoundingBoxes(  # pyrefly: ignore[no-matching-overload]
+                torch.tensor([[1.0, 1.0, 4.0, 4.0]]), format="XYXY", canvas_size=(8, 8)
+            ),
+        ],
+    )
+    datamodule.test_dataloader.return_value = [batch_with_gt, batch_no_masks]
+
+    engine = UltralyticsEngine(model=model, data=datamodule, work_dir=tmp_path, device="cpu")
+
+    def fake_predict(_yolo, **kwargs) -> list:
+        # Zero detections for every image: Results.boxes/masks are None.
+        return [SimpleNamespace(boxes=None, masks=None) for _ in range(len(kwargs["source"]))]
+
+    with patch.object(engine, "_run_predict", side_effect=fake_predict):
+        results = engine.test(metric=MaskRLEMeanAPCallable)
+
+    assert any(key.startswith("test/") for key in results)
 
 
 class TestExportCheckpointResolution:
@@ -890,7 +941,7 @@ class TestInstSegTorchmetrics:
         assert result["test/map_50"] == pytest.approx(0.80)
 
     def test_detection_has_no_masks_key(self, mocker, tmp_path) -> None:
-        """Detection-only model should not produce masks key in pred/target dicts."""
+        """Detection-only model should not produce mask data in pred/target dicts."""
         engine, yolo = _make_engine(tmp_path, mocker)
 
         mock_result = MagicMock()
@@ -933,5 +984,5 @@ class TestInstSegTorchmetrics:
         preds_arg = call_kwargs.kwargs.get("preds") or call_kwargs[1].get("preds") or call_kwargs[0][0]
         targets_arg = call_kwargs.kwargs.get("target") or call_kwargs[1].get("target") or call_kwargs[0][1]
 
-        assert "masks" not in preds_arg[0]
-        assert "masks" not in targets_arg[0]
+        assert not preds_arg[0].get("masks")
+        assert not targets_arg[0].get("masks")
