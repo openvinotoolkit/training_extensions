@@ -24,7 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "datumaro[experimental]~=1.13.11",
+    "datumaro[experimental]~=1.13.12",
     "omegaconf==2.3.0",
     "rich==14.0.0",
     "jsonargparse==4.35.0",
@@ -187,7 +187,6 @@ torchvision = [
     { index = "torch-cuda", extra = "cuda"},
 ]
 ultralytics = { git = "https://github.com/ultralytics/ultralytics.git", rev = "3d2cc01ee02206e0f7adc2c1e9c559b0b73e66a8" }
-openvino-model-api = { git = "https://github.com/open-edge-platform/model_api.git", branch = "master", subdirectory = "model_api" }
 
 [[tool.uv.index]]
 name = "torch-cpu"
