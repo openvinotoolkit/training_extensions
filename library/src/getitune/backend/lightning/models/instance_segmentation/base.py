@@ -272,10 +272,7 @@ class LightningInstanceSegModel(PretrainedWeightsMixin, LightningModel):
         # Rebuild lists (not in-place insert) since label_names and label_groups[0] may alias.
         modified_label_info.label_names = [empty_lbl, *self.label_info.label_names]
         modified_label_info.label_ids = ["None", *self.label_info.label_ids]
-        modified_label_info.label_groups = [
-            [empty_lbl, *self.label_info.label_groups[0]],
-            *self.label_info.label_groups[1:],
-        ]
+        modified_label_info.label_groups = [[empty_lbl, *self.label_info.label_groups[0]]]
 
         return super()._export_parameters.wrap(
             model_type="MaskRCNN",
