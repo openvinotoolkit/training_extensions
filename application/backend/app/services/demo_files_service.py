@@ -488,8 +488,8 @@ description = "A minimal demo showcasing how to run inference with a model expor
 requires-python = ">=3.13,<3.14"
 
 dependencies = [
-    "openvino~=2026.3.0",
-    "openvino-model-api[onnx] @ git+https://github.com/open-edge-platform/model_api@master#subdirectory=model_api",
+    "openvino~=2026.4.0",
+    "openvino-model-api[onnx]~=0.4.7",
     "opencv-python-headless~=4.13.0",
     "numpy>=2.0",
     "pillow~=12.0",
