@@ -148,7 +148,8 @@ The UI uses i18next and react-i18next for internationalization. English is the
 default and fallback language. Translation catalogs live in `src/i18n/locales/`
 and are registered in `src/i18n/locales.ts`; currently supported languages are
 English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), Dutch (`nl`),
-Polish (`pl`), Portuguese (`pt`) and Chinese (`zh-CN`, `zh-HK`, `zh-MO`, `zh-TW`).
+Polish (`pl`), Portuguese (`pt`), Russian (`ru`) and Chinese (`zh-CN`, `zh-HK`,
+`zh-MO`, `zh-TW`).
 
 ### Code Quality
 
