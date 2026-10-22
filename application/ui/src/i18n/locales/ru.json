@@ -1,0 +1,1260 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "Отмена",
+            "close": "Закрыть",
+            "delete": "Удалить",
+            "goBack": "Вернуться назад",
+            "rename": "Переименовать",
+            "save": "Сохранить",
+            "assign": "Назначить",
+            "back": "Назад",
+            "clear": "Очистить",
+            "clearAll": "Очистить всё",
+            "confirm": "Подтвердить",
+            "connect": "Подключить",
+            "continue": "Продолжить",
+            "create": "Создать",
+            "disconnect": "Отключить",
+            "dismiss": "Отклонить",
+            "download": "Скачать",
+            "edit": "Изменить",
+            "export": "Экспорт",
+            "hide": "Скрыть",
+            "next": "Далее",
+            "refresh": "Обновить",
+            "remove": "Убрать",
+            "selectAll": "Выбрать всё",
+            "showLess": "Показать меньше",
+            "showMore": "Показать больше",
+            "skip": "Пропустить",
+            "start": "Начать",
+            "submit": "Отправить",
+            "train": "Обучить",
+            "upload": "Загрузить",
+            "undo": "Отменить действие",
+            "redo": "Вернуть действие",
+            "annotate": "Аннотировать",
+            "addAndUse": "Добавить и использовать",
+            "saveAndConnect": "Сохранить и подключить",
+            "testConnection": "Проверить подключение"
+        },
+        "labels": {
+            "allUppercase": "ВСЕ",
+            "yes": "Да",
+            "no": "Нет",
+            "unknown": "Неизвестно",
+            "name": "Имя",
+            "architecture": "Архитектура",
+            "device": "Устройство",
+            "on": "Вкл.",
+            "off": "Выкл.",
+            "noMaximum": "Без максимума",
+            "active": "Активная",
+            "dataset": "Набор данных",
+            "filters": "Фильтры",
+            "images": "Изображения",
+            "videos": "Видео",
+            "size": "Размер",
+            "sizeUppercase": "РАЗМЕР",
+            "statusUppercase": "СТАТУС",
+            "settings": "Настройки",
+            "training": "Обучение",
+            "training_subset": "Обучающее",
+            "validation": "Валидация",
+            "validation_subset": "Валидационное",
+            "testing": "Тестирование",
+            "unassigned": "Не назначено",
+            "trainingLowercase": "обучающее",
+            "validationLowercase": "валидационное",
+            "testingLowercase": "тестовое",
+            "frames": "Кадры",
+            "seconds": "Секунды",
+            "every": "каждые",
+            "model": "Модель",
+            "jobs": "Задания",
+            "labels": "Метки",
+            "bytesTransferred": "{{transferred}} из {{total}}"
+        },
+        "viewModes": {
+            "large": "Крупные миниатюры",
+            "medium": "Средние миниатюры",
+            "small": "Мелкие миниатюры"
+        },
+        "status": {
+            "pending": "В ожидании",
+            "running": "Выполняется",
+            "done": "Готово",
+            "cancelled": "Отменено",
+            "uploading": "Загрузка",
+            "failed": "Не удалось",
+            "error": "Ошибка",
+            "disconnected": "Отключено"
+        },
+        "errors": {
+            "unknown": "Произошла неизвестная ошибка",
+            "unknownDetail": "Неизвестная ошибка"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Логотип Geti",
+        "datasetDescription": "Страница сбора данных для просмотра медиаэлементов",
+        "models": "Модели",
+        "modelsDescription": "Страница моделей для просмотра ваших моделей",
+        "inference": "Инференс",
+        "inferenceDescription": "Страница инференса, показывающая инференс в реальном времени в вашем проекте",
+        "help": {
+            "documentation": "Документация пользователя",
+            "whatsNew": "Что нового",
+            "reportIssue": "Сообщить о проблеме"
+        }
+    },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "Представление с таким именем уже существует.",
+            "invalidDateRange": "Дата окончания должна быть позже даты начала"
+        },
+        "views": {
+            "deleted": "Удалённое представление",
+            "title": "Представления",
+            "entireDataset": "Весь набор данных",
+            "assignToExistingView": "Назначить существующему представлению",
+            "assignTo": "Назначить в",
+            "selectView": "Выберите представление",
+            "assignmentNote": "Эта операция не затронет другие медиаэлементы, уже назначенные этому представлению.",
+            "mediaAssigned_one": "Успешно назначен {{count}} медиаэлемент.",
+            "mediaAssigned_few": "Успешно назначено {{count}} медиаэлемента.",
+            "mediaAssigned_many": "Успешно назначено {{count}} медиаэлементов.",
+            "mediaAssigned_other": "Успешно назначено {{count}} медиаэлементов.",
+            "openView": "Открыть {{viewName}}",
+            "saveView": "Сохранить представление",
+            "viewNameLabel": "Имя представления",
+            "renameTitle": "Переименовать представление набора данных",
+            "deleteTitle": "Подтверждение удаления",
+            "deleteConfirmation": "Вы уверены, что хотите удалить представление набора данных «{{viewName}}»?",
+            "deleteSuccess": "Представление набора данных «{{viewName}}» успешно удалено.",
+            "unassignFromView": "Убрать из этого представления",
+            "selectedMediaCount_one": "Выбран {{count}} медиаэлемент",
+            "selectedMediaCount_few": "Выбрано {{count}} медиаэлемента",
+            "selectedMediaCount_many": "Выбрано {{count}} медиаэлементов",
+            "selectedMediaCount_other": "Выбрано {{count}} медиаэлементов"
+        },
+        "filters": {
+            "allMedia": "Все медиа",
+            "withAnnotations": "Медиа с аннотациями",
+            "missingAnnotations": "Медиа без аннотаций",
+            "subset": "Фильтр по подмножеству",
+            "searchLabels": "Поиск меток",
+            "labelsSelected_one": "Выбрана {{count}} метка",
+            "labelsSelected_few": "Выбрано {{count}} метки",
+            "labelsSelected_many": "Выбрано {{count}} меток",
+            "labelsSelected_other": "Выбрано {{count}} меток",
+            "toggleAll": "Переключить все",
+            "more": "Больше фильтров",
+            "dateRange": {
+                "heading": "Фильтр по дате загрузки",
+                "startDateLabel": "Дата начала",
+                "endDateLabel": "Дата окончания",
+                "from": "С {{date}}",
+                "to": "По {{date}}"
+            }
+        },
+        "upload": {
+            "queued": "В очереди",
+            "processing": "Обработка",
+            "uploaded": "Загружено",
+            "errorTitle": "Ошибка загрузки",
+            "details": "Подробности загрузки",
+            "filename": "ИМЯ ФАЙЛА",
+            "uploadingSummary_one": "Загружается {{total}} элемент — загружено {{uploaded}}",
+            "uploadingSummary_few": "Загружается {{total}} элемента — загружено {{uploaded}}",
+            "uploadingSummary_many": "Загружается {{total}} элементов — загружено {{uploaded}}",
+            "uploadingSummary_other": "Загружается {{total}} элементов — загружено {{uploaded}}",
+            "uploadingFailedSummary_one": "Загружается {{total}} элемент — загружено {{uploaded}}, с ошибкой {{failed}}",
+            "uploadingFailedSummary_few": "Загружается {{total}} элемента — загружено {{uploaded}}, с ошибкой {{failed}}",
+            "uploadingFailedSummary_many": "Загружается {{total}} элементов — загружено {{uploaded}}, с ошибкой {{failed}}",
+            "uploadingFailedSummary_other": "Загружается {{total}} элементов — загружено {{uploaded}}, с ошибкой {{failed}}",
+            "uploadedSummary_one": "Загружен {{count}} элемент",
+            "uploadedSummary_few": "Загружено {{count}} элемента",
+            "uploadedSummary_many": "Загружено {{count}} элементов",
+            "uploadedSummary_other": "Загружено {{count}} элементов",
+            "failedSummary_one": "Не удалось загрузить {{count}} элемент",
+            "failedSummary_few": "Не удалось загрузить {{count}} элемента",
+            "failedSummary_many": "Не удалось загрузить {{count}} элементов",
+            "failedSummary_other": "Не удалось загрузить {{count}} элементов",
+            "mixedSummary_one": "Загружен {{uploaded}} элемент, с ошибкой {{failed}}",
+            "mixedSummary_few": "Загружено {{uploaded}} элемента, с ошибкой {{failed}}",
+            "mixedSummary_many": "Загружено {{uploaded}} элементов, с ошибкой {{failed}}",
+            "mixedSummary_other": "Загружено {{uploaded}} элементов, с ошибкой {{failed}}",
+            "mixedCancelledSummary_one": "Загружен {{uploaded}} элемент, с ошибкой {{failed}}, отменено {{cancelled}}",
+            "mixedCancelledSummary_few": "Загружено {{uploaded}} элемента, с ошибкой {{failed}}, отменено {{cancelled}}",
+            "mixedCancelledSummary_many": "Загружено {{uploaded}} элементов, с ошибкой {{failed}}, отменено {{cancelled}}",
+            "mixedCancelledSummary_other": "Загружено {{uploaded}} элементов, с ошибкой {{failed}}, отменено {{cancelled}}",
+            "genericError": "Не удалось загрузить медиа.",
+            "uploadMedia": "Загрузить медиа",
+            "showDetails": "Показать подробности",
+            "inProgressToast_one": "Загружается {{count}} элемент...",
+            "inProgressToast_few": "Загружается {{count}} элемента...",
+            "inProgressToast_many": "Загружается {{count}} элементов...",
+            "inProgressToast_other": "Загружается {{count}} элементов...",
+            "inProgressSucceededPart": "{{count}} успешно",
+            "inProgressFailedPart": "{{count}} с ошибкой",
+            "cancelAll": "Отменить все",
+            "cancelledSummary_one": "Отменена {{count}} загрузка",
+            "cancelledSummary_few": "Отменено {{count}} загрузки",
+            "cancelledSummary_many": "Отменено {{count}} загрузок",
+            "cancelledSummary_other": "Отменено {{count}} загрузок"
+        },
+        "empty": {
+            "noMatches": "Нет медиаэлементов, соответствующих фильтру.",
+            "changeFilter": "Удалите фильтр или выберите новый.",
+            "viewEmpty": "В этом представлении нет медиаэлементов.",
+            "assignOrBack": "Назначьте в него медиаэлементы или вернитесь ко всему набору данных.",
+            "goToEntireDataset": "Перейти к {{datasetName}}",
+            "datasetEmpty": "Ваш набор данных пуст.",
+            "uploadToStart": "Загрузите первый медиаэлемент, чтобы начать."
+        },
+        "review": {
+            "reviewed": "Проверено",
+            "forReview": "На проверку",
+            "selectSubsetPlaceholder": "Выберите подмножество"
+        },
+        "statistics": {
+            "label": "Статистика набора данных",
+            "title": "Статистика набора данных",
+            "numberOfMedia": "Количество медиа",
+            "annotatedImages": "Аннотированные изображения",
+            "annotatedVideosFrames": "Аннотированные видео / кадры",
+            "numberOfObjectsPerLabel": "Количество объектов по меткам",
+            "unannotated": "Без аннотаций",
+            "annotated": "С аннотациями",
+            "annotationsChartTooltip": "Аннотации"
+        },
+        "delete": {
+            "title": "Удаление элементов",
+            "mediaItem": "Удалить медиаэлемент",
+            "confirmation_one": "Вы уверены, что хотите удалить {{count}} элемент?",
+            "confirmation_few": "Вы уверены, что хотите удалить {{count}} элемента?",
+            "confirmation_many": "Вы уверены, что хотите удалить {{count}} элементов?",
+            "confirmation_other": "Вы уверены, что хотите удалить {{count}} элементов?",
+            "deletingItems": "Удаление элементов...",
+            "deleteError": "Не удалось удалить, {{detail}}",
+            "deletedSuccess_one": "{{count}} элемент успешно удалён",
+            "deletedSuccess_few": "{{count}} элемента успешно удалено",
+            "deletedSuccess_many": "{{count}} элементов успешно удалено",
+            "deletedSuccess_other": "{{count}} элементов успешно удалено"
+        },
+        "bulkLabels": {
+            "title": "Назначение меток",
+            "uploadInstructions": "Выберите метки, которые нужно назначить загруженным изображениям, затем нажмите «Продолжить». Если вы предпочитаете аннотировать изображения позже, выберите «Пропустить».",
+            "selectedInstructions": "Выберите метки, которые нужно назначить выбранным изображениям, затем нажмите «Назначить».",
+            "imageOnlyNote": "Выбранные метки применяются только к изображениям; видео (если они есть) будут загружены без аннотаций.",
+            "selectedImagesNote": "Выбранные метки применяются только к изображениям; видео (если они есть) останутся без изменений.",
+            "noResults": "Ничего не найдено. Попробуйте изменить поисковый запрос.",
+            "cancelUpload": "Отменить загрузку",
+            "assignLabelTooltip": "Назначить метку",
+            "assignAllSuccess": "Метки успешно назначены всем изображениям ({{count}})",
+            "assignAllFailure": "Не удалось назначить метки ни одному из изображений ({{count}})",
+            "assignPartialSuccess": "Метки назначены {{succeeded}} из {{total}} изображений (с ошибкой: {{failed}})"
+        },
+        "mediaActions": {
+            "downloadStarted": "Началось скачивание {{fileName}}"
+        },
+        "gallery": {
+            "sort": {
+                "label": "Сортировать медиа по:",
+                "uploadDateDescending": "Дата загрузки (сначала новые)",
+                "uploadDateAscending": "Дата загрузки (сначала старые)"
+            },
+            "selectedCount": "Выбрано: {{count}}",
+            "totalMediaCount_one": "{{count}} медиаэлемент",
+            "totalMediaCount_few": "{{count}} медиаэлемента",
+            "totalMediaCount_many": "{{count}} медиаэлементов",
+            "totalMediaCount_other": "{{count}} медиаэлементов",
+            "dropZone": {
+                "title": "Перетащите медиафайлы сюда",
+                "description": "Изображения и видео будут загружены в этот набор данных."
+            },
+            "mediaInfo": {
+                "annotatedFrames": "Количество аннотированных кадров: {{count}}",
+                "totalFrames": "Всего кадров: {{count}}"
+            }
+        },
+        "import": {
+            "jobTitle": "Импорт набора данных — {{fileName}} — {{size}}",
+            "processingMessage": "Файл {{fileName}} обрабатывается для импорта",
+            "technicalDetails": "Технические подробности",
+            "preparingJob": "Подготовка",
+            "stagedFileReadError": "Произошла ошибка при чтении подготовленного файла",
+            "prepareError": "Произошла ошибка при подготовке импорта.",
+            "genericError": "Произошла ошибка при импорте.",
+            "importedSuccess": "Набор данных {{fileName}} {{size}} успешно импортирован.",
+            "multipleFilesError": "Добавление папок или нескольких файлов не допускается. Загрузите один файл.",
+            "unsupportedFormatError": "Неподдерживаемый формат файла. Загрузите корректный файл .zip.",
+            "datasetBeingUploaded": "Набор данных загружается",
+            "dropZipHere": "Перетащите сюда .zip-файл набора данных",
+            "learnMoreFormats": "Подробнее о различных форматах",
+            "dialogHeading": "Импорт набора данных",
+            "scanningMessage": "Сканирование и анализ архива набора данных для импорта...",
+            "mapLabelsMessage": "Сопоставьте метки для загруженного набора данных",
+            "deleteStagedFile": {
+                "title": "Удалить подготовленный файл",
+                "confirmation": "Вы уверены, что хотите удалить файл набора данных «{{stagedDatasetId}}»?"
+            },
+            "formatWarning": {
+                "boundingBoxToPolygon": "В импортируемом наборе данных используются аннотации в виде ограничивающих рамок, а в наборе данных вашего проекта — многоугольники. Аннотации будут автоматически преобразованы в многоугольники, чтобы сохранить совместимость.",
+                "polygonToBoundingBox": "В импортируемом наборе данных используются аннотации в виде многоугольников, а в наборе данных вашего проекта — ограничивающие рамки. Аннотации будут автоматически преобразованы в ограничивающие рамки, чтобы сохранить совместимость."
+            },
+            "labelMapping": {
+                "statisticsHeading": "Статистика импортируемого набора данных",
+                "heading": "Сопоставление меток — необязательно",
+                "unmappedNote": "Все несопоставленные элементы будут импортированы без меток",
+                "datasetLabelsColumn": "Метки набора данных",
+                "projectLabelsColumn": "Метки проекта",
+                "selectLabelPlaceholder": "Выберите метку",
+                "imagesLabel": "изображения",
+                "framesLabel": "кадры"
+            }
+        },
+        "export": {
+            "heading": "Экспорт {{name}}",
+            "headingDatasetView": "Экспорт представления набора данных",
+            "datasetView": "Представление: {{name}}",
+            "statisticsHeading": "Статистика экспортируемого набора данных",
+            "settingsHeading": "Настройки экспорта",
+            "filterByLabel": "Фильтровать аннотации по метке",
+            "selectFormat": "Выберите формат экспорта набора данных",
+            "learnMoreFormats": "Подробнее о форматах экспорта",
+            "processing": "Подготовка набора данных к экспорту",
+            "readyForDownload": "Набор данных готов к скачиванию",
+            "downloadStarted": "Скачивание набора данных началось",
+            "error": "Ошибка: {{error}}",
+            "itemsLabel": "элементов",
+            "details": {
+                "defaultName": "набор данных",
+                "format": "Формат:",
+                "media": "Медиа:",
+                "onlyAnnotated": "Только медиа с аннотациями",
+                "labels": "Метки:"
+            },
+            "warnings": {
+                "videos": "Экспорт видео не поддерживается этим форматом набора данных. Все аннотированные кадры из видео будут экспортированы как изображения.",
+                "emptyLabel": "Выбранный формат не поддерживает пустые метки (например, «{{emptyLabelName}}»). Изображения и кадры, содержащие их, будут экспортированы как неаннотированные.",
+                "unsupportedItemsEmptyLabels": "пустые метки",
+                "unsupportedItemsVideos": "видео",
+                "unsupportedItems": "Чтобы сохранить {{items}}, используйте формат экспорта Geti.",
+                "subsetNotIncluded": "Экспортируемый набор данных не будет содержать информацию о подмножестве, назначенном каждому медиаэлементу."
+            }
+        },
+        "importExport": {
+            "trigger": "Импорт/экспорт набора данных",
+            "exportItem": "Экспортировать набор данных"
+        },
+        "revisions": {
+            "createdOn": "Создано {{date}}",
+            "unnamedName": "Набор данных #{{id}}",
+            "notFoundForModel": "Для этой модели не найдена ревизия набора данных",
+            "filesDeleted": "Файлы этой ревизии набора данных были удалены.",
+            "noItemsInSubset": "В этом подмножестве нет элементов",
+            "itemAlt": "Элемент подмножества «{{subset}}»",
+            "trainingSubsets": {
+                "test": "Тест"
+            },
+            "rename": {
+                "title": "Переименовать ревизию набора данных",
+                "nameLabel": "Имя ревизии набора данных"
+            },
+            "delete": {
+                "title": "Удалить ревизию набора данных",
+                "description": "Вы уверены, что хотите удалить ревизию набора данных «{{name}}»? Вы по-прежнему сможете видеть статистику модели, но потеряете доступ к файлам обучающего набора данных."
+            }
+        },
+        "includeUnannotated": "Включить медиа без аннотаций"
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "Ключ не может быть пустым",
+            "valueEmpty": "Значение не может быть пустым"
+        },
+        "connection": {
+            "testing": "Проверка подключения...",
+            "inUse": "Используется",
+            "unreachable": "Недоступен",
+            "ready": "Готов",
+            "saveErrorFallback": "попробуйте ещё раз",
+            "removeSuccess": "«{{name}}» успешно удалён!"
+        },
+        "confidenceThreshold": {
+            "label": "Порог уверенности"
+        },
+        "devices": {
+            "label": "Устройство инференса"
+        },
+        "sources": {
+            "uploadError": "Не удалось загрузить видеофайл.",
+            "deleteVideoError": "Не удалось удалить загруженный видеофайл.",
+            "list": {
+                "addSource": "Добавить новый источник"
+            },
+            "types": {
+                "usbCamera": "usb-камера",
+                "ipCamera": "ip-камера",
+                "videoFile": "видеофайл",
+                "imagesFolder": "папка с изображениями",
+                "disconnected": "отключено"
+            },
+            "options": {
+                "usbCamera": "USB-камера",
+                "ipCamera": "IP-камера",
+                "videoFile": "Видеофайл"
+            },
+            "add": {
+                "title": "Добавить новый источник входных данных"
+            },
+            "edit": {
+                "title": "Изменить источник входных данных"
+            },
+            "form": {
+                "createSuccess": "Конфигурация источника успешно создана.",
+                "updateSuccess": "Конфигурация источника успешно обновлена.",
+                "saveError": "Не удалось сохранить конфигурацию источника, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Успешно установлено подключение к «{{name}}».",
+                "disconnectSuccess": "Успешно выполнено отключение от «{{name}}».",
+                "disablePipelineAndDisconnectSuccess": "Конвейер отключён, выполнено отключение от «{{name}}».",
+                "disconnectDialog": {
+                    "title": "Отключить {{name}}",
+                    "message": "Отключение этого источника также отключит конвейер инференса. Продолжить?"
+                }
+            },
+            "settings": {
+                "loading": "Загрузка...",
+                "device": "Устройство: {{name}}",
+                "unknownDevice": "Неизвестное устройство (id: {{deviceId}})",
+                "ignoreExistingImages": "Игнорировать существующие изображения: {{value}}",
+                "streamUrl": "URL потока: {{url}}",
+                "videoPath": "Путь к видео: {{path}}"
+            },
+            "fields": {
+                "imagesFolderPath": "Путь к папке с изображениями",
+                "ignoreExistingImages": "Игнорировать существующие изображения",
+                "streamUrl": "URL потока:",
+                "requireAuthentication": "Требовать аутентификацию",
+                "camera": "Камера",
+                "videoFilePath": "Путь к видеофайлу",
+                "selectedFile": "Выбрано: {{fileName}}",
+                "loopVideo": "Зациклить видео"
+            },
+            "defaultNames": {
+                "usbCamera": "Источник — USB-камера",
+                "ipCamera": "Источник — IP-камера",
+                "videoFile": "Источник — видеофайл"
+            }
+        },
+        "sinks": {
+            "types": {
+                "folder": "папка",
+                "mqtt": "mqtt",
+                "webhook": "webhook",
+                "ros": "ros"
+            },
+            "options": {
+                "folder": "Папка",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "Добавить новый приёмник"
+            },
+            "edit": {
+                "title": "Изменить приёмник"
+            },
+            "form": {
+                "createSuccess": "Конфигурация приёмника успешно создана.",
+                "updateSuccess": "Конфигурация приёмника успешно обновлена.",
+                "saveError": "Не удалось сохранить конфигурацию приёмника, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "Успешно установлено подключение к «{{name}}»",
+                "disconnectSuccess": "Успешно выполнено отключение от «{{name}}»"
+            },
+            "settings": {
+                "rateLimit": "Ограничение частоты: {{value}}",
+                "httpMethod": "HTTP-метод: {{value}}",
+                "timeout": "Тайм-аут: {{value}}",
+                "webhookUrl": "URL webhook: {{value}}",
+                "topic": "Топик: {{value}}",
+                "brokerHost": "Хост брокера: {{value}}",
+                "brokerPort": "Порт брокера: {{value}}",
+                "outputFormats": "Форматы вывода: ",
+                "outputFormatTypes": {
+                    "imageOriginal": "исходное изображение",
+                    "imageWithPredictions": "изображение с предсказаниями",
+                    "predictions": "предсказания"
+                }
+            },
+            "rateLimit": {
+                "notSet": "Не задано",
+                "samplesPerSecond_one": "{{count}} образец каждую секунду",
+                "samplesPerSecond_few": "{{count}} образца каждую секунду",
+                "samplesPerSecond_many": "{{count}} образцов каждую секунду",
+                "samplesPerSecond_other": "{{count}} образцов каждую секунду",
+                "oneSamplePerSeconds_one": "1 образец каждую {{count}} секунду",
+                "oneSamplePerSeconds_few": "1 образец каждые {{count}} секунды",
+                "oneSamplePerSeconds_many": "1 образец каждые {{count}} секунд",
+                "oneSamplePerSeconds_other": "1 образец каждые {{count}} секунд"
+            },
+            "fields": {
+                "samples": "Образцы",
+                "outputFormatsLabel": "Форматы вывода",
+                "outputFormatPredictions": "Предсказания",
+                "outputFormatImageOriginal": "Исходное изображение",
+                "outputFormatImageWithPredictions": "Изображение с предсказаниями",
+                "folderPath": "Путь к папке",
+                "httpMethod": "HTTP-метод",
+                "timeout": "Тайм-аут",
+                "webhookUrl": "URL webhook",
+                "headers": "Заголовки",
+                "topic": "Топик",
+                "brokerHost": "Хост брокера",
+                "brokerPort": "Порт брокера",
+                "authRequired": "Требуется аутентификация"
+            },
+            "webhook": {
+                "headersHelp": "Добавьте столько пар «ключ — значение», сколько нужно. Каждая пара будет включена в объект «{{title}}».",
+                "keyPlaceholder": "ключ",
+                "valuePlaceholder": "значение"
+            },
+            "defaultNames": {
+                "localFolder": "Приёмник — локальная папка",
+                "webhook": "Приёмник — webhook",
+                "mqtt": "Приёмник — MQTT"
+            }
+        },
+        "pipeline": {
+            "activeModel": {
+                "loading": "Модель: ..."
+            },
+            "toggle": {
+                "enabledLabel": "Конвейер включён",
+                "disabledLabel": "Конвейер отключён",
+                "enabledSuccess": "Конвейер успешно включён",
+                "disabledSuccess": "Конвейер успешно отключён"
+            },
+            "configuration": {
+                "sidebarLabel": "Конфигурация конвейера",
+                "sourcesTab": "Вход",
+                "sinksTab": "Выход"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "Политика сбора данных",
+            "maxDatasetSize": {
+                "title": "Максимальный размер набора данных",
+                "description": "Максимальное количество собираемых элементов"
+            },
+            "captureRate": {
+                "title": "Частота захвата",
+                "description": "Захватывать кадры во время работы потока",
+                "toggleLabel": "Переключить автозахват"
+            },
+            "confidenceThreshold": {
+                "description": "Захватывать кадры, когда уверенность ниже порога",
+                "sliderLabel": "Порог"
+            }
+        },
+        "metrics": {
+            "time": "время",
+            "sidebarLabel": "Метрики конвейера",
+            "empty": {
+                "title": "Статистика недоступна",
+                "description": "Метрики конвейера появятся здесь, как только конвейер начнёт работать и обрабатывать данные."
+            },
+            "throughput": {
+                "title": "Пропускная способность",
+                "axisLabel": "запросов/с"
+            },
+            "latency": {
+                "title": "Задержка",
+                "axisLabel": "мс"
+            }
+        },
+        "health": {
+            "overall": {
+                "idle": "Простой",
+                "problemsDetected": "Обнаружены проблемы"
+            },
+            "component": {
+                "healthy": "Исправен",
+                "finished": "Завершён",
+                "unavailable": "Недоступен"
+            },
+            "componentLabels": {
+                "source": "Источник",
+                "sink": "Приёмник"
+            }
+        },
+        "stream": {
+            "start": "Запустить поток",
+            "enablePipelineToStart": "Включите конвейер, чтобы запустить поток",
+            "connectError": "Не удалось подключиться к потоку",
+            "captureFrame": "Захватить кадр",
+            "captureSuccess": "Кадр захвачен и добавлен в набор данных."
+        },
+        "settings": {
+            "folderPath": "Путь к папке: {{path}}",
+            "authRequired": "Требуется аутентификация: {{value}}"
+        }
+    },
+    "project": {
+        "delete": {
+            "confirmation": "Вы уверены, что хотите удалить проект «{{projectName}}»?",
+            "success": "Проект успешно удалён"
+        },
+        "rename": {
+            "title": "Изменить имя проекта",
+            "success": "Проект успешно обновлён"
+        },
+        "validation": {
+            "nameEmpty": "Имя проекта не может быть пустым",
+            "nameExists": "Такое имя проекта уже существует"
+        },
+        "panel": {
+            "manageProjects": "Управление проектами",
+            "enablePipelineBlocked": {
+                "title": "Невозможно включить конвейер",
+                "message": "Перед включением конвейера убедитесь, что выбраны модель и источник."
+            }
+        },
+        "taskTypes": {
+            "detection": "Обнаружение объектов",
+            "classification": "Классификация",
+            "instanceSegmentation": "Сегментация экземпляров",
+            "multiLabelClassification": "Многометочная классификация",
+            "recommended": "{{taskType}} (рекомендуется)"
+        },
+        "list": {
+            "count_one": "{{count}} проект",
+            "count_few": "{{count}} проекта",
+            "count_many": "{{count}} проектов",
+            "count_other": "{{count}} проектов",
+            "countFiltered_one": "{{filtered}} из {{count}} проекта",
+            "countFiltered_few": "{{filtered}} из {{count}} проектов",
+            "countFiltered_many": "{{filtered}} из {{count}} проектов",
+            "countFiltered_other": "{{filtered}} из {{count}} проектов",
+            "createNewProject": "Создать новый проект",
+            "createProjectFromDataset": "Создать из набора данных",
+            "card": {
+                "created": "Создан: {{date}}",
+                "models_one": "{{count}} модель",
+                "models_few": "{{count}} модели",
+                "models_many": "{{count}} моделей",
+                "models_other": "{{count}} моделей"
+            },
+            "menu": {
+                "enablePipeline": "Включить конвейер",
+                "disablePipeline": "Отключить конвейер"
+            },
+            "sort": {
+                "label": "Сортировать проекты по:",
+                "nameAscending": "Имя (А–Я)",
+                "nameDescending": "Имя (Я–А)",
+                "createdAtDescending": "Дата создания (сначала новые)",
+                "createdAtAscending": "Дата создания (сначала старые)"
+            },
+            "filters": {
+                "searchPlaceholder": "Поиск проектов",
+                "taskType": "Фильтр по типу задачи",
+                "models": "Фильтр по моделям",
+                "withTrainedModels": "С обученными моделями"
+            },
+            "noMatches": {
+                "title": "Нет проектов, соответствующих фильтрам",
+                "description": "Попробуйте изменить поисковый запрос или фильтры по типу задачи, чтобы найти нужное."
+            },
+            "empty": {
+                "intro": "Добро пожаловать в <name>Geti</name> — платформу компьютерного зрения, которая проведёт вас через <highlight>полный жизненный цикл модели</highlight>: от подготовки набора данных до обучения, оптимизации и развёртывания."
+            },
+            "workflow": {
+                "addData": "Добавить данные",
+                "optimize": "Оптимизировать",
+                "runInference": "Запустить инференс",
+                "loop": "Отслеживайте предсказания и собирайте больше данных, чтобы итеративно дообучать модель"
+            }
+        },
+        "create": {
+            "taskQuestion": "Какой тип задачи должна выполнять модель?",
+            "labelsQuestion": "Какие объекты модель должна научиться {{verb}}?",
+            "submit": "Создать проект",
+            "tasks": {
+                "detection": {
+                    "title": "Обнаружение объектов на изображениях",
+                    "description": "Находите и локализуйте объекты на изображениях",
+                    "advice": "Лучше всего подходит для: подсчёта, отслеживания",
+                    "verb": "обнаруживать"
+                },
+                "instanceSegmentation": {
+                    "title": "Сегментация экземпляров объектов",
+                    "description": "Обнаруживайте и выделяйте определённые области или формы",
+                    "advice": "Лучше всего подходит для: измерений, нестандартных форм",
+                    "verb": "сегментировать"
+                },
+                "classification": {
+                    "title": "Классификация изображений",
+                    "description": "Распределяйте изображения по категориям на основе их содержимого",
+                    "advice": "Лучше всего подходит для: фильтрации, модерации контента",
+                    "verb": "классифицировать"
+                }
+            },
+            "classificationType": {
+                "title": "Какой тип классификации должна использовать модель?",
+                "singleLabel": {
+                    "label": "Одна метка",
+                    "description": "Назначать одну метку из взаимоисключающих меток",
+                    "warning": "Требуется минимум 2 метки"
+                },
+                "multiLabel": {
+                    "label": "Несколько меток",
+                    "description": "Назначать одну или несколько меток из невзаимоисключающих меток"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "Требуется хотя бы один объект"
+            },
+            "defaultName": "Проект №{{number}}"
+        },
+        "import": {
+            "title": "Создание проекта из набора данных — импорт",
+            "labelMapping": {
+                "title": "Сопоставление меток"
+            },
+            "preparingMessage": "Подготовка импорта набора данных как нового проекта",
+            "taskSelection": {
+                "projectName": "Имя проекта",
+                "selectTaskPlaceholder": "Выберите задачу",
+                "recommendationHint": "Рекомендуемый вариант основан на типе аннотаций, обнаруженных в наборе данных. Если вы выберете другой тип, аннотации будут автоматически преобразованы при импорте в соответствии с выбранным типом."
+            },
+            "jobsList": {
+                "selectTaskType": "Выберите тип задачи",
+                "mapLabelsButton": "Сопоставить метки"
+            }
+        },
+        "taskType": "Тип задачи"
+    },
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "Горячая клавиша",
+            "nameExists": "Такое имя метки уже существует",
+            "hotkeyExists": "Эта горячая клавиша уже используется"
+        },
+        "editor": {
+            "namePlaceholder": "Имя метки",
+            "pin": "Закрепить метку",
+            "unpin": "Открепить метку",
+            "editTrigger": "Изменить метки",
+            "createTrigger": "Создать метку",
+            "delete": {
+                "title": "Удалить метку",
+                "message": "Если вы удалите метку {{labelName}}, все аннотации в вашем наборе данных с этой меткой будут удалены. Однако это не повлияет на модели, обученные ранее."
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "Горячая клавиша: {{hotkey}}",
+            "overflowCount": "+ ещё {{count}}"
+        },
+        "empty": {
+            "noLabel": "Нет метки",
+            "noObject": "Нет объекта"
+        }
+    },
+    "annotator": {
+        "canvas": {
+            "hideLabels": "Скрыть метки",
+            "pixelView": "Попиксельный просмотр",
+            "annotationFillOpacity": "Непрозрачность заливки аннотации",
+            "annotationBorderOpacity": "Непрозрачность границы аннотации",
+            "imageBrightness": "Яркость изображения",
+            "imageContrast": "Контрастность изображения",
+            "imageSaturation": "Насыщенность изображения"
+        },
+        "actions": {
+            "zoomIn": "Увеличить",
+            "zoomOut": "Уменьшить",
+            "fitToScreen": "Вписать в экран ({{hotkey}})",
+            "undo": "Отменить ({{hotkey}})",
+            "redo": "Вернуть ({{hotkeys}})",
+            "toggleFocus": "Переключить фокус",
+            "showAnnotations": "Показать аннотации ({{hotkey}})",
+            "hideAnnotations": "Скрыть аннотации ({{hotkey}})"
+        },
+        "modes": {
+            "annotation": "Аннотация",
+            "prediction": "Предсказание"
+        },
+        "predictions": {
+            "settingsTitle": "Настройки предсказаний",
+            "confirm": "Подтвердить предсказание"
+        },
+        "hotkeys": {
+            "alternatives": "{{primary}} или {{alternative}}",
+            "title": "Горячие клавиши",
+            "submitAnnotationsPredictions": "Отправить аннотации/предсказания",
+            "previousMedia": "Предыдущее медиа",
+            "nextMedia": "Следующее медиа",
+            "deleteSelectedAnnotation": "Удалить выбранную аннотацию",
+            "toggleAnnotationsVisibility": "Показать или скрыть все аннотации",
+            "selectAllAnnotations": "Выбрать все аннотации",
+            "deselectAllAnnotations": "Снять выделение со всех аннотаций",
+            "selectNextAnnotation": "Выбрать следующую аннотацию",
+            "resetZoom": "Сбросить масштаб"
+        },
+        "tools": {
+            "selection": {
+                "label": "Выделение"
+            },
+            "boundingBox": {
+                "label": "Ограничивающая рамка",
+                "description": "Нарисуйте прямоугольник или квадрат вокруг объекта на изображении."
+            },
+            "autoSegmentation": {
+                "label": "Автосегментация",
+                "detectionDescription": "Наведите курсор на объект, чтобы увидеть предлагаемый прямоугольник, затем щёлкните, чтобы создать аннотацию.",
+                "segmentationDescription": "Наведите курсор на объект, чтобы увидеть предлагаемый многоугольник, затем щёлкните, чтобы создать аннотацию.",
+                "loading": "Обработка изображения, подождите...",
+                "error": "Ошибка в инструменте Segment Anything: {{message}}",
+                "unknownError": "Неизвестная ошибка, попробуйте обновить страницу.",
+                "timeoutError": "Превышено время ожидания операции «{{operation}}»: {{timeoutMs}} мс. Попробуйте обновить страницу.",
+                "embeddingError": "Не удалось получить эмбеддинг изображения ({{status}}{{statusText}}).",
+                "operations": {
+                    "workerBuild": "Сборка воркера SAM",
+                    "workerInit": "Инициализация воркера SAM",
+                    "decoder": "Декодер SAM"
+                }
+            },
+            "polygon": {
+                "label": "Многоугольник",
+                "description": "Щёлкайте, чтобы расставлять точки одну за другой, или удерживайте кнопку мыши и перетаскивайте, чтобы рисовать от руки. Идеально для неправильных форм, требующих точности до пикселя."
+            },
+            "magneticLasso": {
+                "label": "Магнитное лассо",
+                "description": "Ведите курсор вдоль края объекта и периодически щёлкайте, чтобы контур прилипал к его границам.",
+                "error": "Не удалось определить границы фигуры, попробуйте ещё раз."
+            },
+            "ssim": {
+                "label": "Помощник обнаружения",
+                "description": "Нарисуйте рамку вокруг объекта, чтобы автоматически найти и аннотировать похожие объекты на изображении.",
+                "loading": "Загрузка помощника обнаружения, подождите...",
+                "error": "Ошибка в инструменте «Помощник обнаружения»: {{message}}",
+                "operations": {
+                    "workerBuild": "Сборка воркера помощника обнаружения"
+                },
+                "options": {
+                    "accept": "Принять",
+                    "reject": "Отклонить предложение",
+                    "numberOfItems": "Количество элементов",
+                    "autoMergeDuplicates": "Автоматически объединять дубликаты"
+                }
+            }
+        },
+        "video": {
+            "playback": {
+                "slower": "Медленнее",
+                "slow": "Медленно",
+                "normal": "Обычная",
+                "speed": "Скорость воспроизведения",
+                "showAllFrames": "Показать все кадры",
+                "showOneFramePerSecond": "Показывать 1 кадр в секунду"
+            },
+            "frames": {
+                "currentTotal": "Текущий кадр: {{currentFrame}} / Всего кадров: {{totalFrames}}",
+                "thumbnailAlt": "Миниатюра кадра {{frameNumber}}"
+            },
+            "errors": {
+                "network": "Не удаётся воспроизвести видео из-за сетевой ошибки, обновите страницу и попробуйте снова.",
+                "unableToPlay": "Не удаётся воспроизвести видео, попробуйте ещё раз.",
+                "unsupportedFormat": "Не удаётся воспроизвести видео, попробуйте другой формат видео (mp4/webm)."
+            }
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "Задание завершилось с ошибкой. Проверьте журналы и попробуйте снова.",
+            "pending": "В ожидании...",
+            "running": "Выполняется...",
+            "stopDialog": {
+                "title": "Остановить задание",
+                "confirmation": "Вы уверены, что хотите остановить это задание?"
+            },
+            "logs": "Журналы",
+            "startedAt": "Начато: {{time}}",
+            "waitingToStart": "Ожидание запуска...",
+            "device": "Устройство: {{device}}"
+        },
+        "detail": {
+            "loadError": "Не удалось загрузить сведения о модели",
+            "tabs": {
+                "variants": "Варианты модели",
+                "metrics": "Метрики модели",
+                "parameters": "Параметры обучения",
+                "datasets": "Обучающие наборы данных"
+            }
+        },
+        "metrics": {
+            "noMetrics": "Метрики недоступны",
+            "loadError": "Не удалось загрузить метрики обучения",
+            "evaluationsTitle": "Оценки",
+            "noEvaluations": "Метрики оценки на тестировании недоступны"
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "Успешно скопировано",
+                "copyError": "Не удалось скопировать",
+                "copyPathTooltip": "Нажмите, чтобы скопировать путь",
+                "showTraceback": "Показать трассировку",
+                "levelLabel": "Уровень",
+                "levelHelpTitle": "Минимальный уровень журналирования",
+                "levelHelpDescription": "Показывает записи журнала выбранного уровня и выше. Например, при выборе WARNING отображаются записи WARNING, ERROR и CRITICAL, а DEBUG и INFO скрываются.",
+                "searchPlaceholder": "Поиск в журналах...",
+                "connectionStatus": {
+                    "connecting": "Подключение...",
+                    "connected": "В реальном времени",
+                    "error": "Ошибка подключения"
+                },
+                "entriesCount": "{{filtered}} / {{total}} записей",
+                "noEntries": "Нет записей журнала",
+                "noMatchingEntries": "Нет подходящих записей журнала",
+                "scrollToBottom": "Прокрутить вниз",
+                "dialogTitle": "Журналы обучения",
+                "loadError": "Не удалось загрузить журналы: {{message}}",
+                "noJobOrModel": "Задание или модель не указаны",
+                "fetchError": "Не удалось получить журналы модели: {{status}} {{statusText}}",
+                "downloadStarted": "Скачивание журналов обучения началось"
+            },
+            "parameters": {
+                "noParameters": "Нет параметров.",
+                "learningParameters": "ПАРАМЕТРЫ ОБУЧЕНИЯ",
+                "filters": "ФИЛЬТРЫ",
+                "augmentations": "АУГМЕНТАЦИИ",
+                "intensityMapping": "ОТОБРАЖЕНИЕ ИНТЕНСИВНОСТИ"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "Top-1 Acc на ImageNet",
+                    "mapOnCoco": "mAP на COCO",
+                    "map50OnCoco": "mAP50 на COCO"
+                },
+                "card": {
+                    "numberOfParameters": "Количество параметров: {{count}} млн",
+                    "gigaflops": "Гигафлопсы: {{value}}"
+                },
+                "sort": {
+                    "label": "Сортировать модели по:",
+                    "nameAsc": "Имя (от А до Я)",
+                    "nameDesc": "Имя (от Я до А)",
+                    "speedAsc": "Скорость (сначала самые быстрые)",
+                    "speedDesc": "Скорость (сначала самые медленные)",
+                    "accuracyAsc": "Точность (сначала самая низкая)",
+                    "accuracyDesc": "Точность (сначала самая высокая)"
+                },
+                "timm": {
+                    "heading": "Конфигурация модели TIMM",
+                    "architectureFamilyLabel": "Семейство архитектур",
+                    "selectArchitecturePlaceholder": "Выберите архитектуру",
+                    "modelVariantLabel": "Вариант модели",
+                    "selectVariantPlaceholder": "Выберите вариант",
+                    "pretrainedWeightsLabel": "Предобученные веса",
+                    "selectWeightsPlaceholder": "Выберите веса",
+                    "parameters": "Параметры: {{count}} млн",
+                    "gigaflops": "ГигаФлопсы: {{value}}"
+                }
+            },
+            "devices": {
+                "selectLabel": "Выберите устройство для обучения"
+            },
+            "setup": {
+                "trigger": "Обучить модель",
+                "dialog": {
+                    "title": "Выберите модель для обучения",
+                    "disabledReasonTitle": "Почему я не могу начать обучение?",
+                    "advancedSettings": "Расширенные настройки"
+                },
+                "toast": {
+                    "trainingStarted": "Обучение модели успешно запущено.",
+                    "trainingStartedWithLink": "Обучение модели успешно запущено. <modelsLink>Откройте экран моделей, чтобы увидеть прогресс.</modelsLink>"
+                },
+                "selectDataset": {
+                    "label": "Выберите набор данных",
+                    "useEntireDataset": "Использовать весь набор данных",
+                    "helpTitle": "Выбор набора данных",
+                    "helpDescription": "Выберите данные для обучения. Выберите «Использовать весь набор данных», чтобы обучаться на самой свежей версии всех данных (то, что вы видите на странице «Набор данных»). Выберите представление набора данных, чтобы обучаться только на медиа, назначенных этому представлению. Выберите ревизию набора данных, чтобы обучаться ровно на тех же данных (медиа и аннотациях), что и другая модель.",
+                    "sections": {
+                        "views": "Представления набора данных",
+                        "revisions": "Ревизии набора данных"
+                    }
+                },
+                "selectModel": {
+                    "label": "Выберите входные веса",
+                    "defaultPretrainedWeights": "Предобученные веса по умолчанию",
+                    "helpTitle": "Выбор входных весов",
+                    "helpDescription": "Выберите существующую модель, чтобы продолжить её дообучение, или выберите «Предобученные веса по умолчанию», чтобы дообучить новую модель, начиная с общедоступных весов, предобученных на больших публичных наборах данных."
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "Чтобы обучить модель, нужно аннотировать не менее 3 элементов в наборе данных, однако для лучших результатов рекомендуем аннотировать значительно больше.",
+                "notEnoughAnnotationsInView": "Чтобы обучить модель, нужно аннотировать не менее 3 элементов в выбранном представлении набора данных, однако для лучших результатов рекомендуем аннотировать значительно больше.",
+                "emptySubsetsReason": "Чтобы обучить модель, каждое подмножество (обучающее, валидационное, тестовое) должно содержать хотя бы один элемент. Сейчас это условие невыполнимо, так как {{subsetClause}}, а {{assignmentDetail}}.",
+                "emptySubsetClause_one": "подмножество {{list}} пусто",
+                "emptySubsetClause_few": "подмножества {{list}} пусты",
+                "emptySubsetClause_many": "подмножества {{list}} пусты",
+                "emptySubsetClause_other": "подмножества {{list}} пусты",
+                "reviewedOnly_one": "остался {{count}} проверенный элемент для назначения",
+                "reviewedOnly_few": "осталось {{count}} проверенных элемента для назначения",
+                "reviewedOnly_many": "осталось {{count}} проверенных элементов для назначения",
+                "reviewedOnly_other": "осталось {{count}} проверенных элементов для назначения",
+                "unannotatedOnly_one": "есть {{count}} элемент, который нужно аннотировать, прежде чем его можно будет назначить",
+                "unannotatedOnly_few": "есть {{count}} элемента, которые нужно аннотировать, прежде чем их можно будет назначить",
+                "unannotatedOnly_many": "есть {{count}} элементов, которые нужно аннотировать, прежде чем их можно будет назначить",
+                "unannotatedOnly_other": "есть {{count}} элементов, которые нужно аннотировать, прежде чем их можно будет назначить",
+                "mixedReviewedClause_one": "есть {{count}} проверенный элемент, готовый к назначению",
+                "mixedReviewedClause_few": "есть {{count}} проверенных элемента, готовых к назначению",
+                "mixedReviewedClause_many": "есть {{count}} проверенных элементов, готовых к назначению",
+                "mixedReviewedClause_other": "есть {{count}} проверенных элементов, готовых к назначению",
+                "mixedUnannotatedClause_one": "{{count}} элемент, который нужно аннотировать, прежде чем его можно будет назначить",
+                "mixedUnannotatedClause_few": "{{count}} элемента, которые нужно аннотировать, прежде чем их можно будет назначить",
+                "mixedUnannotatedClause_many": "{{count}} элементов, которые нужно аннотировать, прежде чем их можно будет назначить",
+                "mixedUnannotatedClause_other": "{{count}} элементов, которые нужно аннотировать, прежде чем их можно будет назначить",
+                "mixedAssignmentDetail": "{{reviewedClause}}, а также {{unannotatedClause}}",
+                "noUnassignedItems": "нет неназначенных элементов, которые можно перераспределить"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "Управление данными"
+                },
+                "notAvailable": "Конфигурация обучения недоступна."
+            },
+            "learning": {
+                "title": "Параметры обучения модели",
+                "tagDefault": "По умолчанию",
+                "tagModified": "Изменено",
+                "inputSize": "Размер входных данных"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "Обучающие подмножества",
+                    "description": "Укажите распределение аннотированных образцов, которые ещё НЕ были назначены подмножеству. Обратите внимание: образцы, использованные в предыдущих циклах обучения, уже отнесены к подмножеству, и оно останется без изменений, чтобы избежать загрязнения данных и смещения оценки.",
+                    "unavailableTitle": "Некорректная конфигурация обучающих подмножеств",
+                    "unavailableDescription": "Обучающие подмножества не содержат достаточного количества медиаэлементов для настраиваемого разделения между обучающим, валидационным и тестовым подмножествами.",
+                    "unavailableHint": "Добавьте больше медиаэлементов, чтобы в каждом подмножестве был хотя бы один элемент.",
+                    "datasetSamples": "Набор данных: {{count}} образцов",
+                    "assignedSamples": "Назначено: {{count}}",
+                    "unassignedSamples": "Не назначено: {{count}}",
+                    "distributionLabel": "Распределение для новых образцов",
+                    "resultingDistribution": "Итоговое распределение набора данных:",
+                    "totalLabel": "Всего:",
+                    "mediaItemsLabel": "медиаэлементов"
+                },
+                "filters": {
+                    "noMinimum": "Без минимума",
+                    "unlimited": "Без ограничений"
+                },
+                "augmentation": {
+                    "title": "Аугментация данных"
+                },
+                "tiling": {
+                    "title": "Разбиение на фрагменты",
+                    "description": "Разбиение на фрагменты — это метод, который делит изображения высокого разрешения на меньшие фрагменты и может повысить точность в задачах обнаружения мелких объектов.",
+                    "modeLabel": "Режим разбиения на фрагменты",
+                    "modes": {
+                        "automatic": "Автоматический",
+                        "custom": "Пользовательский"
+                    },
+                    "offDescription": "Модель обрабатывает изображение целиком, не разделяя его на меньшие фрагменты. Такой подход прост, но может плохо справляться с обнаружением мелких объектов на изображениях высокого разрешения, так как модель может упустить мелкие детали",
+                    "automaticDescription": "Это означает, что система автоматически подберёт параметры на основе разрешения изображения и размера аннотаций."
+                },
+                "intensityMapping": {
+                    "title": "Отображение интенсивности"
+                }
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "Группировать по",
+            "groupByDataset": "Группировка: набор данных",
+            "groupByArchitecture": "Группировка: архитектура",
+            "hideFailedModels": "Скрыть неудачные модели",
+            "showFailedModels": "Показать неудачные модели",
+            "searchPlaceholder": "Поиск моделей...",
+            "noModelsFound": "Модели не найдены",
+            "empty": {
+                "title": "Моделей пока нет.",
+                "description": "Обучите первую модель, чтобы начать."
+            },
+            "deletedWeightsBadge": "Веса удалены",
+            "fineTunedFrom": "Дообучена на основе",
+            "columns": {
+                "trained": "Обучена",
+                "totalSize": "Общий размер"
+            }
+        },
+        "performance": {
+            "metrics": {
+                "accuracy": "Правильность (accuracy)",
+                "precision": "Точность (precision)",
+                "recall": "Полнота",
+                "fMeasure": "F-мера"
+            },
+            "categories": {
+                "balance": "Баланс",
+                "speed": "Скорость",
+                "accuracy": "Точность"
+            }
+        },
+        "variants": {
+            "empty": "Нет доступных вариантов модели.",
+            "columns": {
+                "precision": "ТОЧНОСТЬ"
+            },
+            "quantizedInfo": {
+                "title": "Квантована с помощью NNCF PTQ",
+                "maxAccuracyDrop": "Макс. падение точности: {{value}}",
+                "calibrationDatasetSize": "Размер калибровочного набора данных: {{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "Скачивание модели началось"
+        },
+        "optimize": {
+            "description": "Оптимизировать модель FP16 с помощью OpenVINO NNCF (через квантизацию INT8)",
+            "contextualHelp": "OpenVINO NNCF (Neural Network Compression Framework) через квантизацию INT8 уменьшает размер модели и ускоряет инференс с минимальным влиянием на точность",
+            "start": "Начать квантизацию",
+            "dialogTitle": "Квантизация",
+            "subheading": "Квантовать модель до INT8",
+            "jobStarted": "Задание квантизации запущено.",
+            "recommendedCalibrationSize": "Рекомендуемый размер калибровочного набора данных: от 200 до 500 медиаэлементов",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "Макс. падение точности (%)",
+                    "help": {
+                        "paragraph1": "Максимально допустимое падение точности на валидации.",
+                        "paragraph2": "Учтите, что квантизация с учётом точности может занять много времени, если максимально допустимое падение невелико.",
+                        "paragraph3": "Также обратите внимание, что итоговая точность на тестировании может быть ниже заданного порога точности на валидации, особенно для относительно небольших наборов данных."
+                    }
+                },
+                "maxIterations": {
+                    "label": "Макс. число итераций",
+                    "help": {
+                        "paragraph1": "Максимальное число итераций квантизации с учётом точности.",
+                        "paragraph2": "Квантизация с учётом точности итеративно исключает слои модели из области квантизации, пока не будет выполнен критерий максимального падения точности. Ограничение числа итераций может существенно сократить время квантизации моделей с большим числом слоёв.",
+                        "paragraph3": "Этот параметр используется только при заданном максимальном падении точности."
+                    }
+                },
+                "calibrationSize": {
+                    "label": "Макс. размер калибровочной выборки",
+                    "help": "Калибровочные образцы будут выбраны случайным образом внутри набора данных",
+                    "useFullDataset": "Использовать набор данных целиком"
+                }
+            }
+        },
+        "actions": {
+            "deleteWeights": "Удалить веса",
+            "deleteModel": "Удалить модель",
+            "viewLogs": "Просмотреть журналы обучения",
+            "deleteWeightsDescription": "Вы уверены, что хотите удалить веса модели «{{modelName}}»?",
+            "deleteModelDescription": "Вы уверены, что хотите удалить модель «{{modelName}}»? Это действие нельзя отменить.",
+            "renameDialog": {
+                "title": "Переименовать модель",
+                "nameLabel": "Имя модели"
+            }
+        },
+        "columns": {
+            "modelName": "Имя модели"
+        }
+    },
+    "jobs": {
+        "allProjects": "Все проекты",
+        "currentProjectLabel": "{{name}} (текущий)",
+        "projectsSection": "Проекты",
+        "tabs": {
+            "all": "Все",
+            "finished": "Завершённые"
+        },
+        "status": {
+            "pending": "В очереди",
+            "cancelling": "Отменяется",
+            "done": "Завершено"
+        },
+        "type": {
+            "quantize": "Оптимизация"
+        },
+        "columns": {
+            "type": "Тип"
+        },
+        "cancel": {
+            "title": "Отменить задание",
+            "confirmation": "Вы уверены, что хотите отменить задание {{jobId}}?"
+        },
+        "meta": {
+            "started": "Начато {{time}}",
+            "elapsed": "Прошло {{time}}",
+            "duration": "Длительность {{time}}",
+            "finished": "Завершено {{time}}",
+            "failed": "Ошибка {{time}}",
+            "cancelled": "Отменено {{time}}"
+        },
+        "emptyState": {
+            "all": "Нет заданий",
+            "running": "Нет выполняющихся заданий",
+            "finished": "Нет завершённых заданий",
+            "scheduled": "Нет заданий в очереди",
+            "cancelled": "Нет отменённых заданий",
+            "failed": "Нет заданий с ошибкой"
+        },
+        "actions": {
+            "viewLogs": "Просмотреть журналы"
+        }
+    },
+    "license": {
+        "label": "Лицензия: ",
+        "agreement": {
+            "title": "Лицензионные соглашения",
+            "intro": "Ознакомьтесь со следующими лицензиями и примите их, чтобы продолжить использование Geti.",
+            "progress": "{{current}} из {{total}}",
+            "required": "Обязательно",
+            "optional": "Необязательно",
+            "fullLicense": "Прочитать полный текст лицензии",
+            "previous": "Предыдущая",
+            "accept": "Принять и продолжить"
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "Загрузка... Пожалуйста, подождите."
+        },
+        "serverError": {
+            "heading": "Ошибка сервера"
+        },
+        "errorPage": {
+            "badRequest": "Сервер не может или не будет обрабатывать текущий запрос.",
+            "forbidden": "У вас нет прав для доступа к этой странице.",
+            "notFound": "Такой страницы не существует!",
+            "unauthorized": "У вас нет прав на просмотр этого содержимого",
+            "serverError": "На сервере произошла ошибка, и он не смог выполнить ваш запрос.",
+            "serviceUnavailable": "Похоже, наш API недоступен",
+            "goHome": "Вернуться на главную страницу"
+        },
+        "notifications": {
+            "unexpectedError": "Произошла непредвиденная ошибка. Попробуйте ещё раз.",
+            "networkError": "Сетевая ошибка. Проверьте подключение и попробуйте ещё раз.",
+            "uploadTransferError": "Не удалось передать файл. Попробуйте ещё раз."
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "Не удалось скачать файл"
+        },
+        "saveDialog": {
+            "allFiles": "Все файлы",
+            "fileTypeFilter": "Файл {{extension}}"
+        }
+    }
+}
