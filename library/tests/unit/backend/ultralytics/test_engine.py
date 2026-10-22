@@ -187,6 +187,13 @@ def test_torchmetrics_eval_tolerates_empty_detections_and_masks(mocker, tmp_path
 
     engine = UltralyticsEngine(model=model, data=datamodule, work_dir=tmp_path, device="cpu")
 
+    # Mock the lazy YOLO build so the test never touches the real model or
+    # downloads pretrained weights.
+    mock_yolo = MagicMock()
+    mock_yolo.model.to.return_value = mock_yolo.model
+    mock_yolo.model.eval.return_value = mock_yolo.model
+    model._yolo = mock_yolo
+
     def fake_predict(_yolo, **kwargs) -> list:
         # Zero detections for every image: Results.boxes/masks are None.
         return [SimpleNamespace(boxes=None, masks=None) for _ in range(len(kwargs["source"]))]
