@@ -15,6 +15,10 @@ name: Cleanup Old Application Container Images
 # - Among the remaining versions (dev/daily builds and untagged versions) the
 #   most recent `min_versions_to_keep` are kept; older ones are deleted.
 #
+# RC images for a specific released version are instead removed automatically
+# once that version is promoted, see remove-rc-app-images.yml (invoked from
+# promote-rc-app-release.yml).
+#
 # Supports a dry-run mode (default) that previews deletions without removing
 # anything.
 

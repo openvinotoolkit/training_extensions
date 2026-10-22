@@ -1,7 +1,27 @@
 name: Remove Application RC Container Images
 
+# Can be run manually (workflow_dispatch) or invoked automatically as a reusable
+# workflow (workflow_call) right after a stable version is promoted, e.g. from
+# promote-rc-app-release.yml once its RC images have been published as release images.
+#
+# Safety note: promotion retags an RC image digest as the stable version, so
+# GHCR may represent both tags as a single package version. Deleting that
+# version would delete the stable image too, so any matched version that still
+# carries the stable release tag is preserved instead of deleted.
+
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Released version whose RC images should be removed, e.g. 3.0.0"
+        required: true
+        type: string
+      dry_run:
+        description: "Preview deletions without removing image versions"
+        required: false
+        type: boolean
+        default: true
+  workflow_call:
     inputs:
       version:
         description: "Released version whose RC images should be removed, e.g. 3.0.0"
@@ -54,6 +74,7 @@ jobs:
 
           deleted=0
           candidates=0
+          preserved=0
           scanned_packages=0
           owner_type=""
           api_scope=""
@@ -97,8 +118,12 @@ jobs:
 
             # Select RC-tagged versions for the requested version (e.g. 3.0.0rc1)
             # only when the released version (e.g. 3.0.0) also exists as a tag in
-            # this package.
-            # Each line is "<id>\t<comma-separated tags>".
+            # this package. A version is flagged "keep" instead of "delete" when
+            # its own tags also include the stable release tag: promotion retags
+            # the RC digest as the stable version, so GHCR represents both tags
+            # as a single package version. Deleting that version would delete the
+            # stable image too, so it must be preserved rather than removed.
+            # Each line is "<id>\t<comma-separated tags>\t<delete|keep>".
             mapfile -t versions < <(
               echo "${versions_json}" | jq -r --arg version "${TARGET_VERSION}" '
                 ([.[] | .tags[]?] | any(. == $version)) as $has_release
@@ -107,7 +132,8 @@ jobs:
                     and any(.tags[]?;
                         startswith($version + "rc")
                         and ((ltrimstr($version + "rc")) | test("^[0-9]+$"))))
-                | "\(.id)\t\(.tags | join(","))"'
+                | (any(.tags[]?; . == $version)) as $shares_stable_tag
+                | "\(.id)\t\(.tags | join(","))\t\(if $shares_stable_tag then "keep" else "delete" end)"'
             )
 
             if [[ "${#versions[@]}" -eq 0 ]]; then
@@ -116,11 +142,13 @@ jobs:
             fi
 
             for version_entry in "${versions[@]}"; do
-              version_id="${version_entry%%$'\t'*}"
-              version_tags="${version_entry#*$'\t'}"
+              IFS=$'\t' read -r version_id version_tags version_action <<<"${version_entry}"
               [[ -n "${version_tags}" ]] || version_tags="<untagged>"
               candidates=$((candidates + 1))
-              if [[ "${DRY_RUN}" == "true" ]]; then
+              if [[ "${version_action}" == "keep" ]]; then
+                echo "Preserving ${package} version id ${version_id} (tags: ${version_tags}): shares its digest with the stable '${TARGET_VERSION}' tag."
+                preserved=$((preserved + 1))
+              elif [[ "${DRY_RUN}" == "true" ]]; then
                 echo "[dry-run] Would delete ${package} version id ${version_id} (tags: ${version_tags})"
               else
                 echo "Deleting ${package} version id ${version_id} (tags: ${version_tags})"
@@ -140,5 +168,6 @@ jobs:
             echo "- Dry run: ${DRY_RUN}"
             echo "- Packages scanned: ${scanned_packages}"
             echo "- Package versions matched: ${candidates}"
+            echo "- Package versions preserved (shared digest with stable tag): ${preserved}"
             echo "- Package versions deleted: ${deleted}"
           } >> "${GITHUB_STEP_SUMMARY}"

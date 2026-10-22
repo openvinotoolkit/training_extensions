@@ -21,6 +21,11 @@ on:
         required: false
         type: boolean
         default: false
+      delete_rc_images:
+        description: "After a successful promotion, delete this version's RC-tagged images from GHCR"
+        required: false
+        type: boolean
+        default: true
 
 permissions: {} # No permissions by default
 
@@ -295,3 +300,14 @@ jobs:
       MSIX_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.MSIX_SIGN_CERTIFICATE_PASSWORD }}
     permissions:
       contents: read
+
+  cleanup-rc-images:
+    needs: [validate, promote-docker]
+    if: inputs.dry_run == false && inputs.delete_rc_images
+    name: Delete promoted version's RC images from GHCR
+    uses: $/.github/workflows/remove-rc-app-images.yml
+    with:
+      version: ${{ needs.validate.outputs.docker_patch_tag }}
+      dry_run: false
+    permissions:
+      packages: write
