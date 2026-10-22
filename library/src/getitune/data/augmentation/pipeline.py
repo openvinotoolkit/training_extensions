@@ -25,10 +25,12 @@ from kornia.augmentation.container import ops
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import DictConfig
 from torch import nn
+from torchvision import tv_tensors
 
 from getitune.config.data import IntensityConfig
 from getitune.data.augmentation.cache import CacheableMixin
 from getitune.data.augmentation.intensity import build_intensity_transform
+from getitune.data.entity.polygons import pack_polygon_batch, polygon_lengths, unpack_polygon_batch
 from getitune.data.entity.sample import BaseSample
 from getitune.data.utils import import_object_from_module
 
@@ -494,6 +496,11 @@ class GPUAugmentationPipeline(nn.Module):
         >>> augmented_images = pipeline(batch_images)
     """
 
+    #: A ring needs three vertices to enclose area. Fewer rasterizes to an
+    #: empty mask, so such an instance is dropped rather than kept as a
+    #: zero-area target that only contributes background loss.
+    _MIN_POLYGON_VERTICES: int = 3
+
     def __init__(
         self,
         augmentations: list[nn.Module] | None = None,
@@ -679,6 +686,96 @@ class GPUAugmentationPipeline(nn.Module):
         msg = f"GPUAugmentationPipeline accepts only DictConfig | dict | nn.Module, got {type(cfg_transform)}."
         raise TypeError(msg)
 
+    def _pack_keypoint_slot(
+        self,
+        keypoints: list[torch.Tensor] | None,
+        polygons: list[torch.Tensor] | None,
+    ) -> tuple[torch.Tensor | None, list[tuple[int, int]] | None]:
+        """Build Kornia's single ``keypoints`` tensor from keypoints or polygons.
+
+        Args:
+            keypoints: Per-image keypoints, or ``None``.
+            polygons: Per-image polygons, or ``None``.
+
+        Returns:
+            Tuple of the packed ``(B, N, 2)`` tensor (or ``None``) and the polygon
+            shapes needed to unpack it (or ``None``).
+        """
+        if "keypoints" not in self._data_keys:
+            return None, None
+        if keypoints is not None:
+            return torch.stack(keypoints), None
+        if polygons is not None:
+            packed, polygon_shapes = pack_polygon_batch(polygons)
+            # An all-empty batch gives (B, 0, 2); Kornia has no meaningful
+            # transform for it and some ops index into it, so skip the slot.
+            if packed.shape[1]:
+                return packed, polygon_shapes
+        return None, None
+
+    def _parse_results(
+        self,
+        results: list[Any],
+        provided_keys: list[str],
+        output: dict[str, Any],
+        polygons: list[torch.Tensor] | None,
+        polygon_shapes: list[tuple[int, int]] | None,
+    ) -> None:
+        """Write Kornia outputs back into ``output`` in place.
+
+        Args:
+            results: Kornia outputs, aligned with ``provided_keys``.
+            provided_keys: Data keys actually passed to Kornia.
+            output: Result dict mutated in place.
+            polygons: Original polygons, used to recover their canvas sizes.
+            polygon_shapes: Shapes produced by :func:`pack_polygon_batch`.
+        """
+        for i, key in enumerate(provided_keys):
+            if key == "input":
+                output["images"] = results[i]
+            elif key == "label":
+                output["labels"] = results[i]
+            elif key == "bbox_xyxy":
+                output["bboxes"] = results[i]
+            elif key == "mask":
+                output["masks"] = [m.squeeze(0) for m in results[i]]  # (1, N, H, W) -> (N, H, W)
+            elif key == "keypoints":
+                self._parse_keypoint_result(results[i], output, polygons, polygon_shapes)
+
+    def _parse_keypoint_result(
+        self,
+        kp_result: torch.Tensor | list[torch.Tensor],
+        output: dict[str, Any],
+        polygons: list[torch.Tensor] | None,
+        polygon_shapes: list[tuple[int, int]] | None,
+    ) -> None:
+        """Unpack Kornia's keypoint slot into keypoints or polygons.
+
+        Args:
+            kp_result: Kornia's augmented keypoint slot, normally a ``(B, N, 2)``
+                tensor.
+            output: Result dict mutated in place.
+            polygons: Original polygons, used to recover their canvas sizes.
+            polygon_shapes: Shapes produced by :func:`pack_polygon_batch`, or
+                ``None`` when the slot holds real keypoints.
+        """
+        if polygon_shapes is not None:
+            out_images = typing.cast("torch.Tensor", output["images"])
+            net_canvas = (int(out_images.shape[-2]), int(out_images.shape[-1]))
+            # Only a geometric augmentation moves polygons into the network
+            # canvas. An intensity-only pipeline (val/test) leaves them in the
+            # space the CPU stage produced, which with resize_targets=False is
+            # each sample's ori_shape -- overwriting it there is what silently
+            # breaks downstream rasterization and metric reprojection.
+            canvas: Any = net_canvas
+            if not self._has_geometric_augs and polygons is not None:
+                canvas = [getattr(p, "canvas_size", net_canvas) for p in polygons]
+            output["polygons"] = unpack_polygon_batch(kp_result, polygon_shapes, canvas)
+        elif isinstance(kp_result, torch.Tensor) and kp_result.dim() == 3:
+            output["keypoints"] = list(kp_result.unbind(0))
+        else:
+            output["keypoints"] = kp_result
+
     def forward(
         self,
         images: torch.Tensor,
@@ -686,6 +783,7 @@ class GPUAugmentationPipeline(nn.Module):
         bboxes: list[torch.Tensor] | None = None,
         masks: list[torch.Tensor] | None = None,
         keypoints: list[torch.Tensor] | None = None,
+        polygons: list[torch.Tensor] | None = None,
     ) -> dict[str, Any]:
         """Apply GPU augmentations to batched data using Kornia AugmentationSequential.
 
@@ -697,13 +795,27 @@ class GPUAugmentationPipeline(nn.Module):
                 - Semantic segmentation: (C, H, W) format
                 - Instance segmentation: (N_instances, H, W) format
             keypoints: List of keypoints per image (optional).
+            polygons: List of ``(N_i, P_i, 2)`` instance-segmentation polygons
+                (optional). Shares Kornia's ``keypoints`` slot — the two are the
+                same transform, and no task uses both.
 
         Returns:
             Dict with augmented data:
-            {"images": tensor, "labels": list, "bboxes": list, "masks": list, "keypoints": list}
+            {"images": tensor, "labels": list, "bboxes": list, "masks": list, "keypoints": list, "polygons": list}
         """
+        if keypoints is not None and polygons is not None:
+            msg = "keypoints and polygons both map to Kornia's 'keypoints' slot; pass only one"
+            raise ValueError(msg)
+
         if self.aug_sequential is None:
-            return {"images": images, "labels": labels, "bboxes": bboxes, "masks": masks, "keypoints": keypoints}
+            return {
+                "images": images,
+                "labels": labels,
+                "bboxes": bboxes,
+                "masks": masks,
+                "keypoints": keypoints,
+                "polygons": polygons,
+            }
 
         # Handle instance segmentation masks: Kornia expects (N, C, H, W) but instance
         # masks are (N_instances, H, W). We add a channel dim before and squeeze after.
@@ -712,11 +824,10 @@ class GPUAugmentationPipeline(nn.Module):
             # Instance seg masks: (N_instances, H, W) - 3D per sample
             # Semantic seg masks: (C, H, W) where C is often 1 or num_classes
             # We add channel dim to all masks for consistency with Kornia
-            masks = [m.unsqueeze(0) for m in masks]  # (N, H, W) -> (N, 1, H, W)
+            masks = [m.unsqueeze(0) for m in masks]  # (N, H, W) -> (1, N, H, W)
 
         # Kornia expects keypoints as a single (B, N, 2) tensor, not a list.
-        if keypoints is not None and "keypoints" in self._data_keys:
-            keypoints = torch.stack(keypoints)  # type: ignore[assignment]  # (B, N, 2)
+        kp_slot, polygon_shapes = self._pack_keypoint_slot(keypoints, polygons)
 
         # Map data key names to actual data
         data_map = {
@@ -724,7 +835,7 @@ class GPUAugmentationPipeline(nn.Module):
             "label": labels,
             "bbox_xyxy": bboxes,
             "mask": masks,
-            "keypoints": keypoints,
+            "keypoints": kp_slot,
         }
 
         # Build input list in the SAME ORDER as self._data_keys
@@ -738,7 +849,7 @@ class GPUAugmentationPipeline(nn.Module):
                 provided_keys.append(key)
 
         # Apply augmentation to all inputs
-        results = self.aug_sequential(*inputs)
+        results = self.aug_sequential(*inputs, data_keys=provided_keys)
 
         # Kornia returns a plain tensor when only one data key is provided,
         # but a list when multiple keys are used. Normalise to always be a list.
@@ -746,40 +857,31 @@ class GPUAugmentationPipeline(nn.Module):
             results = [results]
 
         # Parse results back
-        output = {"images": None, "labels": labels, "bboxes": bboxes, "masks": masks, "keypoints": keypoints}
-        for i, key in enumerate(provided_keys):
-            if key == "input":
-                output["images"] = results[i]
-            elif key == "label":
-                output["labels"] = results[i]
-            elif key == "bbox_xyxy":
-                output["bboxes"] = results[i]
-            elif key == "mask":
-                # Remove channel
-                mask_results = results[i]
-                mask_results = [m.squeeze(0) for m in mask_results]  # (1, N, H, W) -> (N, H, W)
-                output["masks"] = mask_results
-            elif key == "keypoints":
-                # Kornia returns (B, N, 2) tensor; split back to list of per-sample tensors
-                kp_result = results[i]
-                if isinstance(kp_result, torch.Tensor) and kp_result.dim() == 3:
-                    output["keypoints"] = list(kp_result.unbind(0))
-                else:
-                    output["keypoints"] = kp_result
+        output = {
+            "images": None,
+            "labels": labels,
+            "bboxes": bboxes,
+            "masks": masks,
+            "keypoints": keypoints,
+            "polygons": polygons,
+        }
+        self._parse_results(results, provided_keys, output, polygons, polygon_shapes)
 
         # Sanitize geometric annotations after Kornia transforms.
         if self._sanitize_annotations_enabled and self._has_geometric_augs and output["images"] is not None:
-            s_bboxes, s_labels, s_masks, s_keypoints = self._sanitize_annotations(
+            s_bboxes, s_labels, s_masks, s_keypoints, s_polygons = self._sanitize_annotations(
                 output["images"],
                 output["bboxes"],
                 output["labels"],
                 output["masks"],
                 output["keypoints"],
+                output["polygons"],
             )
             output["bboxes"] = s_bboxes
             output["labels"] = s_labels
             output["masks"] = s_masks
             output["keypoints"] = s_keypoints
+            output["polygons"] = s_polygons
 
         return output
 
@@ -790,9 +892,11 @@ class GPUAugmentationPipeline(nn.Module):
         labels: list[torch.Tensor] | None,
         masks: list[torch.Tensor] | None,
         keypoints: list[torch.Tensor] | None,
+        polygons: list[torch.Tensor] | None = None,
         min_size: float = 4.0,
         min_area: float = 16.0,
     ) -> tuple[
+        list[torch.Tensor] | None,
         list[torch.Tensor] | None,
         list[torch.Tensor] | None,
         list[torch.Tensor] | None,
@@ -802,10 +906,18 @@ class GPUAugmentationPipeline(nn.Module):
 
         - Clip bboxes to image bounds
         - Remove invalid bboxes (non-finite, x2<=x1, y2<=y1, too small)
-        - Filter aligned labels/masks/keypoints using the same valid indices
+        - Remove instances whose polygon lost too many vertices to enclose area
+        - Filter aligned labels/masks/keypoints/polygons using the same valid indices
+
+        Polygon coordinates are deliberately **not** clipped to the image
+        bounds. Clamping a vertex that left the canvas drags the edge along
+        with it and deforms the silhouette; true clipping needs
+        Sutherland-Hodgman (``clip_polygons``), which is a tiling concern.
+        Out-of-canvas geometry is harmless here because rasterization happens
+        on an ``H x W`` canvas and simply ignores it.
         """
         if bboxes is None:
-            return bboxes, labels, masks, keypoints
+            return bboxes, labels, masks, keypoints, polygons
 
         batch_size, _, h, w = images.shape
         if len(bboxes) != batch_size:
@@ -821,11 +933,15 @@ class GPUAugmentationPipeline(nn.Module):
         if keypoints is not None and len(keypoints) != batch_size:
             msg = f"GPU sanitize: keypoints batch mismatch, got {len(keypoints)} vs {batch_size}"
             raise RuntimeError(msg)
+        if polygons is not None and len(polygons) != batch_size:
+            msg = f"GPU sanitize: polygons batch mismatch, got {len(polygons)} vs {batch_size}"
+            raise RuntimeError(msg)
 
         out_bboxes: list[torch.Tensor] = []
         out_labels: list[torch.Tensor] | None = [] if labels is not None else None
         out_masks: list[torch.Tensor] | None = [] if masks is not None else None
         out_keypoints: list[torch.Tensor] | None = [] if keypoints is not None else None
+        out_polygons: list[torch.Tensor] | None = [] if polygons is not None else None
 
         for i in range(batch_size):
             boxes = bboxes[i]
@@ -851,6 +967,12 @@ class GPUAugmentationPipeline(nn.Module):
                     & (heights > min_size)
                     & (areas >= min_area)
                 )
+
+            # Degenerate polygons invalidate their whole instance, so the drop
+            # is applied to every aligned field at once rather than to
+            # ``polygons`` alone.
+            if polygons is not None:
+                valid = valid & self._polygon_valid(polygons[i], valid)
 
             out_bboxes.append(clipped[valid])
 
@@ -881,7 +1003,38 @@ class GPUAugmentationPipeline(nn.Module):
                 else:
                     out_keypoints.append(kp)
 
-        return out_bboxes, out_labels, out_masks, out_keypoints
+            if out_polygons is not None and polygons is not None:
+                out_polygons.append(self._filter_polygons(polygons[i], valid))
+
+        return out_bboxes, out_labels, out_masks, out_keypoints, out_polygons
+
+    @classmethod
+    def _polygon_valid(cls, coords: torch.Tensor, box_valid: torch.Tensor) -> torch.Tensor:
+        """Per-instance mask of polygons that still enclose area.
+
+        Returns an all-``True`` mask when the polygon count does not line up
+        with the boxes: a mismatch means polygons were never transformed for
+        this sample, and silently dropping every instance would be far worse
+        than leaving them be.
+        """
+        n = int(coords.shape[0])
+        if n != int(box_valid.shape[0]):
+            return torch.ones_like(box_valid)
+        if n == 0:
+            return box_valid.new_ones((0,))
+        lengths = polygon_lengths(coords)
+        return (lengths >= cls._MIN_POLYGON_VERTICES).to(device=box_valid.device)
+
+    @staticmethod
+    def _filter_polygons(coords: torch.Tensor, valid: torch.Tensor) -> torch.Tensor:
+        """Select surviving instances, preserving the ``KeyPoints`` wrapper."""
+        if coords.shape[0] != valid.shape[0]:
+            return coords
+        selected = torch.as_tensor(coords.data if hasattr(coords, "data") else coords)[valid]
+        canvas = getattr(coords, "canvas_size", None)
+        if canvas is None:
+            return selected
+        return tv_tensors.KeyPoints(selected, canvas_size=canvas)
 
     def __repr__(self) -> str:
         """String representation of the pipeline."""

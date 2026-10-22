@@ -11,10 +11,15 @@ can run on-device and drop its host round-trip.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from torchvision import tv_tensors
 
 from getitune.data.entity.polygons import split_rings
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 __all__ = ["rasterize", "rasterize_batch", "rasterize_crop"]
 
@@ -215,11 +220,11 @@ def rasterize_crop(
 
 
 def rasterize_batch(
-    polygons: list[torch.Tensor],
+    polygons: Sequence[torch.Tensor],
     canvas_size: tuple[int, int],
     dtype: torch.dtype = torch.uint8,
 ) -> list[tv_tensors.Mask]:
-    """Rasterize one batch of per-sample polygons at the network canvas size.
+    """Rasterize one batch of per-sample polygons, each on its own canvas.
 
     Transitional bridge between the polygon-native data pipeline and the still
     mask-based model boundary. It runs *after* GPU augmentation, so polygons
@@ -228,10 +233,15 @@ def rasterize_batch(
 
     Args:
         polygons: Per-sample ``(N_i, P_max, 2)`` NaN-padded polygons.
-        canvas_size: ``(H, W)`` of the batch images.
+        canvas_size: Fallback ``(H, W)``, used only for polygons that carry no
+            ``canvas_size`` of their own (e.g. plain tensors). ``KeyPoints``
+            keep the canvas their coordinates actually live in, which with
+            ``resize_targets=False`` is ``ori_shape``, not the network size.
+
         dtype: Mask dtype.
 
     Returns:
-        One ``(N_i, H, W)`` mask per sample, in input order.
+        One ``(N_i, H, W)`` mask per sample, in input order. Shapes may
+        differ across samples when the polygons carry per-sample canvases.
     """
-    return [rasterize(p, canvas_size=canvas_size, dtype=dtype) for p in polygons]
+    return [rasterize(p, canvas_size=getattr(p, "canvas_size", None) or canvas_size, dtype=dtype) for p in polygons]

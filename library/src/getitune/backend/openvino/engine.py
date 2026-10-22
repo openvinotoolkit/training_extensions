@@ -21,6 +21,7 @@ from rich.progress import Progress
 from getitune.backend.openvino.models import OVModel
 from getitune.config.explain import ExplainConfig
 from getitune.data.entity.base import ImageInfo
+from getitune.data.entity.rasterization import rasterize
 from getitune.data.entity.sample import SampleBatch
 from getitune.data.module import DataModule
 from getitune.engine import Engine
@@ -297,7 +298,16 @@ class OVEngine(Engine):
         with Progress() as progress:
             dataloader = datamodule.test_dataloader()
             task = progress.add_task("Testing", total=len(dataloader))
-            for data_batch in dataloader:
+            for raw_batch in dataloader:
+                data_batch = raw_batch
+                if getattr(data_batch, "masks", None) is None and getattr(data_batch, "polygons", None) is not None:
+                    # GT polygons are in ori_shape coords for OV subsets; rasterize on that canvas.
+                    data_batch = data_batch.wrap(
+                        masks=[
+                            rasterize(p, canvas_size=info.ori_shape)
+                            for p, info in zip(data_batch.polygons, data_batch.imgs_info)
+                        ]
+                    )
                 model.test_step(data_batch, metric_callable)
                 progress.update(task, advance=1)
 

@@ -15,6 +15,7 @@ from torchvision import tv_tensors
 
 from getitune.data.augmentation import GPUAugmentationPipeline
 from getitune.data.augmentation.task_keys import DATA_KEYS_BY_TASK
+from getitune.data.entity.rasterization import rasterize_batch
 from getitune.data.entity.sample import SampleBatch
 from getitune.data.entity.tile import TileBatchData
 
@@ -122,7 +123,7 @@ class GPUAugmentationCallback(Callback):
     ) -> None:
         """Apply GPU augmentation pipeline to batch (in-place).
 
-        Automatically determines which data to transform based on batch content.
+        Automatically handles bboxes, masks, polygons, keypoints based on batch content.
         Kornia decides whether to modify labels based on the augmentations used.
 
         Args:
@@ -168,6 +169,7 @@ class GPUAugmentationCallback(Callback):
             bboxes=batch.bboxes,
             masks=batch.masks,
             keypoints=keypoints_xy,
+            polygons=batch.polygons,
         )
 
         # Update batch in-place with augmented data
@@ -190,6 +192,10 @@ class GPUAugmentationCallback(Callback):
         if result.get("masks") is not None:
             # Kornia may return plain tensors, wrap them back to Mask
             batch.masks = [tv_tensors.Mask(m) if not isinstance(m, tv_tensors.Mask) else m for m in result["masks"]]
+        if result.get("polygons") is not None:
+            # Already re-wrapped as KeyPoints by unpack_polygon_batch /
+            # _filter_polygons, so unlike masks there is nothing to restore.
+            batch.polygons = result["polygons"]
         if result.get("keypoints") is not None:
             if keypoints_visibility is None:
                 batch.keypoints = result["keypoints"]
@@ -239,6 +245,21 @@ class GPUAugmentationCallback(Callback):
                 # Re-wrap as an Image tv_tensor so downstream tile handling keeps its type.
                 tiles[tile_idx] = tv_tensors.Image(augmented)  # type: ignore[no-matching-overload]
 
+    @staticmethod
+    def _materialize_masks(batch: SampleBatch | TileBatchData) -> None:
+        """Rasterize polygons into ``batch.masks`` for the still mask-based models.
+
+        Runs after augmentation so the polygons are final: on-device and at
+        network resolution.
+        """
+        if isinstance(batch, TileBatchData):
+            return
+        if batch.masks is not None or batch.polygons is None:
+            return
+        images = typing.cast("torch.Tensor", batch.images)
+        net_canvas = (int(images.shape[-2]), int(images.shape[-1]))
+        batch.masks = rasterize_batch(batch.polygons, net_canvas)
+
     def on_train_batch_start(
         self,
         trainer: Trainer,
@@ -247,10 +268,9 @@ class GPUAugmentationCallback(Callback):
         batch_idx: int,
     ) -> None:
         """Apply GPU augmentations to training batch."""
-        if self._train_pipeline is None:
-            return
-
-        self._apply_pipeline(self._train_pipeline, batch)
+        if self._train_pipeline is not None:
+            self._apply_pipeline(self._train_pipeline, batch)
+        self._materialize_masks(batch)
 
     def on_validation_batch_start(
         self,
@@ -261,10 +281,9 @@ class GPUAugmentationCallback(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         """Apply GPU augmentations to validation batch."""
-        if self._val_pipeline is None:
-            return
-
-        self._apply_pipeline(self._val_pipeline, batch)
+        if self._val_pipeline is not None:
+            self._apply_pipeline(self._val_pipeline, batch)
+        self._materialize_masks(batch)
 
     def on_test_batch_start(
         self,
@@ -275,7 +294,6 @@ class GPUAugmentationCallback(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         """Apply GPU augmentations to test batch."""
-        if self._test_pipeline is None:
-            return
-
-        self._apply_pipeline(self._test_pipeline, batch)
+        if self._test_pipeline is not None:
+            self._apply_pipeline(self._test_pipeline, batch)
+        self._materialize_masks(batch)

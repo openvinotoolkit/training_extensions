@@ -388,6 +388,13 @@ extend-immutable-calls = [
     "getitune.config.data.TileConfig",
 ]
 
+[tool.ruff.lint.flake8-type-checking]
+# `@register_sample` resolves annotations at runtime (typing.get_type_hints) to
+# build the polars schema, so imports used only in those annotations must stay
+# at module level.
+runtime-evaluated-decorators = ["datumaro.experimental.register_sample"]
+runtime-evaluated-base-classes = ["datumaro.experimental.dataset.Sample"]
+
 [tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 20

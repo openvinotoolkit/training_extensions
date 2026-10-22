@@ -17,6 +17,7 @@ from transformers import Trainer
 
 from getitune.data.augmentation import GPUAugmentationPipeline
 from getitune.data.augmentation.task_keys import DATA_KEYS_BY_TASK
+from getitune.data.entity.rasterization import rasterize_batch
 from getitune.metrics import MetricCallable
 
 from .utils import plateau_warmup_lr, resolve_greater_is_better
@@ -484,6 +485,13 @@ class GetiTuneHFTrainer(Trainer):
         batch = self._move_batch_to_device(batch, self.args.device)
         if pipeline is not None:
             batch = self._apply_gpu_augmentation(pipeline, batch)
+        if batch.masks is None and batch.polygons is not None:
+            images = batch.images
+            if isinstance(images, list):
+                canvas = (int(images[0].shape[-2]), int(images[0].shape[-1]))
+            else:
+                canvas = (int(images.shape[-2]), int(images.shape[-1]))
+            batch = batch.wrap(masks=rasterize_batch(batch.polygons, canvas_size=canvas))
         return batch
 
     def predict_batches(self) -> list[PredictionBatch]:
@@ -525,16 +533,19 @@ class GetiTuneHFTrainer(Trainer):
             bboxes=move(batch.bboxes),
             masks=move(batch.masks),
             keypoints=move(batch.keypoints),
+            polygons=move(batch.polygons),
         )
 
     def _apply_gpu_augmentation(self, pipeline: GPUAugmentationPipeline, batch: SampleBatch) -> SampleBatch:
         """Run the Kornia pipeline and re-wrap its output as Geti tv_tensors.
 
         A trimmed version of ``GPUAugmentationCallback._apply_pipeline``: the
-        same re-wrapping logic, minus tiling and keypoints, since neither
-        applies to the five tasks this backend supports.
+        same re-wrapping logic, minus tiling and keypoints (polygons use the keypoints
+        slot), since neither applies to the five tasks this backend supports.
         """
-        result = pipeline(batch.images, labels=batch.labels, bboxes=batch.bboxes, masks=batch.masks)
+        result = pipeline(
+            batch.images, labels=batch.labels, bboxes=batch.bboxes, masks=batch.masks, polygons=batch.polygons
+        )
 
         bboxes = batch.bboxes
         if result.get("bboxes") is not None and batch.bboxes is not None:
@@ -556,4 +567,5 @@ class GetiTuneHFTrainer(Trainer):
             labels=result["labels"] if result.get("labels") is not None else batch.labels,
             bboxes=bboxes,
             masks=masks,
+            polygons=result["polygons"] if result.get("polygons") is not None else batch.polygons,
         )

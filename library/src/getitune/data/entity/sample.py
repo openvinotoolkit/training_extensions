@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Sequence, cast
 
+import numpy as np
 import polars as pl
 import torch
 from datumaro.experimental import register_sample
@@ -46,7 +47,6 @@ from getitune.data.entity.validation import (
 )
 
 if TYPE_CHECKING:
-    import numpy as np
     from torchvision.tv_tensors import BoundingBoxes, Mask
 
 

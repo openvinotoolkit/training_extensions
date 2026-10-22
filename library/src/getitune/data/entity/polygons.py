@@ -368,14 +368,17 @@ def pack_polygon_batch(
 def unpack_polygon_batch(
     packed: torch.Tensor,
     shapes: Sequence[tuple[int, int]],
-    canvas_size: tuple[int, int],
+    canvas_size: tuple[int, int] | Sequence[tuple[int, int]],
 ) -> list[tv_tensors.KeyPoints]:
     """Invert :func:`pack_polygon_batch`, restoring per-sample ``(N_i, P_i, 2)``.
 
     Args:
         packed: ``(B, M, 2)`` transformed coordinates.
         shapes: Per-sample ``(N_i, P_i)`` from the matching pack call.
-        canvas_size: ``(H, W)`` of the *transformed* images.
+        canvas_size: ``(H, W)`` of the *transformed* images, or one ``(H, W)``
+            per sample when the transform left coordinates in their original
+            space (intensity-only val/test pipelines under
+            ``resize_targets=False``).
 
     Returns:
         One ``KeyPoints`` per sample, in input order.
@@ -387,8 +390,14 @@ def unpack_polygon_batch(
         msg = f"Packed batch {packed.shape[0]} does not match {len(shapes)} shapes"
         raise ValueError(msg)
 
+    canvases: Sequence[tuple[int, int]] = (
+        [tuple(canvas_size)] * len(shapes)  # type: ignore[arg-type]
+        if len(canvas_size) == 2 and isinstance(canvas_size[0], int)
+        else canvas_size  # type: ignore[assignment]
+    )
+
     out: list[tv_tensors.KeyPoints] = []
-    for row, (n, p) in zip(packed, shapes):
+    for row, (n, p), canvas in zip(packed, shapes, canvases, strict=True):
         coords = row[: n * p].reshape(n, p, 2).to(POLYGON_DTYPE)
-        out.append(tv_tensors.KeyPoints(coords, canvas_size=canvas_size))
+        out.append(tv_tensors.KeyPoints(coords, canvas_size=canvas))
     return out

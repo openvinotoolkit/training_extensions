@@ -19,6 +19,11 @@ from getitune.types import TaskType
 pytestmark = pytest.mark.benchmark
 
 
+def _stage_ms(result, stage: str) -> float:
+    """Total milliseconds attributed to ``stage``, or 0.0 if never recorded."""
+    return next((r["total_ms"] for r in result.attribution if r["stage"] == stage), 0.0)
+
+
 @pytest.fixture(scope="session")
 def report_dir(pytestconfig: pytest.Config) -> Path:
     """Directory that collects the Phase 0 JSON artifacts."""
@@ -53,7 +58,6 @@ def test_synthetic_sweep(cell, tmp_path_factory, report_dir: Path) -> None:
     )
 
 
-@pytest.mark.network
 def test_control_experiment(pytestconfig: pytest.Config, report_dir: Path) -> None:
     """The detection-vs-instance-seg ratio on real large images.
 

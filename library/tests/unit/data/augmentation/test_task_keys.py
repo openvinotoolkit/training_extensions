@@ -19,7 +19,7 @@ def test_detection_transforms_boxes_and_labels() -> None:
 
 
 def test_instance_segmentation_transforms_boxes_masks_and_labels() -> None:
-    assert DATA_KEYS_BY_TASK[TaskType.INSTANCE_SEGMENTATION] == ("bbox_xyxy", "mask", "label")
+    assert DATA_KEYS_BY_TASK[TaskType.INSTANCE_SEGMENTATION] == ("bbox_xyxy", "keypoints", "label")
 
 
 def test_semantic_segmentation_transforms_only_masks() -> None:
