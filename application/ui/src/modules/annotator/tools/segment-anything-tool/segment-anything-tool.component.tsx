@@ -92,7 +92,7 @@ export const SegmentAnythingTool = () => {
 
         cancellableThrottledDecodingQueryFn
             .call([{ ...point, positive: true }])
-            .then((shapes) => {
+            .then(({ shapes }) => {
                 setPreviewShapes(shapes.map((shape) => removeOffLimitPoints(shape, roi)));
             })
             .catch(() => {

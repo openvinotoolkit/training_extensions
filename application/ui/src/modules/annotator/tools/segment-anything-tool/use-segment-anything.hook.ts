@@ -26,7 +26,7 @@ import {
     SAM_WORKER_BUILD_TIMEOUT_MS,
     SAM_WORKER_INIT_TIMEOUT_MS,
 } from './sam-timeouts';
-import { InteractiveAnnotationPoint } from './segment-anything.interface';
+import type { InteractiveAnnotationPoint, SegmentAnythingDecodingResult } from './segment-anything.interface';
 
 type SegmentAnythingRemoteInstance = Remote<SegmentAnythingWorkerInstance>;
 
@@ -209,20 +209,15 @@ const useDecodingFn = (model: SegmentAnythingRemoteInstance | undefined, encodin
 
     // TODO: look into returning a new "decoder model" instance that already has the encoding data
     // stored in memory, to reduce  memory usage
-    return async (points: InteractiveAnnotationPoint[]) => {
-        if (points.length === 0) {
-            return [];
+    return async (
+        points: InteractiveAnnotationPoint[],
+        previousMask?: Float32Array
+    ): Promise<SegmentAnythingDecodingResult> => {
+        if (points.length === 0 || model === undefined || encoding === undefined) {
+            return { shapes: [] };
         }
 
-        if (model === undefined) {
-            return [];
-        }
-
-        if (encoding === undefined) {
-            return [];
-        }
-
-        const { shapes } = await executeWithTimeout(
+        const { shapes, lowResMask } = await executeWithTimeout(
             model.processDecoder(encoding, {
                 points,
                 boxes: [],
@@ -231,12 +226,13 @@ const useDecodingFn = (model: SegmentAnythingRemoteInstance | undefined, encodin
                 outputConfig: {
                     type: decoderOutput,
                 },
+                previousMask,
             }),
             i18n.t('annotator.tools.autoSegmentation.operations.decoder'),
             SAM_DECODER_TIMEOUT_MS
         );
 
-        return shapes.map(convertToolShapeToGetiShape);
+        return { shapes: shapes.map(convertToolShapeToGetiShape), lowResMask };
     };
 };
 

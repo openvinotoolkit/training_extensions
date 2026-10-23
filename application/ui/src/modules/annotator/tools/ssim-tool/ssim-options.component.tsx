@@ -3,35 +3,11 @@
 
 import { useTranslation } from '@/i18n';
 import { Button, Flex, Slider, Switch } from '@geti-ui/ui';
-import { useHotkeys } from 'react-hotkeys-hook';
 
 import { HOTKEYS } from '../../../../shared/hotkeys-definition';
 import { Toolbar } from '../../shell/toolbar-container/toolbar-container.component';
+import { useToolResultHotkey } from '../use-tool-result-hotkey.hook';
 import { useSSIMState } from './ssim-state-provider.component';
-
-// The bar's own slider and switch are inputs too, but text fields elsewhere must keep Enter/Escape.
-const isTextEntry = ({ target }: KeyboardEvent) =>
-    target instanceof HTMLElement &&
-    (target.isContentEditable || target.matches('textarea, input:not([type=range]):not([type=checkbox])'));
-
-// Capture phase + stopPropagation so Enter doesn't also submit the media item and Escape doesn't close the annotator.
-const useToolResultHotkey = (hotkey: string, callback: () => void, enabled: boolean) => {
-    useHotkeys(
-        hotkey,
-        (event) => {
-            event.stopPropagation();
-            callback();
-        },
-        {
-            enabled,
-            preventDefault: true,
-            enableOnFormTags: true,
-            ignoreEventWhen: isTextEntry,
-            eventListenerOptions: { capture: true },
-        },
-        [callback]
-    );
-};
 
 export const SSIMOptions = () => {
     const { t } = useTranslation();
