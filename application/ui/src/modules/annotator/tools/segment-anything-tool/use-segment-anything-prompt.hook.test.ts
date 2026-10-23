@@ -94,4 +94,23 @@ describe('useSegmentAnythingPrompt', () => {
         expect(result.current.points).toEqual([]);
         expect(result.current.previewShapes).toEqual([]);
     });
+
+    it('ignores a decode that resolves after the media item changed', async () => {
+        let resolveDecode: (value: Awaited<ReturnType<typeof decodingQueryFn>>) => void = () => undefined;
+        decodingQueryFn.mockImplementationOnce(() => new Promise((resolve) => (resolveDecode = resolve)));
+
+        const { result, rerender } = renderPrompt();
+
+        act(() => result.current.togglePoint({ x: 10, y: 20 }, true, HIT_RADIUS));
+        await waitFor(() => expect(decodingQueryFn).toHaveBeenCalledTimes(1));
+        expect(result.current.isDecoding).toBe(true);
+
+        rerender({ decodingQueryFn, roi: ROI, mediaItem: getMockedMediaImage({ id: 'image-2' }) });
+
+        await act(async () => resolveDecode({ shapes: [getMockedShape()], lowResMask: new Float32Array([1]) }));
+
+        expect(result.current.points).toEqual([]);
+        expect(result.current.previewShapes).toEqual([]);
+        expect(result.current.isDecoding).toBe(false);
+    });
 });

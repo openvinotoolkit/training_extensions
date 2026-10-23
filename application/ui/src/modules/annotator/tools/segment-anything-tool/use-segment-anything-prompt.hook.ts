@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import type { Media } from '@/api/types';
 
@@ -67,6 +67,13 @@ export const useSegmentAnythingPrompt = ({ decodingQueryFn, roi, mediaItem }: Us
         pendingDecodesRef.current = 0;
         setIsDecoding(false);
     };
+
+    // A decode still in flight belongs to the previous media item, so its result must not land on the new one.
+    const cancelPendingDecodes = useEffectEvent(() => cancelDecoding());
+
+    useEffect(() => {
+        cancelPendingDecodes();
+    }, [mediaItem]);
 
     const clear = () => {
         cancelDecoding();
