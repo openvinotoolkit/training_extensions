@@ -788,6 +788,7 @@
                 "unknownError": "Errore sconosciuto, prova a ricaricare la pagina.",
                 "timeoutError": "{{operation}} è scaduto dopo {{timeoutMs}}ms. Prova a ricaricare la pagina.",
                 "embeddingError": "Impossibile recuperare l'embedding dell'immagine ({{status}}{{statusText}}).",
+                "hint": "Maiusc + clic per includere un'area, {{alt}} + clic per escluderla. Fai clic per creare l'annotazione, Esc per cancellare i punti.",
                 "operations": {
                     "workerBuild": "Compilazione worker SAM",
                     "workerInit": "Inizializzazione worker SAM",

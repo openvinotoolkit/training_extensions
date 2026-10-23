@@ -794,6 +794,7 @@
                 "unknownError": "Nieznany błąd, spróbuj odświeżyć stronę.",
                 "timeoutError": "Przekroczono limit czasu operacji {{operation}} po {{timeoutMs}} ms. Spróbuj odświeżyć stronę.",
                 "embeddingError": "Nie udało się pobrać embeddingu obrazu ({{status}}{{statusText}}).",
+                "hint": "Shift + kliknięcie, aby uwzględnić obszar, {{alt}} + kliknięcie, aby go wykluczyć. Kliknij, aby utworzyć adnotację, Esc, aby wyczyścić punkty.",
                 "operations": {
                     "workerBuild": "Kompilacja workera automatycznej segmentacji",
                     "workerInit": "Inicjalizacja workera automatycznej segmentacji",

@@ -788,6 +788,7 @@
                 "unknownError": "Onbekende fout, probeer de pagina te vernieuwen.",
                 "timeoutError": "{{operation}}: time-out na {{timeoutMs}} ms. Probeer de pagina te vernieuwen.",
                 "embeddingError": "Kan de afbeeldingsembedding niet ophalen ({{status}}{{statusText}}).",
+                "hint": "Shift + klik om een gebied op te nemen, {{alt}} + klik om het uit te sluiten. Klik om de annotatie te maken, Esc om de punten te wissen.",
                 "operations": {
                     "workerBuild": "Bouwen van SAM-worker",
                     "workerInit": "Initialiseren van SAM-worker",
