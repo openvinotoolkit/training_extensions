@@ -110,7 +110,7 @@ describe('ModelActions', () => {
         await userEvent.click(await screen.findByRole('button', { name: 'Download logs' }));
 
         expect(downloadFile).toHaveBeenCalledWith(
-            expect.stringMatching(/models\/[^/]+\/logs/),
+            expect.stringMatching(/models\/[^/]+\/logs\?format=text$/),
             `training-logs-${mockModel.id}.log`,
             'Training logs download started'
         );

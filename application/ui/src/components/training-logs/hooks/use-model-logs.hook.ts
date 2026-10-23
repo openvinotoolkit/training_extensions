@@ -1,11 +1,10 @@
 // Copyright (C) 2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { API_BASE_URL, fetchClient } from '@/api';
+import { fetchClient } from '@/api';
 import { useTranslation, type TranslateFn } from '@/i18n';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
-import { downloadFile } from '../../../platform/download-file';
 import { getQueryKey } from '../../../query-client/query-client';
 import { assertIsNotNullable } from '../../../shared/util';
 import { type LogEntry } from '../log-types';
@@ -49,26 +48,4 @@ export const useModelLogs = (projectId: string, modelId: string | undefined) => 
         enabled: !!modelId,
         staleTime: Infinity,
     });
-};
-
-const downloadModelLogsFile = (t: TranslateFn, projectId: string, modelId: string) => {
-    const url = `${API_BASE_URL}/api/projects/${projectId}/models/${modelId}/logs`;
-    downloadFile(url, `training-logs-${modelId}.log`, t('models.training.logs.downloadStarted'));
-};
-
-export const useDownloadModelLogs = (projectId: string, modelId: string) => {
-    const { t } = useTranslation();
-
-    const mutation = useMutation({
-        mutationFn: async () => {
-            assertIsNotNullable(modelId);
-
-            downloadModelLogsFile(t, projectId, modelId);
-        },
-    });
-
-    return {
-        downloadModelLogs: () => mutation.mutate(),
-        isDownloading: mutation.isPending,
-    };
 };
