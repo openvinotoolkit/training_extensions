@@ -29,9 +29,6 @@ training:
 data: ../_base_/data/instance_segmentation.yaml
 
 
-# Stretch resize (not letterbox): the HF wrapper exports whole-canvas mask grids
-# (model_type DETRInstSeg) and ModelAPI's full-image mask decode resizes masks back
-# without un-letterboxing, so preprocessing must not preserve aspect ratio.
 overrides:
   data:
     train_subset:
