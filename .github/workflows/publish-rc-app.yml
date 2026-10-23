@@ -173,7 +173,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           use-cache: "false" # Disable cache for RC builds (security and reproducibility)
-          exclude-agpl-models: "true" # RC images must not bundle Ultralytics/AGPL-licensed models
 
       - name: Sign Docker image
         uses: open-edge-platform/geti-ci/actions/sign-image@3690cbcc173cf90e0e0999b4822c3f8ebab9c137 # sign-image/v0.1.2
@@ -217,7 +216,6 @@ jobs:
     with:
       device: ${{ matrix.device }}
       tag: rc${{ needs.validate.outputs.rc_number }} # Suffix only; VERSION file already supplies the base version
-      exclude-agpl-models: true # RC installers must not bundle Ultralytics/AGPL-licensed models
     secrets:
       MSIX_SIGN_CERTIFICATE: ${{ secrets.MSIX_SIGN_CERTIFICATE }}
       MSIX_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.MSIX_SIGN_CERTIFICATE_PASSWORD }}

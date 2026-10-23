@@ -13,7 +13,6 @@ jobs:
     uses: $/.github/workflows/build.yaml
     with:
       use-cache: false # Verify image is buildable from scratch without any cached layers
-      exclude-agpl-models: true # Daily images (pushed to GHCR) must not bundle AGPL-licensed models
     permissions:
       contents: read
       packages: write # to push Docker images to GHCR

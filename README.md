@@ -63,7 +63,9 @@ uv pip install getitune # CPU-only by default
 ```
 
 > [!IMPORTANT]  
-> The PyPI package does NOT include **Ultralytics YOLO models**, which are distributed under the [AGPL-3.0 license](https://www.ultralytics.com/license). To enable these models, build from source with the `ultralytics` extra as explained in the [getitune documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/installation).
+> **Ultralytics YOLO models** are NOT included in the package by default. To install these models, which are distributed
+> under the [AGPL-3.0 license](./THIRD-PARTY-NOTICES.md#ultralytics), you must specify the `ultralytics` extra as
+> explained in the [getitune documentation](https://docs.geti.intel.com/docs/user-guide/library/get-started/installation).
 
 **Pick a model, then train, export, and quantize it:**
 
@@ -348,13 +350,12 @@ For developers who would like to contribute with a pull request, see the [Contri
 
 ## License
 
-Geti™ is licensed under the [Apache License Version 2.0](LICENSE).
+Geti™ source code is licensed under the [Apache License Version 2.0](LICENSE).
+Docker images contain Geti™ components licensed under Apache 2.0 and may also contain third-party components governed by
+different license terms, listed separately in [this file](THIRD-PARTY-NOTICES.md).
+The Windows MSIX App is licensed under the [Intel Simplified Software License](https://software.intel.com/sites/landingpage/pintool/intel-simplified-software-license.txt).
 
-## Disclaimers
+Regarding models trained with Geti™, their license depends on the model type and is indicated within the application;
+most are licensed under Apache 2.0, while some fall under more restrictive licenses (e.g. [Ultralytics AGPL3.0 models](./THIRD-PARTY-NOTICES.md#ultralytics)).
 
-Geti™ utilizes FFmpeg.
-
-FFmpeg is an open source project licensed under LGPL and GPL. See [https://www.ffmpeg.org/legal.html](https://www.ffmpeg.org/legal.html). You are solely responsible for determining if your use of FFmpeg requires any additional licenses. Intel is not responsible for obtaining any such licenses, nor liable for any licensing fees due, in connection with your use of FFmpeg.
-
-> [!NOTE]
-> Ultralytics YOLO models are distributed under the AGPL-3.0 license, an OSI approved license ideal for open-source research, academic, and personal projects. For commercial use, enhanced support, and tailored licensing terms, please explore flexible Ultralytics licensing options at https://www.ultralytics.com/license.
+It is the end user's responsibility to ensure that the specific use of Geti™ and the models complies with the respective licenses.
