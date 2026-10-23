@@ -4,6 +4,13 @@ Geti™ is a full-stack web application to build and deploy computer vision AI m
 [getitune](../../library) library. This guide covers all the supported ways to install and run Geti™ so you
 can choose the method that best fits your workflow.
 
+> [!IMPORTANT]
+> Geti™ is designed to run on a trusted host or private network. It has no built-in user authentication,
+> authorization, or access control, and its default TLS certificate is self-signed. By default the server
+> listens on all network interfaces, so anyone who can reach the port can use the full REST API. Restrict
+> access with a firewall, or put Geti™ behind infrastructure you control (e.g. a reverse proxy with
+> authentication and a trusted TLS certificate).
+
 ## System requirements
 
 Before you begin, make sure your machine meets the following requirements:
