@@ -29,13 +29,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import cv2
 import numpy as np
 import pytest
 
 from getitune.backend.huggingface.tools.utils import load_recipe
 from getitune.types.task import TaskType
 
-RECIPE_DIR = Path("src/getitune/recipe/instance_segmentation")
+RECIPE_DIR = Path(__file__).resolve().parents[3] / "src" / "getitune" / "recipe" / "instance_segmentation"
 
 # Recipes of HF-instance-seg (MaskFormer family) models: no box head, the whole
 # exported mask grid spans the input canvas, so ModelAPI decodes masks with a
@@ -74,7 +75,7 @@ def test_hf_full_image_mask_recipes_use_stretch_resize() -> None:
 
     The ModelAPI ``DETRInstSeg`` full-image mask decode resizes the raw mask
     grid to the original image size as a whole; a letterbox preprocessing would
-    therefore squashe and misplace the decoded masks (issue #7829). The
+    therefore squash and misplace the decoded masks (issue #7829). The
     ``resize_mode`` metadata embedded at export time must be the matching
     ``standard`` (no aspect-ratio preservation), so downstream OF eval pipelines
     and the auto-configurator apply the same stretch resize.
@@ -121,13 +122,13 @@ def test_full_image_mask_decode_geometry(resize_type: str) -> None:
     canvas_h, canvas_w = round(ori_h * scale), round(ori_w * scale)  # 360x640
     canvas = np.zeros((640, 640), dtype=np.uint8)
     if resize_type == "letterbox":
-        content = cv2_resize(np.float32(gt), (canvas_w, canvas_h))
+        content = _resize_mask(np.float32(gt), (canvas_w, canvas_h))
         canvas[:canvas_h, :canvas_w] = content  # bottom-right pad (Geti default)
     else:
-        canvas = cv2_resize(np.float32(gt), (640, 640))  # stretch
+        canvas = _resize_mask(np.float32(gt), (640, 640))  # stretch
 
     # ModelAPI decode: whole-canvas resize to original dims, threshold at 0.5
-    decoded = cv2_resize(canvas.astype(np.float32), (ori_w, ori_h)) > 0.5
+    decoded = _resize_mask(canvas.astype(np.float32), (ori_w, ori_h)) > 0.5
 
     inter = float(np.logical_and(decoded, gt).sum())
     union = float(np.logical_or(decoded, gt).sum())
@@ -139,8 +140,6 @@ def test_full_image_mask_decode_geometry(resize_type: str) -> None:
         assert iou > 0.99, "stretch preprocessing must decode back exactly"
 
 
-def cv2_resize(mask: np.ndarray, size: tuple[int, int]) -> np.ndarray:
-    """Histogram-in-the-loop-free linear resize, mirroring ModelAPI's cv2.resize usage."""
-    import cv2
-
+def _resize_mask(mask: np.ndarray, size: tuple[int, int]) -> np.ndarray:
+    """Linear resize, mirroring ModelAPI's cv2.resize usage in the mask decode."""
     return cv2.resize(mask, size, interpolation=cv2.INTER_LINEAR)

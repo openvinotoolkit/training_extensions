@@ -52,4 +52,3 @@ overrides:
             size: $(input_size)
             keep_aspect_ratio: false
             resize_targets: false
-
