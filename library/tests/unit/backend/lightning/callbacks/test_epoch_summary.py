@@ -14,7 +14,8 @@ import torch
 from lightning.pytorch import LightningModule, Trainer
 from lightning.pytorch.demos.boring_classes import BoringModel
 
-from getitune.backend.lightning.callbacks.epoch_summary import EpochSummary, _scalar
+from getitune.backend.lightning.callbacks.epoch_summary import EpochSummary
+from getitune.utils.epoch_summary import to_scalar
 
 _LOGGER = "getitune.backend.lightning.callbacks.epoch_summary"
 
@@ -56,7 +57,7 @@ _PL_MODULE = cast("LightningModule", None)
     ],
 )
 def test_scalar_conversion(value: Any, expected: float | None) -> None:  # noqa: ANN401
-    result = _scalar(value)
+    result = to_scalar(value)
     if expected is None:
         assert result is None
     else:

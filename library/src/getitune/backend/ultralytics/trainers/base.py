@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 from getitune.backend.ultralytics.data.adapter import UltralyticsDatasetAdapter
 from getitune.backend.ultralytics.data.collate import detection_collate_fn
+from getitune.utils.epoch_summary import DEFAULT_EPOCH_SUMMARY_KEYS, format_epoch_summary
 
 if TYPE_CHECKING:
     from getitune.data.module import DataModule
@@ -76,6 +77,7 @@ class GetiTuneBaseTrainer:
     scaler: _TrainerScaler
     ema: ModelEMA | None
     train_loader: DataLoader
+    epoch: int
     add_callback: Callable[[str, Callable[..., object]], None]
     _get_memory: Callable[..., float]
 
@@ -86,6 +88,8 @@ class GetiTuneBaseTrainer:
     _progress_fn: Any = None
     _progress_min: float = 0.0
     _progress_max: float = 100.0
+    # Native Ultralytics metric name -> standard getitune name (bound from the model's ``metric_keys``).
+    _metric_keys: ClassVar[dict[str, str]] = {}
 
     def __init__(self, *args, **kwargs) -> None:
         """Initialize the trainer and disable bundled third-party loggers.
@@ -198,6 +202,38 @@ class GetiTuneBaseTrainer:
         device = getattr(self, "device", None)
         device_type = getattr(device, "type", None)
         return device_type != "cpu"
+
+    def save_metrics(self, metrics: dict[str, Any]) -> None:
+        """Persist the epoch metrics, then log a one-line epoch summary.
+
+        Ultralytics reports training progress through a TQDM bar and its own
+        non-propagating ``ultralytics`` logger, so nothing reaches the standard
+        ``logging`` hierarchy (and thus captured job logs) during training.
+        ``save_metrics`` runs exactly once per epoch on the main process with
+        the merged train-loss, validation, and learning-rate values, which makes
+        it the natural place to emit the same summary as the Lightning backend.
+        """
+        super().save_metrics(metrics)  # type: ignore[misc]
+        logger.info("%s", self._format_epoch_summary(metrics))
+
+    def _format_epoch_summary(self, metrics: dict[str, Any]) -> str:
+        """Format the epoch summary line using the standard getitune metric names."""
+        mapped: dict[str, Any] = {}
+        for key, value in metrics.items():
+            name = self._metric_keys.get(key, key)
+            if name == "lr/pg0":
+                name = "lr"
+            mapped.setdefault(name, value)
+        # Ultralytics has no aggregated loss, so list each training loss component first.
+        loss_keys = [
+            k for k in mapped if k.startswith("train/") and "loss" in k and k not in DEFAULT_EPOCH_SUMMARY_KEYS
+        ]
+        return format_epoch_summary(
+            epoch=self.epoch + 1,
+            max_epochs=self.epochs,
+            metrics=mapped,
+            keys=(*loss_keys, *DEFAULT_EPOCH_SUMMARY_KEYS),
+        )
 
     def _setup_train(self) -> None:
         """Run parent setup, then fix warmup for small datasets.

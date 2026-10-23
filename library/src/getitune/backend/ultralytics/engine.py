@@ -1009,11 +1009,12 @@ class UltralyticsEngine(Engine):
             msg = f"{type(self._model).__name__} does not define a trainer_cls"
             raise TypeError(msg)
 
-        if self._datamodule is None and max_grad_norm is None:
+        if self._datamodule is None and max_grad_norm is None and not self._model.metric_keys:
             return base_cls
 
         attrs: dict[str, Any] = {
             "_datamodule": self._datamodule,
+            "_metric_keys": self._model.metric_keys,
             "_use_getitune_data": self._datamodule is not None,
             "_progress_fn": progress_fn,
             "_progress_min": progress_min,
