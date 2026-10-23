@@ -281,6 +281,6 @@ jobs:
         with:
           image: "ghcr.io/open-edge-platform/geti-${{ matrix.ai-device }}:develop"
           # renovate: datasource=docker depName=python
-          base-image: "python:3.15-slim@sha256:f48fda6d59b2b3437781d1c3ccf4aa0e26ae871de3cdd758b49ab45ee7291619"
+          base-image: "python:3.15-slim@sha256:044d5bd747976e21f8bc4d746c3479b19a84bb8ae6261b802acdd26b29036c93"
           artifact-name: "trivy-scan-diff-${{ matrix.ai-device }}"
           ignore_unfixed: true
