@@ -788,7 +788,7 @@
                 "unknownError": "Unknown error, please try refreshing the page.",
                 "timeoutError": "{{operation}} timed out after {{timeoutMs}}ms. Please try refreshing the page.",
                 "embeddingError": "Could not fetch the image embedding ({{status}}{{statusText}}).",
-                "hint": "Shift + click to include an area, {{alt}} + click to exclude it. Click to create the annotation, Esc to clear the points.",
+                "hint": "Shift + click to include an area, Alt + click to exclude it. Click to create the annotation, Esc to clear the points.",
                 "operations": {
                     "workerBuild": "SAM worker build",
                     "workerInit": "SAM worker init",

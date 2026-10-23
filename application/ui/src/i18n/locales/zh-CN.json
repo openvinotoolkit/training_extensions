@@ -788,7 +788,7 @@
                 "unknownError": "发生未知错误，请刷新页面重试。",
                 "timeoutError": "{{operation}} 在 {{timeoutMs}}ms 后超时，请尝试刷新页面。",
                 "embeddingError": "无法获取图像嵌入（{{status}}{{statusText}}）。",
-                "hint": "Shift + 点击以包含区域，{{alt}} + 点击以排除区域。点击以创建标注，按 Esc 清除这些点。",
+                "hint": "Shift + 点击以包含区域，Alt + 点击以排除区域。点击以创建标注，按 Esc 清除这些点。",
                 "operations": {
                     "workerBuild": "SAM 工作进程构建",
                     "workerInit": "SAM 工作进程初始化",

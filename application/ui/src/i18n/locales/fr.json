@@ -807,7 +807,7 @@
                 "unknownError": "Erreur inconnue, veuillez actualiser la page.",
                 "timeoutError": "{{operation}} : délai dépassé après {{timeoutMs}} ms. Veuillez actualiser la page.",
                 "embeddingError": "Impossible de récupérer l’embedding de l’image ({{status}}{{statusText}}).",
-                "hint": "Maj + clic pour inclure une zone, {{alt}} + clic pour l’exclure. Cliquez pour créer l’annotation, Échap pour effacer les points.",
+                "hint": "Maj + clic pour inclure une zone, Alt + clic pour l’exclure. Cliquez pour créer l’annotation, Échap pour effacer les points.",
                 "operations": {
                     "workerBuild": "Construction du worker SAM",
                     "workerInit": "Initialisation du worker SAM",
