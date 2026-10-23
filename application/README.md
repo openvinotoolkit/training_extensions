@@ -41,10 +41,6 @@ Geti can be installed as a **Windows app**, run as a **Docker container**, built
 For complete, step-by-step instructions - including prerequisites, GPU/accelerator support, TLS and TURN configuration,
 air-gapped setup, and troubleshooting - see the [Installation guide](./docs/install.md).
 
-> [!IMPORTANT]
-> Geti™ has no built-in authentication or access control. Do not expose it to untrusted networks;
-> see the [Installation guide](./docs/install.md) for details.
-
 ## Documentation
 
 Please check the [documentation website](https://docs.geti.intel.com/) for detailed guides, API reference,
