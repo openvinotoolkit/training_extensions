@@ -207,9 +207,10 @@ class HFInstSegModel(HFModel):
         Unlike detection (which decodes predictions to each image's
         ``ori_shape`` and compares in original image space), instance
         segmentation compares in the model's padded input canvas: the data
-        uses ``Resize(keep_aspect_ratio=True)`` (letterbox with padding), and
-        a simple ``target_sizes=ori_shape`` rescale does not invert the
-        letterbox padding for masks. Decoding predictions to the shared canvas
+        uses ``Resize`` (for the MaskFormer-family recipes a plain stretch,
+        so the exported full-image mask decode stays exact), and a simple
+        ``target_sizes=ori_shape`` rescale does not invert the letterbox
+        padding for masks. Decoding predictions to the shared canvas
         and reprojecting ground-truth boxes/masks into that same canvas is the
         exact, efficient path here (G12).
         """
