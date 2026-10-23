@@ -47,6 +47,7 @@ describe('locale registry', () => {
             'en',
             'es',
             'fr',
+            'hi',
             'it',
             'nl',
             'pl',

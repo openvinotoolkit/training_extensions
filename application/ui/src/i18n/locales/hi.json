@@ -1,0 +1,1212 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "रद्द करें",
+            "close": "बंद करें",
+            "delete": "हटाएँ",
+            "goBack": "वापस जाएँ",
+            "rename": "नाम बदलें",
+            "save": "सहेजें",
+            "assign": "असाइन करें",
+            "back": "पीछे",
+            "clear": "साफ़ करें",
+            "clearAll": "सब साफ़ करें",
+            "confirm": "पुष्टि करें",
+            "connect": "कनेक्ट करें",
+            "continue": "जारी रखें",
+            "create": "बनाएँ",
+            "disconnect": "डिस्कनेक्ट करें",
+            "dismiss": "खारिज करें",
+            "download": "डाउनलोड करें",
+            "edit": "संपादित करें",
+            "export": "निर्यात करें",
+            "hide": "छिपाएँ",
+            "next": "अगला",
+            "refresh": "रीफ़्रेश करें",
+            "remove": "निकालें",
+            "selectAll": "सभी चुनें",
+            "showLess": "कम दिखाएँ",
+            "showMore": "और दिखाएँ",
+            "skip": "छोड़ें",
+            "start": "प्रारंभ करें",
+            "submit": "सबमिट करें",
+            "train": "प्रशिक्षित करें",
+            "upload": "अपलोड करें",
+            "undo": "पूर्ववत करें",
+            "redo": "फिर से करें",
+            "annotate": "एनोटेट करें",
+            "addAndUse": "जोड़ें और उपयोग करें",
+            "saveAndConnect": "सहेजें और कनेक्ट करें",
+            "testConnection": "कनेक्शन जाँचें"
+        },
+        "labels": {
+            "allUppercase": "सभी",
+            "yes": "हाँ",
+            "no": "नहीं",
+            "unknown": "अज्ञात",
+            "name": "नाम",
+            "architecture": "आर्किटेक्चर",
+            "device": "डिवाइस",
+            "on": "चालू",
+            "off": "बंद",
+            "noMaximum": "कोई अधिकतम सीमा नहीं",
+            "active": "सक्रिय",
+            "dataset": "डेटासेट",
+            "filters": "फ़िल्टर",
+            "images": "छवियाँ",
+            "videos": "वीडियो",
+            "size": "आकार",
+            "sizeUppercase": "आकार",
+            "statusUppercase": "स्थिति",
+            "settings": "सेटिंग्स",
+            "training": "प्रशिक्षण",
+            "training_subset": "प्रशिक्षण",
+            "validation": "सत्यापन",
+            "validation_subset": "सत्यापन",
+            "testing": "परीक्षण",
+            "unassigned": "असाइन नहीं किया गया",
+            "trainingLowercase": "प्रशिक्षण",
+            "validationLowercase": "सत्यापन",
+            "testingLowercase": "परीक्षण",
+            "frames": "फ़्रेम",
+            "seconds": "सेकंड",
+            "every": "प्रत्येक",
+            "model": "मॉडल",
+            "jobs": "जॉब",
+            "labels": "लेबल",
+            "bytesTransferred": "{{total}} में से {{transferred}}"
+        },
+        "viewModes": {
+            "large": "बड़े थंबनेल",
+            "medium": "मध्यम थंबनेल",
+            "small": "छोटे थंबनेल"
+        },
+        "status": {
+            "pending": "लंबित",
+            "running": "चल रहा है",
+            "done": "पूर्ण",
+            "cancelled": "रद्द किया गया",
+            "uploading": "अपलोड हो रहा है",
+            "failed": "विफल",
+            "error": "त्रुटि",
+            "disconnected": "डिस्कनेक्ट"
+        },
+        "errors": {
+            "unknown": "एक अज्ञात त्रुटि हुई",
+            "unknownDetail": "अज्ञात त्रुटि"
+        }
+    },
+    "navigation": {
+        "logoAlt": "Geti लोगो",
+        "datasetDescription": "आपकी मीडिया आइटम देखने के लिए डेटा संग्रह पृष्ठ",
+        "models": "मॉडल",
+        "modelsDescription": "आपके मॉडल देखने के लिए मॉडल पृष्ठ",
+        "inference": "इन्फ़रेंस",
+        "inferenceDescription": "आपके प्रोजेक्ट पर लाइव इन्फ़रेंस दिखाने वाला इन्फ़रेंस पृष्ठ",
+        "help": {
+            "documentation": "उपयोगकर्ता दस्तावेज़",
+            "whatsNew": "नया क्या है",
+            "reportIssue": "समस्या की रिपोर्ट करें"
+        }
+    },
+    "dataset": {
+        "validation": {
+            "datasetViewNameExists": "इस नाम का व्यू पहले से मौजूद है।",
+            "invalidDateRange": "समाप्ति तिथि प्रारंभ तिथि के बाद होनी चाहिए"
+        },
+        "views": {
+            "deleted": "हटाया गया व्यू",
+            "title": "व्यू",
+            "entireDataset": "संपूर्ण डेटासेट",
+            "assignToExistingView": "मौजूदा व्यू को असाइन करें",
+            "assignTo": "इसमें असाइन करें",
+            "selectView": "एक व्यू चुनें",
+            "assignmentNote": "इस कार्रवाई से उन अन्य मीडिया पर कोई प्रभाव नहीं पड़ेगा जो पहले से इस व्यू को असाइन किए गए हैं।",
+            "mediaAssigned_one": "{{count}} मीडिया आइटम सफलतापूर्वक असाइन किया गया।",
+            "mediaAssigned_other": "{{count}} मीडिया आइटम सफलतापूर्वक असाइन किए गए।",
+            "openView": "{{viewName}} खोलें",
+            "saveView": "व्यू सहेजें",
+            "viewNameLabel": "व्यू का नाम",
+            "renameTitle": "डेटासेट व्यू का नाम बदलें",
+            "deleteTitle": "हटाने की पुष्टि",
+            "deleteConfirmation": "क्या आप वाकई \"{{viewName}}\" डेटासेट व्यू हटाना चाहते हैं?",
+            "deleteSuccess": "डेटासेट व्यू \"{{viewName}}\" सफलतापूर्वक हटा दिया गया।",
+            "unassignFromView": "इस व्यू से असाइनमेंट हटाएँ",
+            "selectedMediaCount_one": "{{count}} मीडिया आइटम चयनित",
+            "selectedMediaCount_other": "{{count}} मीडिया आइटम चयनित"
+        },
+        "filters": {
+            "allMedia": "सभी मीडिया",
+            "withAnnotations": "एनोटेशन वाले मीडिया",
+            "missingAnnotations": "अनुपलब्ध एनोटेशन वाले मीडिया",
+            "subset": "उपसमुच्चय के अनुसार फ़िल्टर करें",
+            "searchLabels": "लेबल खोजें",
+            "labelsSelected_one": "{{count}} लेबल चयनित",
+            "labelsSelected_other": "{{count}} लेबल चयनित",
+            "toggleAll": "सभी टॉगल करें",
+            "more": "और फ़िल्टर",
+            "dateRange": {
+                "heading": "अपलोड तिथि के अनुसार फ़िल्टर करें",
+                "startDateLabel": "प्रारंभ तिथि",
+                "endDateLabel": "समाप्ति तिथि",
+                "from": "{{date}} से",
+                "to": "{{date}} तक"
+            }
+        },
+        "upload": {
+            "queued": "कतार में",
+            "processing": "प्रोसेस हो रहा है",
+            "uploaded": "अपलोड किया गया",
+            "errorTitle": "अपलोड त्रुटि",
+            "details": "अपलोड विवरण",
+            "filename": "फ़ाइल नाम",
+            "uploadingSummary_one": "{{total}} आइटम अपलोड हो रहा है - {{uploaded}} अपलोड हुए",
+            "uploadingSummary_other": "{{total}} आइटम अपलोड हो रहे हैं - {{uploaded}} अपलोड हुए",
+            "uploadingFailedSummary_one": "{{total}} आइटम अपलोड हो रहा है - {{uploaded}} अपलोड हुए, {{failed}} विफल",
+            "uploadingFailedSummary_other": "{{total}} आइटम अपलोड हो रहे हैं - {{uploaded}} अपलोड हुए, {{failed}} विफल",
+            "uploadedSummary_one": "{{count}} आइटम अपलोड किया गया",
+            "uploadedSummary_other": "{{count}} आइटम अपलोड किए गए",
+            "failedSummary_one": "{{count}} आइटम अपलोड करने में विफल",
+            "failedSummary_other": "{{count}} आइटम अपलोड करने में विफल रहे",
+            "mixedSummary_one": "{{uploaded}} आइटम अपलोड किया गया, {{failed}} विफल",
+            "mixedSummary_other": "{{uploaded}} आइटम अपलोड किए गए, {{failed}} विफल",
+            "mixedCancelledSummary_one": "{{uploaded}} आइटम अपलोड किया गया, {{failed}} विफल, {{cancelled}} रद्द",
+            "mixedCancelledSummary_other": "{{uploaded}} आइटम अपलोड किए गए, {{failed}} विफल, {{cancelled}} रद्द",
+            "genericError": "मीडिया अपलोड करने में विफल।",
+            "uploadMedia": "मीडिया अपलोड करें",
+            "showDetails": "विवरण दिखाएँ",
+            "inProgressToast_one": "{{count}} आइटम अपलोड हो रहा है...",
+            "inProgressToast_other": "{{count}} आइटम अपलोड हो रहे हैं...",
+            "inProgressSucceededPart": "{{count}} सफल",
+            "inProgressFailedPart": "{{count}} विफल",
+            "cancelAll": "सभी रद्द करें",
+            "cancelledSummary_one": "{{count}} अपलोड रद्द किया गया",
+            "cancelledSummary_other": "{{count}} अपलोड रद्द किए गए"
+        },
+        "empty": {
+            "noMatches": "आपके फ़िल्टर से कोई मीडिया आइटम मेल नहीं खाता।",
+            "changeFilter": "फ़िल्टर हटाएँ या कोई नया फ़िल्टर चुनें।",
+            "viewEmpty": "इस व्यू में कोई मीडिया आइटम नहीं है।",
+            "assignOrBack": "इसमें मीडिया आइटम असाइन करें, या संपूर्ण डेटासेट पर वापस जाएँ।",
+            "goToEntireDataset": "{{datasetName}} पर जाएँ",
+            "datasetEmpty": "आपका डेटासेट खाली है।",
+            "uploadToStart": "शुरू करने के लिए अपना पहला मीडिया आइटम अपलोड करें।"
+        },
+        "review": {
+            "reviewed": "समीक्षित",
+            "forReview": "समीक्षा के लिए",
+            "selectSubsetPlaceholder": "उपसमुच्चय चुनें"
+        },
+        "statistics": {
+            "label": "डेटासेट सांख्यिकी",
+            "title": "डेटासेट सांख्यिकी",
+            "numberOfMedia": "मीडिया की संख्या",
+            "annotatedImages": "एनोटेट की गई छवियाँ",
+            "annotatedVideosFrames": "एनोटेट किए गए वीडियो / फ़्रेम",
+            "numberOfObjectsPerLabel": "प्रति लेबल ऑब्जेक्ट की संख्या",
+            "unannotated": "बिना एनोटेशन",
+            "annotated": "एनोटेट किया गया",
+            "annotationsChartTooltip": "एनोटेशन"
+        },
+        "delete": {
+            "title": "आइटम हटाएँ",
+            "mediaItem": "मीडिया आइटम हटाएँ",
+            "confirmation_one": "क्या आप वाकई {{count}} आइटम हटाना चाहते हैं?",
+            "confirmation_other": "क्या आप वाकई {{count}} आइटम हटाना चाहते हैं?",
+            "deletingItems": "आइटम हटाए जा रहे हैं...",
+            "deleteError": "हटाने में विफल, {{detail}}",
+            "deletedSuccess_one": "{{count}} आइटम सफलतापूर्वक हटाया गया",
+            "deletedSuccess_other": "{{count}} आइटम सफलतापूर्वक हटाए गए"
+        },
+        "bulkLabels": {
+            "title": "लेबल असाइनमेंट",
+            "uploadInstructions": "अपलोड की गई छवियों को असाइन करने के लिए लेबल चुनें, फिर 'जारी रखें' पर क्लिक करें। यदि आप छवियों को बाद में एनोटेट करना चाहते हैं, तो 'छोड़ें' चुनें।",
+            "selectedInstructions": "चयनित छवियों को असाइन करने के लिए लेबल चुनें, फिर 'असाइन करें' पर क्लिक करें।",
+            "imageOnlyNote": "चयनित लेबल केवल छवियों पर लागू होते हैं; वीडियो (यदि कोई हो) बिना एनोटेशन के अपलोड किए जाएँगे।",
+            "selectedImagesNote": "चयनित लेबल केवल छवियों पर लागू होते हैं; वीडियो (यदि कोई हो) अपरिवर्तित रहेंगे।",
+            "noResults": "कोई परिणाम नहीं मिला। अलग शब्दों से खोजने का प्रयास करें।",
+            "cancelUpload": "अपलोड रद्द करें",
+            "assignLabelTooltip": "लेबल असाइन करें",
+            "assignAllSuccess": "सभी {{count}} छवियों को लेबल सफलतापूर्वक असाइन किए गए",
+            "assignAllFailure": "{{count}} छवियों में से किसी को भी लेबल असाइन करने में विफल",
+            "assignPartialSuccess": "{{total}} में से {{succeeded}} छवियों को लेबल असाइन किए गए ({{failed}} विफल)"
+        },
+        "mediaActions": {
+            "downloadStarted": "{{fileName}} का डाउनलोड प्रारंभ हो गया है"
+        },
+        "gallery": {
+            "sort": {
+                "label": "मीडिया इसके अनुसार क्रमित करें:",
+                "uploadDateDescending": "अपलोड तिथि (नवीनतम)",
+                "uploadDateAscending": "अपलोड तिथि (सबसे पुराना)"
+            },
+            "selectedCount": "{{count}} चयनित",
+            "totalMediaCount_one": "{{count}} मीडिया आइटम",
+            "totalMediaCount_other": "{{count}} मीडिया आइटम",
+            "dropZone": {
+                "title": "मीडिया फ़ाइलें यहाँ छोड़ें",
+                "description": "छवियाँ और वीडियो इस डेटासेट में अपलोड किए जाएँगे।"
+            },
+            "mediaInfo": {
+                "annotatedFrames": "एनोटेट किए गए फ़्रेम की संख्या: {{count}}",
+                "totalFrames": "कुल फ़्रेम: {{count}}"
+            }
+        },
+        "import": {
+            "jobTitle": "डेटासेट आयात करें - {{fileName}} - {{size}}",
+            "processingMessage": "{{fileName}} फ़ाइल को आयात के लिए प्रोसेस किया जा रहा है",
+            "technicalDetails": "तकनीकी विवरण",
+            "preparingJob": "तैयार किया जा रहा है",
+            "stagedFileReadError": "स्टेज की गई फ़ाइल पढ़ते समय एक त्रुटि हुई",
+            "prepareError": "आयात की तैयारी के दौरान एक त्रुटि हुई।",
+            "genericError": "आयात के दौरान एक त्रुटि हुई।",
+            "importedSuccess": "डेटासेट {{fileName}} {{size}} सफलतापूर्वक आयात किया गया।",
+            "multipleFilesError": "फ़ोल्डर या एकाधिक फ़ाइलें जोड़ने की अनुमति नहीं है। कृपया एक ही फ़ाइल लोड करें।",
+            "unsupportedFormatError": "असमर्थित फ़ाइल प्रारूप। कृपया एक मान्य .zip फ़ाइल अपलोड करें।",
+            "datasetBeingUploaded": "डेटासेट अपलोड किया जा रहा है",
+            "dropZipHere": "डेटासेट की .zip फ़ाइल यहाँ छोड़ें",
+            "learnMoreFormats": "विभिन्न प्रारूपों के बारे में और जानें",
+            "dialogHeading": "डेटासेट आयात करें",
+            "scanningMessage": "आयात के लिए डेटासेट संग्रह को स्कैन और विश्लेषित किया जा रहा है...",
+            "mapLabelsMessage": "अपलोड किए गए डेटासेट के लिए लेबल मैप करें",
+            "deleteStagedFile": {
+                "title": "स्टेज की गई फ़ाइल हटाएँ",
+                "confirmation": "क्या आप वाकई डेटासेट फ़ाइल \"{{stagedDatasetId}}\" हटाना चाहते हैं?"
+            },
+            "formatWarning": {
+                "boundingBoxToPolygon": "आयातित डेटासेट बाउंडिंग बॉक्स एनोटेशन का उपयोग करता है, जबकि आपके प्रोजेक्ट का डेटासेट बहुभुज का उपयोग करता है। सब कुछ संगत रखने के लिए एनोटेशन स्वतः बहुभुज में परिवर्तित कर दिए जाएँगे।",
+                "polygonToBoundingBox": "आयातित डेटासेट बहुभुज एनोटेशन का उपयोग करता है, जबकि आपके प्रोजेक्ट का डेटासेट बाउंडिंग बॉक्स का उपयोग करता है। सब कुछ संगत रखने के लिए एनोटेशन स्वतः बाउंडिंग बॉक्स में परिवर्तित कर दिए जाएँगे।"
+            },
+            "labelMapping": {
+                "statisticsHeading": "आयातित डेटासेट सांख्यिकी",
+                "heading": "लेबल मैपिंग - वैकल्पिक",
+                "unmappedNote": "बिना मैप किए गए आइटम बिना लेबल के आयात किए जाएँगे",
+                "datasetLabelsColumn": "डेटासेट लेबल",
+                "projectLabelsColumn": "प्रोजेक्ट लेबल",
+                "selectLabelPlaceholder": "लेबल चुनें",
+                "imagesLabel": "छवियाँ",
+                "framesLabel": "फ़्रेम"
+            }
+        },
+        "export": {
+            "heading": "{{name}} निर्यात करें",
+            "headingDatasetView": "डेटासेट व्यू निर्यात करें",
+            "datasetView": "व्यू: {{name}}",
+            "statisticsHeading": "निर्यातित डेटासेट सांख्यिकी",
+            "settingsHeading": "निर्यात सेटिंग्स",
+            "filterByLabel": "लेबल के अनुसार एनोटेशन फ़िल्टर करें",
+            "selectFormat": "डेटासेट निर्यात प्रारूप चुनें",
+            "learnMoreFormats": "निर्यात प्रारूपों के बारे में और जानें",
+            "processing": "निर्यात के लिए डेटासेट प्रोसेस किया जा रहा है",
+            "readyForDownload": "डेटासेट डाउनलोड के लिए तैयार है",
+            "downloadStarted": "डेटासेट डाउनलोड प्रारंभ हुआ",
+            "error": "त्रुटि: {{error}}",
+            "itemsLabel": "आइटम",
+            "details": {
+                "defaultName": "डेटासेट",
+                "format": "प्रारूप:",
+                "media": "मीडिया:",
+                "onlyAnnotated": "केवल एनोटेशन वाले मीडिया",
+                "labels": "लेबल:"
+            },
+            "warnings": {
+                "videos": "इस डेटासेट प्रारूप में वीडियो निर्यात समर्थित नहीं है। वीडियो के सभी एनोटेट किए गए फ़्रेम छवियों के रूप में निर्यात किए जाएँगे।",
+                "emptyLabel": "चयनित प्रारूप खाली लेबल (जैसे \"{{emptyLabelName}}\") का समर्थन नहीं करता। उन्हें रखने वाली छवियाँ और फ़्रेम बिना एनोटेशन के निर्यात किए जाएँगे।",
+                "unsupportedItemsEmptyLabels": "खाली लेबल",
+                "unsupportedItemsVideos": "वीडियो",
+                "unsupportedItems": "{{items}} को सुरक्षित रखने के लिए, कृपया Geti निर्यात प्रारूप का उपयोग करें।",
+                "subsetNotIncluded": "निर्यातित डेटासेट में प्रत्येक मीडिया को असाइन किए गए उपसमुच्चय की कोई जानकारी शामिल नहीं होगी।"
+            }
+        },
+        "importExport": {
+            "trigger": "डेटासेट आयात/निर्यात करें",
+            "exportItem": "डेटासेट निर्यात करें"
+        },
+        "revisions": {
+            "createdOn": "{{date}} को बनाया गया",
+            "unnamedName": "डेटासेट #{{id}}",
+            "notFoundForModel": "इस मॉडल के लिए कोई डेटासेट संशोधन नहीं मिला",
+            "filesDeleted": "इस डेटासेट संशोधन की फ़ाइलें हटा दी गई हैं।",
+            "noItemsInSubset": "इस उपसमुच्चय में कोई आइटम नहीं है",
+            "itemAlt": "{{subset}} आइटम",
+            "trainingSubsets": {
+                "test": "परीक्षण"
+            },
+            "rename": {
+                "title": "डेटासेट संशोधन का नाम बदलें",
+                "nameLabel": "डेटासेट संशोधन का नाम"
+            },
+            "delete": {
+                "title": "डेटासेट संशोधन हटाएँ",
+                "description": "क्या आप वाकई डेटासेट संशोधन \"{{name}}\" हटाना चाहते हैं? आप मॉडल सांख्यिकी फिर भी देख सकेंगे, लेकिन प्रशिक्षण डेटासेट फ़ाइलों तक पहुँच नहीं पाएँगे।"
+            }
+        },
+        "includeUnannotated": "बिना एनोटेशन वाले मीडिया शामिल करें"
+    },
+    "inference": {
+        "validation": {
+            "keyEmpty": "कुंजी खाली नहीं हो सकती",
+            "valueEmpty": "मान खाली नहीं हो सकता"
+        },
+        "connection": {
+            "testing": "कनेक्शन की जाँच हो रही है...",
+            "inUse": "उपयोग में",
+            "unreachable": "पहुँच से बाहर",
+            "ready": "तैयार",
+            "saveErrorFallback": "कृपया पुनः प्रयास करें",
+            "removeSuccess": "{{name}} सफलतापूर्वक हटा दिया गया!"
+        },
+        "confidenceThreshold": {
+            "label": "कॉन्फ़िडेंस थ्रेशोल्ड"
+        },
+        "devices": {
+            "label": "इन्फ़रेंस डिवाइस"
+        },
+        "sources": {
+            "uploadError": "वीडियो फ़ाइल अपलोड करने में विफल।",
+            "deleteVideoError": "अपलोड की गई वीडियो फ़ाइल हटाने में विफल।",
+            "list": {
+                "addSource": "नया स्रोत जोड़ें"
+            },
+            "types": {
+                "usbCamera": "यूएसबी कैमरा",
+                "ipCamera": "आईपी कैमरा",
+                "videoFile": "वीडियो फ़ाइल",
+                "imagesFolder": "छवियों का फ़ोल्डर",
+                "disconnected": "डिस्कनेक्ट"
+            },
+            "options": {
+                "usbCamera": "USB कैमरा",
+                "ipCamera": "IP कैमरा",
+                "videoFile": "वीडियो फ़ाइल"
+            },
+            "add": {
+                "title": "नया इनपुट स्रोत जोड़ें"
+            },
+            "edit": {
+                "title": "इनपुट स्रोत संपादित करें"
+            },
+            "form": {
+                "createSuccess": "स्रोत कॉन्फ़िगरेशन सफलतापूर्वक बनाया गया।",
+                "updateSuccess": "स्रोत कॉन्फ़िगरेशन सफलतापूर्वक अपडेट किया गया।",
+                "saveError": "स्रोत कॉन्फ़िगरेशन सहेजने में विफल, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "\"{{name}}\" से सफलतापूर्वक कनेक्ट हो गया।",
+                "disconnectSuccess": "\"{{name}}\" से सफलतापूर्वक डिस्कनेक्ट हो गया।",
+                "disablePipelineAndDisconnectSuccess": "पाइपलाइन सफलतापूर्वक अक्षम की गई और \"{{name}}\" से डिस्कनेक्ट हो गया।",
+                "disconnectDialog": {
+                    "title": "{{name}} डिस्कनेक्ट करें",
+                    "message": "इस स्रोत को डिस्कनेक्ट करने से इन्फ़रेंस पाइपलाइन भी अक्षम हो जाएगी। क्या आप जारी रखना चाहते हैं?"
+                }
+            },
+            "settings": {
+                "loading": "लोड हो रहा है...",
+                "device": "डिवाइस: {{name}}",
+                "unknownDevice": "अज्ञात डिवाइस (आईडी: {{deviceId}})",
+                "ignoreExistingImages": "मौजूदा छवियों को अनदेखा करें: {{value}}",
+                "streamUrl": "स्ट्रीम URL: {{url}}",
+                "videoPath": "वीडियो पथ: {{path}}"
+            },
+            "fields": {
+                "imagesFolderPath": "छवियों के फ़ोल्डर का पथ",
+                "ignoreExistingImages": "मौजूदा छवियों को अनदेखा करें",
+                "streamUrl": "स्ट्रीम URL:",
+                "requireAuthentication": "प्रमाणीकरण आवश्यक करें",
+                "camera": "कैमरा",
+                "videoFilePath": "वीडियो फ़ाइल का पथ",
+                "selectedFile": "चयनित: {{fileName}}",
+                "loopVideo": "वीडियो लूप करें"
+            },
+            "defaultNames": {
+                "usbCamera": "USB कैमरा स्रोत",
+                "ipCamera": "IP कैमरा स्रोत",
+                "videoFile": "वीडियो फ़ाइल स्रोत"
+            }
+        },
+        "sinks": {
+            "types": {
+                "folder": "फ़ोल्डर",
+                "mqtt": "mqtt",
+                "webhook": "webhook",
+                "ros": "ros"
+            },
+            "options": {
+                "folder": "फ़ोल्डर",
+                "webhook": "Webhook",
+                "mqtt": "MQTT"
+            },
+            "add": {
+                "title": "नया सिंक जोड़ें"
+            },
+            "edit": {
+                "title": "सिंक संपादित करें"
+            },
+            "form": {
+                "createSuccess": "सिंक कॉन्फ़िगरेशन सफलतापूर्वक बनाया गया।",
+                "updateSuccess": "सिंक कॉन्फ़िगरेशन सफलतापूर्वक अपडेट किया गया।",
+                "saveError": "सिंक कॉन्फ़िगरेशन सहेजने में विफल, {{details}}"
+            },
+            "menu": {
+                "connectSuccess": "\"{{name}}\" से सफलतापूर्वक कनेक्ट हो गया",
+                "disconnectSuccess": "\"{{name}}\" से सफलतापूर्वक डिस्कनेक्ट हो गया"
+            },
+            "settings": {
+                "rateLimit": "दर सीमा: {{value}}",
+                "httpMethod": "HTTP विधि: {{value}}",
+                "timeout": "टाइमआउट: {{value}}",
+                "webhookUrl": "Webhook URL: {{value}}",
+                "topic": "टॉपिक: {{value}}",
+                "brokerHost": "ब्रोकर होस्ट: {{value}}",
+                "brokerPort": "ब्रोकर पोर्ट: {{value}}",
+                "outputFormats": "आउटपुट प्रारूप: ",
+                "outputFormatTypes": {
+                    "imageOriginal": "मूल छवि",
+                    "imageWithPredictions": "पूर्वानुमान सहित छवि",
+                    "predictions": "पूर्वानुमान"
+                }
+            },
+            "rateLimit": {
+                "notSet": "सेट नहीं है",
+                "samplesPerSecond_one": "प्रत्येक 1 सेकंड में {{count}} नमूना",
+                "samplesPerSecond_other": "प्रत्येक 1 सेकंड में {{count}} नमूने",
+                "oneSamplePerSeconds_one": "प्रत्येक {{count}} सेकंड में 1 नमूना",
+                "oneSamplePerSeconds_other": "प्रत्येक {{count}} सेकंड में 1 नमूना"
+            },
+            "fields": {
+                "samples": "नमूने",
+                "outputFormatsLabel": "आउटपुट प्रारूप",
+                "outputFormatPredictions": "पूर्वानुमान",
+                "outputFormatImageOriginal": "मूल छवि",
+                "outputFormatImageWithPredictions": "पूर्वानुमान सहित छवि",
+                "folderPath": "फ़ोल्डर पथ",
+                "httpMethod": "HTTP विधि",
+                "timeout": "टाइमआउट",
+                "webhookUrl": "Webhook URL",
+                "headers": "हेडर",
+                "topic": "टॉपिक",
+                "brokerHost": "ब्रोकर होस्ट",
+                "brokerPort": "ब्रोकर पोर्ट",
+                "authRequired": "प्रमाणीकरण आवश्यक"
+            },
+            "webhook": {
+                "headersHelp": "आवश्यकतानुसार जितनी चाहें कुंजी-मान जोड़ियाँ जोड़ें। प्रत्येक जोड़ी '{{title}}' ऑब्जेक्ट में शामिल की जाएगी।",
+                "keyPlaceholder": "कुंजी",
+                "valuePlaceholder": "मान"
+            },
+            "defaultNames": {
+                "localFolder": "स्थानीय फ़ोल्डर सिंक",
+                "webhook": "Webhook सिंक",
+                "mqtt": "MQTT सिंक"
+            }
+        },
+        "pipeline": {
+            "activeModel": {
+                "loading": "मॉडल: ..."
+            },
+            "toggle": {
+                "enabledLabel": "पाइपलाइन सक्षम",
+                "disabledLabel": "पाइपलाइन अक्षम",
+                "enabledSuccess": "पाइपलाइन सफलतापूर्वक सक्षम की गई",
+                "disabledSuccess": "पाइपलाइन सफलतापूर्वक अक्षम की गई"
+            },
+            "configuration": {
+                "sidebarLabel": "पाइपलाइन कॉन्फ़िगरेशन",
+                "sourcesTab": "इनपुट",
+                "sinksTab": "आउटपुट"
+            }
+        },
+        "collection": {
+            "sidebarLabel": "डेटा संग्रह नीति",
+            "maxDatasetSize": {
+                "title": "अधिकतम डेटासेट आकार",
+                "description": "एकत्र किए जाने वाले आइटम की अधिकतम संख्या"
+            },
+            "captureRate": {
+                "title": "कैप्चर दर",
+                "description": "स्ट्रीम चलने के दौरान फ़्रेम कैप्चर करें",
+                "toggleLabel": "स्वतः कैप्चरिंग टॉगल करें"
+            },
+            "confidenceThreshold": {
+                "description": "जब कॉन्फ़िडेंस थ्रेशोल्ड से कम हो तब फ़्रेम कैप्चर करें",
+                "sliderLabel": "थ्रेशोल्ड"
+            }
+        },
+        "metrics": {
+            "time": "समय",
+            "sidebarLabel": "पाइपलाइन मीट्रिक",
+            "empty": {
+                "title": "कोई सांख्यिकी उपलब्ध नहीं",
+                "description": "पाइपलाइन के चलने और डेटा प्रोसेस करने के बाद पाइपलाइन मीट्रिक यहाँ दिखाई देंगे।"
+            },
+            "throughput": {
+                "title": "थ्रूपुट",
+                "axisLabel": "अनुरोध/सेकंड"
+            },
+            "latency": {
+                "title": "विलंबता",
+                "axisLabel": "मि.से."
+            }
+        },
+        "health": {
+            "overall": {
+                "idle": "निष्क्रिय",
+                "problemsDetected": "समस्याएँ पाई गईं"
+            },
+            "component": {
+                "healthy": "स्वस्थ",
+                "finished": "समाप्त",
+                "unavailable": "अनुपलब्ध"
+            },
+            "componentLabels": {
+                "source": "स्रोत",
+                "sink": "सिंक"
+            }
+        },
+        "stream": {
+            "start": "स्ट्रीम प्रारंभ करें",
+            "enablePipelineToStart": "स्ट्रीम प्रारंभ करने के लिए पाइपलाइन सक्षम करें",
+            "connectError": "स्ट्रीम से कनेक्ट करने में विफल",
+            "captureFrame": "फ़्रेम कैप्चर करें",
+            "captureSuccess": "फ़्रेम कैप्चर किया गया और डेटासेट में जोड़ा गया।"
+        },
+        "settings": {
+            "folderPath": "फ़ोल्डर पथ: {{path}}",
+            "authRequired": "प्रमाणीकरण आवश्यक: {{value}}"
+        }
+    },
+    "project": {
+        "delete": {
+            "confirmation": "क्या आप वाकई प्रोजेक्ट \"{{projectName}}\" हटाना चाहते हैं?",
+            "success": "प्रोजेक्ट सफलतापूर्वक हटा दिया गया"
+        },
+        "rename": {
+            "title": "प्रोजेक्ट का नाम संपादित करें",
+            "success": "प्रोजेक्ट सफलतापूर्वक अपडेट किया गया"
+        },
+        "validation": {
+            "nameEmpty": "प्रोजेक्ट का नाम खाली नहीं हो सकता",
+            "nameExists": "यह प्रोजेक्ट नाम पहले से मौजूद है"
+        },
+        "panel": {
+            "manageProjects": "प्रोजेक्ट प्रबंधित करें",
+            "enablePipelineBlocked": {
+                "title": "पाइपलाइन सक्षम नहीं की जा सकती",
+                "message": "पाइपलाइन सक्षम करने से पहले सुनिश्चित करें कि आपने एक मॉडल और एक स्रोत चुना है।"
+            }
+        },
+        "taskTypes": {
+            "detection": "ऑब्जेक्ट डिटेक्शन",
+            "classification": "वर्गीकरण",
+            "instanceSegmentation": "इंस्टेंस सेगमेंटेशन",
+            "multiLabelClassification": "बहु-लेबल वर्गीकरण",
+            "recommended": "{{taskType}} (अनुशंसित)"
+        },
+        "list": {
+            "count_one": "{{count}} प्रोजेक्ट",
+            "count_other": "{{count}} प्रोजेक्ट",
+            "countFiltered_one": "{{count}} में से {{filtered}} प्रोजेक्ट",
+            "countFiltered_other": "{{count}} में से {{filtered}} प्रोजेक्ट",
+            "createNewProject": "नया प्रोजेक्ट बनाएँ",
+            "createProjectFromDataset": "डेटासेट से बनाएँ",
+            "card": {
+                "created": "बनाया गया: {{date}}",
+                "models_one": "{{count}} मॉडल",
+                "models_other": "{{count}} मॉडल"
+            },
+            "menu": {
+                "enablePipeline": "पाइपलाइन सक्षम करें",
+                "disablePipeline": "पाइपलाइन अक्षम करें"
+            },
+            "sort": {
+                "label": "प्रोजेक्ट इसके अनुसार क्रमित करें:",
+                "nameAscending": "नाम (A-Z)",
+                "nameDescending": "नाम (Z-A)",
+                "createdAtDescending": "निर्माण तिथि (नवीनतम)",
+                "createdAtAscending": "निर्माण तिथि (सबसे पुराना)"
+            },
+            "filters": {
+                "searchPlaceholder": "प्रोजेक्ट खोजें",
+                "taskType": "कार्य प्रकार के अनुसार फ़िल्टर करें",
+                "models": "मॉडल के अनुसार फ़िल्टर करें",
+                "withTrainedModels": "प्रशिक्षित मॉडल के साथ"
+            },
+            "noMatches": {
+                "title": "आपके फ़िल्टर से कोई प्रोजेक्ट मेल नहीं खाता",
+                "description": "जो आप खोज रहे हैं उसे पाने के लिए अपनी खोज या कार्य प्रकार फ़िल्टर बदलकर देखें।"
+            },
+            "empty": {
+                "intro": "<name>Geti</name> में आपका स्वागत है, एक विज़न AI प्लेटफ़ॉर्म जो आपको डेटासेट तैयारी से लेकर प्रशिक्षण, अनुकूलन और परिनियोजन तक <highlight>संपूर्ण मॉडल जीवनचक्र</highlight> में मार्गदर्शन करता है।"
+            },
+            "workflow": {
+                "addData": "डेटा जोड़ें",
+                "optimize": "अनुकूलित करें",
+                "runInference": "इन्फ़रेंस चलाएँ",
+                "loop": "पूर्वानुमानों पर नज़र रखें और अपने मॉडल को क्रमिक रूप से बेहतर बनाने के लिए और डेटा एकत्र करें"
+            }
+        },
+        "create": {
+            "taskQuestion": "आप चाहते हैं कि मॉडल किस प्रकार का कार्य करे?",
+            "labelsQuestion": "मॉडल को किन ऑब्जेक्ट को {{verb}} सीखना चाहिए?",
+            "submit": "प्रोजेक्ट बनाएँ",
+            "tasks": {
+                "detection": {
+                    "title": "ऑब्जेक्ट डिटेक्शन",
+                    "description": "अपनी छवियों में ऑब्जेक्ट पहचानें और उनका स्थान ज्ञात करें",
+                    "advice": "इसके लिए सर्वोत्तम: गिनती, ट्रैकिंग",
+                    "verb": "पहचानना"
+                },
+                "instanceSegmentation": {
+                    "title": "इंस्टेंस सेगमेंटेशन",
+                    "description": "विशिष्ट क्षेत्रों या आकृतियों का पता लगाएँ और उनकी रूपरेखा बनाएँ",
+                    "advice": "इसके लिए सर्वोत्तम: माप, असामान्य आकृतियाँ",
+                    "verb": "सेगमेंट करना"
+                },
+                "classification": {
+                    "title": "छवि वर्गीकरण",
+                    "description": "संपूर्ण छवियों को उनकी सामग्री के आधार पर वर्गीकृत करें",
+                    "advice": "इसके लिए सर्वोत्तम: फ़िल्टरिंग, सामग्री मॉडरेशन",
+                    "verb": "वर्गीकृत करना"
+                }
+            },
+            "classificationType": {
+                "title": "मॉडल को किस प्रकार का वर्गीकरण उपयोग करना चाहिए?",
+                "singleLabel": {
+                    "label": "एकल-लेबल",
+                    "description": "परस्पर अनन्य लेबल में से एक लेबल असाइन करें",
+                    "warning": "कम से कम 2 लेबल आवश्यक हैं"
+                },
+                "multiLabel": {
+                    "label": "बहु-लेबल",
+                    "description": "गैर-परस्पर-अनन्य लेबल में से एक या अधिक लेबल असाइन करें"
+                }
+            },
+            "labels": {
+                "atLeastOneRequired": "कम से कम एक ऑब्जेक्ट आवश्यक है"
+            },
+            "defaultName": "प्रोजेक्ट #{{number}}"
+        },
+        "import": {
+            "title": "डेटासेट से प्रोजेक्ट बनाएँ - आयात",
+            "labelMapping": {
+                "title": "लेबल मैपिंग"
+            },
+            "preparingMessage": "डेटासेट आयात को नए प्रोजेक्ट के रूप में तैयार करें",
+            "taskSelection": {
+                "projectName": "प्रोजेक्ट का नाम",
+                "selectTaskPlaceholder": "कार्य चुनें",
+                "recommendationHint": "अनुशंसित विकल्प डेटासेट में पाए गए एनोटेशन के प्रकार पर आधारित है। यदि आप कोई अन्य प्रकार चुनते हैं, तो आयात के दौरान एनोटेशन स्वतः चयनित प्रकार के अनुरूप बदल दिए जाएँगे।"
+            },
+            "jobsList": {
+                "selectTaskType": "कार्य प्रकार चुनें",
+                "mapLabelsButton": "लेबल मैप करें"
+            }
+        },
+        "taskType": "कार्य प्रकार"
+    },
+    "labels": {
+        "fields": {
+            "hotkeyPlaceholder": "हॉटकी",
+            "nameExists": "यह लेबल नाम पहले से मौजूद है",
+            "hotkeyExists": "यह हॉटकी पहले से उपयोग में है"
+        },
+        "editor": {
+            "namePlaceholder": "लेबल का नाम",
+            "pin": "लेबल पिन करें",
+            "unpin": "लेबल अनपिन करें",
+            "editTrigger": "लेबल संपादित करें",
+            "createTrigger": "लेबल बनाएँ",
+            "delete": {
+                "title": "लेबल हटाएँ",
+                "message": "यदि आप {{labelName}} लेबल हटाते हैं, तो आपके डेटासेट के वे सभी एनोटेशन हटा दिए जाएँगे जिनमें यह लेबल है। हालाँकि, इससे आपके पहले प्रशिक्षित किसी भी मॉडल पर कोई प्रभाव नहीं पड़ेगा।"
+            }
+        },
+        "toolbar": {
+            "hotkeyTooltip": "हॉटकी: {{hotkey}}",
+            "overflowCount": "+ {{count}} और"
+        },
+        "empty": {
+            "noLabel": "कोई लेबल नहीं",
+            "noObject": "कोई ऑब्जेक्ट नहीं"
+        }
+    },
+    "annotator": {
+        "canvas": {
+            "hideLabels": "लेबल छिपाएँ",
+            "pixelView": "पिक्सेल व्यू",
+            "annotationFillOpacity": "एनोटेशन भरण अपारदर्शिता",
+            "annotationBorderOpacity": "एनोटेशन बॉर्डर अपारदर्शिता",
+            "imageBrightness": "छवि की चमक",
+            "imageContrast": "छवि का कंट्रास्ट",
+            "imageSaturation": "छवि की संतृप्ति"
+        },
+        "actions": {
+            "zoomIn": "ज़ूम इन",
+            "zoomOut": "ज़ूम आउट",
+            "fitToScreen": "स्क्रीन में फ़िट करें ({{hotkey}})",
+            "undo": "पूर्ववत करें ({{hotkey}})",
+            "redo": "फिर से करें ({{hotkeys}})",
+            "toggleFocus": "फ़ोकस टॉगल करें",
+            "showAnnotations": "एनोटेशन दिखाएँ ({{hotkey}})",
+            "hideAnnotations": "एनोटेशन छिपाएँ ({{hotkey}})"
+        },
+        "modes": {
+            "annotation": "एनोटेशन",
+            "prediction": "पूर्वानुमान"
+        },
+        "predictions": {
+            "settingsTitle": "पूर्वानुमान सेटिंग्स",
+            "confirm": "पूर्वानुमान की पुष्टि करें"
+        },
+        "hotkeys": {
+            "alternatives": "{{primary}} या {{alternative}}",
+            "title": "हॉटकी",
+            "submitAnnotationsPredictions": "एनोटेशन/पूर्वानुमान सबमिट करें",
+            "previousMedia": "पिछला मीडिया",
+            "nextMedia": "अगला मीडिया",
+            "deleteSelectedAnnotation": "चयनित एनोटेशन हटाएँ",
+            "toggleAnnotationsVisibility": "सभी एनोटेशन दिखाएँ या छिपाएँ",
+            "selectAllAnnotations": "सभी एनोटेशन चुनें",
+            "deselectAllAnnotations": "सभी एनोटेशन का चयन हटाएँ",
+            "selectNextAnnotation": "अगला एनोटेशन चुनें",
+            "resetZoom": "ज़ूम रीसेट करें"
+        },
+        "tools": {
+            "selection": {
+                "label": "चयन"
+            },
+            "boundingBox": {
+                "label": "बाउंडिंग बॉक्स",
+                "description": "छवि में किसी ऑब्जेक्ट के चारों ओर आयत या वर्ग बनाएँ।"
+            },
+            "autoSegmentation": {
+                "label": "ऑटो सेगमेंटेशन",
+                "detectionDescription": "सुझाया गया आयत देखने के लिए कर्सर को ऑब्जेक्ट पर ले जाएँ, फिर एनोटेशन बनाने के लिए क्लिक करें।",
+                "segmentationDescription": "सुझाया गया बहुभुज देखने के लिए कर्सर को ऑब्जेक्ट पर ले जाएँ, फिर एनोटेशन बनाने के लिए क्लिक करें।",
+                "loading": "छवि प्रोसेस हो रही है, कृपया प्रतीक्षा करें...",
+                "error": "Segment Anything टूल में त्रुटि: {{message}}",
+                "unknownError": "अज्ञात त्रुटि, कृपया पृष्ठ रीफ़्रेश करके देखें।",
+                "timeoutError": "{{operation}} {{timeoutMs}} मि.से. के बाद टाइम आउट हो गया। कृपया पृष्ठ रीफ़्रेश करके देखें।",
+                "embeddingError": "छवि एम्बेडिंग प्राप्त नहीं की जा सकी ({{status}}{{statusText}})।",
+                "operations": {
+                    "workerBuild": "SAM वर्कर बिल्ड",
+                    "workerInit": "SAM वर्कर इनिट",
+                    "decoder": "SAM डिकोडर"
+                }
+            },
+            "polygon": {
+                "label": "बहुभुज",
+                "description": "एक-एक करके बिंदु रखने के लिए क्लिक करें, या फ़्रीहैंड बनाने के लिए दबाकर खींचें। पिक्सेल-परिशुद्धता की आवश्यकता वाली अनियमित आकृतियों के लिए आदर्श।"
+            },
+            "magneticLasso": {
+                "label": "मैग्नेटिक लासो",
+                "description": "ऑब्जेक्ट के किनारे पर कर्सर घुमाएँ और समय-समय पर क्लिक करें ताकि रूपरेखा उसकी सीमाओं से चिपक जाए।",
+                "error": "आकृति की सीमाएँ चुनने में विफल, क्या आप कृपया पुनः प्रयास करेंगे?"
+            },
+            "ssim": {
+                "label": "डिटेक्शन सहायक",
+                "description": "किसी ऑब्जेक्ट के चारों ओर बॉक्स बनाएँ ताकि छवि में समान ऑब्जेक्ट स्वतः खोजे और एनोटेट किए जा सकें।",
+                "loading": "डिटेक्शन सहायक लोड हो रहा है, कृपया प्रतीक्षा करें...",
+                "error": "डिटेक्शन सहायक टूल में त्रुटि: {{message}}",
+                "operations": {
+                    "workerBuild": "डिटेक्शन सहायक वर्कर बिल्ड"
+                },
+                "options": {
+                    "accept": "स्वीकार करें",
+                    "reject": "अस्वीकार करें",
+                    "numberOfItems": "आइटम की संख्या",
+                    "autoMergeDuplicates": "डुप्लिकेट स्वतः मर्ज करें"
+                }
+            }
+        },
+        "video": {
+            "playback": {
+                "slower": "और धीमा",
+                "slow": "धीमा",
+                "normal": "सामान्य",
+                "speed": "प्लेबैक गति",
+                "showAllFrames": "सभी फ़्रेम दिखाएँ",
+                "showOneFramePerSecond": "प्रति सेकंड 1 फ़्रेम दिखाएँ"
+            },
+            "frames": {
+                "currentTotal": "वर्तमान फ़्रेम: {{currentFrame}} / कुल फ़्रेम: {{totalFrames}}",
+                "thumbnailAlt": "फ़्रेम {{frameNumber}} का थंबनेल"
+            },
+            "errors": {
+                "network": "नेटवर्क त्रुटि के कारण वीडियो नहीं चलाया जा सकता, कृपया रीफ़्रेश करके पुनः प्रयास करें।",
+                "unableToPlay": "वीडियो नहीं चलाया जा सका, कृपया पुनः प्रयास करें।",
+                "unsupportedFormat": "वीडियो नहीं चलाया जा सका, कृपया कोई अन्य वीडियो प्रारूप (mp4/webm) आज़माएँ।"
+            }
+        }
+    },
+    "models": {
+        "jobs": {
+            "error": "जॉब विफल हुआ। कृपया विवरण के लिए लॉग देखें और पुनः प्रयास करें।",
+            "pending": "लंबित...",
+            "running": "चल रहा है...",
+            "stopDialog": {
+                "title": "जॉब रोकें",
+                "confirmation": "क्या आप वाकई इस जॉब को रोकना चाहते हैं?"
+            },
+            "logs": "लॉग",
+            "startedAt": "प्रारंभ: {{time}}",
+            "waitingToStart": "प्रारंभ होने की प्रतीक्षा...",
+            "device": "डिवाइस: {{device}}"
+        },
+        "detail": {
+            "loadError": "मॉडल विवरण लोड करने में विफल",
+            "tabs": {
+                "variants": "मॉडल वैरिएंट",
+                "metrics": "मॉडल मीट्रिक",
+                "parameters": "प्रशिक्षण पैरामीटर",
+                "datasets": "प्रशिक्षण डेटासेट"
+            }
+        },
+        "metrics": {
+            "noMetrics": "कोई मीट्रिक उपलब्ध नहीं",
+            "loadError": "प्रशिक्षण मीट्रिक लोड करने में विफल",
+            "evaluationsTitle": "मूल्यांकन",
+            "noEvaluations": "परीक्षण मूल्यांकन मीट्रिक उपलब्ध नहीं हैं"
+        },
+        "training": {
+            "logs": {
+                "copySuccess": "सफलतापूर्वक कॉपी किया गया",
+                "copyError": "कॉपी विफल",
+                "copyPathTooltip": "पथ कॉपी करने के लिए क्लिक करें",
+                "showTraceback": "ट्रेसबैक दिखाएँ",
+                "levelLabel": "स्तर",
+                "levelHelpTitle": "न्यूनतम लॉग स्तर",
+                "levelHelpDescription": "चयनित स्तर और उससे ऊपर की लॉग प्रविष्टियाँ दिखाता है। उदाहरण के लिए, WARNING चुनने पर WARNING, ERROR और CRITICAL प्रविष्टियाँ दिखती हैं, जबकि DEBUG और INFO छिप जाती हैं।",
+                "searchPlaceholder": "लॉग खोजें...",
+                "connectionStatus": {
+                    "connecting": "कनेक्ट हो रहा है...",
+                    "connected": "लाइव",
+                    "error": "कनेक्शन त्रुटि"
+                },
+                "entriesCount": "{{filtered}} / {{total}} प्रविष्टियाँ",
+                "noEntries": "कोई लॉग प्रविष्टि नहीं",
+                "noMatchingEntries": "कोई मेल खाती लॉग प्रविष्टि नहीं",
+                "scrollToBottom": "नीचे स्क्रॉल करें",
+                "dialogTitle": "प्रशिक्षण लॉग",
+                "loadError": "लॉग लोड करने में विफल: {{message}}",
+                "noJobOrModel": "कोई जॉब या मॉडल निर्दिष्ट नहीं",
+                "fetchError": "मॉडल लॉग प्राप्त करने में विफल: {{status}} {{statusText}}",
+                "downloadStarted": "प्रशिक्षण लॉग का डाउनलोड प्रारंभ हुआ"
+            },
+            "parameters": {
+                "noParameters": "कोई पैरामीटर नहीं।",
+                "learningParameters": "लर्निंग पैरामीटर",
+                "filters": "फ़िल्टर",
+                "augmentations": "ऑगमेंटेशन",
+                "intensityMapping": "इंटेंसिटी मैपिंग"
+            },
+            "architectures": {
+                "metrics": {
+                    "top1AccOnImageNet": "ImageNet पर Top-1 Acc",
+                    "mapOnCoco": "COCO पर mAP",
+                    "map50OnCoco": "COCO पर mAP50"
+                },
+                "card": {
+                    "numberOfParameters": "पैरामीटर की संख्या: {{count}} मिलियन",
+                    "gigaflops": "गीगाफ़्लॉप्स: {{value}}"
+                },
+                "sort": {
+                    "label": "मॉडल इसके अनुसार क्रमित करें:",
+                    "nameAsc": "नाम (A से Z)",
+                    "nameDesc": "नाम (Z से A)",
+                    "speedAsc": "गति (सबसे तेज़ पहले)",
+                    "speedDesc": "गति (सबसे धीमा पहले)",
+                    "accuracyAsc": "सटीकता (सबसे कम पहले)",
+                    "accuracyDesc": "सटीकता (सबसे अधिक पहले)"
+                },
+                "timm": {
+                    "heading": "TIMM मॉडल कॉन्फ़िगरेशन",
+                    "architectureFamilyLabel": "आर्किटेक्चर परिवार",
+                    "selectArchitecturePlaceholder": "आर्किटेक्चर चुनें",
+                    "modelVariantLabel": "मॉडल वैरिएंट",
+                    "selectVariantPlaceholder": "वैरिएंट चुनें",
+                    "pretrainedWeightsLabel": "पूर्व-प्रशिक्षित वेट",
+                    "selectWeightsPlaceholder": "वेट चुनें",
+                    "parameters": "पैरामीटर: {{count}} मिलियन",
+                    "gigaflops": "गीगाफ़्लॉप्स: {{value}}"
+                }
+            },
+            "devices": {
+                "selectLabel": "प्रशिक्षण डिवाइस चुनें"
+            },
+            "setup": {
+                "trigger": "मॉडल प्रशिक्षित करें",
+                "dialog": {
+                    "title": "प्रशिक्षित करने के लिए एक मॉडल चुनें",
+                    "disabledReasonTitle": "मैं प्रशिक्षण क्यों प्रारंभ नहीं कर सकता?",
+                    "advancedSettings": "उन्नत सेटिंग्स"
+                },
+                "toast": {
+                    "trainingStarted": "मॉडल प्रशिक्षण सफलतापूर्वक प्रारंभ हुआ।",
+                    "trainingStartedWithLink": "मॉडल प्रशिक्षण सफलतापूर्वक प्रारंभ हुआ। <modelsLink>प्रगति देखने के लिए मॉडल स्क्रीन खोलें।</modelsLink>"
+                },
+                "selectDataset": {
+                    "label": "डेटासेट चुनें",
+                    "useEntireDataset": "संपूर्ण डेटासेट उपयोग करें",
+                    "helpTitle": "डेटासेट चुनना",
+                    "helpDescription": "प्रशिक्षण के लिए उपयोग किया जाने वाला डेटा चुनें। सभी डेटा के नवीनतम संस्करण पर प्रशिक्षण के लिए \"संपूर्ण डेटासेट उपयोग करें\" चुनें (जो आप \"डेटासेट\" पृष्ठ पर देखते हैं)। केवल किसी व्यू को असाइन किए गए मीडिया पर प्रशिक्षण के लिए वह डेटासेट व्यू चुनें। किसी अन्य मॉडल के ठीक उसी डेटा (मीडिया और एनोटेशन) पर प्रशिक्षण के लिए डेटासेट संशोधन चुनें।",
+                    "sections": {
+                        "views": "डेटासेट व्यू",
+                        "revisions": "डेटासेट संशोधन"
+                    }
+                },
+                "selectModel": {
+                    "label": "इनपुट वेट चुनें",
+                    "defaultPretrainedWeights": "डिफ़ॉल्ट पूर्व-प्रशिक्षित वेट",
+                    "helpTitle": "इनपुट वेट चुनना",
+                    "helpDescription": "फ़ाइन-ट्यूनिंग जारी रखने के लिए कोई मौजूदा मॉडल चुनें, या बड़े सार्वजनिक डेटासेट पर पूर्व-प्रशिक्षित सार्वजनिक रूप से उपलब्ध वेट से नया मॉडल फ़ाइन-ट्यून करने के लिए \"डिफ़ॉल्ट पूर्व-प्रशिक्षित वेट\" चुनें।"
+                }
+            },
+            "validation": {
+                "notEnoughAnnotations": "मॉडल प्रशिक्षित करने के लिए आपको अपने डेटासेट में कम से कम 3 आइटम एनोटेट करने होंगे, हालाँकि बेहतर परिणामों के लिए हम और अधिक एनोटेट करने की सलाह देते हैं।",
+                "notEnoughAnnotationsInView": "मॉडल प्रशिक्षित करने के लिए आपको चयनित डेटासेट व्यू में कम से कम 3 आइटम एनोटेट करने होंगे, हालाँकि बेहतर परिणामों के लिए हम और अधिक एनोटेट करने की सलाह देते हैं।",
+                "emptySubsetsReason": "मॉडल प्रशिक्षित करने के लिए प्रत्येक उपसमुच्चय (प्रशिक्षण, सत्यापन, परीक्षण) में कम से कम एक आइटम होना चाहिए। यह शर्त वर्तमान में पूरी नहीं की जा सकती, क्योंकि {{subsetClause}} खाली है और {{assignmentDetail}}।",
+                "emptySubsetClause_one": "{{list}} उपसमुच्चय",
+                "emptySubsetClause_other": "{{list}} उपसमुच्चय",
+                "reviewedOnly_one": "असाइन करने के लिए {{count}} समीक्षित आइटम शेष है",
+                "reviewedOnly_other": "असाइन करने के लिए {{count}} समीक्षित आइटम शेष हैं",
+                "unannotatedOnly_one": "{{count}} आइटम ऐसा है जिसे असाइन करने से पहले एनोटेट करना आवश्यक है",
+                "unannotatedOnly_other": "{{count}} आइटम ऐसे हैं जिन्हें असाइन करने से पहले एनोटेट करना आवश्यक है",
+                "mixedReviewedClause_one": "{{count}} समीक्षित आइटम असाइन करने के लिए तैयार है",
+                "mixedReviewedClause_other": "{{count}} समीक्षित आइटम असाइन करने के लिए तैयार हैं",
+                "mixedUnannotatedClause_one": "{{count}} आइटम जिसे असाइन करने से पहले एनोटेट करना आवश्यक है",
+                "mixedUnannotatedClause_other": "{{count}} आइटम जिन्हें असाइन करने से पहले एनोटेट करना आवश्यक है",
+                "mixedAssignmentDetail": "{{reviewedClause}} और {{unannotatedClause}}",
+                "noUnassignedItems": "पुनर्वितरण के लिए कोई बिना असाइन किए आइटम उपलब्ध नहीं हैं"
+            },
+            "advanced": {
+                "tabs": {
+                    "dataManagement": "डेटा प्रबंधन"
+                },
+                "notAvailable": "प्रशिक्षण कॉन्फ़िगरेशन उपलब्ध नहीं है।"
+            },
+            "learning": {
+                "title": "लर्निंग पैरामीटर",
+                "tagDefault": "डिफ़ॉल्ट",
+                "tagModified": "संशोधित",
+                "inputSize": "इनपुट आकार"
+            },
+            "dataManagement": {
+                "trainingSubsets": {
+                    "title": "प्रशिक्षण उपसमुच्चय",
+                    "description": "उन एनोटेट किए गए नमूनों का वितरण निर्दिष्ट करें जो अभी तक किसी उपसमुच्चय को असाइन नहीं किए गए हैं। ध्यान दें कि पिछले प्रशिक्षण चक्रों में उपयोग किए गए नमूनों का उपसमुच्चय पहले से तय है और डेटा संदूषण तथा मूल्यांकन पूर्वाग्रह से बचने के लिए वह अपरिवर्तित रहेगा।",
+                    "unavailableTitle": "अमान्य प्रशिक्षण उपसमुच्चय कॉन्फ़िगरेशन",
+                    "unavailableDescription": "प्रशिक्षण उपसमुच्चयों में प्रशिक्षण, सत्यापन और परीक्षण उपसमुच्चयों के बीच कॉन्फ़िगर करने योग्य विभाजन के लिए पर्याप्त मीडिया आइटम नहीं हैं।",
+                    "unavailableHint": "कृपया और मीडिया आइटम जोड़ें ताकि प्रत्येक उपसमुच्चय में कम से कम एक आइटम हो।",
+                    "datasetSamples": "डेटासेट: {{count}} नमूने",
+                    "assignedSamples": "असाइन किए गए: {{count}}",
+                    "unassignedSamples": "असाइन नहीं किए गए: {{count}}",
+                    "distributionLabel": "नए नमूनों के लिए वितरण",
+                    "resultingDistribution": "परिणामी डेटासेट वितरण:",
+                    "totalLabel": "कुल:",
+                    "mediaItemsLabel": "मीडिया आइटम"
+                },
+                "filters": {
+                    "noMinimum": "कोई न्यूनतम नहीं",
+                    "unlimited": "असीमित"
+                },
+                "augmentation": {
+                    "title": "डेटा ऑगमेंटेशन"
+                },
+                "tiling": {
+                    "title": "टाइलिंग",
+                    "description": "टाइलिंग एक तकनीक है जो उच्च-रिज़ॉल्यूशन छवियों को छोटी टाइलों में विभाजित करती है और छोटे ऑब्जेक्ट डिटेक्शन कार्यों में सटीकता बढ़ाने में उपयोगी हो सकती है।",
+                    "modeLabel": "टाइलिंग मोड",
+                    "modes": {
+                        "automatic": "स्वचालित",
+                        "custom": "कस्टम"
+                    },
+                    "offDescription": "मॉडल पूरी छवि को एक इकाई के रूप में प्रोसेस करता है और उसे छोटी टाइलों में विभाजित नहीं करता। यह तरीका सरल है, लेकिन उच्च-रिज़ॉल्यूशन छवियों में छोटे ऑब्जेक्ट का पता लगाने में कठिनाई हो सकती है, क्योंकि मॉडल बारीक विवरण छोड़ सकता है",
+                    "automaticDescription": "इसका अर्थ है कि सिस्टम छवि रिज़ॉल्यूशन और एनोटेशन आकार के आधार पर पैरामीटर स्वतः सेट करेगा।"
+                },
+                "intensityMapping": {
+                    "title": "इंटेंसिटी मैपिंग"
+                }
+            }
+        },
+        "list": {
+            "groupByPlaceholder": "इसके अनुसार समूहित करें",
+            "groupByDataset": "समूह: डेटासेट",
+            "groupByArchitecture": "समूह: आर्किटेक्चर",
+            "hideFailedModels": "विफल मॉडल छिपाएँ",
+            "showFailedModels": "विफल मॉडल दिखाएँ",
+            "searchPlaceholder": "मॉडल खोजें...",
+            "noModelsFound": "कोई मॉडल नहीं मिला",
+            "empty": {
+                "title": "अभी तक कोई मॉडल नहीं।",
+                "description": "शुरू करने के लिए अपना पहला मॉडल प्रशिक्षित करें।"
+            },
+            "deletedWeightsBadge": "वेट हटा दिए गए",
+            "fineTunedFrom": "इससे फ़ाइन-ट्यून किया गया",
+            "columns": {
+                "trained": "प्रशिक्षित",
+                "totalSize": "कुल आकार"
+            }
+        },
+        "performance": {
+            "metrics": {
+                "accuracy": "सटीकता",
+                "precision": "प्रिसिज़न",
+                "recall": "रिकॉल",
+                "fMeasure": "F-माप"
+            },
+            "categories": {
+                "balance": "संतुलन",
+                "speed": "गति",
+                "accuracy": "सटीकता"
+            }
+        },
+        "variants": {
+            "empty": "कोई मॉडल वैरिएंट उपलब्ध नहीं।",
+            "columns": {
+                "precision": "प्रिसिज़न"
+            },
+            "quantizedInfo": {
+                "title": "NNCF PTQ के साथ क्वांटाइज़ किया गया",
+                "maxAccuracyDrop": "अधिकतम सटीकता गिरावट: {{value}}",
+                "calibrationDatasetSize": "कैलिब्रेशन डेटासेट आकार: {{size}}"
+            }
+        },
+        "export": {
+            "downloadStarted": "मॉडल डाउनलोड प्रारंभ हुआ"
+        },
+        "optimize": {
+            "description": "OpenVINO NNCF (INT8 क्वांटाइज़ेशन के माध्यम से) का उपयोग करके FP16 मॉडल को अनुकूलित करें",
+            "contextualHelp": "OpenVINO NNCF (Neural Network Compression Framework) INT8 क्वांटाइज़ेशन के माध्यम से मॉडल का आकार घटाता है और सटीकता पर न्यूनतम प्रभाव के साथ इन्फ़रेंस की गति बढ़ाता है",
+            "start": "क्वांटाइज़ेशन प्रारंभ करें",
+            "dialogTitle": "क्वांटाइज़ेशन",
+            "subheading": "मॉडल को INT8 में क्वांटाइज़ करें",
+            "jobStarted": "क्वांटाइज़ेशन जॉब प्रारंभ हुआ।",
+            "recommendedCalibrationSize": "अनुशंसित कैलिब्रेशन डेटासेट आकार: 200-500 मीडिया आइटम के बीच",
+            "fields": {
+                "maxAccuracyDrop": {
+                    "label": "अधिकतम सटीकता गिरावट (%)",
+                    "help": {
+                        "paragraph1": "सत्यापन सटीकता में अधिकतम अनुमत गिरावट।",
+                        "paragraph2": "ध्यान रखें कि जब अधिकतम अनुमत गिरावट कम हो, तो सटीकता-सचेत क्वांटाइज़ेशन में लंबा समय लग सकता है।",
+                        "paragraph3": "यह भी ध्यान दें कि अंतिम परीक्षण सटीकता निर्दिष्ट सत्यापन सटीकता थ्रेशोल्ड से कम हो सकती है, विशेषकर अपेक्षाकृत छोटे डेटासेट के लिए।"
+                    }
+                },
+                "maxIterations": {
+                    "label": "अधिकतम पुनरावृत्तियों की संख्या",
+                    "help": {
+                        "paragraph1": "सटीकता-सचेत क्वांटाइज़ेशन की अधिकतम पुनरावृत्तियाँ।",
+                        "paragraph2": "सटीकता-सचेत क्वांटाइज़ेशन तब तक क्रमिक रूप से मॉडल की परतों को क्वांटाइज़ेशन दायरे से हटाता है जब तक अधिकतम सटीकता गिरावट की शर्त पूरी न हो जाए। पुनरावृत्तियों की संख्या सीमित करने से अनेक परतों वाले मॉडल को क्वांटाइज़ करने में लगने वाला समय काफ़ी घट सकता है।",
+                        "paragraph3": "यह पैरामीटर केवल तभी उपयोग होता है जब अधिकतम सटीकता गिरावट निर्धारित की गई हो।"
+                    }
+                },
+                "calibrationSize": {
+                    "label": "अधिकतम कैलिब्रेशन आकार",
+                    "help": "कैलिब्रेशन नमूने डेटासेट में से यादृच्छिक रूप से चुने जाएँगे",
+                    "useFullDataset": "पूरा डेटासेट उपयोग करें"
+                }
+            }
+        },
+        "actions": {
+            "deleteWeights": "वेट हटाएँ",
+            "deleteModel": "मॉडल हटाएँ",
+            "viewLogs": "प्रशिक्षण लॉग देखें",
+            "deleteWeightsDescription": "क्या आप वाकई मॉडल \"{{modelName}}\" के वेट हटाना चाहते हैं?",
+            "deleteModelDescription": "क्या आप वाकई मॉडल \"{{modelName}}\" हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।",
+            "renameDialog": {
+                "title": "मॉडल का नाम बदलें",
+                "nameLabel": "मॉडल का नाम"
+            }
+        },
+        "columns": {
+            "modelName": "मॉडल का नाम"
+        }
+    },
+    "jobs": {
+        "allProjects": "सभी प्रोजेक्ट",
+        "currentProjectLabel": "{{name}} (वर्तमान)",
+        "projectsSection": "प्रोजेक्ट",
+        "tabs": {
+            "all": "सभी",
+            "finished": "समाप्त"
+        },
+        "status": {
+            "pending": "कतार में",
+            "cancelling": "रद्द किया जा रहा है",
+            "done": "पूर्ण हुआ"
+        },
+        "type": {
+            "quantize": "अनुकूलन"
+        },
+        "columns": {
+            "type": "प्रकार"
+        },
+        "cancel": {
+            "title": "जॉब रद्द करें",
+            "confirmation": "क्या आप वाकई जॉब {{jobId}} रद्द करना चाहते हैं?"
+        },
+        "meta": {
+            "started": "{{time}} प्रारंभ हुआ",
+            "elapsed": "{{time}} बीत चुका",
+            "duration": "अवधि {{time}}",
+            "finished": "{{time}} समाप्त हुआ",
+            "failed": "{{time}} विफल हुआ",
+            "cancelled": "{{time}} रद्द हुआ"
+        },
+        "emptyState": {
+            "all": "कोई जॉब नहीं",
+            "running": "कोई चालू जॉब नहीं",
+            "finished": "कोई समाप्त जॉब नहीं",
+            "scheduled": "कतार में कोई जॉब नहीं",
+            "cancelled": "कोई रद्द किया गया जॉब नहीं",
+            "failed": "कोई विफल जॉब नहीं"
+        },
+        "actions": {
+            "viewLogs": "लॉग देखें"
+        }
+    },
+    "license": {
+        "label": "लाइसेंस: ",
+        "agreement": {
+            "title": "लाइसेंस अनुबंध",
+            "intro": "Geti का उपयोग जारी रखने के लिए कृपया निम्नलिखित लाइसेंस की समीक्षा करें और उन्हें स्वीकार करें।",
+            "progress": "{{total}} में से {{current}}",
+            "required": "आवश्यक",
+            "optional": "वैकल्पिक",
+            "fullLicense": "पूरा लाइसेंस पढ़ें",
+            "previous": "पिछला",
+            "accept": "स्वीकार करें और जारी रखें"
+        }
+    },
+    "application": {
+        "startup": {
+            "loading": "लोड हो रहा है... कृपया प्रतीक्षा करें।"
+        },
+        "serverError": {
+            "heading": "सर्वर त्रुटि"
+        },
+        "errorPage": {
+            "badRequest": "सर्वर वर्तमान अनुरोध को प्रोसेस नहीं कर सकता या नहीं करेगा।",
+            "forbidden": "आपके पास इस पृष्ठ तक पहुँचने की अनुमति नहीं है।",
+            "notFound": "यह पृष्ठ मौजूद नहीं है!",
+            "unauthorized": "आप इसे देखने के लिए अधिकृत नहीं हैं",
+            "serverError": "सर्वर में एक त्रुटि हुई और वह आपका अनुरोध पूरा नहीं कर सका।",
+            "serviceUnavailable": "लगता है हमारा API बंद है",
+            "goHome": "मुख पृष्ठ पर वापस जाएँ"
+        },
+        "notifications": {
+            "unexpectedError": "एक अनपेक्षित त्रुटि हुई। कृपया पुनः प्रयास करें।",
+            "networkError": "नेटवर्क त्रुटि। कृपया अपना कनेक्शन जाँचें और पुनः प्रयास करें।",
+            "uploadTransferError": "फ़ाइल स्थानांतरण विफल रहा। कृपया पुनः प्रयास करें।"
+        }
+    },
+    "downloads": {
+        "failure": {
+            "genericError": "फ़ाइल डाउनलोड करने में विफल"
+        },
+        "saveDialog": {
+            "allFiles": "सभी फ़ाइलें",
+            "fileTypeFilter": "{{extension}} फ़ाइल"
+        }
+    }
+}
