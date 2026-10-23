@@ -25,6 +25,7 @@ from getitune.types.precision import Precision
 from getitune.types.task import TaskType
 from getitune.utils.device import is_xpu_available
 
+from .callbacks.epoch_summary import HFEpochSummaryCallback
 from .callbacks.progress import HFProgressCallback, extract_progress_fn
 from .engine_utils import resolve_greater_is_better, resolve_precision, summarize_log_history, unbatch_predictions
 from .models.base import HFModel
@@ -266,6 +267,8 @@ class HFEngine(Engine):
         trainer_callbacks: list[Any] = [cb for cb in (callbacks or []) if isinstance(cb, TrainerCallback)]
         if progress_fn is not None:
             trainer_callbacks.append(HFProgressCallback(progress_fn, min_p, max_p))
+        if not any(isinstance(cb, HFEpochSummaryCallback) for cb in trainer_callbacks):
+            trainer_callbacks.append(HFEpochSummaryCallback())
         if is_xpu_available():
             trainer_callbacks.append(XPUMemoryCallback())
 

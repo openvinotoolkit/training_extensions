@@ -21,27 +21,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-import torch
 from lightning import Callback
+
+from getitune.utils.epoch_summary import DEFAULT_EPOCH_SUMMARY_KEYS, format_epoch_summary
 
 if TYPE_CHECKING:
     import lightning.pytorch as pl
 
 logger = logging.getLogger(__name__)
-
-
-def _scalar(value: object) -> float | None:
-    """Best-effort conversion of a Lightning callback metric to ``float``."""
-    if value is None:
-        return None
-    if isinstance(value, torch.Tensor):
-        if value.numel() != 1:
-            return None
-        return float(value.detach().cpu().item())
-    try:
-        return float(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError):
-        return None
 
 
 class EpochSummary(Callback):
@@ -58,22 +45,7 @@ class EpochSummary(Callback):
         decimals: Number of decimal digits used when formatting metric values.
     """
 
-    # Ordered, task-agnostic shortlist. The first matching key per task is
-    # picked up; the others are skipped silently. New tasks can extend this
-    # list without breaking existing ones.
-    DEFAULT_KEYS: tuple[str, ...] = (
-        "train/total_loss",
-        "train/loss",
-        "val/PCK",
-        "val/accuracy",
-        "val/Dice",
-        "val/mIoU",
-        "val/map_50",
-        "val/map",
-        "val/f1-score",
-        "val/image_AUROC",
-        "lr",
-    )
+    DEFAULT_KEYS: tuple[str, ...] = DEFAULT_EPOCH_SUMMARY_KEYS
 
     def __init__(
         self,
@@ -91,21 +63,14 @@ class EpochSummary(Callback):
         if trainer.sanity_checking:
             return
 
-        metrics = trainer.callback_metrics
-        parts: list[str] = []
-        for key in self._keys:
-            value = _scalar(metrics.get(key))
-            if value is None:
-                continue
-            parts.append(f"{key}={value:.{self._decimals}f}")
-
-        # Always show the epoch counter even when no whitelisted metric is
-        # present (e.g. very first epoch with only train metrics flushed).
-        epoch = trainer.current_epoch + 1  # Epochs are 0 indexed, add one to clearly log current epoch
-        max_epochs = trainer.max_epochs
-        header = f"epoch {epoch:>3}/{max_epochs}" if max_epochs is not None else f"epoch {epoch:>3}"
-
-        if parts:
-            logger.info("%s | %s", header, "  ".join(parts))
-        else:
-            logger.info("%s | (no whitelisted metrics)", header)
+        # Epochs are 0 indexed, add one to clearly log the current epoch.
+        logger.info(
+            "%s",
+            format_epoch_summary(
+                epoch=trainer.current_epoch + 1,
+                max_epochs=trainer.max_epochs,
+                metrics=trainer.callback_metrics,
+                keys=self._keys,
+                decimals=self._decimals,
+            ),
+        )

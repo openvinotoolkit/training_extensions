@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import csv
+import logging
 from collections import defaultdict
 from pathlib import Path
 from types import SimpleNamespace
@@ -484,3 +485,49 @@ class TestNumWorkers:
         _, kwargs = mock_loader_cls.call_args
         assert kwargs["num_workers"] == expected
         assert kwargs["persistent_workers"] is (expected > 0)
+
+
+class TestEpochSummary:
+    """Per-epoch summary line emitted through stdlib logging after ``save_metrics``."""
+
+    def test_save_metrics_logs_summary_with_standard_names(self, caplog: pytest.LogCaptureFixture) -> None:
+        trainer: Any = object.__new__(DetectionTrainer)
+        trainer._metric_keys = {
+            "metrics/mAP50(B)": "val/map_50",
+            "metrics/mAP50-95(B)": "val/map",
+            "train/box_loss": "train/loss_bbox",
+            "train/cls_loss": "train/loss_cls",
+            "lr/pg0": "lr",
+        }
+        trainer.epoch = 3
+        trainer.epochs = 100
+        metrics = {
+            "train/box_loss": 1.25,
+            "train/cls_loss": 0.5,
+            "metrics/mAP50(B)": 0.4,
+            "metrics/mAP50-95(B)": 0.2,
+            "val/box_loss": 9.9,
+            "lr/pg0": 0.001,
+            "lr/pg1": 0.002,
+        }
+
+        with (
+            patch("ultralytics.engine.trainer.BaseTrainer.save_metrics") as parent_save,
+            caplog.at_level(logging.INFO, logger="getitune.backend.ultralytics.trainers.base"),
+        ):
+            trainer.save_metrics(metrics)
+
+        parent_save.assert_called_once_with(metrics)
+        assert [r.getMessage() for r in caplog.records] == [
+            "epoch   4/100 | train/loss_bbox=1.2500  train/loss_cls=0.5000  val/map_50=0.4000  val/map=0.2000  lr=0.0010"
+        ]
+
+    def test_lr_falls_back_to_first_param_group_when_unmapped(self) -> None:
+        trainer: Any = object.__new__(SegmentationTrainer)
+        trainer._metric_keys = {"train/seg_loss": "train/loss_mask"}
+        trainer.epoch = 0
+        trainer.epochs = 2
+
+        line = trainer._format_epoch_summary({"train/seg_loss": 0.3, "lr/pg0": 0.01})
+
+        assert line == "epoch   1/2 | train/loss_mask=0.3000  lr=0.0100"
