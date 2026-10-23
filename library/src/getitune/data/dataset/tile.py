@@ -15,7 +15,13 @@ from datumaro.experimental.filtering.filter_registry import create_filtering_tra
 from datumaro.experimental.tiling.tiler_registry import TilingConfig, create_tiling_transform
 from torchvision import tv_tensors
 
-from getitune.data.entity.sample import BaseSample, DetectionSample, InstanceSegmentationSample
+from getitune.data.entity import empty_polygons
+from getitune.data.entity.sample import (
+    BaseSample,
+    DetectionSample,
+    InstanceSegmentationPolygonSample,
+    InstanceSegmentationSample,
+)
 from getitune.data.entity.tile import (
     TileBatchDetDataEntity,
     TileBatchInstSegDataEntity,
@@ -199,7 +205,10 @@ class TileDataset(VisionDataset):
                     # turns ``(0,4)`` into ``(1,0)``). Only detection / instance
                     # segmentation samples carry `bboxes`/`label` fields.
                     if (
-                        isinstance(transformed, (DetectionSample, InstanceSegmentationSample))
+                        isinstance(
+                            transformed,
+                            (DetectionSample, InstanceSegmentationSample, InstanceSegmentationPolygonSample),
+                        )
                         and transformed.label is not None
                         and len(transformed.label) == 0
                     ):
@@ -211,6 +220,9 @@ class TileDataset(VisionDataset):
                             dtype=torch.float32,
                         )
                         transformed.label = torch.zeros(0, dtype=torch.long)
+                        if getattr(transformed, "polygons", None) is not None:
+                            # ``(0, 0, 2)`` is as fragile through Resize as ``(0, 4)``.
+                            transformed.polygons = empty_polygons(shape)
                     tile_entities.append(transformed)
                 return tile_entities
 
@@ -320,7 +332,8 @@ class TileInstSegTestDataset(TileDataset):
             ori_img_info=item.img_info,  # type: ignore[attr-defined]
             ori_bboxes=item.bboxes,  # type: ignore[attr-defined]
             ori_labels=item.label,  # type: ignore[attr-defined]
-            ori_masks=item.masks,  # type: ignore[attr-defined]
+            ori_masks=getattr(item, "masks", None),
+            ori_polygons=getattr(item, "polygons", None),
         )
 
 

@@ -11,6 +11,8 @@ import pycocotools.mask as mask_utils
 import torch
 from torchvision.ops import roi_align
 
+from getitune.data.entity import ImageInfo, rasterize
+
 if TYPE_CHECKING:
     import numpy as np
     from torchvision import tv_tensors
@@ -120,3 +122,41 @@ def crop_and_resize_masks(
     else:
         resized_masks = torch.empty((0, *out_shape), device=device)
     return resized_masks.float()
+
+
+def gt_instances_to_rle(
+    masks: tv_tensors.Mask | None,
+    polygons: tv_tensors.KeyPoints | None,
+    img_info: ImageInfo | None = None,
+) -> list[dict]:
+    """Encode one sample's ground-truth instances as RLE, from whichever carrier is populated.
+
+    ``InstanceSegmentationSample`` carries ``masks``; ``InstanceSegmentationPolygonSample``
+    carries ``polygons`` and has no ``masks`` column at all. Models normally rasterize
+    polygons in ``_customize_inputs``, but ground truth that bypasses the model boundary
+    -- tiled validation, and OpenVINO evaluation, which has no ``_customize_inputs`` --
+    still arrives unrasterized here.
+
+    Args:
+        masks: ``(N, H, W)`` ground-truth masks, or ``None``.
+        polygons: ``(N, P_max, 2)`` NaN-padded polygons, or ``None``.
+        img_info: Fallback source of the canvas size when ``polygons`` carries none.
+
+    Returns:
+        One RLE dict per instance; empty for a no-annotation sample.
+
+    Raises:
+        ValueError: If neither carrier is populated, or polygons have no resolvable canvas.
+    """
+    if masks is not None:
+        return [encode_rle(m) for m in masks.data] if len(masks) else []
+    if polygons is None:
+        msg = "Either masks or polygons are required for metric computation"
+        raise ValueError(msg)
+    canvas = getattr(polygons, "canvas_size", None)
+    if canvas is None:
+        if img_info is None:
+            msg = "Cannot rasterize polygons without a canvas size or img_info"
+            raise ValueError(msg)
+        canvas = img_info.ori_shape
+    return [encode_rle(m) for m in rasterize(polygons, canvas_size=canvas, dtype=torch.uint8)]

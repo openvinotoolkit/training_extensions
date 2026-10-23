@@ -163,11 +163,16 @@ class TileInstSegDataEntity(TileDataEntity):
         ori_bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the original image.
         ori_labels (LongTensor): The labels of the original image.
         ori_masks (tv_tensors.Mask): The masks of the original image.
+        ori_polygons: Polygons of the original image, when the subset is
+            polygon-native. Exactly one of ``ori_masks`` / ``ori_polygons``
+            is populated, mirroring ``InstanceSegmentationSample`` versus
+            ``InstanceSegmentationPolygonSample``.
     """
 
     ori_bboxes: tv_tensors.BoundingBoxes
     ori_labels: LongTensor
-    ori_masks: tv_tensors.Mask
+    ori_masks: tv_tensors.Mask | None = None
+    ori_polygons: tv_tensors.KeyPoints | None = None
 
     @property
     def task(self) -> TaskType:
@@ -182,12 +187,14 @@ class TileBatchInstSegDataEntity(TileBatchData):
     Attributes:
         bboxes (list[tv_tensors.BoundingBoxes]): The bounding boxes of the original image.
         labels (list[LongTensor]): The labels of the original image.
-        masks (list[tv_tensors.Mask]): The masks of the original image.
+        masks (list[tv_tensors.Mask] | None): The masks of the original image.
+        polygons (list[tv_tensors.KeyPoints] | None): The polygons of the original image.
     """
 
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
-    masks: list[tv_tensors.Mask]
+    masks: list[tv_tensors.Mask] | None = None
+    polygons: list[tv_tensors.KeyPoints] | None = None
 
     def unbind(self, tile_batch_size: int) -> list[tuple[TileAttrDictList, SampleBatch]]:
         """Unbind batch data entity for instance segmentation task."""
@@ -236,7 +243,8 @@ class TileBatchInstSegDataEntity(TileBatchData):
             imgs_info=[tile_entity.ori_img_info for tile_entity in batch_entities],
             bboxes=[tile_entity.ori_bboxes for tile_entity in batch_entities],
             labels=[tile_entity.ori_labels for tile_entity in batch_entities],
-            masks=[tile_entity.ori_masks for tile_entity in batch_entities],
+            masks=[e.ori_masks for e in batch_entities] if batch_entities[0].ori_masks is not None else None,
+            polygons=[e.ori_polygons for e in batch_entities] if batch_entities[0].ori_polygons is not None else None,
         )
 
 

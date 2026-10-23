@@ -16,7 +16,7 @@ from getitune.backend.openvino.models.base import OVModel
 from getitune.backend.openvino.models.utils import rescale_bboxes_to_original, rescale_masks_to_original
 from getitune.data.entity.sample import PredictionBatch, SampleBatch
 from getitune.data.entity.tile import TileBatchData
-from getitune.data.utils.structures.mask.mask_util import encode_rle
+from getitune.data.utils.structures.mask.mask_util import encode_rle, gt_instances_to_rle
 from getitune.metrics import MetricInput
 from getitune.metrics.fmeasure import MaskRLEMeanAPFMeasureCallable
 from getitune.types.label import LabelInfo
@@ -237,10 +237,11 @@ class OVInstanceSegmentationModel(OVModel):
             if inputs.masks is None:
                 msg = "Masks are required for metric computation"
                 raise ValueError(msg)
-            # An empty (0, H, W) mask tensor is a valid ground truth for images with no
-            # instances (e.g. background-only samples); encode it as an empty RLE list
-            # instead of treating it as missing masks.
-            rles = [encode_rle(mask) for mask in inputs.masks[idx].data] if len(inputs.masks[idx]) else []
+            rles = gt_instances_to_rle(
+                masks=inputs.masks[idx] if inputs.masks is not None else None,
+                polygons=inputs.polygons[idx] if inputs.polygons is not None else None,
+                img_info=inputs.imgs_info[idx] if inputs.imgs_info is not None else None,
+            )
             target_info.append(
                 {
                     "boxes": inputs.bboxes[idx].data if inputs.bboxes is not None else torch.empty((0, 4)),
