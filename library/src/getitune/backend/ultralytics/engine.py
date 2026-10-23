@@ -542,6 +542,8 @@ class UltralyticsEngine(Engine):
         - **Detection**: predictions contain ``boxes``, ``scores``, ``labels``.
         - **Instance segmentation**: predictions additionally contain ``masks``
           as RLE-encoded dicts, matching ``MaskRLEMeanAveragePrecision`` format.
+          The ``masks`` key is always present, even for an image with no
+          detections, which is what the metric contract requires.
 
         Target bounding boxes and masks from the DataModule are in original
         image coordinates (``resize_targets=False``), while YOLO predictions
@@ -605,6 +607,7 @@ class UltralyticsEngine(Engine):
             for result in raw_results:
                 pred_dict: dict[str, Any] = {
                     "boxes": torch.zeros((0, 4), device=device),
+                    "masks": [],
                     "scores": torch.zeros(0, device=device),
                     "labels": torch.zeros(0, dtype=torch.long, device=device),
                 }
@@ -621,6 +624,7 @@ class UltralyticsEngine(Engine):
             for i in range(len(raw_results)):
                 tgt_dict: dict[str, Any] = {
                     "boxes": torch.zeros((0, 4), device=device),
+                    "masks": [],
                     "labels": torch.zeros(0, dtype=torch.long, device=device),
                 }
                 if batch.bboxes is not None and i < len(batch.bboxes):
