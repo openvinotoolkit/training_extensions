@@ -51,6 +51,7 @@ describe('locale registry', () => {
             'nl',
             'pl',
             'pt',
+            'ru',
             'zh-CN',
             'zh-HK',
             'zh-MO',
