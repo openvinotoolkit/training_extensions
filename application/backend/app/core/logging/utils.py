@@ -1,15 +1,43 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import logging
 import os
-from collections.abc import Generator
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 
 from loguru import logger
 
 from .config import LogConfig
 from .handlers import InterceptHandler
+
+MALFORMED_LOG_LINE = "[MALFORMED LOG LINE]\n"
+
+
+def iter_log_text(log_path: Path) -> Iterator[str]:
+    """Yield the human-readable text of each record of a serialized (NDJSON) loguru log file.
+
+    Reads the content available at the time of iteration, so it is safe to use on a log file
+    that is still being written to.
+
+    Args:
+        log_path: Path to a log file written by a loguru sink with ``serialize=True``.
+
+    Yields:
+        str: The formatted ``text`` field of each record (including the trailing newline),
+            or a placeholder for lines that cannot be parsed.
+    """
+    with log_path.open(encoding="utf-8", errors="replace") as f:
+        for line in f:
+            try:
+                text = json.loads(line).get("text", "")
+            except (json.JSONDecodeError, AttributeError) as e:
+                logger.warning("Failed to parse log line: {}", e)
+                text = MALFORMED_LOG_LINE
+            if text:
+                yield text
 
 
 @contextmanager

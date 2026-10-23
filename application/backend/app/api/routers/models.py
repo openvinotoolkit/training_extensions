@@ -5,7 +5,7 @@ import io
 import zipfile
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Annotated, cast
+from typing import Annotated, Literal, cast
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, status
 from fastapi.openapi.models import Example
@@ -285,10 +285,10 @@ def get_training_metrics(
     response_model=None,
     responses={
         status.HTTP_200_OK: {
-            "description": "Training logs for the model",
+            "description": "Training logs for the model, as NDJSON (default) or plain text with `format=text`",
             "content": {
-                "application/x-ndjson": {"description": "NDJSON format (newline-delimited JSON)"},
-                "text/plain": {"description": "Plain text format (extracted from NDJSON)"},
+                "application/x-ndjson": {"schema": {"type": "string"}},
+                "text/plain": {"schema": {"type": "string"}},
             },
         },
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid project or model ID"},
@@ -302,14 +302,15 @@ def get_training_logs(
     project: Annotated[ProjectView, Depends(get_project)],
     model_id: ModelID,
     model_service: Annotated[ModelService, Depends(get_model_service)],
+    format: Annotated[Literal["text"] | None, Query(description="Download the logs as plain text")] = None,
     accept: Annotated[str | None, Header(description="Accept header to specify the desired response format")] = None,
 ) -> FileResponse | StreamingResponse:
     """
     Download the training log file for a given model.
-    Supports content negotiation via Accept header (text/plain, application/x-ndjson).
+    Returns NDJSON by default, or plain text with `format=text` (or `Accept: text/plain`).
     """
     try:
-        as_text = accept is not None and "text/plain" in accept.lower()
+        as_text = format == "text" or (accept is not None and "text/plain" in accept.lower())
 
         training_log = model_service.get_logs(project_id=project.id, model_id=model_id, as_text=as_text)
         if training_log is None:

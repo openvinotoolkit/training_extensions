@@ -1,7 +1,6 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import shutil
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -16,6 +15,7 @@ from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.logging import iter_log_text
 from app.db.schema import EvaluationDB, MetricScoreDB, ModelRevisionDB, ModelVariantDB
 from app.models import EvaluationResult, ModelRevision, ModelVariant, TrainingStatus
 from app.models.model_manifest import License
@@ -805,16 +805,4 @@ class ModelService(BaseSessionManagedService):
         if not as_text:
             return log_file
 
-        def _iter_text_lines() -> Iterator[str]:
-            with open(log_file, encoding="utf-8") as f:
-                for line in f:
-                    try:
-                        entry = json.loads(line)
-                        text = entry.get("text", "")
-                        if text:
-                            yield text
-                    except json.JSONDecodeError as e:
-                        logger.warning("Failed to parse log line: {}", e)
-                        yield "[MALFORMED LOG LINE]\n"
-
-        return _iter_text_lines()
+        return iter_log_text(log_file)

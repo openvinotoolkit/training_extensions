@@ -138,15 +138,15 @@
 
 ### Models
 
-| Method   | Path                                                                      | Payload | Return           | Description                                                             |
-| -------- | ------------------------------------------------------------------------- | ------- | ---------------- | ----------------------------------------------------------------------- |
-| `GET`    | `/api/projects/<id>/models`                                               | -       | list of models   | List all the models in a project                                        |
-| `GET`    | `/api/projects/<id>/models/<model_id>`                                    | -       | model info       | Get info about a specific model                                         |
-| `GET`    | `/api/projects/<id>/models/<model_id>/labels`                             | -       | labels           | Get the labels used to train the model                                  |
-| `GET`    | `/api/projects/<id>/models/<model_id>/variants/<model_variant_id>/binary` | -       | zip              | Download model binary of the requested model variant                    |
-| `DELETE` | `/api/projects/<id>/models/<model_id>`                                    | -       | -                | Delete a model (option 'weights_only')                                  |
-| `GET`    | `/api/projects/<id>/models/<model_id>/training_metrics`                   | -       | training metrics | Get training metrics                                                    |
-| `GET`    | `/api/projects/<id>/models/<model_id>/logs`                               | -       | training log     | Get training logs (supports Accept: text/plain or application/x-ndjson) |
+| Method   | Path                                                                      | Payload | Return           | Description                                                       |
+| -------- | ------------------------------------------------------------------------- | ------- | ---------------- | ----------------------------------------------------------------- |
+| `GET`    | `/api/projects/<id>/models`                                               | -       | list of models   | List all the models in a project                                  |
+| `GET`    | `/api/projects/<id>/models/<model_id>`                                    | -       | model info       | Get info about a specific model                                   |
+| `GET`    | `/api/projects/<id>/models/<model_id>/labels`                             | -       | labels           | Get the labels used to train the model                            |
+| `GET`    | `/api/projects/<id>/models/<model_id>/variants/<model_variant_id>/binary` | -       | zip              | Download model binary of the requested model variant              |
+| `DELETE` | `/api/projects/<id>/models/<model_id>`                                    | -       | -                | Delete a model (option 'weights_only')                            |
+| `GET`    | `/api/projects/<id>/models/<model_id>/training_metrics`                   | -       | training metrics | Get training metrics                                              |
+| `GET`    | `/api/projects/<id>/models/<model_id>/logs`                               | -       | training log     | Get training logs as NDJSON, or as plain text with `?format=text` |
 
 ### Dataset revisions (training datasets, etc...)
 
@@ -244,14 +244,25 @@ within the backend process, so do not share one uploads directory between severa
 
 ## Jobs
 
-| Method | Path                    | Payload             | Return       | Description                                        |
-| ------ | ----------------------- | ------------------- | ------------ | -------------------------------------------------- |
-| `POST` | `/api/jobs`             | job type and params | job id       | Create and submit a new job                        |
-| `GET`  | `/api/jobs`             | -                   | list of jobs | List the jobs in a project (scheduled or running)  |
-| `GET`  | `/api/jobs/<id>`        | -                   | job info     | Get info about a specific job                      |
-| `POST` | `/api/jobs/<id>:cancel` | -                   | -            | Cancel a job                                       |
-| `GET`  | `/api/jobs/<id>/status` | -                   | job status   | Stream real-time status updates for a specific job |
-| `GET`  | `/api/jobs/<id>/logs`   | -                   | job logs     | Stream real-time log output for a specific job     |
+| Method | Path                    | Payload             | Return       | Description                                                                         |
+| ------ | ----------------------- | ------------------- | ------------ | ----------------------------------------------------------------------------------- |
+| `POST` | `/api/jobs`             | job type and params | job id       | Create and submit a new job                                                         |
+| `GET`  | `/api/jobs`             | -                   | list of jobs | List the jobs in a project (scheduled or running)                                   |
+| `GET`  | `/api/jobs/<id>`        | -                   | job info     | Get info about a specific job                                                       |
+| `POST` | `/api/jobs/<id>:cancel` | -                   | -            | Cancel a job                                                                        |
+| `GET`  | `/api/jobs/<id>/status` | -                   | job status   | Stream real-time status updates for a specific job                                  |
+| `GET`  | `/api/jobs/<id>/logs`   | -                   | job logs     | Stream real-time log output (SSE), or download it as plain text with `?format=text` |
+
+By default, job logs are streamed as Server-Sent Events, one NDJSON log record per event. Add `?format=text` to
+download them instead as a human-readable text file, containing only the formatted text of each record:
+
+```bash
+# Follow the logs in real time
+curl -k -N https://localhost:7860/api/jobs/<id>/logs
+
+# Download the logs written so far as plain text
+curl -k -o job.log "https://localhost:7860/api/jobs/<id>/logs?format=text"
+```
 
 Job types:
 

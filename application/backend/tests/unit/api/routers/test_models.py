@@ -518,6 +518,18 @@ class TestModelEndpoints:
             project_id=fxt_get_project.id, model_id=fxt_model.id, as_text="text/plain" in expected_content_type
         )
 
+    def test_get_training_logs_format_text(self, fxt_get_project, fxt_model, fxt_model_service, fxt_client):
+        fxt_model_service.get_logs.return_value = iter(["Training started\n", "Epoch 1/10\n"])
+
+        response = fxt_client.get(f"/api/projects/{fxt_get_project.id}/models/{fxt_model.id}/logs?format=text")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.headers["content-type"] == "text/plain; charset=utf-8"
+        assert response.text == "Training started\nEpoch 1/10\n"
+        fxt_model_service.get_logs.assert_called_once_with(
+            project_id=fxt_get_project.id, model_id=fxt_model.id, as_text=True
+        )
+
     def test_get_training_logs_not_found(self, fxt_get_project, fxt_model_service, fxt_client):
         model_id = uuid4()
         fxt_model_service.get_logs.side_effect = ResourceNotFoundError(ResourceType.MODEL, str(model_id))

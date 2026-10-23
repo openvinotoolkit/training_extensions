@@ -4,11 +4,12 @@
 import asyncio
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 import aiofiles
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 from loguru import logger
 from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 
@@ -25,6 +26,7 @@ from app.api.schemas.jobs.training import TrainingRequest
 from app.api.validators import JobID
 from app.core.jobs.control_plane import CancellationResult, JobQueue
 from app.core.jobs.models import JobStatus
+from app.core.logging import iter_log_text
 from app.models import (
     DatasetFormat,
     ExportDatasetJob,
@@ -295,19 +297,36 @@ async def stream_job_status(
     return EventSourceResponse(__gen_job_updates(job_id, job_queue))
 
 
-@router.get("/{job_id}/logs")
-async def stream_job_logs(
+@router.get(
+    "/{job_id}/logs",
+    response_model=None,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Real-time log stream (default), or a human-readable log file with `format=text`",
+            "content": {
+                "text/event-stream": {"schema": {"type": "string"}},
+                "text/plain": {"schema": {"type": "string"}},
+            },
+        },
+        status.HTTP_404_NOT_FOUND: {"description": "Job or log file not found"},
+    },
+)
+async def get_job_logs(
     job_id: JobID,
     job_dir: Annotated[Path, Depends(get_job_dir)],
     job_queue: Annotated[JobQueue, Depends(get_job_queue)],
-) -> EventSourceResponse:
+    format: Annotated[Literal["text"] | None, Query(description="Download the logs as plain text")] = None,
+    accept: Annotated[str | None, Header(description="Accept header to specify the desired response format")] = None,
+) -> EventSourceResponse | StreamingResponse:
     """
-    Stream real-time log output for a specific job.
+    Stream or download the log output of a specific job.
 
-    This endpoint streams job logs using Server-Sent Events (SSE). It reads
-    the job's log file and yields new lines as they are written, allowing clients
-    to follow the job's progress in real-time. The stream continues until the
-    client disconnects or an error occurs.
+    By default, logs are streamed using Server-Sent Events (SSE): the job's log file is read and new
+    lines are yielded as they are written, until the job finishes or the client disconnects.
+
+    With `format=text` (or `Accept: text/plain`), the logs are instead downloaded as a human-readable
+    text file containing the formatted text of each log record. The download contains the logs written
+    so far, so it can also be used while the job is still running.
     """
     job = job_queue.get(job_id)
     if not job:
@@ -316,6 +335,13 @@ async def stream_job_logs(
     log_path = job_dir / job.log_file
     if not log_path.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Log file not found")
+
+    if format == "text" or (accept is not None and "text/plain" in accept.lower()):
+        return StreamingResponse(
+            content=iter_log_text(log_path),
+            media_type="text/plain",
+            headers={"Content-Disposition": f'attachment; filename="{job.log_file}"'},
+        )
 
     return EventSourceResponse(__gen_log_stream(job_id, log_path, job_queue))
 
