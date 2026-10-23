@@ -26,6 +26,22 @@ export class AnnotatorPage {
         await this.page.mouse.up();
     }
 
+    // Shift + click places a positive Segment Anything point, Alt + click a negative one.
+    async addSegmentAnythingPoint(x: number, y: number, modifier: 'Shift' | 'Alt') {
+        const relative = await withRelative(this.page);
+        const point = relative(x, y);
+
+        await this.page.mouse.move(point.x, point.y);
+        await this.page.keyboard.down(modifier);
+        await this.page.mouse.down();
+        await this.page.mouse.up();
+        await this.page.keyboard.up(modifier);
+    }
+
+    getToolOptions() {
+        return this.page.getByRole('group', { name: 'tool options' });
+    }
+
     getAnnotationsList() {
         return this.page.getByTestId('annotation-layer');
     }

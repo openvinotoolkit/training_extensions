@@ -131,6 +131,68 @@ test.describe('Segment anything tool', () => {
         });
     }
 
+    test('refines the preview with included and excluded points', async ({ page, network, annotatorPage }) => {
+        const project = getMockedSamProject('instance_segmentation');
+
+        network.use(
+            http.get('/api/projects/{project_id}', () => HttpResponse.json(project)),
+            candyBinaryHandler,
+            http.get('/api/projects/{project_id}/dataset/media/{media_id}/embeddings', () =>
+                HttpResponse.arrayBuffer(buildEmbeddingPayload(IMAGE_SIZE), {
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                })
+            )
+        );
+
+        await annotatorPage.goto(project.id, 'item-1');
+        await page.getByRole('button', { name: 'Auto segmentation' }).click();
+        await expect(page.getByLabel('SAM tool canvas')).toBeVisible({ timeout: 60_000 });
+        await expect(annotatorPage.getProcessingImage()).toBeHidden();
+
+        const positivePoints = page.getByLabel('Positive point');
+        const negativePoints = page.getByLabel('Negative point');
+        const preview = page.getByLabel('Segment anything preview');
+
+        await expect(annotatorPage.getToolOptions()).toContainText('Shift + click to include an area');
+
+        await test.step('Shift + click includes an area and Alt + click excludes one', async () => {
+            await annotatorPage.addSegmentAnythingPoint(500, 375, 'Shift');
+            await annotatorPage.addSegmentAnythingPoint(200, 200, 'Alt');
+
+            await expect(positivePoints).toHaveCount(1);
+            await expect(negativePoints).toHaveCount(1);
+            await expect(preview).toBeVisible({ timeout: 15_000 });
+        });
+
+        await test.step('Clicking on an existing point removes it', async () => {
+            await annotatorPage.addSegmentAnythingPoint(200, 200, 'Alt');
+
+            await expect(negativePoints).toHaveCount(0);
+            await expect(positivePoints).toHaveCount(1);
+        });
+
+        await test.step('Escape clears the points without closing the annotator', async () => {
+            await page.keyboard.press('Escape');
+
+            await expect(positivePoints).toHaveCount(0);
+            await expect(page.getByLabel('SAM tool canvas')).toBeVisible();
+            expect(await annotatorPage.getAnnotationsListItems('annotation polygon')).toHaveLength(0);
+        });
+
+        await test.step('A plain click creates the annotation from the points', async () => {
+            await annotatorPage.addSegmentAnythingPoint(500, 375, 'Shift');
+            await expect(preview).toBeVisible({ timeout: 15_000 });
+
+            await page.mouse.down();
+            await page.mouse.up();
+
+            await expect(positivePoints).toHaveCount(0);
+            await expect(async () => {
+                expect(await annotatorPage.getAnnotationsListItems('annotation polygon')).toHaveLength(1);
+            }).toPass();
+        });
+    });
+
     test('shows an error when the image embedding cannot be fetched', async ({ page, network, annotatorPage }) => {
         const project = getMockedSamProject('instance_segmentation');
 
