@@ -1,7 +1,7 @@
 // Copyright (C) 2025-2026 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-import { PointerEvent, useEffect, useRef, useState } from 'react';
+import { PointerEvent, useEffect, useRef } from 'react';
 
 import selectionCursor from '@/assets/icons/selection.svg?url';
 import { toast } from '@/components/toast/toast.component';
@@ -10,7 +10,8 @@ import { useTranslation } from '@/i18n';
 import { clampPointBetweenImage } from '@geti-ui/smart-tools/utils';
 import { useGetDatasetMediaItems } from 'hooks/use-get-dataset-media-items.hook';
 
-import type { Annotation, RegionOfInterest, Shape } from '../../../../shared/types';
+import { HOTKEYS } from '../../../../shared/hotkeys-definition';
+import type { Annotation, Point, RegionOfInterest } from '../../../../shared/types';
 import { AnnotationShape } from '../../annotations/annotation-shape/annotation-shape.component';
 import { MaskAnnotations } from '../../annotations/mask-annotations.component';
 import { useAnnotatorLabels } from '../../annotator-labels-provider.component';
@@ -19,10 +20,11 @@ import { useNextMediaItem } from '../../shell/utils';
 import { SvgToolCanvas } from '../svg-tool-canvas.component';
 import { ToolLoading } from '../tool-loading.component';
 import { useAddAndSelectAnnotations } from '../use-add-and-select-annotations.hook';
-import { getRelativePoint, removeOffLimitPoints } from '../utils';
+import { useToolResultHotkey } from '../use-tool-result-hotkey.hook';
+import { getRelativePoint } from '../utils';
+import { PromptPoints } from './prompt-points.component';
+import { useSegmentAnythingPrompt } from './use-segment-anything-prompt.hook';
 import { useSegmentAnythingModel } from './use-segment-anything.hook';
-import { useSingleStackFn } from './use-single-stack-fn.hook';
-import { useWithCancel } from './use-with-cancel';
 
 import classes from './segment-anything.module.scss';
 
@@ -32,6 +34,8 @@ interface PreviewAnnotationsProps {
 }
 
 const CURSOR_OFFSET = '7 8';
+// In screen pixels, so placed points are equally easy to hit at any zoom level.
+const PROMPT_POINT_HIT_RADIUS = 8;
 
 const PreviewAnnotations = ({ previewAnnotations, image }: PreviewAnnotationsProps) => {
     if (previewAnnotations.length === 0) return null;
@@ -56,9 +60,8 @@ const PreviewAnnotations = ({ previewAnnotations, image }: PreviewAnnotationsPro
 };
 
 export const SegmentAnythingTool = () => {
-    const [previewShapes, setPreviewShapes] = useState<Shape[]>([]);
-    const [isDecoding, setIsDecoding] = useState(false);
     const ref = useRef<SVGSVGElement>(null);
+    const canvasRef = useRef<SVGRectElement>(null);
 
     const { t } = useTranslation();
     const zoom = useZoom();
@@ -68,42 +71,24 @@ export const SegmentAnythingTool = () => {
     const { selectedLabel } = useAnnotatorLabels();
     const { addAndSelectAnnotations } = useAddAndSelectAnnotations();
     const { isLoading, isError, error, decodingQueryFn } = useSegmentAnythingModel({ nextMediaItem });
-    const throttledDecodingQueryFn = useSingleStackFn(decodingQueryFn);
-    const cancellableThrottledDecodingQueryFn = useWithCancel(throttledDecodingQueryFn);
-
-    const canvasRef = useRef<SVGRectElement>(null);
-    // Counter (not boolean) because pointer moves overlap and we cancel
-    // intermediate ones — the cursor stays busy while ANY call is pending.
-    const pendingDecodesRef = useRef(0);
+    const prompt = useSegmentAnythingPrompt({ decodingQueryFn, roi, mediaItem });
 
     const clampPoint = clampPointBetweenImage(image);
 
-    const handleMouseMove = (event: PointerEvent<SVGSVGElement>) => {
+    const getImagePoint = (event: PointerEvent<SVGSVGElement>): Point | undefined => {
         if (!canvasRef.current) {
-            return;
+            return undefined;
         }
 
-        const point = clampPoint(
-            getRelativePoint(canvasRef.current, { x: event.clientX, y: event.clientY }, zoom.scale)
-        );
+        return clampPoint(getRelativePoint(canvasRef.current, { x: event.clientX, y: event.clientY }, zoom.scale));
+    };
 
-        pendingDecodesRef.current += 1;
-        if (!isDecoding) setIsDecoding(true);
+    const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
+        const point = getImagePoint(event);
 
-        cancellableThrottledDecodingQueryFn
-            .call([{ ...point, positive: true }])
-            .then(({ shapes }) => {
-                setPreviewShapes(shapes.map((shape) => removeOffLimitPoints(shape, roi)));
-            })
-            .catch(() => {
-                return [];
-            })
-            .finally(() => {
-                pendingDecodesRef.current = Math.max(0, pendingDecodesRef.current - 1);
-                if (pendingDecodesRef.current === 0) {
-                    setIsDecoding(false);
-                }
-            });
+        if (point !== undefined) {
+            prompt.hover(point);
+        }
     };
 
     const handlePointerUp = (event: PointerEvent<SVGSVGElement>) => {
@@ -115,25 +100,28 @@ export const SegmentAnythingTool = () => {
             return;
         }
 
-        if (previewShapes.length === 0) {
+        // Shift + click includes an area, Alt + click excludes it; a plain click accepts the preview.
+        if (event.shiftKey || event.altKey) {
+            const point = getImagePoint(event);
+
+            if (point !== undefined) {
+                prompt.togglePoint(point, !event.altKey, PROMPT_POINT_HIT_RADIUS / zoom.scale);
+            }
+
             return;
         }
 
-        cancellableThrottledDecodingQueryFn.cancel();
-        addAndSelectAnnotations(previewShapes, selectedLabel ? [selectedLabel] : []);
-        setPreviewShapes([]);
-        pendingDecodesRef.current = 0;
-        setIsDecoding(false);
+        if (prompt.previewShapes.length === 0) {
+            return;
+        }
+
+        addAndSelectAnnotations(prompt.previewShapes, selectedLabel ? [selectedLabel] : []);
+        prompt.clear();
     };
 
-    const handlePointerLeave = () => {
-        cancellableThrottledDecodingQueryFn.cancel();
-        setPreviewShapes([]);
-        pendingDecodesRef.current = 0;
-        setIsDecoding(false);
-    };
+    useToolResultHotkey(HOTKEYS.rejectToolResult, prompt.clear, prompt.points.length > 0);
 
-    const previewAnnotations = previewShapes.map((shape, idx): Annotation => {
+    const previewAnnotations = prompt.previewShapes.map((shape, idx): Annotation => {
         return {
             shape,
             labels: selectedLabel ? [{ id: selectedLabel.id }] : [],
@@ -165,14 +153,15 @@ export const SegmentAnythingTool = () => {
             image={image}
             canvasRef={canvasRef}
             aria-label='SAM tool canvas'
-            onPointerMove={handleMouseMove}
+            onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerLeave}
+            onPointerLeave={prompt.clearHover}
             style={{
-                cursor: isDecoding ? 'progress' : `url(${selectionCursor}) ${CURSOR_OFFSET}, auto`,
+                cursor: prompt.isDecoding ? 'progress' : `url(${selectionCursor}) ${CURSOR_OFFSET}, auto`,
             }}
         >
             <PreviewAnnotations previewAnnotations={previewAnnotations} image={image} />
+            <PromptPoints points={prompt.points} zoomScale={zoom.scale} />
         </SvgToolCanvas>
     );
 };
