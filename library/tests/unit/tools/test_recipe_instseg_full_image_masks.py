@@ -35,7 +35,6 @@ import pytest
 from getitune.backend.huggingface.tools.utils import load_recipe
 
 RECIPE_DIR = Path(__file__).resolve().parents[3] / "src" / "getitune" / "recipe" / "instance_segmentation"
-STRETCH_DATA_BASE = RECIPE_DIR.parent / "_base_" / "data" / "instance_segmentation_stretch.yaml"
 
 _RESIZE_CLASS_PATH = "getitune.data.augmentation.transforms.Resize"
 
@@ -46,19 +45,6 @@ HF_FULL_IMAGE_MASK_RECIPES = (
     "eomt_large_640.yaml",
     "mask2former_swin_t.yaml",
 )
-
-
-def test_stretch_data_base() -> None:
-    """The stretch data base itself must not preserve aspect ratio in any subset."""
-    base = load_recipe(STRETCH_DATA_BASE)
-    assert list(base["input_size"]) == [1024, 1024]
-    for subset_name in ("train_subset", "val_subset", "test_subset"):
-        resizes = [aug for aug in base[subset_name]["augmentations_cpu"] if aug["class_path"] == _RESIZE_CLASS_PATH]
-        assert len(resizes) == 1, f"stretch base {subset_name} keeps exactly one Resize"
-        resize = resizes[0]
-        assert resize["init_args"]["keep_aspect_ratio"] is False
-        # train relies on the transform's default resize_targets=True (unset here)
-        assert resize["init_args"].get("resize_targets", True) is (subset_name == "train_subset")
 
 
 @pytest.mark.parametrize("recipe_name", HF_FULL_IMAGE_MASK_RECIPES)

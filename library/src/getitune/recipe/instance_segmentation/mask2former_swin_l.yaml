@@ -26,5 +26,31 @@ training:
     patience: 7
   warmup_ratio: 0.05
   max_grad_norm: 0.1
-data: ../_base_/data/instance_segmentation_stretch.yaml
+data: ../_base_/data/instance_segmentation.yaml
 
+
+# Stretch resize (not letterbox): the HF wrapper exports whole-canvas mask grids
+# (model_type DETRInstSeg) and ModelAPI's full-image mask decode resizes masks back
+# without un-letterboxing, so preprocessing must not preserve aspect ratio.
+overrides:
+  data:
+    train_subset:
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: false
+    val_subset:
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: false
+            resize_targets: false
+    test_subset:
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: false
+            resize_targets: false

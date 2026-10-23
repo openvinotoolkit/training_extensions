@@ -1,0 +1,95 @@
+backend: ultralytics
+task: DETECTION
+
+model:
+  class_path: getitune.backend.ultralytics.models.detection.UltralyticsDetectionModel
+  init_args:
+    model_name: yolo27n.pt
+    pretrained: false
+    imgsz: 640
+
+engine:
+  device: auto
+
+training:
+  epochs: 100
+  batch: 16
+  optimizer: AdamW
+  lr0: 0.001
+  lrf: 0.01
+  momentum: 0.9
+  weight_decay: 0.0005
+  warmup_epochs: 0.0
+  box: 7.5
+  cls: 0.5
+  dfl: 1.5
+  patience: 0
+  close_mosaic: 0
+
+export:
+  format: OPENVINO
+  precision: FP32
+  confidence_threshold: 0.25
+  iou_threshold: 0.5
+
+data: ../_base_/data/detection.yaml
+
+overrides:
+  data:
+    input_size: [640, 640]
+    train_subset:
+      batch_size: 16
+      num_workers: 4
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.CachedMosaic
+          init_args:
+            img_scale: $(input_size)
+            max_cached_images: 20
+            random_pop: false
+            pad_val: 114.0
+            p: 1.0
+            scale: 0.5
+            translate: 0.1
+        - class_path: getitune.data.augmentation.transforms.FilterBoundingBoxes
+          init_args:
+            min_wh: 2
+            max_aspect_ratio: 20.0
+            min_area: 4.0
+        - class_path: torchvision.transforms.v2.ColorJitter
+          init_args:
+            brightness: 0.4
+            contrast: 0.4
+            saturation: 0.7
+            hue: 0.015
+        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+          init_args:
+            p: 0.5
+      augmentations_gpu: []
+      sampler:
+        class_path: getitune.data.samplers.balanced_sampler.BalancedSampler
+    val_subset:
+      batch_size: 16
+      num_workers: 4
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: true
+            center_padding: true
+            resize_targets: false
+      augmentations_gpu: []
+      sampler:
+        class_path: torch.utils.data.SequentialSampler
+    test_subset:
+      batch_size: 16
+      num_workers: 4
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: true
+            center_padding: true
+            resize_targets: false
+      augmentations_gpu: []
+      sampler:
+        class_path: torch.utils.data.SequentialSampler
