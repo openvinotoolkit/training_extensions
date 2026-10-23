@@ -5,6 +5,7 @@ import { buildSegmentAnythingInstance } from '@geti-ui/smart-tools/segment-anyth
 import { setOrtWasmPaths } from '@geti-ui/smart-tools/utils';
 import { expose, proxy } from 'comlink';
 
+import { ORT_WASM_ROOT, prefetchSegmentAnythingAssets, releaseSegmentAnythingAssets } from './segment-anything-assets';
 import type { SegmentAnythingWorkerApi } from './segment-anything.worker.interface';
 
 import './opencv-source';
@@ -17,14 +18,16 @@ import './ort-session-params';
 // Docker/install.sh build — see application/backend/app/main.py's static
 // mount), so the absolute URL must include that prefix or it 404s in prod.
 // Must run before any SAM session is created.
-setOrtWasmPaths(`${process.env.ASSET_PREFIX}/ort/`);
+setOrtWasmPaths(ORT_WASM_ROOT);
 
 const WorkerApi: SegmentAnythingWorkerApi = {
+    prefetchAssets: prefetchSegmentAnythingAssets,
     build: async () => {
         const instance = await buildSegmentAnythingInstance();
 
         return proxy(instance);
     },
+    releaseAssets: releaseSegmentAnythingAssets,
 };
 
 expose(WorkerApi);

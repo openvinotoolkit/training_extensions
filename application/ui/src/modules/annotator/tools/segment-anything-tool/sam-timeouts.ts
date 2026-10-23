@@ -10,8 +10,9 @@
 // either do not support WebGPU or fall back to CPU.
 
 export const SAM_DECODER_TIMEOUT_MS = 20_000;
-export const SAM_WORKER_BUILD_TIMEOUT_MS = 10_000;
-export const SAM_WORKER_INIT_TIMEOUT_MS = SAM_DECODER_TIMEOUT_MS;
+export const SAM_ASSET_DOWNLOAD_STALL_TIMEOUT_MS = 30_000;
+export const SAM_WORKER_BUILD_TIMEOUT_MS = 30_000;
+export const SAM_WORKER_INIT_TIMEOUT_MS = 60_000;
 
 // How long an unobserved encoding (a 4 MiB Float32 tensor per image) is kept in
 // the query cache before being garbage-collected. Short on purpose: encodings

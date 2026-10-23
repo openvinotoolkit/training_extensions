@@ -14,4 +14,6 @@ import { setOpenCVSourceUrl } from '@geti-ui/smart-tools/utils';
 // Import this module (for its side effect) before using any OpenCV-backed
 // tool: GrabCut, Intelligent Scissors, Watershed, SSIM, RITM, and Segment
 // Anything's mask-to-polygon postprocessing.
-setOpenCVSourceUrl(`${process.env.ASSET_PREFIX}/opencv/opencv.js`);
+export const OPENCV_SOURCE_PATH = `${process.env.ASSET_PREFIX}/opencv/opencv.js`;
+
+setOpenCVSourceUrl(OPENCV_SOURCE_PATH);

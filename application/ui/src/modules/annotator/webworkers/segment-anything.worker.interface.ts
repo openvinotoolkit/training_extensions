@@ -7,5 +7,7 @@ import type { ProxyMarked } from 'comlink';
 export type SegmentAnythingWorkerInstance = SegmentAnythingModelWrapper & ProxyMarked;
 
 export type SegmentAnythingWorkerApi = {
+    prefetchAssets: (stallTimeoutMs: number) => Promise<void>;
     build: () => Promise<SegmentAnythingWorkerInstance>;
+    releaseAssets: () => void;
 };

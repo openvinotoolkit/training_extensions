@@ -33,6 +33,9 @@ interface PreviewAnnotationsProps {
 
 const CURSOR_OFFSET = '7 8';
 
+// Superseded and cancelled decodes reject with `undefined` or an AbortError.
+const isDecodingFailure = (error: unknown): error is Error => error instanceof Error && error.name !== 'AbortError';
+
 const PreviewAnnotations = ({ previewAnnotations, image }: PreviewAnnotationsProps) => {
     if (previewAnnotations.length === 0) return null;
 
@@ -95,8 +98,14 @@ export const SegmentAnythingTool = () => {
             .then(({ shapes }) => {
                 setPreviewShapes(shapes.map((shape) => removeOffLimitPoints(shape, roi)));
             })
-            .catch(() => {
-                return [];
+            .catch((decodingError: unknown) => {
+                if (isDecodingFailure(decodingError)) {
+                    toast({
+                        id: 'segment-anything-tool-error',
+                        type: 'error',
+                        message: t('annotator.tools.autoSegmentation.error', { message: decodingError.message }),
+                    });
+                }
             })
             .finally(() => {
                 pendingDecodesRef.current = Math.max(0, pendingDecodesRef.current - 1);
