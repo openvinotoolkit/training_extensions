@@ -12,7 +12,7 @@ name = "getitune"
 version = "0.4.0"
 description = "getitune: Train, Evaluate, Optimize, Deploy Computer Vision Models"
 readme = "README.md"
-requires-python = ">=3.11,<3.15"
+requires-python = ">=3.11,<3.16"
 license = "Apache-2.0"
 authors = [
     { name = "Intel Corporation" },
@@ -22,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "datumaro[experimental]~=1.13.12",

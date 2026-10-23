@@ -13,7 +13,7 @@
 <!-- markdownlint-disable MD042 -->
 
 [![PyPI](https://img.shields.io/pypi/v/getitune)](https://pypi.org/project/getitune)
-[![python](https://img.shields.io/badge/python-3.11%E2%80%933.14-green)]()
+[![python](https://img.shields.io/badge/python-3.11%E2%80%933.15-green)]()
 [![pytorch](https://img.shields.io/badge/pytorch-2.12-orange)]()
 [![openvino](https://img.shields.io/badge/openvino-2026.3-purple)]()
 [![numpy](https://img.shields.io/badge/numpy-%E2%89%A52.0-blue)]()

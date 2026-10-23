@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.14"]
+        python-version: ["3.11", "3.15"]
     name: unit-tests-with-Python${{ matrix.python-version }}
     steps:
       # YAML anchors not used cause currently zizmor don't support them in matrix strategies
@@ -153,7 +153,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.14"]
+        python-version: ["3.11", "3.15"]
         task:
           - "multi_class_cls"
           - "multi_label_cls"
