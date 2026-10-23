@@ -339,6 +339,39 @@ If this keeps happening, you can report it on our issue tracker and attach the l
     }
 }
 
+/// Message shown when the backend executable cannot be started at all, e.g.
+/// because it is missing from the installation or blocked by security software.
+fn show_backend_spawn_failure_dialog(app: &AppHandle, error: &std::io::Error) {
+    // The backend never ran, so the error is only in the shell's own log.
+    let log_dir = app
+        .path()
+        .app_log_dir()
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|_| "the application log directory".to_string());
+    let message = format!(
+        "The Geti backend could not be started and the application will now close.\n\n\
+Error: {error}\n\n\
+This usually means the installation is incomplete or the backend was blocked by security \
+software. Logs are available at:\n  {log_dir}\n\n\
+If this keeps happening, you can report it on our issue tracker and attach the log files."
+    );
+
+    let report = app
+        .dialog()
+        .message(message)
+        .title("Geti could not start")
+        .kind(MessageDialogKind::Error)
+        .buttons(MessageDialogButtons::OkCancelCustom(
+            "Report issue".to_string(),
+            "Close".to_string(),
+        ))
+        .blocking_show();
+
+    if report {
+        open_issue_tracker(app);
+    }
+}
+
 /// Wait for the backend to exit and react to unsolicited terminations. Runs on a
 /// dedicated thread so it can call the *blocking* dialog API (which must not run
 /// on the main thread).
@@ -449,7 +482,19 @@ fn main() {
                 #[cfg(windows)]
                 webview::log_runtime_version();
 
-                let sidecar = spawn_backend(app.handle()).expect("Failed to spawn python backend");
+                let sidecar = match spawn_backend(app.handle()) {
+                    Ok(sidecar) => sidecar,
+                    Err(e) => {
+                        log::error!("Failed to spawn the backend side-car: {e}");
+                        let app_handle = app.handle().clone();
+                        // Blocking dialogs must not run on the main thread.
+                        std::thread::spawn(move || {
+                            show_backend_spawn_failure_dialog(&app_handle, &e);
+                            app_handle.exit(1);
+                        });
+                        return Ok(());
+                    }
+                };
                 // Keep the child handle — and the job object binding the whole
                 // backend tree to our lifetime — in the shared control, then let
                 // a monitor thread watch for crashes and failed upgrades
