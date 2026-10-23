@@ -15,7 +15,6 @@ from torchvision import tv_tensors
 
 from getitune.data.augmentation import GPUAugmentationPipeline
 from getitune.data.augmentation.task_keys import DATA_KEYS_BY_TASK
-from getitune.data.entity.rasterization import rasterize_batch
 from getitune.data.entity.sample import SampleBatch
 from getitune.data.entity.tile import TileBatchData
 
@@ -245,21 +244,6 @@ class GPUAugmentationCallback(Callback):
                 # Re-wrap as an Image tv_tensor so downstream tile handling keeps its type.
                 tiles[tile_idx] = tv_tensors.Image(augmented)  # type: ignore[no-matching-overload]
 
-    @staticmethod
-    def _materialize_masks(batch: SampleBatch | TileBatchData) -> None:
-        """Rasterize polygons into ``batch.masks`` for the still mask-based models.
-
-        Runs after augmentation so the polygons are final: on-device and at
-        network resolution.
-        """
-        if isinstance(batch, TileBatchData):
-            return
-        if batch.masks is not None or batch.polygons is None:
-            return
-        images = typing.cast("torch.Tensor", batch.images)
-        net_canvas = (int(images.shape[-2]), int(images.shape[-1]))
-        batch.masks = rasterize_batch(batch.polygons, net_canvas)
-
     def on_train_batch_start(
         self,
         trainer: Trainer,
@@ -270,7 +254,6 @@ class GPUAugmentationCallback(Callback):
         """Apply GPU augmentations to training batch."""
         if self._train_pipeline is not None:
             self._apply_pipeline(self._train_pipeline, batch)
-        self._materialize_masks(batch)
 
     def on_validation_batch_start(
         self,
@@ -283,7 +266,6 @@ class GPUAugmentationCallback(Callback):
         """Apply GPU augmentations to validation batch."""
         if self._val_pipeline is not None:
             self._apply_pipeline(self._val_pipeline, batch)
-        self._materialize_masks(batch)
 
     def on_test_batch_start(
         self,
@@ -296,4 +278,3 @@ class GPUAugmentationCallback(Callback):
         """Apply GPU augmentations to test batch."""
         if self._test_pipeline is not None:
             self._apply_pipeline(self._test_pipeline, batch)
-        self._materialize_masks(batch)

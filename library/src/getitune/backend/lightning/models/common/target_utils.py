@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
+from getitune.data.entity.rasterization import rasterize_batch
+
 if TYPE_CHECKING:
     from getitune.data.entity.sample import SampleBatch
 
@@ -76,15 +78,16 @@ def align_sample_batch_annotations(entity: SampleBatch) -> SampleBatch:
     labels = entity.labels
     masks = entity.masks
     keypoints = entity.keypoints
+    polygons = entity.polygons
 
     # Nothing to align if there are no instance-level annotations.
-    if bboxes is None and labels is None and masks is None and keypoints is None:
+    if bboxes is None and labels is None and masks is None and keypoints is None and polygons is None:
         return entity
 
     for i in range(entity.batch_size):
         counts: list[int] = [
             int(field[i].shape[0])
-            for field in (bboxes, labels, masks, keypoints)
+            for field in (bboxes, labels, masks, keypoints, polygons)
             if field is not None and i < len(field) and field[i] is not None
         ]
 
@@ -97,12 +100,13 @@ def align_sample_batch_annotations(entity: SampleBatch) -> SampleBatch:
 
         logger.warning(
             "Sample %d has mismatched annotation counts "
-            "(bboxes=%s, labels=%s, masks=%s, keypoints=%s); aligning to %d.",
+            "(bboxes=%s, labels=%s, masks=%s, keypoints=%s, polygons=%s); aligning to %d.",
             i,
             None if bboxes is None else int(bboxes[i].shape[0]),
             None if labels is None else int(labels[i].shape[0]),
             None if masks is None else int(masks[i].shape[0]),
             None if keypoints is None else int(keypoints[i].shape[0]),
+            None if polygons is None else int(polygons[i].shape[0]),
             n,
         )
 
@@ -112,6 +116,8 @@ def align_sample_batch_annotations(entity: SampleBatch) -> SampleBatch:
             labels[i] = _trim_preserving_type(labels[i], n)
         if keypoints is not None and keypoints[i] is not None:
             keypoints[i] = _trim_preserving_type(keypoints[i], n)
+        if polygons is not None and i < len(polygons) and polygons[i] is not None:
+            polygons[i] = _trim_preserving_type(polygons[i], n)  # type: ignore[index]  # pyrefly: ignore[unsupported-operation]
         if masks_present:
             masks[i] = _trim_preserving_type(masks[i], n)  # type: ignore[index]  # pyrefly: ignore[unsupported-operation]
 
@@ -123,6 +129,24 @@ def align_sample_batch_annotations(entity: SampleBatch) -> SampleBatch:
             else:
                 bboxes[i] = _trim_preserving_type(bboxes[i], n)  # pyrefly: ignore[unsupported-operation]
 
+    return entity
+
+
+def materialize_masks(entity: SampleBatch, canvas_size: tuple[int, int] | None = None) -> SampleBatch:
+    """Rasterize ``entity.polygons`` into ``entity.masks`` in place, if needed.
+
+    No-op when masks already exist or no polygons are carried. ``canvas_size``
+    is only a fallback: a ``KeyPoints`` carrier keeps the canvas its coordinates
+    actually live in, which under ``resize_targets=False`` is ``ori_shape``,
+    not the network size.
+    """
+    if entity.masks is not None or entity.polygons is None:
+        return entity
+    if canvas_size is None:
+        images = entity.images
+        ref = images[0] if isinstance(images, list) else images
+        canvas_size = (int(ref.shape[-2]), int(ref.shape[-1]))
+    entity.masks = rasterize_batch(entity.polygons, canvas_size)
     return entity
 
 

@@ -24,6 +24,7 @@ from torch.hub import download_url_to_file
 from torchvision import tv_tensors
 from torchvision.ops import box_convert
 
+from getitune.backend.lightning.models.common.target_utils import materialize_masks
 from getitune.backend.lightning.models.detection.detectors.rfdetr import RFDETRDetector
 from getitune.backend.lightning.models.detection.utils import limit_batch_objects
 from getitune.data.entity.base import BatchLoss
@@ -134,6 +135,7 @@ class RFDETRMixin:
             Dict with 'images' and 'targets' for the model.
         """
         targets: list[dict[str, Any]] = []
+        materialize_masks(entity)  # Ensure masks exist if polygons are present
         has_masks = entity.masks is not None
 
         required_attrs = ("bboxes", "labels", "masks") if has_masks else ("bboxes", "labels")

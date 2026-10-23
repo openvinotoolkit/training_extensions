@@ -18,6 +18,7 @@ from torchvision.models.detection.mask_rcnn import MaskRCNN_ResNet50_FPN_V2_Weig
 from getitune.backend.lightning.exporter.base import ModelExporter
 from getitune.backend.lightning.exporter.native import LightningModelExporter
 from getitune.backend.lightning.models.base import DataInputParams, DefaultOptimizerCallable, DefaultSchedulerCallable
+from getitune.backend.lightning.models.common.target_utils import materialize_masks
 from getitune.backend.lightning.models.instance_segmentation.base import LightningInstanceSegModel
 from getitune.backend.lightning.models.instance_segmentation.heads import TVRoIHeads
 from getitune.backend.lightning.models.instance_segmentation.segmentors.maskrcnn_tv import (
@@ -197,6 +198,7 @@ class MaskRCNNTV(LightningInstanceSegModel):
     def _customize_inputs(self, entity: SampleBatch) -> dict[str, Any]:
         if isinstance(entity.images, list):
             entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)  # type: ignore[arg-type,assignment]
+        materialize_masks(entity, canvas_size=None)
         return {"entity": entity}
 
     def _customize_outputs(

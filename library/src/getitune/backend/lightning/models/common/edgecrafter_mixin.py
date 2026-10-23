@@ -17,6 +17,7 @@ from torchvision import tv_tensors
 from torchvision.ops import box_convert
 from torchvision.tv_tensors import BoundingBoxFormat
 
+from getitune.backend.lightning.models.common.target_utils import materialize_masks
 from getitune.backend.lightning.models.detection.backbones.ecvit import ECViTAdapter
 from getitune.backend.lightning.models.detection.detectors.edgecrafter import ECDETRDetector
 from getitune.backend.lightning.models.detection.heads.ec_decoder import ECTransformer
@@ -218,6 +219,7 @@ class EdgeCrafterMixin:
             Dict with ``images`` (Tensor) and ``targets`` (list of per-image dicts).
         """
         targets: list[dict[str, Any]] = []
+        materialize_masks(entity)  # ensure masks exist if polygons are present
         has_masks = entity.masks is not None
 
         if entity.bboxes is not None and entity.labels is not None:
