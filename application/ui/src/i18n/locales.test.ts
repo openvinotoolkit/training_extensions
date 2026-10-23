@@ -45,6 +45,7 @@ describe('locale registry', () => {
         expect(DEFAULT_LANGUAGE).toBe('en');
         expect(SUPPORTED_LANGUAGES).toEqual([
             'en',
+            'de',
             'es',
             'fr',
             'it',
