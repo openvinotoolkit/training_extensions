@@ -22,32 +22,10 @@ training:
   lr_scheduler_type: cosine
   warmup_ratio: 0.1
   max_grad_norm: 1.0
-data: ../_base_/data/instance_segmentation.yaml
+data: ../_base_/data/instance_segmentation_stretch.yaml
 
-# The HF wrapper exports whole-canvas mask grids (model_type DETRInstSeg); its
-# ModelAPI decode resizes masks back without un-letterboxing, so preprocessing
-# must stretch (not letterbox) the input canvas. Also kept at 640x640 to match
-# the checkpoint's native resolution (the shared base trains at 1024x1024).
+# Keep the data pipeline at the checkpoint's native 640x640 resolution
+# (the shared data base defaults to 1024x1024).
 overrides:
   data:
     input_size: [640, 640]
-    train_subset:
-      augmentations_cpu:
-        - class_path: getitune.data.augmentation.transforms.Resize
-          init_args:
-            size: $(input_size)
-            keep_aspect_ratio: false
-    val_subset:
-      augmentations_cpu:
-        - class_path: getitune.data.augmentation.transforms.Resize
-          init_args:
-            size: $(input_size)
-            keep_aspect_ratio: false
-            resize_targets: false
-    test_subset:
-      augmentations_cpu:
-        - class_path: getitune.data.augmentation.transforms.Resize
-          init_args:
-            size: $(input_size)
-            keep_aspect_ratio: false
-            resize_targets: false

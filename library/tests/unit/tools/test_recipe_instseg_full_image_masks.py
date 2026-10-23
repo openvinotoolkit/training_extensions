@@ -29,117 +29,109 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import cv2
 import numpy as np
 import pytest
 
 from getitune.backend.huggingface.tools.utils import load_recipe
-from getitune.types.task import TaskType
 
 RECIPE_DIR = Path(__file__).resolve().parents[3] / "src" / "getitune" / "recipe" / "instance_segmentation"
-
-# Recipes of HF-instance-seg (MaskFormer family) models: no box head, the whole
-# exported mask grid spans the input canvas, so ModelAPI decodes masks with a
-# full-image resize. These recipes must use non-AR-preserving (stretch) resize
-# so that decode is exact.
-HF_FULL_IMAGE_MASK_RECIPES = (
-    "eomt_large_640.yaml",
-    "eomt_dinov3_large_640.yaml",
-    "mask2former_swin_t.yaml",
-    "mask2former_swin_s.yaml",
-    "mask2former_swin_b.yaml",
-    "mask2former_swin_l.yaml",
-)
+STRETCH_DATA_BASE = RECIPE_DIR.parent / "_base_" / "data" / "instance_segmentation_stretch.yaml"
 
 _RESIZE_CLASS_PATH = "getitune.data.augmentation.transforms.Resize"
 
-
-def _resize_transforms(augmentations: list[dict]) -> list[dict]:
-    return [aug for aug in augmentations if aug.get("class_path") == _RESIZE_CLASS_PATH]
-
-
-def _recipe(recipe_name: str) -> dict:
-    recipe_file = RECIPE_DIR / recipe_name
-    assert recipe_file.exists()
-    return load_recipe(recipe_file)
+# One recipe per distinct recipe shape (issue #7829):
+# - eomt_large_640: pins the data pipeline to the checkpoint's 640x640 via overrides;
+# - mask2former_swin_t: inherits the shared base 1024x1024 with no explicit input_size.
+HF_FULL_IMAGE_MASK_RECIPES = (
+    "eomt_large_640.yaml",
+    "mask2former_swin_t.yaml",
+)
 
 
-def test_hf_instance_seg_task_type() -> None:
-    for recipe_name in HF_FULL_IMAGE_MASK_RECIPES:
-        recipe = _recipe(recipe_name)
-        assert TaskType(recipe["task"]) is TaskType.INSTANCE_SEGMENTATION
+def test_stretch_data_base() -> None:
+    """The stretch data base itself must not preserve aspect ratio in any subset."""
+    base = load_recipe(STRETCH_DATA_BASE)
+    assert list(base["input_size"]) == [1024, 1024]
+    for subset_name in ("train_subset", "val_subset", "test_subset"):
+        resizes = [aug for aug in base[subset_name]["augmentations_cpu"] if aug["class_path"] == _RESIZE_CLASS_PATH]
+        assert len(resizes) == 1, f"stretch base {subset_name} keeps exactly one Resize"
+        resize = resizes[0]
+        assert resize["init_args"]["keep_aspect_ratio"] is False
+        # train relies on the transform's default resize_targets=True (unset here)
+        assert resize["init_args"].get("resize_targets", True) is (subset_name == "train_subset")
 
 
-def test_hf_full_image_mask_recipes_use_stretch_resize() -> None:
-    """All hf full-image-mask recipes must stretch the input canvas, not letterbox it.
+@pytest.mark.parametrize("recipe_name", HF_FULL_IMAGE_MASK_RECIPES)
+def test_full_image_mask_recipe_consistency(recipe_name: str) -> None:
+    """Recipes driving full-image mask decodes must reference the stretch data base.
 
     The ModelAPI ``DETRInstSeg`` full-image mask decode resizes the raw mask
-    grid to the original image size as a whole; a letterbox preprocessing would
-    therefore squash and misplace the decoded masks (issue #7829). The
-    ``resize_mode`` metadata embedded at export time must be the matching
-    ``standard`` (no aspect-ratio preservation), so downstream OF eval pipelines
-    and the auto-configurator apply the same stretch resize.
+    grid to the original image size as a whole; letterbox preprocessing would
+    squash and misplace the decoded masks (issue #7829). The ``resize_mode``
+    metadata embedded at export time must be the matching ``standard`` so that
+    downstream OV eval pipelines and the auto-configurator apply the same
+    stretch resize.
     """
-    for recipe_name in HF_FULL_IMAGE_MASK_RECIPES:
-        recipe = _recipe(recipe_name)
-        init_args = recipe["model"]["init_args"]
-        assert init_args["resize_mode"] == "standard", f"{recipe_name}: encode metadata must be 'standard'"
+    recipe = load_recipe(RECIPE_DIR / recipe_name)
+    init_args = recipe["model"]["init_args"]
 
-        data = recipe["data"]
-        for subset_name in ("train_subset", "val_subset", "test_subset"):
-            subset = data[subset_name]
-            resizes = _resize_transforms(subset.get("augmentations_cpu", []))
-            assert resizes, f"{recipe_name}: {subset_name} must contain a Resize transform"
-            for resize in resizes:
-                assert resize["init_args"]["keep_aspect_ratio"] is False, (
-                    f"{recipe_name}: {subset_name} Resize must not preserve aspect ratio"
-                )
-                if subset_name != "train_subset":
-                    assert resize["init_args"].get("resize_targets") is False
+    data = recipe["data"]
+    assert "input_size" in data
 
-        # the model input size and the data pipeline input size must agree
-        # (recipes without an explicit init input_size use the wrapper default
-        # for the COCO checkpoints: 1024x1024, same as the shared data base)
-        assert list(data["input_size"]) == list(init_args.get("input_size", [1024, 1024])), (
-            f"{recipe_name}: data input size must match the model input size"
-        )
+    for subset_name in ("train_subset", "val_subset", "test_subset"):
+        subset = data[subset_name]
+        resizes = [aug for aug in subset["augmentations_cpu"] if aug.get("class_path") == _RESIZE_CLASS_PATH]
+        assert resizes, f"{recipe_name}: {subset_name} must contain a Resize transform"
+        for resize in resizes:
+            assert resize["init_args"]["keep_aspect_ratio"] is False, (
+                f"{recipe_name}: {subset_name} Resize must not preserve aspect ratio"
+            )
+            if subset_name != "train_subset":
+                assert resize["init_args"].get("resize_targets") is False
+
+        # the GPU-side augs of the shared base (flip + normalize) must survive
+        gpu_paths = [aug.get("class_path", "") for aug in subset.get("augmentations_gpu", [])]
+        assert any("Normalize" in cp for cp in gpu_paths), f"{recipe_name}: Normalize must remain in {subset_name}"
+
+    assert init_args["resize_mode"] == "standard", f"{recipe_name}: export metadata must be 'standard'"
+
+    # the model input size and the data pipeline input size must agree
+    # (recipes without an explicit init input_size use the wrapper default
+    # for the COCO checkpoints: 1024x1024, same as the shared data base)
+    assert list(data["input_size"]) == list(init_args.get("input_size", [1024, 1024])), (
+        f"{recipe_name}: data input size must match the model input size"
+    )
 
 
-@pytest.mark.parametrize("resize_type", ["letterbox", "stretch"])
-def test_full_image_mask_decode_geometry(resize_type: str) -> None:
-    """Numeric demonstration of the decode contract (issue #7829 reproduction).
+def test_letterbox_is_rejected_by_real_modelapi_decode() -> None:
+    """The real ModelAPI decode (imported, not re-implemented) aligns masks only under stretch.
 
-    A 1280x720 image with a ground-truth square instance is resized into a
-    640x640 canvas (bottom-right padded letterbox vs plain stretch), the mask
-    grid is simulated in that canvas, and decoded the way ModelAPI's
-    ``_full_image_mask_postprocess`` does (whole-canvas resize to (im_w, im_h)).
+    Reproduces GH #7829 with ModelAPI's own ``_full_image_mask_postprocess``:
+    the decode resizes the whole raw mask canvas to the original size, so a
+    letterboxed canvas decodes squashed/offset while a stretch canvas decodes
+    back exactly.
     """
+    from model_api.models.instance_segmentation import _full_image_mask_postprocess
+
     ori_h, ori_w = 720, 1280
     gt = np.zeros((ori_h, ori_w), dtype=np.uint8)
     gt[200:400, 400:800] = 1
 
-    scale = min(640 / ori_w, 640 / ori_h)
-    canvas_h, canvas_w = round(ori_h * scale), round(ori_w * scale)  # 360x640
-    canvas = np.zeros((640, 640), dtype=np.uint8)
-    if resize_type == "letterbox":
-        content = _resize_mask(np.float32(gt), (canvas_w, canvas_h))
-        canvas[:canvas_h, :canvas_w] = content  # bottom-right pad (Geti default)
-    else:
-        canvas = _resize_mask(np.float32(gt), (640, 640))  # stretch
+    letterbox = np.zeros((640, 640), dtype=np.float32)
+    letterbox[:360, :640] = _resize_mask(gt.astype(np.float32), (640, 360))  # content + bottom-right pad
+    stretch = _resize_mask(gt.astype(np.float32), (640, 640))
 
-    # ModelAPI decode: whole-canvas resize to original dims, threshold at 0.5
-    decoded = _resize_mask(canvas.astype(np.float32), (ori_w, ori_h)) > 0.5
+    def iou(decoded: np.ndarray) -> float:
+        return float(np.logical_and(decoded, gt).sum()) / float(np.logical_or(decoded, gt).sum())
 
-    inter = float(np.logical_and(decoded, gt).sum())
-    union = float(np.logical_or(decoded, gt).sum())
-    iou = inter / union
-
-    if resize_type == "letterbox":
-        assert iou < 0.5, "letterbox preprocessing must NOT be sent to the full-image mask decode"
-    else:
-        assert iou > 0.99, "stretch preprocessing must decode back exactly"
+    assert iou(_full_image_mask_postprocess(letterbox, ori_h, ori_w) > 0.5) < 0.5, (
+        "letterbox must NOT be decoded by ModelAPI's full-image mask decode"
+    )
+    assert iou(_full_image_mask_postprocess(stretch, ori_h, ori_w) > 0.5) > 0.99, "stretch must decode back exactly"
 
 
 def _resize_mask(mask: np.ndarray, size: tuple[int, int]) -> np.ndarray:
-    """Linear resize, mirroring ModelAPI's cv2.resize usage in the mask decode."""
+    """Linear resize through cv2, the same preprocessing the decode inverts."""
+    import cv2
+
     return cv2.resize(mask, size, interpolation=cv2.INTER_LINEAR)
