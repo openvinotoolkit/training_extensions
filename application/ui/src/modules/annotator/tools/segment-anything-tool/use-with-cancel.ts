@@ -3,13 +3,10 @@
 
 import { useEffect, useRef } from 'react';
 
-import type { Shape } from '../../../../shared/types';
-import { InteractiveAnnotationPoint } from './segment-anything.interface';
-
-export const useWithCancel = (fn: (points: InteractiveAnnotationPoint[]) => Promise<Shape[]>) => {
+export const useWithCancel = <Args extends unknown[], Result>(fn: (...args: Args) => Promise<Result>) => {
     const abortController = useRef<AbortController | null>(null);
 
-    const cancellableCallback = async (...args: Parameters<typeof fn>) => {
+    const cancellableCallback = async (...args: Args): Promise<Result> => {
         // Cancel any ongoing request
         abortController.current?.abort();
 
