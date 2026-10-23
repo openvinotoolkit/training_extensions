@@ -7,7 +7,7 @@ model:
     pretrained: true
     onnx_dynamo: false
     input_size: [1024, 1024]
-    resize_mode: fit_to_window
+    resize_mode: standard
 engine:
   device: auto
 training:
@@ -27,3 +27,30 @@ training:
   warmup_ratio: 0.05
   max_grad_norm: 0.1
 data: ../_base_/data/instance_segmentation.yaml
+
+# The HF wrapper exports whole-canvas mask grids (model_type DETRInstSeg); its
+# ModelAPI decode resizes masks back without un-letterboxing, so preprocessing
+# must stretch (not letterbox) the input canvas.
+overrides:
+  data:
+    train_subset:
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: false
+    val_subset:
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: false
+            resize_targets: false
+    test_subset:
+      augmentations_cpu:
+        - class_path: getitune.data.augmentation.transforms.Resize
+          init_args:
+            size: $(input_size)
+            keep_aspect_ratio: false
+            resize_targets: false
+
