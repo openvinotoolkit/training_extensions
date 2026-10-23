@@ -788,6 +788,7 @@
                 "unknownError": "Error desconocido; prueba a actualizar la página.",
                 "timeoutError": "{{operation}} superó el tiempo de espera de {{timeoutMs}}ms. Prueba a actualizar la página.",
                 "embeddingError": "No se pudo obtener el embedding de la imagen ({{status}}{{statusText}}).",
+                "hint": "Mayús + clic para incluir un área, Alt + clic para excluirla. Haz clic para crear la anotación y pulsa Esc para borrar los puntos.",
                 "operations": {
                     "workerBuild": "Compilación del worker de SAM",
                     "workerInit": "Inicialización del worker de SAM",

@@ -788,6 +788,7 @@
                 "unknownError": "Erro desconhecido, tente atualizar a página.",
                 "timeoutError": "O tempo limite de {{operation}} expirou após {{timeoutMs}}ms. Tente atualizar a página.",
                 "embeddingError": "Não foi possível obter o embedding da imagem ({{status}}{{statusText}}).",
+                "hint": "Shift + clique para incluir uma área, Alt + clique para a excluir. Clique para criar a anotação, Esc para limpar os pontos.",
                 "operations": {
                     "workerBuild": "Compilação do worker SAM",
                     "workerInit": "Inicialização do worker SAM",

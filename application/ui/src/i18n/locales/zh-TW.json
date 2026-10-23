@@ -790,6 +790,7 @@
                 "unknownError": "發生未知錯誤，請重新整理頁面重試。",
                 "timeoutError": "{{operation}} 在 {{timeoutMs}}ms 後逾時，請嘗試重新整理頁面。",
                 "embeddingError": "無法取得影像嵌入（{{status}}{{statusText}}）。",
+                "hint": "Shift + 點擊以包含區域，Alt + 點擊以排除區域。點擊以建立標註，按 Esc 清除這些點。",
                 "operations": {
                     "workerBuild": "SAM 背景程式建置",
                     "workerInit": "SAM 背景程式初始化",

@@ -25,6 +25,11 @@ instant object mask without a round-trip to the backend.
   2. **Decoding** - user prompt points are fed to the decoder
      (`processDecoder`) against the cached encoding to produce a mask. The mask
      is post-processed to a `polygon` (or a bounding `rect` for detection tasks).
+     Hovering decodes a single point under the cursor. **Shift + click**
+     (include) and **Alt/Option + click** (exclude) place prompt points instead;
+     each added point passes the previous low resolution mask back to the
+     decoder (`previousMask`) to refine the same object. A plain click creates
+     the annotation and **Esc** clears the points.
 - **Mask-to-polygon post-processing** relies on the custom-compiled
   `opencv.js` bundled by `@geti-ui/smart-tools`.
 
