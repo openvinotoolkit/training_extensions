@@ -53,8 +53,8 @@ docker run --rm -v geti-data:/data -v "$PWD":/backup alpine \
     tar czf /backup/geti-data-backup.tar.gz -C /data .
 
 # 2. Pull the new image and retag it (available device choices: cpu, xpu, cuda)
-docker pull ghcr.io/open-edge-platform/geti-cpu:3.2.0
-docker tag  ghcr.io/open-edge-platform/geti-cpu:3.2.0 geti-cpu:latest
+docker pull ghcr.io/open-edge-platform/geti-cpu:3.3.0
+docker tag  ghcr.io/open-edge-platform/geti-cpu:3.3.0 geti-cpu:latest
 
 # 3. Recreate the container against the SAME volumes (data is migrated on startup)
 just run-image --accelerator cpu --reload --detach
@@ -181,7 +181,7 @@ fail identically — so the backend:
   docker rm -f geti-cpu
   docker run --rm -v geti-data:/data -v "$PWD":/backup alpine \
       sh -c 'rm -rf /data/* && tar xzf /backup/geti-data-backup.tar.gz -C /data'
-  docker tag ghcr.io/open-edge-platform/geti-cpu:3.0.0 geti-cpu:latest
+  docker tag ghcr.io/open-edge-platform/geti-cpu:3.2.0 geti-cpu:latest
   just run-image --accelerator cpu --reload --detach true
   ```
 
