@@ -511,7 +511,12 @@ fn main() {
     // exits without going through the CloseRequested path (e.g. Cmd+Q on
     // macOS, or programmatic shutdown).
     let exit_control = control.clone();
-    app.run(move |_app_handle, event| {
+    app.run(move |app_handle, event| {
+        #[cfg(windows)]
+        webview::on_run_event(app_handle, &event);
+        #[cfg(not(windows))]
+        let _ = app_handle;
+
         if let RunEvent::Exit = event {
             shutdown_backend(&exit_control, "runtime exit event");
         }

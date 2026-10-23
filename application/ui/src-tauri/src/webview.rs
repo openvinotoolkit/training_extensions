@@ -15,8 +15,8 @@
 //! used to be fatal. Here we subscribe to it directly and recover according to
 //! what is still usable:
 //!
-//! * renderer / frame-renderer *exited* → WebView2 spins up a replacement, so a
-//!   reload repaints the UI in the same window;
+//! * renderer / frame-renderer *exited* → a native reload starts a new
+//!   renderer and repaints the UI in the same window;
 //! * renderer *unresponsive* → the window is recreated. Reloading is useless
 //!   here: `eval` only queues a script for a renderer that is not draining its
 //!   task queue, so it reports success while the UI stays frozen;
@@ -28,7 +28,7 @@
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 
-use tauri::{AppHandle, Manager, WebviewWindow, WebviewWindowBuilder};
+use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WebviewWindowBuilder, WindowEvent};
 use webview2_com::Microsoft::Web::WebView2::Win32::{
     GetAvailableCoreWebView2BrowserVersionString, ICoreWebView2,
     ICoreWebView2ProcessFailedEventArgs, COREWEBVIEW2_PROCESS_FAILED_KIND,
@@ -51,6 +51,10 @@ use crate::MAIN_WINDOW_LABEL;
 /// synchronous task (a big annotation render, say) that would recover on its own
 /// — and whose window should not be thrown away.
 const UNRESPONSIVE_STRIKES_BEFORE_RECREATE: u32 = 3;
+
+/// Set while the main window is being destroyed so that it is rebuilt once the
+/// runtime has released its label (see [`on_run_event`]).
+static RECREATE_PENDING: AtomicBool = AtomicBool::new(false);
 
 /// What can still be done with the webview after a given failure.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -199,9 +203,8 @@ pub fn attach_process_failed_handler(window: &WebviewWindow) {
                 let recovering_guard = recovering.clone();
                 let recovering = recovering.clone();
                 let unresponsive_strikes = unresponsive_strikes.clone();
-                // The event arrives on the UI thread inside a COM callback;
-                // defer the actual recovery so the runtime can finish
-                // dispatching before we touch (or destroy) the webview.
+                // Already on the UI thread, so this runs inline; window
+                // teardown is queued by the runtime and finishes later.
                 let dispatch = app.clone().run_on_main_thread(move || {
                     recover(&app, recovery);
                     unresponsive_strikes.store(0, Ordering::SeqCst);
@@ -236,11 +239,11 @@ fn recover(app: &AppHandle, recovery: Recovery) {
         // Never reached (filtered out in the handler), but keeps the match total.
         Recovery::None => {}
         Recovery::Reload => {
-            // The renderer was replaced by a fresh one, so it *is* draining its
-            // task queue and a reload actually runs.
+            // Must be a native reload: a script reload (`eval`) is silently
+            // dropped because there is no renderer left to run it.
             if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
                 log::info!("↻ Reloading the webview after a renderer failure");
-                match window.eval("window.location.reload()") {
+                match window.reload() {
                     Ok(()) => return,
                     Err(e) => log::warn!("Reload failed, recreating the window instead: {e}"),
                 }
@@ -259,13 +262,49 @@ fn recover(app: &AppHandle, recovery: Recovery) {
 /// After a browser-process failure the existing `ICoreWebView2` can no longer be
 /// used for anything, so a brand new controller (and window) is the only way
 /// back. The backend side-car is untouched and keeps running.
+///
+/// `destroy()` is asynchronous and the label stays registered until the window
+/// is gone, so the replacement is built from [`on_run_event`] once the old
+/// window reports `Destroyed`.
 fn recreate_main_window(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
-        if let Err(e) = window.destroy() {
-            log::warn!("Failed to destroy the failed window: {e}");
+    let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) else {
+        build_main_window(app);
+        return;
+    };
+
+    // ProcessFailed arrives in bursts; a repeat must not cancel the pending rebuild.
+    if RECREATE_PENDING.swap(true, Ordering::SeqCst) {
+        log::info!("Main window recreation already pending, ignoring");
+        return;
+    }
+    if let Err(e) = window.destroy() {
+        RECREATE_PENDING.store(false, Ordering::SeqCst);
+        log::error!("Failed to destroy the failed window; cannot recover: {e}");
+    }
+}
+
+/// Hook for the application run loop.
+///
+/// Builds the replacement window as soon as the old one is destroyed. Doing it
+/// inside this callback, before the runtime notices it has no windows left,
+/// also stops the app from treating the teardown as "last window closed" and
+/// quitting.
+pub fn on_run_event(app: &AppHandle, event: &RunEvent) {
+    if let RunEvent::WindowEvent {
+        label,
+        event: WindowEvent::Destroyed,
+        ..
+    } = event
+    {
+        if label == MAIN_WINDOW_LABEL && RECREATE_PENDING.swap(false, Ordering::SeqCst) {
+            build_main_window(app);
         }
     }
+}
 
+/// Build the main window from its `tauri.conf.json` definition and watch it for
+/// WebView2 process failures.
+fn build_main_window(app: &AppHandle) {
     let config = app
         .config()
         .app
