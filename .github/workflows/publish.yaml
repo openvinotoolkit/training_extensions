@@ -37,20 +37,20 @@ jobs:
         run: python -m pip install build
 
       - name: Build sdist
-        run: python -m build --sdist library/
+        run: python -m build --sdist libraries/getitune/
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifact-sdist
-          path: library/dist/*.tar.gz
+          path: libraries/getitune/dist/*.tar.gz
 
       - name: Build wheel
-        run: python -m build --wheel library/
+        run: python -m build --wheel libraries/getitune/
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: artifact-wheel
-          path: library/dist/*.whl
+          path: libraries/getitune/dist/*.whl
 
       # Determine where to publish the package distribution to PyPI or TestPyPI
       - name: Check tag
@@ -64,7 +64,7 @@ jobs:
         if: ${{ steps.check-tag.outputs.match != '' }}
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
-          packages-dir: library/dist
+          packages-dir: libraries/getitune/dist
 
       - name: Publish package distributions to TestPyPI
         if: ${{ steps.check-tag.outputs.match == '' }}
@@ -72,4 +72,4 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           verbose: true
-          packages-dir: library/dist
+          packages-dir: libraries/getitune/dist

@@ -1,4 +1,4 @@
 ignore:
-  - "library/**/__init__.py"
-  - "library/src/getitune/recipe"
-  - "library/src/getitune/tools"
+  - "libraries/getitune/**/__init__.py"
+  - "libraries/getitune/src/getitune/recipe"
+  - "libraries/getitune/src/getitune/tools"

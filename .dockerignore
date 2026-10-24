@@ -22,9 +22,9 @@
 !application/ui/rsbuild.config.ts
 
 # Library – only what uv needs to resolve deps and build the getitune wheel
-!library/pyproject.toml
-!library/MANIFEST.in
-!library/src/getitune
+!libraries/getitune/pyproject.toml
+!libraries/getitune/MANIFEST.in
+!libraries/getitune/src/getitune
 
 # Exclude non-essential files that sneak in via the above whitelists
 **/__pycache__

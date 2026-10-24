@@ -15,8 +15,8 @@ LICENSE @alexey-burdakov @AlexanderBarabanov @yvolokitin
 third-party-programs.txt @alexey-burdakov @AlexanderBarabanov @yvolokitin
 
 # Library (getitune)
-library/ @open-edge-platform/geti-lib-write
-library/uv.lock @sys-geti @open-edge-platform/geti-lib-write
+libraries/getitune/ @open-edge-platform/geti-lib-write
+libraries/getitune/uv.lock @sys-geti @open-edge-platform/geti-lib-write
 
 # Application backend
 application/backend/ @open-edge-platform/geti-backend-write

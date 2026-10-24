@@ -24,7 +24,7 @@
  <img src="assets/model-lifecycle-infinity-light.png" width="600" alt="Geti™ - Learning Cycle"/>
 </p>
 
-The Geti™ application is powered by **_getitune_**, its engine for model training and optimization, which is also available standalone as a Python library. Choose the application for a no-code experience, or the `getitune` Python API for code-first workflows — both paths lead to production-ready models. Both are developed in this repository, under [`application/`](application/) and [`library/`](library/).
+The Geti™ application is powered by **_getitune_**, its engine for model training and optimization, which is also available standalone as a Python library. Choose the application for a no-code experience, or the `getitune` Python API for code-first workflows — both paths lead to production-ready models. Both are developed in this repository, under [`application/`](application/) and [`libraries/getitune/`](libraries/getitune/).
 
 ## Full lifecycle with an intuitive SME interface
 
@@ -50,7 +50,7 @@ For complete, step-by-step instructions - including prerequisites, GPU/accelerat
 Geti's training engine is also available on PyPI as `getitune`, an open-source Python library for training, optimizing, and deploying models.
 
 <p align="center">
-  <img src="library/assets/getitune-demo.gif" alt="Train and optimize a model with the getitune Python API" width="80%">
+  <img src="libraries/getitune/assets/getitune-demo.gif" alt="Train and optimize a model with the getitune Python API" width="80%">
 </p>
 
 <details>

@@ -30,7 +30,7 @@ from app.services.model_manifest_service import ModelManifestService
 from app.supported_models import manifests
 
 BASE_MANIFEST_PATH = str(resources.files(manifests).joinpath("base.yaml"))
-GETITUNE_RECIPE_ROOT = pathlib.Path(__file__).parents[5] / "library" / "src" / "getitune" / "recipe"
+GETITUNE_RECIPE_ROOT = pathlib.Path(__file__).parents[5] / "libraries" / "getitune" / "src" / "getitune" / "recipe"
 HF_MANIFEST_IDS = {
     "image-classification-dinov3-vits",
     "image-classification-dinov3-vitb16",

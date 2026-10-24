@@ -7,7 +7,7 @@ of the repo they target so agents load the right paths and commands.
 
 | Bucket          | Path                           | Scope                                                                                                                                                   |
 | --------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Library**     | [`library/`](library/)         | `getitune`: models, recipes, training, export, optimization, inference, and the `getitune` CLI under `library/`.                                        |
+| **Getitune**    | [`getitune/`](getitune/)       | `getitune`: models, recipes, training, export, optimization, inference, and the `getitune` CLI under `libraries/getitune/`.                             |
 | **Application** | [`application/`](application/) | Application stack: `application/backend/` (FastAPI `geti`), `application/ui/` (React), the OpenAPI contract, the REST pipeline, and cross-cutting docs. |
 
 Each bucket has its own skill list and `EVALUATION.md` scenarios.
@@ -17,7 +17,7 @@ Each bucket has its own skill list and `EVALUATION.md` scenarios.
 ```text
 skills/
 ├── README.md                 # this file — global authoring rules
-├── library/
+├── getitune/
 │   ├── README.md
 │   ├── EVALUATION.md
 │   └── <skill-name>/
@@ -85,7 +85,7 @@ This is what an agent matches against to decide whether to load the skill.
 - **Be concise; assume the model is smart.** Keep `SKILL.md` well under 500
   lines.
 - **Ground every claim in real paths** for that bucket
-  (`library/src/getitune/...`, `application/backend/app/...`,
+  (`libraries/getitune/src/getitune/...`, `application/backend/app/...`,
   `application/ui/src/...`) and real commands. No invented flags.
 - **Numbered workflow steps, each ending in a checkable completion criterion**
   ("Done when: …") so the agent can tell done from not-done.
@@ -107,7 +107,7 @@ This is what an agent matches against to decide whether to load the skill.
 ## Add a new skill
 
 ```bash
-BUCKET=library   # or application
+BUCKET=getitune  # or application
 NAME=getitune-my-workflow
 mkdir -p "skills/$BUCKET/$NAME"
 $EDITOR "skills/$BUCKET/$NAME/SKILL.md"

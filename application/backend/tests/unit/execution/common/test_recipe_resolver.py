@@ -10,7 +10,7 @@ import yaml
 from app.execution.common.recipe_resolver import RecipeResolver
 from app.supported_models.timm import manifest_provider
 
-GETITUNE_RECIPE_ROOT = Path(__file__).parents[6] / "library" / "src" / "getitune" / "recipe"
+GETITUNE_RECIPE_ROOT = Path(__file__).parents[6] / "libraries" / "getitune" / "src" / "getitune" / "recipe"
 
 HF_CLASSIFICATION_RECIPES = {
     "image-classification-dinov3-vits": "dinov3_vits.yaml",

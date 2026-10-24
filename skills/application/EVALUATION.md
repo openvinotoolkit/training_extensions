@@ -108,7 +108,7 @@ Expected behavior:
 
 Expected behavior:
 
-- Updates the correct target (`README.md`, `application/docs/`, `library/README.md`,
+- Updates the correct target (`README.md`, `application/docs/`, `libraries/getitune/README.md`,
   or docstrings).
 - Keeps the change scoped and consistent with the code, without inventing
   behavior.

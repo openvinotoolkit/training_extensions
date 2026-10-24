@@ -1,7 +1,7 @@
 # Installing Intel Geti™
 
 Geti™ is a full-stack web application to build and deploy computer vision AI models, powered by the
-[getitune](../../library) library. This guide covers all the supported ways to install and run Geti™ so you
+[getitune](../../libraries/getitune) library. This guide covers all the supported ways to install and run Geti™ so you
 can choose the method that best fits your workflow.
 
 > [!IMPORTANT]

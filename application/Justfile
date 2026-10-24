@@ -399,7 +399,7 @@ stop-coturn:
 # Patch Geti source code to use CUDA 12.6 instead of 13.0 for the 'cuda' target, needed for legacy Nvidia GPUs
 # (Volta, Maxwell, Pascal). See https://github.com/open-edge-platform/geti/issues/7163
 patch-for-legacy-gpu-support:
-    cd {{ justfile_directory() }}/../library && just patch-for-legacy-gpu-support
+    cd {{ justfile_directory() }}/../libraries/getitune && just patch-for-legacy-gpu-support
     cd {{ justfile_directory() }}/backend && just venv-lock
     @echo "Patched the code to use CUDA 12.6 for the 'cuda' target (legacy Nvidia GPU support)."
     @echo "For Docker users: run 'just build-image --accelerator cuda' to rebuild the image with the patched code."

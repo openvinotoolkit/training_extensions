@@ -130,7 +130,7 @@ timm-imagenet-results-url := "https://raw.githubusercontent.com/huggingface/pyto
 timm-model-licenses-url := "https://raw.githubusercontent.com/itallix/timm_license_extractor/refs/heads/main/timm_model_licenses.csv"
 
 # Regenerate app/supported_models/timm_catalog_snapshot.json from the pinned `timm`
-# version in ../../library. Requires the library venv (`just venv` from library/)
+# version in ../../libraries/getitune. Requires the library venv (`just venv` from libraries/getitune/)
 # to already be set up.
 gen-timm-catalog: install-uv
     #!/usr/bin/env bash

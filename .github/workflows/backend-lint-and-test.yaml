@@ -46,7 +46,7 @@ jobs:
           files_yaml: |
             test:
               - application/backend/**
-              - library/**
+              - libraries/getitune/**
               - .github/workflows/backend-lint-and-test.yaml
               - .github/actions/install-common-deps/**
               - '!**/*.md'
@@ -129,9 +129,9 @@ jobs:
             exit 1
           fi
 
-          PINNED_VERSION=$(python3 -c "import pathlib,re; m=re.search(r'\"timm==([^\"]+)\"', pathlib.Path('library/pyproject.toml').read_text(encoding='utf-8')); print(m.group(1) if m else '')")
+          PINNED_VERSION=$(python3 -c "import pathlib,re; m=re.search(r'\"timm==([^\"]+)\"', pathlib.Path('libraries/getitune/pyproject.toml').read_text(encoding='utf-8')); print(m.group(1) if m else '')")
           if [[ -z "$PINNED_VERSION" ]]; then
-            echo "::error::Could not parse pinned timm version from library/pyproject.toml." >&2
+            echo "::error::Could not parse pinned timm version from libraries/getitune/pyproject.toml." >&2
             exit 1
           fi
 
@@ -141,7 +141,7 @@ jobs:
           echo "Snapshot timm_version: ${SNAPSHOT_VERSION}"
 
           if [[ "$PINNED_VERSION" != "$SNAPSHOT_VERSION" ]]; then
-            echo "::error::${SNAPSHOT} was generated with timm==${SNAPSHOT_VERSION}, but library/pyproject.toml pins timm==${PINNED_VERSION}. Regenerate with 'just gen-timm-catalog' from application/backend/." >&2
+            echo "::error::${SNAPSHOT} was generated with timm==${SNAPSHOT_VERSION}, but libraries/getitune/pyproject.toml pins timm==${PINNED_VERSION}. Regenerate with 'just gen-timm-catalog' from application/backend/." >&2
             exit 1
           fi
 

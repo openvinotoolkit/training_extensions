@@ -8,7 +8,7 @@ description: Update documentation (READMEs, application docs, or inline docstrin
 ## Quick Start
 
 - Identify affected documentation: `README.md`, `application/README.md`,
-  `application/docs/*.md`, `library/README.md`, `library/docs/design/*.md`, or
+  `application/docs/*.md`, `libraries/getitune/README.md`, `libraries/getitune/docs/design/*.md`, or
   docstrings.
 - Use clear, concrete wording. Avoid vague or marketing-heavy language.
 
@@ -30,13 +30,13 @@ description: Update documentation (READMEs, application docs, or inline docstrin
   migration, and rollback.
 - `application/docs/`: Markdown docs for the application (API, pipeline, jobs,
   dataset import/export, models, quantization).
-- `library/README.md`: overview and quick-start for the `getitune` library.
-- `library/docs/design/`: design notes for the library.
+- `libraries/getitune/README.md`: overview and quick-start for the `getitune` library.
+- `libraries/getitune/docs/design/`: design notes for the library.
 
 > Detailed user-facing library guides are **not** in this repo — they live on the
 > documentation website (`https://docs.geti.intel.com/docs/user-guide/library/`).
 > If a change needs them updated, flag it in the PR instead of adding new docs
-> under `library/docs/`.
+> under `libraries/getitune/docs/`.
 
 ## Installation Docs (install-guide-first)
 
@@ -59,8 +59,8 @@ Installation docs follow an **install-guide-first** model:
    - Installation/runtime steps: `application/docs/install.md` (then reconcile `README.md` and `application/README.md`).
    - Upgrade/migration steps: `application/docs/upgrade.md`.
    - Application features/API/pipeline: `application/docs/`.
-   - Library user-facing features: `library/README.md` (deeper guides live on the docs website).
-   - Library design notes: `library/docs/design/` or inline docstrings.
+   - Library user-facing features: `libraries/getitune/README.md` (deeper guides live on the docs website).
+   - Library design notes: `libraries/getitune/docs/design/` or inline docstrings.
 3. **Draft Updates**: Apply the documentation changes, matching the existing style and tone.
 4. **Verify**:
    - For Markdown: Ensure formatting is consistent and internal links resolve to files that exist.
