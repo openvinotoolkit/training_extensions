@@ -65,7 +65,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=application/backend/uv.lock,target=uv.lock \
     --mount=type=bind,source=application/backend/pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=application/VERSION,target=../VERSION \
-    --mount=type=bind,source=library,target=/libraries/getitune,rw \
+    --mount=type=bind,source=libraries/getitune,target=/libraries/getitune,rw \
     uv sync --frozen --no-dev --no-editable --no-install-package av --extra mqtt --extra cpu
 
 # Optionally uninstall ultralytics and its AGPL-licensed dependencies.
@@ -95,7 +95,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=application/backend/uv.lock,target=uv.lock \
     --mount=type=bind,source=application/backend/pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=application/VERSION,target=../VERSION \
-    --mount=type=bind,source=library,target=/libraries/getitune,rw \
+    --mount=type=bind,source=libraries/getitune,target=/libraries/getitune,rw \
     uv sync --frozen --no-dev --no-editable --no-install-package av --extra mqtt --extra cuda
 
 # Optionally uninstall ultralytics and its AGPL-licensed dependencies.
@@ -125,7 +125,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=application/backend/uv.lock,target=uv.lock \
     --mount=type=bind,source=application/backend/pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=application/VERSION,target=../VERSION \
-    --mount=type=bind,source=library,target=/libraries/getitune,rw \
+    --mount=type=bind,source=libraries/getitune,target=/libraries/getitune,rw \
     uv sync --frozen --no-dev --no-editable --no-install-package av --extra mqtt --extra xpu
 
 # Optionally uninstall ultralytics and its AGPL-licensed dependencies.
