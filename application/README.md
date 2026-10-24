@@ -4,7 +4,7 @@
 
 <img src="../assets/geti-header.png" alt="Geti™ - Build and deploy computer vision AI models with minimal effort and data">
 
-**Full-stack web application to build and deploy computer vision AI models, powered by the [getitune](../library) library.**
+**Full-stack web application to build and deploy computer vision AI models, powered by the [getitune](../libraries/getitune) library.**
 
 [![python](https://img.shields.io/badge/python-3.14-green)]()
 [![pytorch](https://img.shields.io/badge/pytorch-2.14-orange)]()

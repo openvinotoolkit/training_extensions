@@ -11,11 +11,11 @@ on:
       use-cache:
         description: "Enable Docker build cache. Always enabled for pull_request and merge_group events regardless of provided input."
         type: string
-        default: 'false'
+        default: "false"
       exclude-agpl-models:
         description: "Exclude Ultralytics and other AGPL-licensed models from the image"
         type: string
-        default: 'true'
+        default: "true"
   workflow_dispatch:
 
 permissions: {} # No permissions by default on workflow level
@@ -53,10 +53,10 @@ jobs:
           files_yaml: |
             test:
               - application/**
-              - library/src/**
-              - library/pyproject.toml
-              - library/uv.lock
-              - library/MANIFEST.in
+              - libraries/getitune/src/**
+              - libraries/getitune/pyproject.toml
+              - libraries/getitune/uv.lock
+              - libraries/getitune/MANIFEST.in
               - .github/workflows/build.yaml
               - .github/actions/docker-build/**
               - .github/actions/install-common-deps/**

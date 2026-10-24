@@ -3,7 +3,7 @@
 Geti Library:
   - changed-files:
       - any-glob-to-any-file:
-        - "library/**/*"
+          - "libraries/getitune/**/*"
 
 Geti Backend:
   - changed-files:

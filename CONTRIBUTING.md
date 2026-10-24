@@ -16,12 +16,12 @@ This is a monorepo with three independent components, each with its own language
 
 | Path                   | What it is                                                 | Primary stack                                                    |
 | ---------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
-| `library/`             | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch, OpenVINO, Lightning, Datumaro             |
+| `libraries/getitune/`  | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch, OpenVINO, Lightning, Datumaro             |
 | `application/backend/` | Geti™ app server (`geti` package).                        | Python 3.13, FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic |
 | `application/ui/`      | Geti™ web/desktop UI.                                     | Node 24.2+, React, TypeScript, rsbuild, Tauri                    |
 
 See [`AGENTS.md`](AGENTS.md) for a more detailed map of the repository, and the
-per-component guides (`library/AGENTS.md`, `application/backend/AGENTS.md`,
+per-component guides (`libraries/getitune/AGENTS.md`, `application/backend/AGENTS.md`,
 `application/ui/AGENTS.md`) for conventions specific to each area.
 
 ## Bug Report
@@ -50,7 +50,7 @@ First, fork the repository by following the GitHub documentation on [forking a r
 
 Each component manages its own environment, but the tooling is consistent across the repo:
 
-- Python components (`library/`, `application/backend/`) use [`uv`](https://docs.astral.sh/uv/) for dependency and virtual environment management, and expose their workflows through [`just`](https://github.com/casey/just) recipes.
+- Python components (`libraries/getitune/`, `application/backend/`) use [`uv`](https://docs.astral.sh/uv/) for dependency and virtual environment management, and expose their workflows through [`just`](https://github.com/casey/just) recipes.
 - The UI (`application/ui/`) uses `npm` with Node `>=24.2.0`.
 - Code quality hooks are managed with [`prek`](https://github.com/j178/prek) (a drop-in `pre-commit` replacement), configured in [`.pre-commit-config.yaml`](.pre-commit-config.yaml).
 
@@ -58,7 +58,7 @@ Each component manages its own environment, but the tooling is consistent across
 <summary>Library (<code>getitune</code>) setup</summary>
 
 ```bash
-cd library
+cd libraries/getitune
 just venv --device cpu   # or --device cuda / --device xpu
 ```
 
@@ -129,7 +129,7 @@ Never invent ad-hoc `uv`/`docker` commands when a `just` recipe already exists; 
 
 2. **Add Tests:** If your code includes new functionality, add corresponding tests (`pytest` for `library`/`application/backend`, Rstest/Playwright for `application/ui`) to maintain coverage and reliability.
 
-3. **Update Documentation:** If you've changed APIs or added new features, update the relevant documentation (`README.md`, `application/docs/`, `library/README.md`, or docstrings) in the same change set.
+3. **Update Documentation:** If you've changed APIs or added new features, update the relevant documentation (`README.md`, `application/docs/`, `libraries/getitune/README.md`, or docstrings) in the same change set.
 
 4. **Pass Tests and Quality Checks:** Ensure the test suite and lint/type checks pass for the component(s) you touched, using the `just`/`npm` commands above.
 

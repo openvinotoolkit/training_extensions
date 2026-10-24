@@ -18,7 +18,7 @@ description: Develop and validate changes in `application/backend/` for the Fast
 
 ## Workflow
 
-1. Keep the change inside the existing backend boundaries unless the task explicitly crosses into `library/` or `application/ui/`.
+1. Keep the change inside the existing backend boundaries unless the task explicitly crosses into `libraries/getitune/` or `application/ui/`.
 2. Keep routers thin and move business logic into services or repositories that match the existing package structure.
 3. Generate a fresh OpenAPI spec when router or schema changes affect the API contract.
 4. Hand off to the $geti-openapi-sync skill after backend contract changes so the UI types stay aligned.
@@ -48,5 +48,5 @@ description: Develop and validate changes in `application/backend/` for the Fast
 
 ## Coordination Notes
 
-- `application/backend` depends on the local editable `../../library`. Validate `library/` too when shared model or training behavior changes.
+- `application/backend` depends on the local editable `../../libraries/getitune`. Validate `libraries/getitune/` too when shared model or training behavior changes.
 - Prefer project `just` targets over custom shell commands so local work matches CI.

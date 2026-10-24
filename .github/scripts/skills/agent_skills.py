@@ -4,7 +4,7 @@
 """Maintain Geti agent skills (adapters, layout, frontmatter).
 
 Canonical skills live under ``skills/<bucket>/<name>/`` with ``bucket`` one of
-``library`` or ``application``. Client adapters under ``.claude/skills/`` and
+``getitune`` or ``application``. Client adapters under ``.claude/skills/`` and
 ``.agents/skills/`` are symlinks (directory junctions on Windows without symlink
 support) pointing back at the canonical directories, so a skill is authored once
 and consumed by every agent client.
@@ -24,7 +24,7 @@ from pathlib import Path
 
 _SCRIPT = "python3 .github/scripts/skills/agent_skills.py"
 
-BUCKETS = ("library", "application")
+BUCKETS = ("getitune", "application")
 
 
 def repo_root() -> Path:

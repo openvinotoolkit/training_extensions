@@ -1136,9 +1136,9 @@ requires-dist = [
     { name = "defusedxml", specifier = "~=0.7.1" },
     { name = "fastapi", extras = ["standard"], specifier = "~=0.138.1" },
     { name = "faster-coco-eval", specifier = "~=1.7.0" },
-    { name = "getitune", extras = ["cpu", "ultralytics"], marker = "extra == 'cpu'", editable = "../../library" },
-    { name = "getitune", extras = ["cuda", "ultralytics"], marker = "extra == 'cuda'", editable = "../../library" },
-    { name = "getitune", extras = ["ultralytics", "xpu"], marker = "extra == 'xpu'", editable = "../../library" },
+    { name = "getitune", extras = ["cpu", "ultralytics"], marker = "extra == 'cpu'", editable = "../../libraries/getitune" },
+    { name = "getitune", extras = ["cuda", "ultralytics"], marker = "extra == 'cuda'", editable = "../../libraries/getitune" },
+    { name = "getitune", extras = ["ultralytics", "xpu"], marker = "extra == 'xpu'", editable = "../../libraries/getitune" },
     { name = "huggingface-hub", specifier = "~=1.29.0" },
     { name = "hypercorn", specifier = "~=0.18.0" },
     { name = "loguru", specifier = "~=0.7.3" },
@@ -1184,7 +1184,7 @@ lint = [
 [[package]]
 name = "getitune"
 version = "0.4.0"
-source = { editable = "../../library" }
+source = { editable = "../../libraries/getitune" }
 dependencies = [
     { name = "accelerate", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },
     { name = "certifi", marker = "(extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-cuda') or (extra == 'extra-4-geti-cpu' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cpu' and extra == 'extra-8-getitune-cpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-4-geti-xpu') or (extra == 'extra-4-geti-cuda' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-4-geti-xpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-cuda') or (extra == 'extra-8-getitune-cpu' and extra == 'extra-8-getitune-xpu') or (extra == 'extra-8-getitune-cuda' and extra == 'extra-8-getitune-xpu')" },

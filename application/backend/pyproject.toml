@@ -118,7 +118,7 @@ allow-direct-references = true
 packages = ["app"]
 
 [tool.uv.sources]
-getitune = { path = "../../library", editable = true }
+getitune = { path = "../../libraries/getitune", editable = true }
 
 [tool.ruff]
 target-version = "py314"

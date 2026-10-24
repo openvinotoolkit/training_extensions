@@ -4,9 +4,9 @@
 
 - `AGENTS.md` is the canonical repo-wide instruction file for agentic tools.
 - `CLAUDE.md` imports this file for Claude Code compatibility.
-- Per-component guides live in `library/AGENTS.md`, `application/backend/AGENTS.md`,
+- Per-component guides live in `libraries/getitune/AGENTS.md`, `application/backend/AGENTS.md`,
   and `application/ui/AGENTS.md`; read the matching one before working in that area.
-- Canonical task skills live in `skills/`, grouped into `skills/library/` and
+- Canonical task skills live in `skills/`, grouped into `skills/getitune/` and
   `skills/application/` buckets.
 - `.agents/skills/` and `.claude/skills/` are committed symlink adapters pointing
   back at `skills/<bucket>/<name>`; do not edit them directly. Run
@@ -18,13 +18,13 @@
 
 ## Repository Map
 
-- `library/`: `getitune` Python package (the Geti training library; source in `src/getitune/`), recipes, and tests. See `library/AGENTS.md`.
-- `application/backend/`: FastAPI backend named `geti`; consumes `../../library` as an editable `uv` source. See `application/backend/AGENTS.md`.
+- `libraries/getitune/`: `getitune` Python package (the Geti training library; source in `src/getitune/`), recipes, and tests. See `libraries/getitune/AGENTS.md`.
+- `application/backend/`: FastAPI backend named `geti`; consumes `../../libraries/getitune` as an editable `uv` source. See `application/backend/AGENTS.md`.
 - `application/ui/`: React 19 + TypeScript + RSBuild frontend. See `application/ui/AGENTS.md`.
 - `application/README.md`: overview and entry point for the application; links to the installation guide.
 - `application/docs/`: Markdown docs for the application (installation, upgrade, API, pipeline, jobs, dataset import/export, models, quantization).
-- `library/README.md`: overview and quick-start for the `getitune` library.
-- `library/docs/design/`: design notes for the library; user-facing library docs live on the external documentation website.
+- `libraries/getitune/README.md`: overview and quick-start for the `getitune` library.
+- `libraries/getitune/docs/design/`: design notes for the library; user-facing library docs live on the external documentation website.
 - `README.md`: root-level project overview.
 - `.github/workflows/`: CI source of truth for path-based checks and required jobs.
 
@@ -59,10 +59,10 @@ Where each kind of documentation lives:
   air-gapped setup. Add or change installation steps here first.
 - `application/docs/upgrade.md`: upgrading an existing installation (Docker or
   Windows MSIX), data migration, and rollback.
-- `library/README.md`: overview and quick-start for the `getitune` training
+- `libraries/getitune/README.md`: overview and quick-start for the `getitune` training
   library. Detailed library guides live on the external documentation website
   (`https://docs.geti.intel.com/docs/user-guide/library/`), not in this repo.
-- `library/docs/design/`: design notes for the library.
+- `libraries/getitune/docs/design/`: design notes for the library.
 - `application/docs/`: Markdown docs for the application (API, pipeline, jobs,
   dataset import/export, models, quantization).
 
@@ -78,11 +78,11 @@ not drift; the docs website lives outside this repo and may also need updating.
 
 Contributor/development skills (changing the codebase):
 
-- Use the `library` workflow for changes under `library/src`, `library/tests`, or model, training, export, and CLI logic.
+- Use the `getitune` library workflow for changes under `libraries/getitune/src`, `libraries/getitune/tests`, or model, training, export, and CLI logic.
 - Use the `backend` workflow for changes under `application/backend/app`, backend tests, backend packaging, or backend API schemas.
 - Use the `ui` workflow for changes under `application/ui/src`, frontend tests, build config, or generated API client types.
 - Use the OpenAPI sync workflow whenever backend API contracts change and the UI consumes those changes.
-- Use the documentation update workflow to keep `README.md`, `application/README.md`, `application/docs/`, or `library/README.md` in sync with code changes.
+- Use the documentation update workflow to keep `README.md`, `application/README.md`, `application/docs/`, or `libraries/getitune/README.md` in sync with code changes.
 
 User-facing skills (using Geti, not changing it):
 
@@ -96,7 +96,7 @@ User-facing skills (using Geti, not changing it):
 
 ## Commands: Library
 
-- Work from `library/`.
+- Work from `libraries/getitune/`.
 - Create or refresh the environment with `just venv --device cpu`, `just venv --device cuda`, or `just venv --device xpu`.
 - Run lint and type checks with `just lint`.
 - Run unit tests with `just test-unit -- <pytest args>`.
@@ -135,11 +135,11 @@ User-facing skills (using Geti, not changing it):
 
 ## Cross-Area Rules
 
-- Do not assume commands from one area apply to another; `library`, `application/backend`, and `application/ui` use different runtimes and toolchains.
-- Backend changes can require validating `library/` because `application/backend` depends on the local editable package.
+- Do not assume commands from one area apply to another; `libraries/getitune`, `application/backend`, and `application/ui` use different runtimes and toolchains.
+- Backend changes can require validating `libraries/getitune/` because `application/backend` depends on the local editable package.
 - Do not hand-edit generated UI OpenAPI typings when regeneration is possible.
 - When backend request or response schemas change, regenerate the UI OpenAPI spec and TypeScript definitions in the same change set.
-- Use `.github/workflows/lib-lint-and-test.yaml`, `.github/workflows/backend-lint-and-test.yaml`, and `.github/workflows/ui-lint-and-test.yaml` as the source of truth for CI expectations if local commands are ambiguous.
+- Use `.github/workflows/getitune-lint-and-test.yaml`, `.github/workflows/backend-lint-and-test.yaml`, and `.github/workflows/ui-lint-and-test.yaml` as the source of truth for CI expectations if local commands are ambiguous.
 
 ## Change Discipline
 

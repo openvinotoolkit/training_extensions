@@ -4,7 +4,7 @@ Monorepo with three components — different languages, toolchains, and conventi
 
 | Path                   | What it is                                                 | Primary stack                                                    |
 | ---------------------- |------------------------------------------------------------| ---------------------------------------------------------------- |
-| `library/`             | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch 2.10, OpenVINO, Lightning, Datumaro        |
+| `libraries/getitune/`  | `getitune` — low-code transfer-learning CV library (PyPI). | Python 3.11+, PyTorch 2.10, OpenVINO, Lightning, Datumaro        |
 | `application/backend/` | Geti™ app server (`geti` package).                         | Python 3.14, FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic |
 | `application/ui/`      | Geti™ web/desktop UI.                                      | Node 24.2+, React, TypeScript, rsbuild, Tauri                    |
 
@@ -43,7 +43,7 @@ The library is consumed by the backend (`getitune[cpu|xpu|cuda]` extras).
 - **Use `just`** for developer workflows (`application/ui/` uses `npm` scripts instead).
   Never invent ad-hoc `uv` / `docker` commands when a recipe exists.
 
-## Python conventions (`library/` and `application/backend/`)
+## Python conventions (`libraries/getitune/` and `application/backend/`)
 
 - Type-hint every public function, method, and module-level variable.
 - Modern typing: `list[int]`, `X | None` — not `List`, `Optional`.
@@ -51,7 +51,7 @@ The library is consumed by the backend (`getitune[cpu|xpu|cuda]` extras).
 - Write code that is portable across the main platforms (Linux, Windows, macOS).
 - No bare `print`.
 - Google-style docstrings (`Args`, `Returns`, `Raises`).
-- Logging: `library/` uses stdlib `logging`; `application/backend/` uses
+- Logging: `libraries/getitune/` uses stdlib `logging`; `application/backend/` uses
   `loguru`. Do not mix them.
 - Tests use `pytest`; new features require unit tests.
 - **Test placement**: unit tests live next to the code they test in

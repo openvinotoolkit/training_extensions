@@ -26,9 +26,9 @@ jobs:
     permissions:
       contents: read
 
-  lib-lint-and-test:
-    name: Daily library lint and test
-    uses: $/.github/workflows/lib-lint-and-test.yaml
+  getitune-lint-and-test:
+    name: Daily getitune lint and test
+    uses: $/.github/workflows/getitune-lint-and-test.yaml
     permissions:
       contents: read
       id-token: write # The id-token permission is required by Codecov to use OIDC
@@ -62,7 +62,7 @@ jobs:
     needs:
       - build
       - backend-lint-and-test
-      - lib-lint-and-test
+      - getitune-lint-and-test
       - ui-lint-and-test
       - windows-installer
     if: failure()
@@ -114,7 +114,7 @@ jobs:
     needs:
       - build
       - backend-lint-and-test
-      - lib-lint-and-test
+      - getitune-lint-and-test
       - ui-lint-and-test
       - windows-installer
       - check-existing-issue
