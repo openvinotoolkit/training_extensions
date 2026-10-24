@@ -87,10 +87,6 @@
 | ------ | ------------------------------------------ | -------------------- | ---------------------- | ------------------------------------------- |
 | `POST` | `/api/projects/<id>/dataset/media:predict` | model id, media list | batch inference result | Get predictions for one or more media items |
 
-> **Deprecated:** `POST /api/projects/<id>/dataset/media/media:predict` (with the duplicated `media` path
-> segment) is deprecated in favor of `POST /api/projects/<id>/dataset/media:predict` above. The deprecated
-> path is marked `deprecated: true` in the OpenAPI spec and will be removed in version 3.4.
-
 ### Annotations
 
 | Method   | Path                                                | Payload         | Return          | Description                               |

@@ -777,12 +777,6 @@ MEDIA_PREDICT_RESPONSES: dict[int | str, dict[str, Any]] = {
     status_code=status.HTTP_200_OK,
     responses=MEDIA_PREDICT_RESPONSES,
 )
-@router.post(
-    "/media:predict",
-    status_code=status.HTTP_200_OK,
-    deprecated=True,
-    responses=MEDIA_PREDICT_RESPONSES,
-)
 def media_predict(
     inference_media_limit: Annotated[int, Depends(get_inference_media_limit)],
     project: Annotated[Project, Depends(get_project)],
@@ -790,11 +784,7 @@ def media_predict(
     media_prediction_service: Annotated[MediaPredictionService, Depends(get_media_prediction_service)],
     system_service: Annotated[SystemService, Depends(get_system_service)],
 ) -> BatchInferenceResult:
-    """Get predictions for media.
-
-    .. deprecated:: The `/media:predict` path is deprecated due to a duplicated `media` path segment
-       and will be removed in version 3.4. Use `:predict` instead.
-    """
+    """Get predictions for media."""
     items_count = sum(
         [
             1
